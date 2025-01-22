@@ -101,7 +101,7 @@ const UploadPage = () => {
   return (
     <div className="upload-page-container">
       <button className="logo-button" onClick={() => navigate('/FrontendDMS/documentManage')}>
-        <img src="/logo.webp" alt="Home" />
+        <img src="logo.webp" alt="Home" />
       </button>
       <button className="log-button" onClick={() => navigate('/FrontendDMS/')}>
         Log Out

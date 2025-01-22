@@ -194,7 +194,7 @@ const UserManagement = () => {
         <div className="user-info-container">
             <div className="sidebar">
                 <div className="sidebar-logo">
-                    <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
+                    <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
                 </div>
                 {role === 'admin' && (
                     <button className="sidebar-button-add sidebar-item" onClick={() => setShowTeamManagement(!showTeamManagement)}>

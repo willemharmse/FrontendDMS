@@ -245,7 +245,7 @@ const FileInfo = () => {
     <div className="file-info-container">
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
+          <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
         </div>
         <select
           className="sidebar-item"
