@@ -45,13 +45,13 @@ const FileInfo = () => {
       setRole(decodedToken.role);
 
       if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("FrontendDMS/403");
+        navigate("/403");
       }
     }
   }, [navigate]);
 
   const handlePreview = (fileId) => {
-    navigate(`FrontendDMS/preview/${fileId}`);
+    navigate(`/preview/${fileId}`);
   };
 
   useEffect(() => {
@@ -245,7 +245,7 @@ const FileInfo = () => {
     <div className="file-info-container">
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('FrontendDMS/home')} />
+          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/home')} />
         </div>
         <select
           className="sidebar-item"
@@ -286,7 +286,7 @@ const FileInfo = () => {
           </select>
         )}
 
-        <button className="sidebar-item text-format-log log-but" onClick={() => navigate('FrontendDMS/')}>
+        <button className="sidebar-item text-format-log log-but" onClick={() => navigate('/')}>
           Log Out
         </button>
       </div>
@@ -313,7 +313,7 @@ const FileInfo = () => {
           {isMenuOpen && (
             <div className="burger-menu">
               <button
-                onClick={() => navigate("FrontendDMS/upload")}
+                onClick={() => navigate("/upload")}
               >
                 Upload Document
               </button>
@@ -323,7 +323,7 @@ const FileInfo = () => {
                 {isTrashView ? "Show All Files" : "Show Trash"}
               </button>
               <button
-                onClick={() => navigate("FrontendDMS/userManagement")}
+                onClick={() => navigate("/userManagement")}
               >
                 Manage Users
               </button>

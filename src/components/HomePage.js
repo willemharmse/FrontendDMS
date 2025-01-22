@@ -21,11 +21,11 @@ const HomePage = () => {
       <div className="content-sections">
         {/* Left Section */}
         <div className="section">
-          <div className="card" onClick={() => navigate("FrontendDMS/documentManage")}>
+          <div className="card" onClick={() => navigate("/documentManage")}>
             <img src="/docMan.png" alt="Document Management" />
             <h3>DOCUMENT MANAGEMENT</h3>
           </div>
-          <div className="card" onClick={() => navigate("FrontendDMS/documentCreate")}>
+          <div className="card" onClick={() => navigate("/documentCreate")}>
             <img src="/docCreate.png" alt="Document Development" />
             <h3>DOCUMENT DEVELOPMENT</h3>
           </div>

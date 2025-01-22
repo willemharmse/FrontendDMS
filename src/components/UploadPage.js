@@ -24,7 +24,7 @@ const UploadPage = () => {
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
       if (!(adminRoles.includes(decodedToken.role))) {
-        navigate("FrontendDMS/403");
+        navigate("/403");
       }
     }
   }, [navigate]);
@@ -100,10 +100,10 @@ const UploadPage = () => {
 
   return (
     <div className="upload-page-container">
-      <button className="logo-button" onClick={() => navigate('FrontendDMS/documentManage')}>
+      <button className="logo-button" onClick={() => navigate('/documentManage')}>
         <img src="/logo.webp" alt="Home" />
       </button>
-      <button className="log-button" onClick={() => navigate('FrontendDMS/')}>
+      <button className="log-button" onClick={() => navigate('/')}>
         Log Out
       </button>
       <div className="upload-box">
