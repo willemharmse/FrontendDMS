@@ -3,7 +3,7 @@ import React from 'react';
 import './Forbidden.css'; // Import the CSS file
 
 const handleBackToHome = () => {
-  window.location.href = '/home';
+  window.location.href = 'FrontendDMS/home';
 }
 
 const Forbidden = () => {

@@ -22,7 +22,7 @@ const PreviewPage = () => {
             setRole(decodedToken.role);
 
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
+                navigate("FrontendDMS/403");
             }
         }
 
@@ -54,9 +54,9 @@ const PreviewPage = () => {
         <div className="pdf-info-container">
             <div className="sidebar">
                 <div className="sidebar-logo">
-                    <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/documentManage')} />
+                    <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('FrontendDMS/documentManage')} />
                 </div>
-                <button className="sidebar-item text-format-log log-but" onClick={() => navigate('/')}>
+                <button className="sidebar-item text-format-log log-but" onClick={() => navigate('FrontendDMS/')}>
                     Log Out
                 </button>
             </div>

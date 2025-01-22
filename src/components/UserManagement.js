@@ -36,7 +36,7 @@ const UserManagement = () => {
             setloggedInUserId(decodedToken.userId);
 
             if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/403");
+                navigate("FrontendDMS/403");
             }
         }
     }, [navigate]);
@@ -194,7 +194,7 @@ const UserManagement = () => {
         <div className="user-info-container">
             <div className="sidebar">
                 <div className="sidebar-logo">
-                    <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/home')} />
+                    <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('FrontendDMS/home')} />
                 </div>
                 {role === 'admin' && (
                     <button className="sidebar-button-add sidebar-item" onClick={() => setShowTeamManagement(!showTeamManagement)}>
@@ -208,7 +208,7 @@ const UserManagement = () => {
                 >
                     Add User
                 </button>
-                <button className="sidebar-item text-format-log log-but" onClick={() => navigate('/')}>Log Out</button>
+                <button className="sidebar-item text-format-log log-but" onClick={() => navigate('FrontendDMS/')}>Log Out</button>
             </div>
 
             <div className="main-box-user">
