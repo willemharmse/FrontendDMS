@@ -42,7 +42,7 @@ function LoginPage() {
         const decodedToken = jwtDecode(data.token); // Decode the token to get user role
         const userRole = decodedToken.role; // Assuming role is stored in token as 'role'
 
-        navigate('FrontendDMS/home'); // Redirect to the dashboard
+        navigate('/FrontendDMS/home'); // Redirect to the dashboard
       } else {
         throw new Error('Invalid login attempt.');
       }
