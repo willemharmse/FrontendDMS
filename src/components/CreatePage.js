@@ -48,7 +48,7 @@ const CreatePage = () => {
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
       if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/403");
+        navigate("/FrontendDMS/403");
       }
     }
   }, [navigate]);
@@ -115,9 +115,9 @@ const CreatePage = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate("/home")} />
+          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate("/FrontendDMS/home")} />
         </div>
-        <button className="sidebar-item text-format-log log-but" onClick={() => navigate("/")}>
+        <button className="sidebar-item text-format-log log-but" onClick={() => navigate("/FrontendDMS/")}>
           Log Out
         </button>
       </div>
