@@ -1,0 +1,23 @@
+/* src/components/NotFound.css */
+.notfound-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full height of the viewport */
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Dark red text color */
+    text-align: center;
+    font-family: Arial, sans-serif; /* Font family */
+  }
+  
+  .notfound-number {
+    font-size: 10rem; /* Large size for the 404 number */
+    margin: 0;
+  }
+  
+  .notfound-message {
+    font-size: 1.5rem; /* Smaller size for the message */
+    margin-top: 1rem; /* Spacing above the message */
+  }
+  

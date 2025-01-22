@@ -1,0 +1,44 @@
+/* src/components/Forbidden.css */
+.forbidden-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full height of the viewport */
+    background-color: #f8d7da; /* Light red background for a forbidden feel */
+    color: #721c24; /* Dark red text color */
+    text-align: center;
+    font-family: Arial, sans-serif; /* Font family */
+  }
+  
+  .forbidden-number {
+    font-size: 10rem; /* Large size for the 403 number */
+    margin: 0;
+  }
+  
+  .forbidden-message {
+    font-size: 1.5rem; /* Smaller size for the message */
+    margin-top: 1rem; /* Spacing above the message */
+  }
+
+  .forbidden-back-to-home {
+    height: 60px;
+    width: 200px;
+    font-size: 20px;
+    background-color: transparent;
+    border: 3px solid;
+    background-color: #721c24;
+    border-color: #721c24;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    color: #f8d7da;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .forbidden-back-to-home:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+    transition: 0.5s ease;
+  }
+  
