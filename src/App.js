@@ -13,14 +13,14 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/FrontendDMS/" element={<LoginPage />} />
-        <Route path="/FrontendDMS/home" element={<HomePage />} />
-        <Route path="/FrontendDMS/documentManage" element={<FileInfo />} />
-        <Route path="/FrontendDMS/documentCreate" element={<CreatePage />} />
-        <Route path='/FrontendDMS/upload' element={<UploadPage />} />
-        <Route path='/FrontendDMS/userManagement' element={<UserManagement />} />
-        <Route path='/FrontendDMS/403' element={<Forbidden />} />
-        <Route path="/FrontendDMS/preview/:fileId" element={<PreviewPage />} />
+        <Route path="FrontendDMS/" element={<LoginPage />} />
+        <Route path="FrontendDMS/home" element={<HomePage />} />
+        <Route path="FrontendDMS/documentManage" element={<FileInfo />} />
+        <Route path="FrontendDMS/documentCreate" element={<CreatePage />} />
+        <Route path='FrontendDMS/upload' element={<UploadPage />} />
+        <Route path='FrontendDMS/userManagement' element={<UserManagement />} />
+        <Route path='FrontendDMS/403' element={<Forbidden />} />
+        <Route path="FrontendDMS/preview/:fileId" element={<PreviewPage />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
     </Router>
