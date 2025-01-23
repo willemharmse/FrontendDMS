@@ -39,7 +39,7 @@ body {
   /* Ensures word breaks for long strings */
   white-space: normal;
   /* Enables text wrapping */
-  width: 20px;
+  width: 30px;
   /* Set a width to see the wrapping effect */
   text-align: center;
 }
@@ -137,6 +137,18 @@ body {
   text-align: center;
 }
 
+.col-dept-head {
+  word-wrap: break-word;
+  /* Allows long words to break and wrap to the next line */
+  word-break: break-word;
+  /* Ensures word breaks for long strings */
+  white-space: normal;
+  /* Enables text wrapping */
+  width: 150px;
+  /* Set a width to see the wrapping effect */
+  text-align: center;
+}
+
 .col-type {
   word-wrap: break-word;
   /* Allows long words to break and wrap to the next line */
@@ -156,7 +168,7 @@ body {
   /* Ensures word breaks for long strings */
   white-space: normal;
   /* Enables text wrapping */
-  width: 200px;
+  width: 90px;
   /* Set a width to see the wrapping effect */
   text-align: center;
 }
@@ -169,6 +181,19 @@ body {
   white-space: normal;
   /* Enables text wrapping */
   width: 100px;
+  /* Set a width to see the wrapping effect */
+  text-align: center;
+  justify-content: space-between;
+}
+
+.col-date {
+  word-wrap: break-word;
+  /* Allows long words to break and wrap to the next line */
+  word-break: break-word;
+  /* Ensures word breaks for long strings */
+  white-space: normal;
+  /* Enables text wrapping */
+  width: 130px;
   /* Set a width to see the wrapping effect */
   text-align: center;
   justify-content: space-between;
@@ -280,6 +305,7 @@ body {
 
 .file-name-cell {
   position: relative;
+  cursor: pointer;
 }
 
 .popup {
@@ -311,12 +337,14 @@ body {
 }
 
 .btn.accept {
-  background-color: #4CAF50;
+  background-color: #D3D3D3 !important;
+  color: black;
   /* Green */
 }
 
 .btn.reject {
-  background-color: #008cff;
+  background-color: #D3D3D3 !important;
+  color: black;
   /* Red */
 }
 
@@ -681,4 +709,25 @@ tbody tr:hover {
   object-fit: contain;
   /* Preserve aspect ratio */
   cursor: pointer;
+}
+
+.status-approved {
+  background-color: #7EAC89;
+  color: white;
+}
+
+.status-pending {
+  background-color: #FFFF89;
+}
+
+.status-rejected {
+  background-color: #FFC000;
+}
+
+.status-default {
+  color: black;
+}
+
+.review-soon {
+  background-color: #c254547e;
 }

@@ -20,7 +20,7 @@ const CreatePage = () => {
     "Quintin Coetzee": "Director",
     "Andre Coetzee": "Technical Co-ordinator",
   };
-  const adminRoles = ['admin', 'teamleader'];
+  const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
 
   const [formData, setFormData] = useState({
@@ -28,19 +28,34 @@ const CreatePage = () => {
     documentType: "Procedure",
     documentName: "",
     dateReviewed: "",
-    authorName: "",
-    reviewerName: "",
     aim: "",
     scope: "",
-    abbreviations: "",
-    reservedWords: "",
     date: new Date().toLocaleDateString(),
     version: "1.0",
-    rows: [], // Dynamic rows
+    rows: [
+      { auth: "Author", name: "Willem Harmse", pos: "Software Developer", date: new Date().toISOString().split("T")[0] },
+      { auth: "Reviewer", name: "Abel Moetji", pos: "Engineer", date: new Date().toISOString().split("T")[0] },
+      { auth: "Approved By", name: "Rossouw Snyders", pos: "Operations Manager", date: new Date().toISOString().split("T")[0] },
+    ],
     abbrRows: [],
     termRows: [],
-    chapters: []
+    chapters: [],
+    references: ''
   });
+
+  const validateForm = () => {
+    const { documentName, title, documentType, dateReviewed, aim, references, chapters } = formData;
+    return (
+      documentName &&
+      title &&
+      documentType &&
+      dateReviewed &&
+      aim &&
+      references &&
+      usedAbbrCodes.length > 0 &&
+      usedTermCodes.length > 0
+    );
+  };
 
   // Authentication check
   useEffect(() => {
@@ -186,8 +201,26 @@ const CreatePage = () => {
           />
 
           <ChapterTable formData={formData} setFormData={setFormData} />
+
+          <div className="input-box">
+            <label>References</label>
+            <textarea
+              name="references"
+              className="aim-textarea"
+              value={formData.references}
+              onChange={handleInputChange}
+              rows="4"   // Adjust the number of rows for initial height
+              placeholder="Enter the references of the document here..." // Optional placeholder text
+            />
+          </div>
           {/* Generate File Button */}
-          <button className="generate-button" onClick={handleGeneratePDF}>Generate File</button>
+          <button
+            className="generate-button"
+            onClick={handleGeneratePDF}
+            disabled={!validateForm()}
+          >
+            Generate File
+          </button>
         </div>
       </div>
     </div>

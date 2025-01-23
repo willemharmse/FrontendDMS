@@ -27,7 +27,7 @@ const FileInfo = () => {
   const [downloadFileId, setDownloadFileId] = useState(null);
   const [downloadFileName, setDownloadFileName] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const adminRoles = ['admin', 'teamleader'];
+  const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
   const isActionAvailable = !isTrashView && role !== 'auditor';
 
@@ -180,9 +180,34 @@ const FileInfo = () => {
       .replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString); // Convert to Date object
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
+    return `${year}-${month}-${day}`;
+  };
+
   const removeFileExtension = (fileName) => {
     return fileName.replace(/\.[^/.]+$/, "");
   };
+
+  const isReviewSoon = (reviewDate) => {
+    const today = new Date();
+    const review = new Date(reviewDate);
+    const timeDiff = review - today;
+    return timeDiff >= 0 && timeDiff <= 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+  };
+
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case 'approved': return 'status-approved';
+      case 'in_review': return 'status-rejected';
+      case 'in_approval': return 'status-pending';
+      default: return 'status-default';
+    }
+  };
+
 
   const toggleTrashView = () => {
     setIsTrashView(!isTrashView);
@@ -327,6 +352,13 @@ const FileInfo = () => {
               >
                 Manage Users
               </button>
+              {role === 'developer' && (
+                < button
+                  onClick={() => navigate("/FrontendDMS/repair")}
+                >
+                  Repair Fields
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -337,12 +369,14 @@ const FileInfo = () => {
                 <th className="doc-num">Nr</th>
                 <th className="col-name-dis">Discipline</th>
                 <th className="col-name">File Name</th>
+                <th className="col-type">Document Type</th>
                 {(adminRoles.includes(role) || role === 'auditor') && (
                   <th className="col-stat">Status</th>
                 )}
-                <th className="col-own-tau">Champion</th>
-                <th className="col-dept">Doc. Number(JRA)</th>
-                <th className="col-dept">Doc. Number(SOP)</th>
+                <th className="col-own-tau">Author</th>
+                <th className="col-dept-head">Department Head</th>
+                <th className="col-dept">Doc ID</th>
+                <th className="col-date">Review Date</th>
                 {adminRoles.includes(role) && (
                   <th className="col-act">Actions</th>
                 )}
@@ -350,12 +384,11 @@ const FileInfo = () => {
             </thead>
             <tbody>
               {filteredFiles.map((file, index) => (
-                <tr key={file._id} className={isTrashView ? "tr-trash" : ""}>
+                <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""}`}>
                   <td className="col">{index + 1}</td>
                   <td className="col">{file.discipline}</td>
                   <td
-                    onMouseEnter={() => setHoveredFileId(file._id)}
-                    onMouseLeave={() => setHoveredFileId(null)}
+                    onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
                     className="file-name-cell"
                   >
                     {removeFileExtension(file.fileName)}
@@ -385,12 +418,14 @@ const FileInfo = () => {
                       </div>
                     )}
                   </td>
+                  <td className="col">{file.documentType}</td>
                   {(adminRoles.includes(role) || role === 'auditor') && (
-                    <td className="col">{formatStatus(file.status)}</td>
+                    <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
-                  <td className="col">{file.Champion}</td>
-                  <td className="col-size">{file.documentNumberJRA}</td>
-                  <td className="col-size">{(file.documentNumberSOP)}</td>
+                  <td className="col">{file.owner}</td>
+                  <td className="col">{file.departmentHead}</td>
+                  <td className="col">{(file.docID)}</td>
+                  <td className={`col ${isReviewSoon(file.reviewDate) ? " review-soon" : ""}`}>{formatDate(file.reviewDate)}</td>
                   {adminRoles.includes(role) && (
                     <td className="col-action">
                       <button
@@ -445,25 +480,28 @@ const FileInfo = () => {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
-      {isDownloadModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <p>Do you want to download this file?</p>
-            <p>File: {downloadFileName}</p>
-            <div className="modal-actions">
-              <button className="modal-button cancel" onClick={confirmDownload}>
-                Yes
-              </button>
-              <button className="modal-button confirm" onClick={closeDownloadModal}>
-                No
-              </button>
+      {
+        isDownloadModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <p>Do you want to download this file?</p>
+              <p>File: {downloadFileName}</p>
+              <div className="modal-actions">
+                <button className="modal-button cancel" onClick={confirmDownload}>
+                  Yes
+                </button>
+                <button className="modal-button confirm" onClick={closeDownloadModal}>
+                  No
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

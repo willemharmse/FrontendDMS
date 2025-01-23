@@ -21,7 +21,7 @@ const UserManagement = () => {
     const [role, setRole] = useState('');
     const [newUser, setNewUser] = useState({ username: '', password: '', role: '' });
     const [formError, setFormError] = useState('');
-    const adminRoles = ['admin'];
+    const adminRoles = ['admin', 'developer'];
     const leaderRoles = ['teamleader'];
     const [departments, setDepartments] = useState([]);
     const [showTeamManagement, setShowTeamManagement] = useState(false);
@@ -47,6 +47,7 @@ const UserManagement = () => {
         admin: 'Admin',
         guest: 'Guest',
         auditor: 'Auditor',
+        developer: 'Developer'
     };
 
     const formatRole = (role) => roleMapping[role] || role;

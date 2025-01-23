@@ -8,6 +8,7 @@ import HomePage from './components/HomePage';
 import CreatePage from './components/CreatePage';
 import UserManagement from './components/UserManagement';
 import PreviewPage from './components/PreviewPage';
+import DeveloperPage from './components/DeveloperPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path='FrontendDMS/403' element={<Forbidden />} />
         <Route path="FrontendDMS/preview/:fileId" element={<PreviewPage />} />
         <Route path='*' element={<NotFound />} />
+        <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
       </Routes>
     </Router>
   );

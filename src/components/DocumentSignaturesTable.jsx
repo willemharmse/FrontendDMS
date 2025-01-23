@@ -10,7 +10,6 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
             <th>Authorizations</th>
             <th>Name</th>
             <th>Position</th>
-            <th>Date</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -46,17 +45,11 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                 <input type="text" className="table-control" value={row.pos} readOnly />
               </td>
               <td>
-                <input
-                  type="date"
-                  className="table-control"
-                  value={row.date}
-                  onChange={(e) => handleRowChange(e, index, "date")}
-                />
-              </td>
-              <td>
-                <button className="remove-row-button" onClick={() => removeRow(index)}>
-                  Remove
-                </button>
+                {index > 2 && (
+                  <button className="remove-row-button" onClick={() => removeRow(index)}>
+                    Remove
+                  </button>
+                )}
               </td>
             </tr>
           ))}

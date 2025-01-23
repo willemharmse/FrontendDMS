@@ -5,36 +5,49 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 100vh;
   background-color: #ADADAD;
-  position: relative; /* To position the logo in the corner */
+  position: relative;
+  /* To position the logo in the corner */
 }
 
 .logo-button {
-  position: absolute; /* Positioned relative to the container */
-  top: 10px; /* Distance from the top */
-  left: 10px; /* Distance from the left */
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  left: 10px;
+  /* Distance from the left */
   width: 100px;
   height: 100px;
-  background: none; /* Remove background for a clean look */
-  border: none; /* Remove borders */
-  cursor: pointer; /* Make it clickable */
-  z-index: 10; /* Ensure it appears above other elements */
+  background: none;
+  /* Remove background for a clean look */
+  border: none;
+  /* Remove borders */
+  cursor: pointer;
+  /* Make it clickable */
+  z-index: 10;
+  /* Ensure it appears above other elements */
 }
 
 .log-button {
-  position: absolute; /* Positioned relative to the container */
-  top: 10px; /* Distance from the top */
-  right: 10px; /* Distance from the left */
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 10px;
+  /* Distance from the left */
   width: 100px;
   height: 50px;
   background-color: #001f4d;
   justify-content: center;
   color: white;
   border-radius: 4px;
-  font-size: 14px; /* Reduce font size */
+  font-size: 14px;
+  /* Reduce font size */
 }
 
 .logo-button img {
-  width: 100px; /* Adjust logo size */
+  width: 100px;
+  /* Adjust logo size */
   height: 100px;
 }
 
@@ -44,7 +57,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 600px;
-  text-align: center; /* Center heading */
+  text-align: center;
+  /* Center heading */
 }
 
 .upload-box h2 {
@@ -54,7 +68,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #120b5b;
-  font-size: 24px; /* Adjust heading size as needed */
+  font-size: 24px;
+  /* Adjust heading size as needed */
   color: white;
 }
 
@@ -84,16 +99,20 @@ button:disabled {
 }
 
 .log-button {
-  position: absolute; /* Positioned relative to the container */
-  top: 10px; /* Distance from the top */
-  right: 10px; /* Distance from the left */
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 10px;
+  /* Distance from the left */
   width: 100px;
   height: 50px;
   background-color: #001f4d;
   justify-content: center;
   color: white;
   border-radius: 4px;
-  font-size: 14px; /* Reduce font size */
+  font-size: 14px;
+  /* Reduce font size */
 }
 
 .error-message {
@@ -118,12 +137,16 @@ button:disabled {
 .home-button {
   background-color: #001f4d;
   color: white;
-  padding: 5px 10px; /* Adjust padding to control button size */
+  padding: 5px 10px;
+  /* Adjust padding to control button size */
   border: none;
   border-radius: 4px;
-  font-size: 14px; /* Reduce font size */
-  width: auto; /* Use 'auto' to make it adjust to content */
-  max-width: 100px; /* Limit the maximum width */
+  font-size: 14px;
+  /* Reduce font size */
+  width: auto;
+  /* Use 'auto' to make it adjust to content */
+  max-width: 100px;
+  /* Limit the maximum width */
   cursor: pointer;
 }
 
@@ -201,6 +224,3 @@ button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
-
-
-

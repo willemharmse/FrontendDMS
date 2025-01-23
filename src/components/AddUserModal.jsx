@@ -46,6 +46,9 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
                             <option value="standarduser">Standard User</option>
                             <option value="guest">Guest</option>
                             <option value="auditor">Auditor</option>
+                            {role === 'admin' && (
+                                <option value="developer">Developer</option>
+                            )}
                         </select>
                     </div>
 

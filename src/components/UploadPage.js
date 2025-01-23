@@ -8,16 +8,17 @@ const UploadPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [discipline, setDiscipline] = useState('');
   const [owner, setOwner] = useState('');
-  const [champ, setChamp] = useState('');
-  const [docNumSOP, setDocNumSOP] = useState('');
-  const [docNumJRA, setDocNumJRA] = useState('');
+  const [documentType, setDocumentType] = useState('');
+  const [departmentHead, setDepartmentHead] = useState('');
+  const [reviewDate, setReviewDate] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [users, setUsers] = useState([]); // State to hold the list of users
-  const [champs, setChamps] = useState([]);
+  const [deptHeads, setDeptHeads] = useState([]);
+  const [docTypes, setDocTypes] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
-  const adminRoles = ['admin', 'teamleader'];
+  const adminRoles = ['admin', 'teamleader', 'developer'];
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -40,12 +41,14 @@ const UploadPage = () => {
         const data = await response.json();
 
         const uniqueOwners = [...new Set(data.files.map(file => file.owner))];
-        const uniqueTau5Champs = [...new Set(data.files.map(file => file.Champion))];
+        const uniqueDeptHeads = [...new Set(data.files.map(file => file.departmentHead))];
         const uniqueDisciplines = [...new Set(data.files.map(file => file.discipline))];
+        const uniqueDocTypes = [...new Set(data.files.map(file => file.documentType))];
 
+        setDocTypes(uniqueDocTypes);
         setDisciplines(uniqueDisciplines);
         setUsers(uniqueOwners); // Set users from the fetched data
-        setChamps(uniqueTau5Champs);
+        setDeptHeads(uniqueDeptHeads);
       } catch (error) {
         setError(error.message);
       }
@@ -54,7 +57,7 @@ const UploadPage = () => {
   }, []); // Run only once on component mount
 
   const isFormValid = () => {
-    return selectedFile && discipline && champ && owner && docNumJRA && docNumSOP && status;
+    return selectedFile && discipline && documentType && owner && departmentHead && reviewDate && status;
   };
 
   const handleFileUpload = async (e) => {
@@ -63,12 +66,12 @@ const UploadPage = () => {
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('Champion', champ);
+    formData.append('departmentHead', departmentHead);
     formData.append('owner', owner);
-    formData.append('documentNumberJRA', docNumJRA);
-    formData.append('documentNumberSOP', docNumSOP);
+    formData.append('documentType', documentType);
     formData.append('discipline', discipline);
     formData.append('status', status);
+    formData.append('reviewDate', reviewDate);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/upload`, {
@@ -82,10 +85,10 @@ const UploadPage = () => {
       setSelectedFile(null);
       setDiscipline('');
       setOwner('');
-      setChamp('');
-      setDocNumJRA('');
-      setDocNumSOP('');
+      setDocumentType('');
+      setDepartmentHead('');
       setStatus('');
+      setReviewDate('');
       setSuccessMessage('File uploaded successfully!');
       setError(null);
     } catch (error) {
@@ -143,12 +146,12 @@ const UploadPage = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Champion</label>
-              <select value={champ} onChange={(e) => setChamp(e.target.value)}>
-                <option value="">Select Champion</option>
-                {champs.map((champ, index) => (
-                  <option key={index} value={champ}>
-                    {champ}
+              <label>Department Head</label>
+              <select value={departmentHead} onChange={(e) => setDepartmentHead(e.target.value)}>
+                <option value="">Select Head</option>
+                {deptHeads.map((head, index) => (
+                  <option key={index} value={head}>
+                    {head}
                   </option>
                 ))}
               </select>
@@ -165,12 +168,19 @@ const UploadPage = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Document Number (JRA)</label>
-              <input type="text" value={docNumJRA} onChange={(e) => setDocNumJRA(e.target.value)} />
+              <label>Document Type</label>
+              <select value={documentType} onChange={(e) => setDocumentType(e.target.value)}>
+                <option value="">Select Document Type</option>
+                {docTypes.map((type, index) => (
+                  <option key={index} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
-              <label>Document Number (SOP)</label>
-              <input value={docNumSOP} onChange={(e) => setDocNumSOP(e.target.value)}></input>
+              <label>Review Date</label>
+              <input type="date" value={reviewDate} onChange={(e) => setReviewDate(e.target.value)}></input>
             </div>
           </div>
           <button type="submit" disabled={!isFormValid()}>Submit</button>

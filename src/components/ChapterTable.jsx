@@ -46,12 +46,12 @@ const ChapterTable = ({ formData, setFormData }) => {
 
     return (
         <div className="chapter-table-container">
-            <h3>Chapters</h3>
+            <h3>Sections</h3>
             {formData.chapters.map((chapter, chapterIndex) => (
                 <div key={chapterIndex} className="chapter-container">
-                    <h4>Chapter {chapter.chapterNumber}</h4>
+                    <h4>Section {chapter.chapterNumber}</h4>
                     <div className="chapter-title-container">
-                        <label>Chapter Title:</label>
+                        <label>Section Title:</label>
                         <input
                             className="chapter-title-input"
                             type="text"
@@ -85,11 +85,11 @@ const ChapterTable = ({ formData, setFormData }) => {
                         </div>
                     ))}
 
-                    <button className="remove-chapter-button" onClick={() => removeChapter(chapterIndex)}>Remove Chapter</button>
+                    <button className="remove-chapter-button" onClick={() => removeChapter(chapterIndex)}>Remove Section</button>
 
                 </div>
             ))}
-            <button className="add-chapter-button" onClick={addChapter}>+ Add Chapter</button>
+            <button className="add-chapter-button" onClick={addChapter}>+ Add Section</button>
         </div>
     );
 };

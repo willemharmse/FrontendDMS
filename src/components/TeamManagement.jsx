@@ -16,7 +16,7 @@ const TeamManagement = ({ departments, users, fetchDepartments, addTeamMember, f
     // Load team members when a team is selected
     const loadTeamMembers = async (deptID) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/department/members/${deptID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/members/${deptID}`);
             const text = await response.text();  // Read the response as text first
             console.log(text);  // Log the response text for debugging
             const data = JSON.parse(text);  // Manually parse if it's valid JSON
@@ -28,7 +28,7 @@ const TeamManagement = ({ departments, users, fetchDepartments, addTeamMember, f
 
     const createTeam = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/department/create`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ const TeamManagement = ({ departments, users, fetchDepartments, addTeamMember, f
 
     const handleAddMember = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/department/add`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ const TeamManagement = ({ departments, users, fetchDepartments, addTeamMember, f
     const handleDeleteMember = async () => {
         if (!userToDelete) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/department/remove`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/remove`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ departmentId: selectedTeam, userId: userToDelete._id })
