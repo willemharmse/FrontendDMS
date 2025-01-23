@@ -9,11 +9,11 @@ import "./FileInfo.css";
 const FileInfo = () => {
   const [files, setFiles] = useState([]); // State to hold the file data
   const [disciplines, setDisciplines] = useState([]);
-  const [champs, setChamps] = useState([]);
+  const [docTypes, setDocTypes] = useState([]);
   const [docStatus, setDocStatus] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDiscipline, setSelectedDiscipline] = useState('');
-  const [selectedChamp, setSelectedChamp] = useState('');
+  const [selectedType, setSelectedType] = useState('');
   const [error, setError] = useState(null);
   const [token, setToken] = useState('');
   const [role, setRole] = useState('');
@@ -80,12 +80,12 @@ const FileInfo = () => {
       setFiles(data.files);
 
       const uniqueDiscipline = [...new Set(data.files.map(file => file.discipline))];
-      const uniqueChamps = [...new Set(data.files.map(file => file.Champion))];
+      const uniqueTypes = [...new Set(data.files.map(file => file.documentType))];
       const uniqueDocStatus = [...new Set(data.files.map(file => file.status))];
 
       setDocStatus(uniqueDocStatus);
       setDisciplines(uniqueDiscipline);
-      setChamps(uniqueChamps);
+      setDocTypes(uniqueTypes);
     } catch (error) {
       setError(error.message);
     }
@@ -250,7 +250,7 @@ const FileInfo = () => {
       file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesFilters =
-      (selectedChamp ? file.Champion === selectedChamp : true) &&
+      (selectedType ? file.documentType === selectedType : true) &&
       (selectedDiscipline ? file.discipline === selectedDiscipline : true) &&
       (selectedStatus ? file.status === selectedStatus : true);
 
@@ -274,13 +274,13 @@ const FileInfo = () => {
         </div>
         <select
           className="sidebar-item"
-          value={selectedChamp}
-          onChange={(e) => setSelectedChamp(e.target.value)}
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
         >
-          <option value="">All Champions</option>
-          {champs.map((champ, index) => (
-            <option key={index} value={champ}>
-              {champ}
+          <option value="">All Document Types</option>
+          {docTypes.map((type, index) => (
+            <option key={index} value={type}>
+              {type}
             </option>
           ))}
         </select>
