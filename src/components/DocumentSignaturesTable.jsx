@@ -42,14 +42,20 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                 </select>
               </td>
               <td>
-                <input type="text" className="table-control" value={row.pos} readOnly />
+                <input
+                  type="text"
+                  className="table-control"
+                  value={row.pos}
+                  readOnly
+                />
               </td>
               <td>
-                {index > 2 && (
-                  <button className="remove-row-button" onClick={() => removeRow(index)}>
-                    Remove
-                  </button>
-                )}
+                <button
+                  className="remove-row-button"
+                  onClick={() => removeRow(index)}
+                >
+                  Remove
+                </button>
               </td>
             </tr>
           ))}

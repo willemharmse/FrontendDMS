@@ -84,6 +84,7 @@ function LoginPage() {
             </div>
             {error && <div className="error-message">{error}</div>}
             <button type="submit" className="login-button">Login</button>
+            <button className="forgot-button" onClick={() => { navigate('/FrontendDMS/forgot') }}>Forgot Password</button>
           </form>
         </div>
       </div>

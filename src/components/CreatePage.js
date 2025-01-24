@@ -7,6 +7,7 @@ import DocumentSignaturesTable from "./DocumentSignaturesTable";
 import TermTable from "./TermTable";
 import AbbreviationTable from "./Abbreviation";
 import ChapterTable from "./ChapterTable";
+import ProcedureTable from "./ProcedureTable";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -23,6 +24,16 @@ const CreatePage = () => {
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
 
+  const updateRow = (index, field, value) => {
+    const updatedProcedureRows = [...formData.procedureRows];
+    updatedProcedureRows[index][field] = value;  // Update the specific field in the row
+
+    setFormData({
+      ...formData,
+      procedureRows: updatedProcedureRows,  // Update the procedure rows in state
+    });
+  };
+
   const [formData, setFormData] = useState({
     title: "",
     documentType: "Procedure",
@@ -33,10 +44,11 @@ const CreatePage = () => {
     date: new Date().toLocaleDateString(),
     version: "1.0",
     rows: [
-      { auth: "Author", name: "Willem Harmse", pos: "Software Developer", date: new Date().toISOString().split("T")[0] },
-      { auth: "Reviewer", name: "Abel Moetji", pos: "Engineer", date: new Date().toISOString().split("T")[0] },
-      { auth: "Approved By", name: "Rossouw Snyders", pos: "Operations Manager", date: new Date().toISOString().split("T")[0] },
+      { auth: "Author", name: "Willem Harmse", pos: "Software Developer", num: 1 },
+      { auth: "Reviewer", name: "Abel Moetji", pos: "Engineer", num: 2 },
+      { auth: "Approved By", name: "Rossouw Snyders", pos: "Operations Manager", num: 3 },
     ],
+    procedureRows: [],
     abbrRows: [],
     termRows: [],
     chapters: [],
@@ -76,7 +88,19 @@ const CreatePage = () => {
 
   // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
+    const rowToRemove = formData.rows[index];
     const newRows = [...formData.rows];
+    const rowToChange = newRows[index];
+
+    // Prevent removal of the initial required rows
+    const initialRequiredRows = ["Author", "Reviewer", "Approved By"];
+    if (
+      initialRequiredRows.includes(rowToRemove.auth) &&
+      formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
+    ) {
+      alert(`You must keep at least one ${rowToRemove.auth}.`);
+      return;
+    }
 
     // If the field being changed is "name", update the position based on the selected name
     if (field === "name") {
@@ -85,7 +109,20 @@ const CreatePage = () => {
     }
 
     newRows[index][field] = e.target.value;
-    setFormData({ ...formData, rows: newRows });
+
+    if (rowToChange.auth === 'Author') {
+      newRows[index].num = 1;
+    }
+    else if (rowToChange.auth === 'Reviewer') {
+      newRows[index].num = 2;
+    }
+    else if (rowToChange.auth === 'Approved By') {
+      newRows[index].num = 3;
+    }
+
+    setFormData((prevFormData) => ({
+      ...prevFormData, rows: newRows
+    }));
   };
 
   // Add a new row to the table
@@ -95,12 +132,47 @@ const CreatePage = () => {
       ...formData,
       rows: [
         ...formData.rows,
-        { auth: "Admin", name: "Willem Harmse", pos: "Software Developer", date: today }
+        { auth: "Author", name: "Willem Harmse", pos: "Software Developer", num: 1 }
       ]
     });
   };
 
+  const addProRow = () => {
+    const lastNr = formData.procedureRows.length > 0 && typeof formData.procedureRows[formData.procedureRows.length - 1].nr === 'number'
+      ? formData.procedureRows[formData.procedureRows.length - 1].nr
+      : 0; // Safely get the last nr value or 0 if no rows exist or nr is not a number
+
+    setFormData({
+      ...formData,
+      procedureRows: [
+        ...formData.procedureRows,
+        { nr: lastNr + 1, mainStep: "", SubStep: "", ar: "", general: "" }
+      ]
+    });
+  };
+
+
+  const removeProRow = (indexToRemove) => {
+    setFormData({
+      ...formData,
+      procedureRows: formData.procedureRows.filter((_, index) => index !== indexToRemove),
+    });
+  };
+
   const removeRow = (indexToRemove) => {
+    const rowToRemove = formData.rows[indexToRemove];
+
+    // Prevent removal of the initial required rows
+    const initialRequiredRows = ["Author", "Reviewer", "Approved By"];
+    if (
+      initialRequiredRows.includes(rowToRemove.auth) &&
+      formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
+    ) {
+      alert(`You must keep at least one ${rowToRemove.auth}.`);
+      return;
+    }
+
+    // Proceed with removal if conditions are met
     setFormData({
       ...formData,
       rows: formData.rows.filter((_, index) => index !== indexToRemove),
@@ -130,7 +202,7 @@ const CreatePage = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate("/FrontendDMS/home")} />
+          <img src="/logo.webp" alt="Logo" className="logo-img" onClick={() => navigate("/FrontendDMS/home")} />
         </div>
         <button className="sidebar-item text-format-log log-but" onClick={() => navigate("/FrontendDMS/")}>
           Log Out
@@ -201,6 +273,8 @@ const CreatePage = () => {
           />
 
           <ChapterTable formData={formData} setFormData={setFormData} />
+
+          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} />
 
           <div className="input-box">
             <label>References</label>
