@@ -9,6 +9,7 @@ import CreatePage from './components/CreatePage';
 import UserManagement from './components/UserManagement';
 import PreviewPage from './components/PreviewPage';
 import DeveloperPage from './components/DeveloperPage';
+import ForgotPage from './components/ForgotPassword';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="FrontendDMS/preview/:fileId" element={<PreviewPage />} />
         <Route path='*' element={<NotFound />} />
         <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
+        <Route path="FrontendDMS/forgot" element={<ForgotPage />} />
       </Routes>
     </Router>
   );
