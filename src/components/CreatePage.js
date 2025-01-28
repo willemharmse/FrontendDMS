@@ -58,7 +58,7 @@ const CreatePage = () => {
     aim: "",
     scope: "",
     date: new Date().toLocaleDateString(),
-    version: "1.0",
+    version: "",
     rows: [
       { auth: "Author", name: "Willem Harmse", pos: "Software Developer", num: 1 },
       { auth: "Reviewer", name: "Abel Moetji", pos: "Engineer", num: 2 },
@@ -277,6 +277,11 @@ const CreatePage = () => {
               <option value="Procedure">Procedure</option>
               <option value="Standard">Standard</option>
             </select>
+          </div>
+
+          <div className="input-box">
+            <label className="font-fam-labels">Version</label>
+            <input type="text" name="version" className="font-fam" value={formData.version} onChange={handleInputChange} />
           </div>
 
           <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} />

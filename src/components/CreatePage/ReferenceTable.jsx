@@ -93,8 +93,8 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                 <thead>
                     <tr>
                         <th>Nr</th>
-                        <th>Reference</th>
                         <th>Document ID</th>
+                        <th>Reference</th>
                         <th className="ref-but-row">Actions</th>
                     </tr>
                 </thead>
@@ -104,6 +104,15 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                             <td>{row.nr}</td>
                             <td>
                                 <input
+                                    readOnly
+                                    type="text"
+                                    className="table-control"
+                                    value={row.refDesc}
+                                    onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
+                                />
+                            </td>
+                            <td>
+                                <input
                                     type="text"
                                     className="table-control"
                                     value={row.ref}
@@ -111,15 +120,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                     onFocus={() => setShowDropdown(index)}
                                     onBlur={() => setTimeout(() => setShowDropdown(null), 200)}
                                     ref={(el) => (inputRefs.current[index] = el)}
-                                />
-                            </td>
-                            <td>
-                                <input
-                                    readOnly
-                                    type="text"
-                                    className="table-control"
-                                    value={row.refDesc}
-                                    onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
                                 />
                             </td>
                             <td className="ref-but-row">
