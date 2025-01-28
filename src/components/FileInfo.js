@@ -115,7 +115,10 @@ const FileInfo = () => {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
-      setFiles(data.files);
+
+      const sortedFiles = data.files.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate));
+
+      setFiles(sortedFiles);
 
       const uniqueDiscipline = [...new Set(data.files.map(file => file.discipline))].sort();
       const uniqueTypes = [...new Set(data.files.map(file => file.documentType))].sort();
