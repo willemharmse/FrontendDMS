@@ -229,7 +229,8 @@ const FileInfo = () => {
     const today = new Date();
     const review = new Date(reviewDate);
     const timeDiff = review - today;
-    return timeDiff >= 0 && timeDiff <= 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+
+    return timeDiff <= 30 * 24 * 60 * 60 * 1000; // Returns true if the date is within the next 30 days or has passed
   };
 
   const getStatusClass = (status) => {
