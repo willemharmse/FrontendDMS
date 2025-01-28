@@ -1,0 +1,530 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  color: #333;
+  background-color: #ADADAD;
+}
+
+.cent {
+  text-align: center;
+}
+
+.file-create-container {
+  display: flex;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.text-format-log {
+  color: black;
+  background-color: #ADADAD !important;
+  font-weight: bolder !important;
+}
+
+.sidebar {
+  width: 275px;
+  padding: 20px;
+  background-color: #120b5b;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* Floating shadow effect */
+  position: relative;
+  overflow-y: hidden;
+  /* Allows scrolling if content overflows */
+}
+
+.main-box {
+  flex-grow: 1;
+  padding: 20px;
+  margin-left: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* Floating shadow effect */
+  position: relative;
+  z-index: 5;
+  /* Ensures the main content stays below the sidebar */
+  overflow: hidden;
+  /* Allows scrolling if content overflows */
+}
+
+/* Table */
+.signature-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.signature-table th {
+  background-color: #1e3a8a;
+  color: white;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.signature-table td input,
+.signature-table td select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.signature-table th,
+.signature-table td {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  text-align: left;
+}
+
+.signature-table select {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background-color: white;
+}
+
+/* Add Row Button */
+.add-row-button {
+  margin-top: 10px;
+  width: 100%;
+  background-color: #2563eb;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.add-row-button:hover {
+  background-color: #1e40af;
+}
+
+.table-container {
+  margin-top: 15px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 75%;
+  /* Ensure it spans the full width of its parent */
+  overflow-x: auto;
+  /* Add horizontal scroll for smaller screens */
+}
+
+.table-control {
+  width: 100%;
+  /* Ensures controls fit within cell */
+  padding: 5px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.remove-row-button {
+  background-color: #e3342f;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.remove-row-button:hover {
+  background-color: #cc1f1a;
+}
+
+.log-but {
+  background: none;
+  border: none;
+  color: #333;
+  /* Keeps the text color the same */
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-align: center;
+  /* Ensures the text is left-aligned */
+  display: inline-block;
+  /* Makes the button size just fit the text */
+  position: absolute;
+  bottom: 10px;
+  left: 58.75px;
+  width: 50% !important;
+}
+
+.sidebar-button {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  bottom: 20px;
+  /* Distance from the bottom of the sidebar */
+  left: 0px;
+  right: 1px;
+  padding: 20px;
+  background-color: transparent;
+  /* Match sidebar-item styling */
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-item {
+  width: calc(100% - 30px);
+  /* Full width minus padding for margins */
+  margin: 10px;
+  /* Adds margin on all sides */
+  text-align: center;
+  padding: 15px;
+  background-color: #d7c8ac;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sidebar-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.logo-img {
+  max-width: 100%;
+  /* Ensures the image is responsive */
+  height: auto;
+  max-height: 60px;
+  /* Limit the height */
+  object-fit: contain;
+  /* Preserve aspect ratio */
+  cursor: pointer;
+}
+
+.scrollable-box {
+  height: calc(100% - 40px);
+  /* Full height minus 20px margin on top & bottom */
+  width: calc(100% - 40px);
+  /* Full width minus 20px margin on left & right */
+  margin: 20px;
+  /* Ensures even spacing on all sides */
+  overflow-y: auto;
+  /* Enables scrolling inside */
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers content */
+}
+
+/* Title inside the scrollable box */
+.scrollable-box-title {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Each input is inside its own box */
+.input-box {
+  background-color: white;
+  padding: 15px;
+  margin: 10px 0;
+  /* Keeps it aligned */
+  width: 80%;
+  /* Makes the boxes shorter */
+  max-width: 800px;
+  /* Prevents overly long input fields */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.aim-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border 0.3s ease-in-out;
+  outline: none;
+}
+
+.input-box-2 {
+  background-color: white;
+  padding: 15px;
+  margin: 10px 0;
+  /* Keeps it aligned */
+  width: 80%;
+  /* Makes the boxes shorter */
+  max-width: 800px;
+  /* Prevents overly long input fields */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Label styling */
+.input-box label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: left;
+  width: 100%;
+  text-align: center;
+}
+
+/* Input field styling */
+.input-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border 0.3s ease-in-out;
+  outline: none;
+}
+
+.input-box input:focus {
+  border: 1px solid #120b5b;
+  box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
+}
+
+/* Generate button styling */
+.generate-button {
+  width: 80%;
+  max-width: 400px;
+  margin: 20px 0;
+  padding: 12px;
+  background-color: #120b5b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease-in-out;
+}
+
+.generate-button:hover {
+  background-color: #0e0847;
+}
+
+/* ChapterTable Styles */
+.chapter-table-container {
+  background-color: white;
+  padding: 15px;
+  margin: 10px 0;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Chapter Title */
+.chapter-table-container h3 {
+  font-size: 1.5rem;
+  text-align: center;
+  color: #000000;
+  margin-bottom: 15px;
+}
+
+/* Chapter and Subheading Fields */
+.chapter-table-container h4,
+.chapter-table-container h5 {
+  font-size: 1.2rem;
+  color: #000000;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Inputs for Chapter and Subheading Titles */
+.chapter-table-container input {
+  width: 100%;
+  max-width: 265px;
+  /* Same width for both chapter and subheading inputs */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 8px 0;
+  transition: border 0.3s ease-in-out;
+}
+
+.chapter-table-container input:focus {
+  border: 1px solid #120b5b;
+  box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
+}
+
+/* Textarea for Subheading Body (height controlled here) */
+.chapter-table-container textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  max-width: 265px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 8px 0;
+  transition: border 0.3s ease-in-out;
+  resize: vertical;
+  /* Allows resizing vertically */
+}
+
+.chapter-table-container textarea:focus {
+  border: 1px solid #120b5b;
+  box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
+}
+
+/* Buttons */
+.chapter-table-container button {
+  background-color: #2563eb;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chapter-table-container button:hover {
+  background-color: #1e40af;
+}
+
+/* Remove Chapter and Subheading Button */
+.chapter-table-container button.remove-chapter-button {
+  background-color: #e3342f;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 265px;
+  font-size: 14px;
+  margin-top: 5px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chapter-table-container button.remove-subheading-button {
+  background-color: #e3342f;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 265px;
+  font-size: 14px;
+  margin-top: 5px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chapter-table-container button.add-subheading-button {
+  background-color: #003cff;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 265px;
+  font-size: 14px;
+  margin-top: 5px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chapter-table-container button.remove-chapter-button:hover {
+  background-color: #cc1f1a;
+}
+
+/* Add Chapter Button */
+.chapter-table-container button.add-chapter-button {
+  width: 100%;
+  background-color: #2563eb;
+  color: white;
+  padding: 12px;
+  border: none;
+  max-width: 265px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chapter-table-container button.add-chapter-button:hover {
+  background-color: #1e40af;
+}
+
+.chapter-container {
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  /* Space between chapters */
+}
+
+.subheading-container {
+  margin-top: 10px;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  /* Space between chapters */
+}
+
+.subheading-title-container {
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  /* Space between chapters */
+}
+
+.subheading-body-container {
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  /* Space between chapters */
+}
+
+.font-fam {
+  font-family: Arial;
+}
+
+.font-fam-labels {
+  font-family: Arial;
+  font-size: 20px !important;
+}
+
+.ref-but-row {
+  width: 20%;
+}

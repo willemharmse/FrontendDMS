@@ -1,0 +1,166 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: #333;
+    background-color: #ADADAD;
+}
+
+.text-format-log {
+    color: black;
+    background-color: #ADADAD !important;
+    font-weight: bolder !important;
+}
+
+.sidebar {
+    width: 275px;
+    padding: 20px;
+    background-color: #120b5b;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Floating shadow effect */
+    position: relative;
+
+    overflow-y: hidden;
+    /* Allows scrolling if content overflows */
+}
+
+.log-but {
+    background: none;
+    border: none;
+    color: #333;
+    /* Keeps the text color the same */
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    text-align: center;
+    /* Ensures the text is left-aligned */
+    display: inline-block;
+    /* Makes the button size just fit the text */
+    position: absolute;
+    bottom: 10px;
+    left: 58.75px;
+    width: 50% !important;
+}
+
+.sidebar-item {
+    width: calc(100% - 30px);
+    /* Full width minus padding for margins */
+    margin: 10px;
+    /* Adds margin on all sides */
+    text-align: center;
+    padding: 15px;
+    background-color: #d7c8ac;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sidebar-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.logo-img {
+    max-width: 100%;
+    /* Ensures the image is responsive */
+    height: auto;
+    max-height: 60px;
+    /* Limit the height */
+    object-fit: contain;
+    /* Preserve aspect ratio */
+    cursor: pointer;
+}
+
+/* Main container */
+.pdf-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Ensure .main-box acts as a container for file preview */
+.main-box-preview {
+    flex-grow: 1;
+    padding: 0;
+    margin-left: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* File Preview Container */
+.file-preview-container {
+    width: 100%;
+    height: calc(100% - 30px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+/* Title Styling */
+.file-preview-container h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* File Viewer - Make iframe fully responsive */
+.file-viewer {
+    width: 100%;
+    height: 100%;
+    /* Adjust to fill its parent container */
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Back Button */
+.back-button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #120b5b;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.back-button:hover {
+    background-color: #0e094a;
+    transform: scale(1.05);
+}
+
+/* Responsive Design for smaller screens */
+@media (max-width: 768px) {
+
+    /* For smaller screens, ensure iframe height is sufficient */
+    .file-viewer {
+        height: 80vh;
+        /* Set height to 80% of the viewport height */
+    }
+
+    .file-preview-container {
+        padding: 10px;
+    }
+
+    .back-button {
+        width: 100%;
+        /* Make the back button span the full width */
+    }
+}
