@@ -53,7 +53,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                     <div className="chapter-title-container">
                         <label>Section Title:</label>
                         <input
-                            className="chapter-title-input"
+                            className="chapter-title-input font-fam"
                             type="text"
                             value={chapter.chapterTitle || ""}
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterTitle")}
@@ -67,7 +67,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             <div className="subheading-title-container">
                                 <label>Subheading Title:</label>
                                 <input
-                                    className="subheading-title-input"
+                                    className="subheading-title-input font-fam"
                                     type="text"
                                     value={subheading.subheadingTitle}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "subheadingTitle")}
@@ -76,7 +76,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             <div className="subheading-body-container">
                                 <label>Body:</label>
                                 <textarea
-                                    className="subheading-body-textarea"
+                                    className="subheading-body-textarea font-fam"
                                     value={subheading.body}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "body")}
                                 />
