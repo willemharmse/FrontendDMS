@@ -1,0 +1,22 @@
+.floating-dropdown {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    z-index: 1000;
+}
+
+.floating-dropdown li {
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.floating-dropdown li:hover {
+    background: #f0f0f0;
+}
