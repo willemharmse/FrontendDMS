@@ -8,6 +8,52 @@ body {
   background-color: #ADADAD;
 }
 
+.create-header {
+  display: flex;
+  justify-content: space-between;
+  /* Keeps items at far left and right */
+  align-items: center;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-left img {
+  width: 80px;
+  /* Adjust image size */
+  height: auto;
+  cursor: pointer;
+  margin-left: 20px;
+}
+
+.logout-button-cp {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-right: 60px;
+  width: auto;
+  /* Ensures it doesn’t go off-screen */
+}
+
+.logout-button-cp:hover {
+  background-color: #cc1f1a;
+}
+
 .cent {
   text-align: center;
 }
@@ -38,18 +84,17 @@ body {
 }
 
 .main-box {
-  flex-grow: 1;
+  width: 100%;
+  margin-top: 80px;
+  margin-right: 20px;
+  /* Adjust for the fixed header */
   padding: 20px;
-  margin-left: 20px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  /* Floating shadow effect */
   position: relative;
   z-index: 5;
-  /* Ensures the main content stays below the sidebar */
   overflow: hidden;
-  /* Allows scrolling if content overflows */
 }
 
 /* Table */
@@ -238,9 +283,8 @@ body {
   padding: 15px;
   margin: 10px 0;
   /* Keeps it aligned */
-  width: 80%;
+  width: 90%;
   /* Makes the boxes shorter */
-  max-width: 800px;
   /* Prevents overly long input fields */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -264,9 +308,8 @@ body {
   padding: 15px;
   margin: 10px 0;
   /* Keeps it aligned */
-  width: 80%;
+  width: 90%;
   /* Makes the boxes shorter */
-  max-width: 800px;
   /* Prevents overly long input fields */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -324,8 +367,7 @@ body {
   background-color: white;
   padding: 15px;
   margin: 10px 0;
-  width: 80%;
-  max-width: 800px;
+  width: 90%;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -348,6 +390,48 @@ body {
   color: #000000;
   text-align: center;
   margin-top: 10px;
+}
+
+.input-group-cpt {
+  display: flex;
+  /* Use flexbox to align inputs side by side */
+  align-items: center;
+  /* Vertically center the inputs */
+  width: 100%;
+}
+
+.input-group-cpt input {
+  font-size: 16px;
+  padding: 10px;
+  margin: 0;
+  border: 1px solid #ccc;
+  /* Subtle border */
+  border-radius: 5px;
+  /* Rounded corners */
+  width: 100%;
+  /* Allow the inputs to take full available width */
+}
+
+.input-group-cpt .title-input {
+  border-right: none;
+  /* Remove border between the two inputs */
+  width: calc(100% - 150px);
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  /* Allow the title input to take most of the space */
+}
+
+.input-group-cpt .document-type-input {
+  width: 150%;
+  /* Light background to make it visually distinct */
+  border-left: none;
+  border-top-left-radius: 0px;
+  color: #000000;
+  background-color: white;
+  border-bottom-left-radius: 0px;
+  /* Remove border between the two inputs */
+  padding: 10px;
+  /* Match padding of the first input */
 }
 
 /* Inputs for Chapter and Subheading Titles */

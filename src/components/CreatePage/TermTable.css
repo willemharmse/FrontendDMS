@@ -71,3 +71,15 @@
     text-align: center;
     font-size: 16px;
 }
+
+.col-term-term {
+    width: 20%;
+}
+
+.col-term-desc {
+    width: 70%;
+}
+
+.col-term-act {
+    width: 10%;
+}

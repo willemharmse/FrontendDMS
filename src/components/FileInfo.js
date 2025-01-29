@@ -228,12 +228,21 @@ const FileInfo = () => {
     return fileName.replace(/\.[^/.]+$/, "");
   };
 
-  const isReviewSoon = (reviewDate) => {
+  const getReviewClass = (reviewDate) => {
     const today = new Date();
     const review = new Date(reviewDate);
     const timeDiff = review - today;
 
-    return timeDiff <= 30 * 24 * 60 * 60 * 1000; // Returns true if the date is within the next 30 days or has passed
+    // If the review date is more than 30 days ago, mark it as past
+    if (timeDiff < 0) {
+      return "review-past";
+    }
+    // If the review date is within the next 30 days, mark it as soon
+    else if (timeDiff <= 30 * 24 * 60 * 60 * 1000) {
+      return "review-soon";
+    }
+    // Otherwise, mark it as ongoing
+    return "review-ongoing";
   };
 
   const getStatusClass = (status) => {
@@ -365,7 +374,7 @@ const FileInfo = () => {
         </button>
       </div>
 
-      <div className="main-box">
+      <div className="main-box-file-info">
         <div className="top-section">
           <input
             className="search-input"
@@ -463,7 +472,7 @@ const FileInfo = () => {
                   <td className="col">{file.owner}</td>
                   <td className="col">{file.departmentHead}</td>
                   <td className="col">{(file.docID)}</td>
-                  <td className={`col ${isReviewSoon(file.reviewDate) ? " review-soon" : ""}`}>{formatDate(file.reviewDate)}</td>
+                  <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
                   {adminRoles.includes(role) && (
                     <td className="col-action">
                       <button

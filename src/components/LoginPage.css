@@ -79,9 +79,11 @@ h2 {
 
 .input-group input {
   display: inline-block;
-  width: 98%;
+  width: 87%;
   padding: 7px;
   padding-left: 0;
+  padding-right: 50px;
+  /* Space for the button */
   font-size: 24px;
   border: 0;
   color: #f4f6fc;
@@ -120,6 +122,27 @@ h2 {
   width: 100%;
   cursor: pointer;
   transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.show-hide-button {
+  position: absolute;
+  right: 15px;
+  width: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.show-hide-button:focus {
+  outline: none;
+}
+
+.login-password-container {
+  position: relative;
+  width: 100%;
 }
 
 .login-button:hover {

@@ -246,24 +246,17 @@ const CreatePage = () => {
   return (
     <div className="file-create-container">
       {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-logo">
-          <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate("/FrontendDMS/home")} />
+      <header className="create-header">
+        <div className="header-left">
+          <img src="logo.webp" alt="Left Icon" onClick={() => navigate('/FrontendDMS/home')} />
         </div>
-        <button className="sidebar-item text-format-log log-but" onClick={() => navigate("/FrontendDMS/")}>
-          Log Out
-        </button>
-      </div>
+        <button className="logout-button-cp" onClick={() => navigate('/FrontendDMS/')}>Logout</button>
+      </header>
 
       {/* Main content */}
       <div className="main-box">
         <div className="scrollable-box">
           <h2 className="scrollable-box-title font-fam">Create Document</h2>
-
-          <div className="input-box">
-            <label className="font-fam-labels">Document Title</label>
-            <input type="text" name="title" className="font-fam" value={formData.title} onChange={handleInputChange} />
-          </div>
 
           <div className="input-box">
             <label className="font-fam-labels">Document Type</label>
@@ -277,6 +270,27 @@ const CreatePage = () => {
               <option value="Procedure">Procedure</option>
               <option value="Standard">Standard</option>
             </select>
+          </div>
+
+          <div className="input-box">
+            <label className="font-fam-labels">Document Title</label>
+            <div className="input-group-cpt">
+              <input
+                type="text"
+                name="title"
+                className="font-fam title-input"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder={`Title of your document (e.g. Safety And Security)`}
+              />
+              <input
+                type="text"
+                className="font-fam document-type-input"
+                value={formData.documentType}
+                onChange={handleInputChange}
+                disabled
+              />
+            </div>
           </div>
 
           <div className="input-box">

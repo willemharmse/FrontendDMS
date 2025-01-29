@@ -77,7 +77,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes }) =
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.keys(TermToDescriptionMap).map((term) => (
+                  {Object.keys(TermToDescriptionMap).sort().map((term) => (
                     <tr key={term}>
                       <td>
                         <input
@@ -107,9 +107,9 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes }) =
       <table className="vcr-table">
         <thead>
           <tr>
-            <th>Term</th>
-            <th>Definition</th>
-            <th>Actions</th>
+            <th className="col-term-term">Term</th>
+            <th className="col-term-desc">Definition</th>
+            <th className="col-term-act"></th>
           </tr>
         </thead>
         <tbody>

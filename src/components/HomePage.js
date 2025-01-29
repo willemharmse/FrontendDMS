@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChalkboardTeacher, faFileCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faChalkboardTeacher, faFileCircleCheck, faFileCirclePlus, faFile, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -22,15 +22,15 @@ const HomePage = () => {
         {/* Left Section */}
         <div className="section">
           <div className="card" onClick={() => navigate("/FrontendDMS/documentManage")}>
-            <img src="docMan.png" alt="Document Management" />
+            <FontAwesomeIcon icon={faFile} className="logo" />
             <h3>DOCUMENT MANAGEMENT</h3>
           </div>
           <div className="card" onClick={() => navigate("/FrontendDMS/documentCreate")}>
-            <img src="docCreate.png" alt="Document Development" />
+            <FontAwesomeIcon icon={faFileCirclePlus} className="logo" />
             <h3>DOCUMENT DEVELOPMENT</h3>
           </div>
           <div className="card" onClick={() => navigate("/FrontendDMS/riks")}>
-            <img src="docCreate.png" alt="Document Development" />
+            <FontAwesomeIcon icon={faTriangleExclamation} className="logo" />
             <h3>RISK ASSESSMENT</h3>
           </div>
         </div>

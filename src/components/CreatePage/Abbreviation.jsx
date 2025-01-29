@@ -68,7 +68,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.keys(AbbrToMeaningMap).map((abbr) => (
+                  {Object.keys(AbbrToMeaningMap).sort().map((abbr) => (
                     <tr key={abbr}>
                       <td>
                         <input
@@ -99,9 +99,9 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       <table className="vcr-table font-fam">
         <thead>
           <tr>
-            <th>Abbreviations</th>
-            <th>Description</th>
-            <th>Actions</th>
+            <th className="col-abbr-abbr">Abbreviations</th>
+            <th className="col-abbr-desc">Description</th>
+            <th className="col-abbr-act"></th>
           </tr>
         </thead>
         <tbody>

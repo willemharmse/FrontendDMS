@@ -439,7 +439,7 @@ body {
   opacity: 0.9;
 }
 
-.main-box {
+.main-box-file-info {
   flex-grow: 1;
   padding: 20px;
   margin-left: 20px;
@@ -733,4 +733,12 @@ tbody tr:hover {
 
 .review-soon {
   background-color: #c254547e;
+}
+
+.review-past {
+  background-color: #FFFF89;
+}
+
+.review-ongoing {
+  background-color: transparent;
 }

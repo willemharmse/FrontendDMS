@@ -97,7 +97,8 @@
 
 .card:hover {
   transform: scale(1.025);
-  background-color: #4ba049;
+  background-color: #E1D8AF;
+  color: black;
 }
 
 .card img {

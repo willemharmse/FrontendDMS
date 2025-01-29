@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'; // Import useLocation for getting URL query parameters
 import { jwtDecode } from 'jwt-decode'; // You'll need to install jwt-decode: npm install jwt-decode
 import './LoginPage.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEyeSlash, faEye } from '@fortawesome/free-solid-svg-icons';
 
 function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation(); // Access the current URL
@@ -75,12 +78,21 @@ function LoginPage() {
             </div>
             <div className="input-group">
               <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="login-password-container">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="show-hide-button"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+                </button>
+              </div>
             </div>
             {error && <div className="error-message">{error}</div>}
             <button type="submit" className="login-button">Login</button>

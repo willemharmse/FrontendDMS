@@ -40,6 +40,18 @@
     flex-direction: column;
 }
 
+.col-abbr-abbr {
+    width: 20%;
+}
+
+.col-abbr-desc {
+    width: 70%;
+}
+
+.col-abbr-act {
+    width: 10%;
+}
+
 .popup-table-wrapper-abbr {
     overflow-y: auto;
     /* Allow vertical scrolling */
