@@ -1,0 +1,213 @@
+.col-name-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 500px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-dis-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 150px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.doc-num-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 30px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-type-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 200px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-stat-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 90px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-own-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 150px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-dept-head-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 150px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-docID-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 200px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+}
+
+.col-date-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 130px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+    justify-content: space-between;
+}
+
+.col-act-filter {
+    word-wrap: break-word;
+    /* Allows long words to break and wrap to the next line */
+    word-break: break-word;
+    /* Ensures word breaks for long strings */
+    white-space: normal;
+    /* Enables text wrapping */
+    width: 100px;
+    /* Set a width to see the wrapping effect */
+    text-align: center;
+    justify-content: space-between;
+}
+
+.fileinfo-container-filter {
+    position: relative;
+    display: inline-block;
+    /* Ensures the title and menu are grouped together */
+}
+
+.fileinfo-title-filter {
+    cursor: pointer;
+    position: relative;
+    /* Keeps it positioned as part of the flow */
+}
+
+.fileinfo-menu-filter {
+    position: absolute;
+    top: 90px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 9999;
+    width: 200px;
+    pointer-events: auto;
+    /* Ensures it can be interacted with */
+}
+
+.dept-menu-filter {
+    position: absolute;
+    top: 100px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 9999;
+    width: 200px;
+    pointer-events: auto;
+    /* Ensures it can be interacted with */
+}
+
+.date-menu-filter {
+    position: absolute;
+    top: 150px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    z-index: 9999;
+    width: 200px;
+    pointer-events: auto;
+    /* Ensures it can be interacted with */
+}
+
+.filter-input-file {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border-radius: 8px;
+    /* Rounded corners */
+    border: 1px solid #ddd;
+    /* Light gray border */
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    /* Smooth transition on focus */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for a soft effect */
+}
+
+.filter-input-file:focus {
+    border-color: #4CAF50;
+    /* Change border color on focus */
+    box-shadow: 0px 2px 8px rgba(0, 128, 0, 0.2);
+    /* Glow effect on focus */
+    background-color: #f9f9f9;
+    /* Slight background color change */
+}
+
+.filter-input-file::placeholder {
+    color: #888;
+    /* Lighter color for the placeholder */
+}
