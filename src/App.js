@@ -24,17 +24,17 @@ function App() {
     <Router>
       <Routes>
         {/* Desktop Routes */}
-        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="FrontendDMS/mobileLogin" /> : <LoginPage />} />
-        <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <HomePage />} />
-        <Route path="FrontendDMS/documentManage" element={isMobile ? <Navigate to="FrontendDMS/mobileFI" /> : <FileInfo />} />
-        <Route path="FrontendDMS/documentCreate" element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <CreatePage />} />
-        <Route path='FrontendDMS/upload' element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <UploadPage />} />
-        <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <UserManagement />} />
+        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <LoginPage />} />
+        <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
+        <Route path="FrontendDMS/documentManage" element={isMobile ? <Navigate to="/FrontendDMS/mobileFI" /> : <FileInfo />} />
+        <Route path="FrontendDMS/documentCreate" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <CreatePage />} />
+        <Route path='FrontendDMS/upload' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UploadPage />} />
+        <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
-        <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <PreviewPage />} />
+        <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />
         <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
-        <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
-        <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="FrontendDMS/mobileHome" /> : <VersionControlPage />} />
+        <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
+        <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <VersionControlPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />
