@@ -57,7 +57,7 @@ const AbbreviationPopup = ({ isOpen, onClose }) => {
                         />
                     </div>
                     <div className="abbr-input-group">
-                        <label>Description::</label>
+                        <label>Description:</label>
                         <input
                             type="text"
                             value={meaning}
