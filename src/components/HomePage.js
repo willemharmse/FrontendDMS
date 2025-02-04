@@ -1,0 +1,60 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChalkboardTeacher, faFileCircleCheck, faFileCirclePlus, faFile, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import "./HomePage.css";
+
+const HomePage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="homepage-container">
+      {/* Header Section */}
+      <header className="header">
+        <div className="header-content">
+          <img src="logo.webp" alt="Logo" className="header-logo" />
+          <h1>TAU5 COMPLIANCE AND KNOWLEDGE MANAGEMENT SYSTEM</h1>
+        </div>
+      </header>
+
+      {/* Content Sections */}
+      <div className="content-sections">
+        {/* Left Section */}
+        <div className="section">
+          <div className="card" onClick={() => navigate("/FrontendDMS/documentManage")}>
+            <FontAwesomeIcon icon={faFile} className="logo" />
+            <h3>DOCUMENT MANAGEMENT</h3>
+          </div>
+          <div className="card" onClick={() => navigate("/FrontendDMS/documentCreate")}>
+            <FontAwesomeIcon icon={faFileCirclePlus} className="logo" />
+            <h3>DOCUMENT DEVELOPMENT</h3>
+          </div>
+          <div className="card" onClick={() => navigate("/FrontendDMS/riks")}>
+            <FontAwesomeIcon icon={faTriangleExclamation} className="logo" />
+            <h3>RISK ASSESSMENT</h3>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="section">
+          <div className="card" onClick={() => navigate("/FrontendDMS/compliance-governance")}>
+            <FontAwesomeIcon icon={faFileCircleCheck} className="logo" />
+            <h3>COMPLIANCE GOVERNANCE</h3>
+          </div>
+          <div className="card" onClick={() => navigate("/FrontendDMS/training-management")}>
+            <FontAwesomeIcon icon={faChalkboardTeacher} className="logo" />
+            <h3>TRAINING MANAGEMENT</h3>
+          </div>
+          <div className="card-blank">
+          </div>
+        </div>
+
+        <button className="logout-button" onClick={() => navigate("/FrontendDMS/")}>
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default HomePage;

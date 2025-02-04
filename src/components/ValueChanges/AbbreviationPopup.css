@@ -1,0 +1,88 @@
+.abbr-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.abbr-popup-content {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 450px;
+}
+
+.abbr-popup-title {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.abbr-input-group {
+    margin-bottom: 1.2rem;
+}
+
+.abbr-input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-weight: 500;
+}
+
+.abbr-popup-input {
+    width: 93%;
+    padding: 0.8rem;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.abbr-popup-input:focus {
+    border-color: #7EAC89;
+    outline: none;
+}
+
+.abbr-popup-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.abbr-popup-btn {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.abbr-popup-btn.confirm {
+    background-color: #7EAC89;
+    color: white;
+}
+
+.abbr-popup-btn.cancel {
+    background-color: #CB6F6F;
+    color: white;
+}
+
+.abbr-popup-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.abbr-popup-btn:active {
+    transform: translateY(0);
+}

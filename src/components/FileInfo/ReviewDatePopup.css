@@ -1,0 +1,79 @@
+.review-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.review-popup-content {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+}
+
+.review-popup-title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+.review-popup-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.review-popup-input:focus {
+    border-color: #5cb85c;
+    outline: none;
+}
+
+.review-popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.review-popup-button {
+    padding: 10px 15px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    margin: 0 5px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.review-popup-button.confirm {
+    background-color: #7EAC89 !important;
+    color: white !important;
+}
+
+.review-popup-button.cancel {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.review-popup-button:hover {
+    transform: scale(1.05) !important;
+}
+
+.review-popup-button:active {
+    transform: scale(0.95) !important;
+}
