@@ -92,7 +92,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
             <table className="vcr-table table-borders">
                 <thead className="cp-table-header">
                     <tr>
-                        <th className="refColCen redNum">Nr</th>
+                        <th className="refColCen refNum">Nr</th>
                         <th className="refColCen refDocID">Document ID</th>
                         <th className="refColCen refRef">Reference</th>
                         <th className="refColCen refBut"></th>
