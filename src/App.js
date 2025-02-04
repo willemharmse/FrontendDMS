@@ -18,7 +18,6 @@ import MobileHomePage from './components/Mobile/MobileHomePage';
 import BatchUpload from './components/BatchUpload';
 import PreviewWord from './components/PreviewWord';
 import VersionControlPage from './components/VersionControlPage';
-import VersionControlPage from './components/VersionControlPage';
 import ManageAbbreviations from './components/ValueChanges/ManageAbbreviations';
 import ManageDefinitions from './components/ValueChanges/ManageDefinitions';
 import Tester from './components/tester';
