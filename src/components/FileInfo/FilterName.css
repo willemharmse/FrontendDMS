@@ -132,6 +132,12 @@
     /* Keeps it positioned as part of the flow */
 }
 
+.fileinfo-title-filter-1 {
+    cursor: default;
+    position: relative;
+    /* Keeps it positioned as part of the flow */
+}
+
 .fileinfo-menu-filter {
     position: absolute;
     top: 90px;
@@ -147,6 +153,22 @@
     width: 200px;
     pointer-events: auto;
     /* Ensures it can be interacted with */
+}
+
+.fileinfo-menu-filter-1 {
+    position: absolute;
+    top: 90px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 9999;
+    width: 200px;
+    cursor: default;
 }
 
 .dept-menu-filter {

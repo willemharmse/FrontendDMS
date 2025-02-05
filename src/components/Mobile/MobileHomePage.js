@@ -27,17 +27,17 @@ const MobileHomePage = () => {
                     <h3>DOCUMENT DEVELOPMENT</h3>
                 </div>
 
-                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/riks")}>
+                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/construction")}>
                     <FontAwesomeIcon icon={faTriangleExclamation} className="mobile-logo" />
                     <h3>RISK ASSESSMENT</h3>
                 </div>
 
-                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/compliance-governance")}>
+                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/construction")}>
                     <FontAwesomeIcon icon={faFileCircleCheck} className="mobile-logo" />
                     <h3>COMPLIANCE GOVERNANCE</h3>
                 </div>
 
-                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/training-management")}>
+                <div className="mobile-card" onClick={() => navigate("/FrontendDMS/construction")}>
                     <FontAwesomeIcon icon={faChalkboardTeacher} className="mobile-logo" />
                     <h3>TRAINING MANAGEMENT</h3>
                 </div>

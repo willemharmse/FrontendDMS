@@ -151,6 +151,19 @@ h2 {
   color: #0b1320;
 }
 
+.login-button:disabled {
+  background-color: transparent;
+  border: 3px solid;
+  border-color: #f4f6fc;
+  color: #f4f6fc;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  cursor: not-allowed;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
 @media (max-width: 600px) {
   .login-box {
     background-color: transparent;

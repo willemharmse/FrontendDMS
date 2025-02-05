@@ -3,18 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import './LoginPageMobile.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEyeSlash, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 function LoginPageMobile() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/user/login`, {
@@ -39,6 +41,8 @@ function LoginPageMobile() {
             }
         } catch (err) {
             setError(err.message);
+        } finally {
+            setLoading(false); // Reset loading state after response
         }
     };
 
@@ -78,8 +82,8 @@ function LoginPageMobile() {
                         </div>
                     </div>
                     {error && <div className="error-message-m">{error}</div>}
-                    <button type="submit" className="login-button-m">Login</button>
-                    <button type="button" className="forgot-button-m" onClick={() => navigate('/FrontendDMS/mobileForgot')}>
+                    <button type="submit" className="login-button-m" disabled={loading}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Login'}</button>
+                    <button type="button" className="forgot-button-m" onClick={() => navigate('/mobileForgot')}>
                         Forgot Password?
                     </button>
                 </form>

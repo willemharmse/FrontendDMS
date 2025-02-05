@@ -14,80 +14,24 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
         <tr>
             <th className="doc-num-filter">Nr</th>
             <th className="col-dis-filter">
-                <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Discipline')}>Discipline</span>
-                    {openMenu === 'Discipline' && (
-                        <div
-                            className="fileinfo-menu-filter"
-                            onMouseLeave={() => setOpenMenu(null)}
-                        >
-                            <input
-                                type="text"
-                                placeholder="Filter by discipline"
-                                className="filter-input-file"
-                                value={filters.discipline}
-                                onChange={(e) => onFilterChange('discipline', e.target.value)}
-                            />
-                        </div>
-                    )}
+                <div className="fileinfo-container-filter-1">
+                    <span className="fileinfo-title-filter-1">Discipline</span>
                 </div>
             </th>
             <th className="col-name-filter">
-                <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('FileName')}>File Name</span>
-                    {openMenu === 'FileName' && (
-                        <div
-                            className="fileinfo-menu-filter"
-                            onMouseLeave={() => setOpenMenu(null)}
-                        >
-                            <input
-                                type="text"
-                                placeholder="Filter by file name"
-                                className="filter-input-file"
-                                value={filters.fileName}
-                                onChange={(e) => onFilterChange('fileName', e.target.value)}
-                            />
-                        </div>
-                    )}
+                <div className="fileinfo-container-filter-1">
+                    <span className="fileinfo-title-filter-1">File Name</span>
                 </div>
             </th>
             <th className="col-type-filter">
-                <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('DocumentType')}>Document Type</span>
-                    {openMenu === 'DocumentType' && (
-                        <div
-                            className="fileinfo-menu-filter"
-                            onMouseLeave={() => setOpenMenu(null)}
-                        >
-                            <input
-                                type="text"
-                                placeholder="Filter by document type"
-                                className="filter-input-file"
-                                value={filters.documentType}
-                                onChange={(e) => onFilterChange('documentType', e.target.value)}
-                            />
-                        </div>
-                    )}
+                <div className="fileinfo-container-filter-1">
+                    <span className="fileinfo-title-filter-1">Document Type</span>
                 </div>
             </th>
             {(adminRoles.includes(role) || role === 'auditor') && (
                 <th className="col-stat-filter">
-                    <div className="fileinfo-container-filter">
-                        <span className="fileinfo-title-filter" onClick={() => toggleMenu('Status')}>Status</span>
-                        {openMenu === 'Status' && (
-                            <div
-                                className="fileinfo-menu-filter"
-                                onMouseLeave={() => setOpenMenu(null)}
-                            >
-                                <input
-                                    type="text"
-                                    placeholder="Filter by status"
-                                    className="filter-input-file"
-                                    value={filters.status}
-                                    onChange={(e) => onFilterChange('status', e.target.value)}
-                                />
-                            </div>
-                        )}
+                    <div className="fileinfo-container-filter-1">
+                        <span className="fileinfo-title-filter-1">Status</span>
                     </div>
                 </th>
             )}
@@ -101,7 +45,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                         >
                             <input
                                 type="text"
-                                placeholder="Filter by owner"
+                                placeholder="Filter by author"
                                 className="filter-input-file"
                                 value={filters.author}
                                 onChange={(e) => onFilterChange('author', e.target.value)}

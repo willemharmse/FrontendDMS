@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Batch.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function BatchUpload() {
     const navigate = useNavigate();
@@ -10,6 +12,7 @@ export default function BatchUpload() {
     const [message, setMessage] = useState("");
     const [errors, setErrors] = useState([]);
     const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     // Handle Excel file selection
     const handleFileChange = (event) => {
@@ -30,6 +33,8 @@ export default function BatchUpload() {
             return;
         }
 
+        setLoading(true);
+
         const formData = new FormData();
         formData.append("excel", file);
 
@@ -48,6 +53,9 @@ export default function BatchUpload() {
         } catch (error) {
             setMessage("Validation failed!");
             setErrors(error.response?.data?.details || ["Unknown error occurred"]);
+            setLoading(false);
+        } finally {
+            setLoading(false); // Reset loading state after response
         }
     };
 
@@ -106,9 +114,9 @@ export default function BatchUpload() {
                 <button
                     className="subBut-b"
                     onClick={handleUpload}
-                    disabled={!file || !additionalFiles.length}
+                    disabled={!file || !additionalFiles.length || loading}
                 >
-                    Batch Upload Files
+                    {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Batch Upload Files'}
                 </button>
 
                 {/* Messages */}

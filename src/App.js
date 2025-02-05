@@ -21,6 +21,7 @@ import VersionControlPage from './components/VersionControlPage';
 import ManageAbbreviations from './components/ValueChanges/ManageAbbreviations';
 import ManageDefinitions from './components/ValueChanges/ManageDefinitions';
 import Tester from './components/tester';
+import ConstructionPage from './components/ConstructionPage';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path='FrontendDMS/upload' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UploadPage />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
+        <Route path='FrontendDMS/construction' element={<ConstructionPage />} />
         <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />
         <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />

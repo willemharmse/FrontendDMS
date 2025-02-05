@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UploadPage.css";
 import { jwtDecode } from "jwt-decode";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const UploadPage = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const UploadPage = () => {
   const [docTypes, setDocTypes] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const adminRoles = ['admin', 'teamleader', 'developer'];
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -69,6 +72,8 @@ const UploadPage = () => {
     formData.append('reviewDate', reviewDate);
 
     try {
+      setLoading(true);
+
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/upload`, {
         method: 'POST',
         body: formData,
@@ -89,6 +94,8 @@ const UploadPage = () => {
     } catch (error) {
       setError(error.message);
       setSuccessMessage('');
+    } finally {
+      setLoading(false); // Reset loading state after response
     }
   };
 
@@ -131,9 +138,9 @@ const UploadPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Owner</label>
+              <label>Author</label>
               <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-                <option value="">Select Owner</option>
+                <option value="">Select Author</option>
                 {users.map((user, index) => (
                   <option key={index} value={user}>
                     {user}
@@ -181,7 +188,7 @@ const UploadPage = () => {
               <input type="date" value={reviewDate} onChange={(e) => setReviewDate(e.target.value)}></input>
             </div>
           </div>
-          <button className="subBut" type="submit" disabled={!isFormValid()}>Submit</button>
+          <button className="subBut" type="submit" disabled={!isFormValid() || loading}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
         </form>
         {error && <div className="error-message">{error}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}

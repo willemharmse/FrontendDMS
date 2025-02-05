@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'; // Import
 import { jwtDecode } from 'jwt-decode'; // You'll need to install jwt-decode: npm install jwt-decode
 import './LoginPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEyeSlash, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -14,12 +14,14 @@ function LoginPage() {
   const location = useLocation(); // Access the current URL
   const searchParams = new URLSearchParams(location.search); // Parse query parameters
   const redirectPath = searchParams.get('redirect') || '/dashboard'; // Get 'redirect' parameter or fallback to '/dashboard'
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     // Clear previous errors
     setError('');
+    setLoading(true);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/user/login`, {
@@ -51,6 +53,8 @@ function LoginPage() {
       }
     } catch (err) {
       setError(err.message); // Display the error to the user
+    } finally {
+      setLoading(false); // Reset loading state after response
     }
   };
 
@@ -95,8 +99,10 @@ function LoginPage() {
               </div>
             </div>
             {error && <div className="error-message">{error}</div>}
-            <button type="submit" className="login-button">Login</button>
-            <button className="forgot-button" onClick={() => { navigate('/FrontendDMS/forgot') }}>Forgot Password</button>
+            <button type="submit" className="login-button" disabled={loading}>
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Login'}
+            </button>
+            <button className="forgot-button" onClick={() => { navigate('/forgot') }}>Forgot Password</button>
           </form>
         </div>
       </div>

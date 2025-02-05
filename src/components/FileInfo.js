@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort } from "@fortawesome/free-solid-svg-icons";
+import { faSort, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import FilterFileName from "./FileInfo/FilterFileName";
 import "./FileInfo.css";
@@ -39,12 +39,9 @@ const FileInfo = () => {
   const [sortOrder, setSortOrder] = useState("ascending");
   const [reviewDateVal, setReviewDateVal] = useState("");
   const [isRDPopupOpen, setIsRDPopupOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [filters, setFilters] = useState({
-    discipline: '',
-    fileName: '',
-    documentType: '',
-    status: '',
     author: '',
     deptHead: '',
     docID: '',
@@ -177,6 +174,8 @@ const FileInfo = () => {
 
   const downloadFile = async (fileId, fileName) => {
     try {
+      setLoading(true);
+
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/download/${fileId}`, {
         method: 'GET',
         headers: {
@@ -202,12 +201,16 @@ const FileInfo = () => {
     } catch (error) {
       console.error('Error downloading file:', error);
       alert('Error downloading the file. Please try again.');
+    } finally {
+      setLoading(false); // Reset loading state after response
     }
   };
 
   const deleteFile = async () => {
     if (!selectedFileId) return;
     try {
+      setLoading(true);
+
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/delete/${selectedFileId}`, {
         method: 'DELETE',
       });
@@ -217,12 +220,15 @@ const FileInfo = () => {
       fetchFiles();
     } catch (error) {
       console.error('Error deleting file:', error);
+    } finally {
+      setLoading(false); // Reset loading state after response
     }
   };
 
   const deleteFileFromTrash = async () => {
     if (!selectedFileId) return;
     try {
+      setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/trash/delete/${selectedFileId}`, {
         method: 'DELETE',
       });
@@ -232,6 +238,8 @@ const FileInfo = () => {
       fetchFiles();
     } catch (error) {
       console.error('Error deleting file from trash:', error);
+    } finally {
+      setLoading(false); // Reset loading state after response
     }
   };
 
@@ -321,10 +329,6 @@ const FileInfo = () => {
       file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchTextFilters = (
-      file.discipline.toLowerCase().includes(filters.discipline.toLowerCase()) &&
-      file.fileName.toLowerCase().includes(filters.fileName.toLowerCase()) &&
-      file.documentType.toLowerCase().includes(filters.documentType.toLowerCase()) &&
-      file.status.toLowerCase().includes(filters.status.toLowerCase()) &&
       file.owner.toLowerCase().includes(filters.author.toLowerCase()) &&
       file.departmentHead.toLowerCase().includes(filters.deptHead.toLowerCase()) &&
       file.docID.toLowerCase().includes(filters.docID.toLowerCase()) &&
@@ -515,13 +519,13 @@ const FileInfo = () => {
             <p>File: {selectedFileName}</p>
             <div className="modal-actions">
               {isTrashView && (
-                <button className="modal-button-FI confirm" onClick={deleteFileFromTrash}>
-                  Yes
+                <button className="modal-button-FI confirm" onClick={deleteFileFromTrash} disabled={loading}>
+                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
                 </button>
               )}
               {!isTrashView && (
-                <button className="modal-button-FI confirm" onClick={deleteFile}>
-                  Yes
+                <button className="modal-button-FI confirm" onClick={deleteFile} disabled={loading}>
+                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
                 </button>
               )}
               <button className="modal-button-FI cancel" onClick={closeModal}>
@@ -540,8 +544,8 @@ const FileInfo = () => {
               <p>Do you want to download this file?</p>
               <p>File: {downloadFileName}</p>
               <div className="modal-actions">
-                <button className="modal-button-FI cancel" onClick={confirmDownload}>
-                  Yes
+                <button className="modal-button-FI cancel" onClick={confirmDownload} disabled={loading}>
+                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
                 </button>
                 <button className="modal-button-FI confirm" onClick={closeDownloadModal}>
                   No
