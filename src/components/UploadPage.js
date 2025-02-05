@@ -94,6 +94,7 @@ const UploadPage = () => {
     } catch (error) {
       setError(error.message);
       setSuccessMessage('');
+      setLoading(false);
     } finally {
       setLoading(false); // Reset loading state after response
     }
