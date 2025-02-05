@@ -208,11 +208,11 @@
 }
 
 .review-soon {
-    background-color: #c254547e !important;
+    background-color: #FFFF89 !important;
 }
 
 .review-past {
-    background-color: #FFFF89 !important;
+    background-color: #c254547e !important;
 }
 
 /* Modal adjustments for mobile */

@@ -263,20 +263,25 @@ const FileInfo = () => {
 
   const getReviewClass = (reviewDate) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today to midnight to avoid time mismatches
     const review = new Date(reviewDate);
+    review.setHours(0, 0, 0, 0); // Normalize review date
+
     const timeDiff = review - today;
 
-    // If the review date is more than 30 days ago, mark it as past
+    // If the review date is in the past, mark it as "review-past"
     if (timeDiff < 0) {
       return "review-past";
     }
-    // If the review date is within the next 30 days, mark it as soon
+    // If the review date is within the next `reviewDateVal` days, mark it as "review-soon"
     else if (timeDiff <= reviewDateVal * 24 * 60 * 60 * 1000) {
       return "review-soon";
     }
-    // Otherwise, mark it as ongoing
+    // Otherwise, mark it as "review-ongoing"
     return "review-ongoing";
+
   };
+
 
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
