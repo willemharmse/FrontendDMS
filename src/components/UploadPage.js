@@ -77,7 +77,6 @@ const UploadPage = () => {
   };
 
   const handleFileUpload = async (e) => {
-    e.preventDefault();
     if (!isFormValid()) return;
 
     const formData = new FormData();
