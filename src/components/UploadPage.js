@@ -28,7 +28,8 @@ const UploadPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
-  const handleClick = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!isFormValid()) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: false,
@@ -135,7 +136,7 @@ const UploadPage = () => {
       </button>
       <div className="upload-box">
         <h2>Upload Document</h2>
-        <form onSubmit={handleFileUpload}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>File <span className="required-field">*</span></label>
             <div className="custom-file-input">
@@ -207,7 +208,7 @@ const UploadPage = () => {
               <input type="date" value={reviewDate} onChange={(e) => setReviewDate(e.target.value)}></input>
             </div>
           </div>
-          <button className="subBut" type="submit" onClick={handleClick} disabled={loading} title="Enter all fields marked by a * to submit the form">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
+          <button className="subBut" type="submit" disabled={loading} title="Enter all fields marked by a * to submit the form">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
         </form>
         {showPopup && <UploadPopup message={successMessage} onClose={() => setShowPopup(false)} />}
         {error && <div className="error-message">{error}</div>}
