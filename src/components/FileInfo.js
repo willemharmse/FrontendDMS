@@ -282,7 +282,6 @@ const FileInfo = () => {
 
   };
 
-
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
       case 'approved': return 'status-approved';

@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import "./Batch.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import BatchPopup from "./UploadPage/BatchPopup";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 
 export default function BatchUpload() {
     const navigate = useNavigate();
@@ -13,6 +16,24 @@ export default function BatchUpload() {
     const [errors, setErrors] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+
+    const handleClick = () => {
+        if (!isFormValid()) {
+            toast.error("Please fill in all required fields marked by a *", {
+                closeButton: false,
+                style: {
+                    textAlign: 'center'
+                }
+            })
+        } else {
+            handleUpload();  // Call your function when the form is valid
+        }
+    };
+
+    const isFormValid = () => {
+        return file && additionalFiles;
+    };
 
     // Handle Excel file selection
     const handleFileChange = (event) => {
@@ -50,6 +71,7 @@ export default function BatchUpload() {
             setData(response.data.data);
             setMessage(response.data.message);
             setErrors([]);
+            setShowPopup(true);
         } catch (error) {
             setMessage("Validation failed!");
             setErrors(error.response?.data?.details || ["Unknown error occurred"]);
@@ -76,7 +98,7 @@ export default function BatchUpload() {
 
                 {/* Excel File Upload */}
                 <div className="form-group-batch">
-                    <label>Upload Excel File</label>
+                    <label>Upload Excel File <span className="required-field">*</span></label>
                     <div className="custom-file-input-b">
                         <input
                             type="file"
@@ -90,7 +112,7 @@ export default function BatchUpload() {
 
                 {/* Additional Files Upload */}
                 <div className="form-group-batch">
-                    <label>Upload Additional Files</label>
+                    <label>Upload Additional Files <span className="required-field">*</span></label>
                     <div className="custom-file-input-b">
                         <input
                             type="file"
@@ -113,14 +135,13 @@ export default function BatchUpload() {
                 {/* Upload Button */}
                 <button
                     className="subBut-b"
-                    onClick={handleUpload}
-                    disabled={!file || !additionalFiles.length || loading}
+                    onClick={handleClick}
+                    disabled={loading}
+                    title="Enter all fields marked by a * to submit the form"
                 >
                     {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Batch Upload Files'}
                 </button>
 
-                {/* Messages */}
-                {message && <div className="message-b">{message}</div>}
                 {errors.length > 0 && (
                     <div className="error-message-b">
                         <strong>Errors:</strong>
@@ -131,7 +152,9 @@ export default function BatchUpload() {
                         </ul>
                     </div>
                 )}
+                {showPopup && <BatchPopup message={message} onClose={() => setShowPopup(false)} />}
             </div>
+            <ToastContainer />
         </div>
     );
 }

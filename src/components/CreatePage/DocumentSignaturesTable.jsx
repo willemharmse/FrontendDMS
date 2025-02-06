@@ -4,7 +4,7 @@ import "./DocumentSignaturesTable.css"
 const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) => {
   return (
     <div className="input-box-2">
-      <h3 className="font-fam-labels">Document Signatures</h3>
+      <h3 className="font-fam-labels">Document Signatures  <span className="required-field">*</span></h3>
       <table className="vcr-table-2 font-fam table-borders">
         <thead className="cp-table-header">
           <tr>
@@ -24,7 +24,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                   onChange={(e) => handleRowChange(e, index, "auth")}
                 >
                   <option value="Author">Author</option>
-                  <option value="Approved By">Approved By</option>
+                  <option value="Approver">Approver</option>
                   <option value="Reviewer">Reviewer</option>
                 </select>
               </td>
@@ -34,6 +34,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                   value={row.name}
                   onChange={(e) => handleRowChange(e, index, "name")}
                 >
+                  <option value="">Select Name</option>
                   <option value="Abel Moetji">Abel Moetji</option>
                   <option value="Andre Coetzee">Andre Coetzee</option>
                   <option value="Anzel Swanepoel">Anzel Swanepoel</option>

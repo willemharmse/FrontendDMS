@@ -4,6 +4,10 @@ import "./UploadPage.css";
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import UploadPopup from "./UploadPage/UploadPopup";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
+
 
 const UploadPage = () => {
   const navigate = useNavigate();
@@ -22,6 +26,20 @@ const UploadPage = () => {
   const [disciplines, setDisciplines] = useState([]);
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleClick = () => {
+    if (!isFormValid()) {
+      toast.error("Please fill in all required fields marked by a *", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
+    } else {
+      handleFileUpload();  // Call your function when the form is valid
+    }
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -82,6 +100,8 @@ const UploadPage = () => {
         throw new Error(response.error || 'Failed to upload file');
       }
       await response.json();
+      setSuccessMessage("File uploaded successfully!");
+      setShowPopup(true);
       setSelectedFile(null);
       setDiscipline('');
       setOwner('');
@@ -89,7 +109,6 @@ const UploadPage = () => {
       setDepartmentHead('');
       setStatus('');
       setReviewDate('');
-      setSuccessMessage('File uploaded successfully!');
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -119,7 +138,7 @@ const UploadPage = () => {
         <h2>Upload Document</h2>
         <form onSubmit={handleFileUpload}>
           <div className="form-group">
-            <label>File</label>
+            <label>File <span className="required-field">*</span></label>
             <div className="custom-file-input">
               <input type="file" id="file" onChange={handleFileChange} />
               <label htmlFor="file">Choose File</label>
@@ -128,7 +147,7 @@ const UploadPage = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Discipline</label>
+              <label>Discipline <span className="required-field">*</span></label>
               <select value={discipline} onChange={(e) => setDiscipline(e.target.value)}>
                 <option value="">Select Discipline</option>
                 {disciplines.map((discipline, index) => (
@@ -139,7 +158,7 @@ const UploadPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Author</label>
+              <label>Author <span className="required-field">*</span></label>
               <select value={owner} onChange={(e) => setOwner(e.target.value)}>
                 <option value="">Select Author</option>
                 {users.map((user, index) => (
@@ -152,10 +171,10 @@ const UploadPage = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Department Head</label>
+              <label>Department Head <span className="required-field">*</span></label>
               <select value={departmentHead} onChange={(e) => setDepartmentHead(e.target.value)}>
                 <option value="">Select Head</option>
-                {deptHeads.map((head, index) => (
+                {deptHeads.sort().map((head, index) => (
                   <option key={index} value={head}>
                     {head}
                   </option>
@@ -163,7 +182,7 @@ const UploadPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Document Status</label>
+              <label>Document Status <span className="required-field">*</span></label>
               <select value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option value="">Select Status</option>
                 <option value="in_review">In Review</option>
@@ -174,7 +193,7 @@ const UploadPage = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Document Type</label>
+              <label>Document Type <span className="required-field">*</span></label>
               <select value={documentType} onChange={(e) => setDocumentType(e.target.value)}>
                 <option value="">Select Document Type</option>
                 {docTypes.map((type, index) => (
@@ -185,15 +204,16 @@ const UploadPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Review Date</label>
+              <label>Review Date <span className="required-field">*</span></label>
               <input type="date" value={reviewDate} onChange={(e) => setReviewDate(e.target.value)}></input>
             </div>
           </div>
-          <button className="subBut" type="submit" disabled={!isFormValid() || loading}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
+          <button className="subBut" type="submit" onClick={handleClick} disabled={loading} title="Enter all fields marked by a * to submit the form">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
         </form>
+        {showPopup && <UploadPopup message={successMessage} onClose={() => setShowPopup(false)} />}
         {error && <div className="error-message">{error}</div>}
-        {successMessage && <div className="success-message">{successMessage}</div>}
       </div>
+      <ToastContainer />
     </div>
   );
 };

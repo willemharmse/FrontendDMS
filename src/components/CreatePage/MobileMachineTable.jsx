@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MobileMachineTable.css"; // Add styling here
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine }) => {
@@ -19,6 +19,13 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMMachine, setSelectedMMachine] = useState(new Set(usedMobileMachine));
     const [isNA, setIsNA] = useState(false);
+
+    useEffect(() => {
+        setSelectedMMachine(new Set(usedMobileMachine));
+        if (usedMobileMachine.length > 0) {
+            setIsNA(true); // Automatically check the box if equipment data exists
+        }
+    }, [usedMobileMachine]);
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);

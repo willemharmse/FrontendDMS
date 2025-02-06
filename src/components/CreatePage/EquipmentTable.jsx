@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./EquipmentTable.css"; // Add styling here
 
 const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment }) => {
@@ -23,6 +23,13 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);
     };
+
+    useEffect(() => {
+        setSelectedEquipment(new Set(usedEquipment));
+        if (usedEquipment.length > 0) {
+            setIsNA(true); // Automatically check the box if equipment data exists
+        }
+    }, [usedEquipment]);
 
     // Handle N/A checkbox toggle
     const handleNAToggle = () => {

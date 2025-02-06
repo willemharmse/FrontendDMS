@@ -134,8 +134,12 @@
     margin-top: 10px;
 }
 
-.checkbox-inp {
-    margin-right: 10px;
+.checkbox-inp-abbr {
+    width: 20px;
+    height: 20px;
+    transform: scale(1.5);
+    margin: 5px;
+    vertical-align: middle;
 }
 
 .center-abbrs {

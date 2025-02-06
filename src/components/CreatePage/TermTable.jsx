@@ -11,6 +11,10 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
   const [showNewPopup, setShowNewPopup] = useState(false);
 
   useEffect(() => {
+    setSelectedTerms(new Set(usedTermCodes));
+  }, [usedTermCodes]);
+
+  useEffect(() => {
     fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/def`)
       .then((response) => response.json())
       .then((data) => {
@@ -51,7 +55,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
 
   return (
     <div className="term-input-box">
-      <h3 className="font-fam-labels">Terms</h3>
+      <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
       {role === "admin" && (
         <button className="top-right-button-term" onClick={() => navigate("/FrontendDMS/manageTerms")}>Update Terms</button>
       )}
@@ -85,7 +89,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                           <td>
                             <input
                               type="checkbox"
-                              className="checkbox-inp"
+                              className="checkbox-inp-term"
                               checked={selectedTerms.has(item.term)}
                               onChange={() => handleCheckboxChange(item.term)}
                             />

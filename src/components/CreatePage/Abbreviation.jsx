@@ -12,6 +12,10 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
   const [showNewPopup, setShowNewPopup] = useState(false);
 
   useEffect(() => {
+    setSelectedAbbrs(new Set(usedAbbrCodes));
+  }, [usedAbbrCodes]);
+
+  useEffect(() => {
     fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr`)
       .then((response) => response.json())
       .then((data) => {
@@ -52,7 +56,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
 
   return (
     <div className="abbr-input-box">
-      <h3 className="font-fam-labels">Abbreviations</h3>
+      <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
       {role === "admin" && (
         <button className="top-right-button-abbr" onClick={() => navigate("/FrontendDMS/manageAbbrs")}>Update Abbreviations</button>
       )}
@@ -87,7 +91,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                           <td>
                             <input
                               type="checkbox"
-                              className="checkbox-inp"
+                              className="checkbox-inp-abbr"
                               checked={selectedAbbrs.has(item.abbr)}
                               onChange={() => handleCheckboxChange(item.abbr)}
                             />

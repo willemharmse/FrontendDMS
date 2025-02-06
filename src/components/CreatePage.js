@@ -14,6 +14,8 @@ import HandToolTable from "./CreatePage/HandToolsTable";
 import EquipmentTable from "./CreatePage/EquipmentTable";
 import MaterialsTable from "./CreatePage/MaterialsTable";
 import MobileMachineTable from "./CreatePage/MobileMachineTable";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -46,6 +48,63 @@ const CreatePage = () => {
     });
   };
 
+  const saveData = async () => {
+    const dataToStore = {
+      usedAbbrCodes,       // your current state values
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+      formData,
+    };
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToStore),
+      });
+      const result = await response.json();
+      console.log(result.message);
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  };
+
+  const handleClick = () => {
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields marked by a *", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
+    } else {
+      handleGeneratePDF();  // Call your function when the form is valid
+    }
+  };
+
+  const loadData = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft`);
+      const storedData = await response.json();
+      // Update your states as needed:
+      setUsedAbbrCodes(storedData.usedAbbrCodes || []);
+      setUsedTermCodes(storedData.usedTermCodes || []);
+      setUsedPPEOptions(storedData.usedPPEOptions || []);
+      setUsedHandTools(storedData.usedHandTools || []);
+      setUsedEquipment(storedData.usedEquipment || []);
+      setUsedMobileMachines(storedData.usedMobileMachine || []);
+      setUsedMaterials(storedData.usedMaterials || []);
+      setFormData(storedData.formData || {});
+      setFormData(prev => ({ ...prev }));
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
   const capitalizeWords = (text) =>
     text
       .toLowerCase()
@@ -71,9 +130,9 @@ const CreatePage = () => {
     date: new Date().toLocaleDateString(),
     version: "1",
     rows: [
-      { auth: "Author", name: "Willem Harmse", pos: "Software Developer", num: 1 },
-      { auth: "Reviewer", name: "Abel Moetji", pos: "Engineer", num: 2 },
-      { auth: "Approved By", name: "Rossouw Snyders", pos: "Operations Manager", num: 3 },
+      { auth: "Author", name: "", pos: "", num: 1 },
+      { auth: "Reviewer", name: "", pos: "", num: 2 },
+      { auth: "Approver", name: "", pos: "", num: 3 },
     ],
     procedureRows: [],
     abbrRows: [],
@@ -89,7 +148,7 @@ const CreatePage = () => {
   });
 
   const validateForm = () => {
-    const { title, documentType, aim, references, reviewDate } = formData;
+    const { title, documentType, aim, references, reviewDate, procedureRows, referenceRows } = formData;
     return (
       title &&
       documentType &&
@@ -97,6 +156,8 @@ const CreatePage = () => {
       references &&
       usedAbbrCodes.length > 0 &&
       usedTermCodes.length > 0 &&
+      //procedureRows.length > 0 &&
+      //referenceRows.length > 0 &&
       reviewDate
     );
   };
@@ -122,42 +183,62 @@ const CreatePage = () => {
 
   // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
-    const rowToRemove = formData.rows[index];
     const newRows = [...formData.rows];
     const rowToChange = newRows[index];
-
-    // Prevent removal of the initial required rows
-    const initialRequiredRows = ["Author", "Reviewer", "Approved By"];
-    if (
-      initialRequiredRows.includes(rowToRemove.auth) &&
-      formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
-    ) {
-      alert(`You must keep at least one ${rowToRemove.auth}.`);
-      return;
-    }
 
     // If the field being changed is "name", update the position based on the selected name
     if (field === "name") {
       const selectedName = e.target.value;
-      newRows[index].pos = nameToPositionMap[selectedName] || ""; // Set position based on name
+      rowToChange.pos = nameToPositionMap[selectedName] || ""; // Set position based on name
     }
 
-    newRows[index][field] = e.target.value;
+    // Save the previous value of 'auth' before change for validation
+    const previousAuth = rowToChange.auth;
 
-    if (rowToChange.auth === 'Author') {
-      newRows[index].num = 1;
-    }
-    else if (rowToChange.auth === 'Reviewer') {
-      newRows[index].num = 2;
-    }
-    else if (rowToChange.auth === 'Approved By') {
-      newRows[index].num = 3;
+    // Update the field value
+    rowToChange[field] = e.target.value;
+
+    // Automatically set num based on the auth type
+    if (rowToChange.auth === "Author") {
+      rowToChange.num = 1;
+    } else if (rowToChange.auth === "Reviewer") {
+      rowToChange.num = 2;
+    } else if (rowToChange.auth === "Approver") {
+      rowToChange.num = 3;
     }
 
+    // Only perform validation if the 'auth' field was modified
+    if (field === "auth") {
+      // Check if the current 'Author', 'Reviewer', or 'Approved By' is being removed or modified
+      const requiredRoles = ["Author", "Reviewer", "Approver"];
+
+      // Check if there is at least one row with each required auth type
+      const isValid = requiredRoles.every(role => {
+        return formData.rows.filter((row) => row.auth === role).length > 0 || rowToChange.auth === role;
+      });
+
+      if (!isValid) {
+        alert(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`);
+
+        // Revert the change if invalid
+        rowToChange.auth = previousAuth;  // Revert to previous auth
+        rowToChange[field] = previousAuth; // Revert the field to its previous value
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          rows: newRows,
+        }));
+        return; // Prevent the update if invalid
+      }
+    }
+
+    // Update formData with the new rows
     setFormData((prevFormData) => ({
-      ...prevFormData, rows: newRows
+      ...prevFormData,
+      rows: newRows,
     }));
   };
+
 
   // Add a new row to the table
   const addRow = () => {
@@ -166,7 +247,7 @@ const CreatePage = () => {
       ...formData,
       rows: [
         ...formData.rows,
-        { auth: "Author", name: "Abel Moetji", pos: "Engineer", num: 1 }
+        { auth: "Author", name: "", pos: "", num: 1 }
       ]
     });
   };
@@ -228,7 +309,7 @@ const CreatePage = () => {
     const rowToRemove = formData.rows[indexToRemove];
 
     // Prevent removal of the initial required rows
-    const initialRequiredRows = ["Author", "Reviewer", "Approved By"];
+    const initialRequiredRows = ["Author", "Reviewer", "Approver"];
     if (
       initialRequiredRows.includes(rowToRemove.auth) &&
       formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
@@ -281,7 +362,7 @@ const CreatePage = () => {
 
           <div className="input-row">
             <div className="input-box-type">
-              <h3 className="font-fam-labels">Document Type</h3>
+              <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
               <select
                 className="table-control font-fam"
                 name="documentType"
@@ -295,7 +376,7 @@ const CreatePage = () => {
             </div>
 
             <div className="input-box-title">
-              <h3 className="font-fam-labels">Document Title</h3>
+              <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
               <div className="input-group-cpt">
                 <input
                   type="text"
@@ -319,7 +400,7 @@ const CreatePage = () => {
           <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} />
 
           <div className="input-box-aim-cp">
-            <h3 className="font-fam-labels">Aim</h3>
+            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
             <textarea
               name="aim"
               className="aim-textarea font-fam"
@@ -337,13 +418,13 @@ const CreatePage = () => {
           <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} />
           <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} />
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} />
-          <ChapterTable formData={formData} setFormData={setFormData} />
           <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} />
+          <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
 
           <div className="input-row-but-review">
             <div className="input-box-3">
-              <h3 className="font-fam-labels">Review Period (Months)</h3>
+              <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
               <input
                 type="number"
                 name="reviewDate"
@@ -357,14 +438,15 @@ const CreatePage = () => {
             {/* Generate File Button */}
             <button
               className="generate-button font-fam"
-              onClick={handleGeneratePDF}
-              disabled={!validateForm()}
+              onClick={handleClick}
+              title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
             >
               Generate File
             </button>
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

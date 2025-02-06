@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./PPETable.css"; // Add styling here
 
 const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions }) => {
@@ -19,6 +19,13 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions }) 
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedPPE, setSelectedPPE] = useState(new Set(usedPPEOptions));
     const [isNA, setIsNA] = useState(false);
+
+    useEffect(() => {
+        setSelectedPPE(new Set(usedPPEOptions));
+        if (usedPPEOptions.length > 0) {
+            setIsNA(true); // Automatically check the box if equipment data exists
+        }
+    }, [usedPPEOptions]);
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);

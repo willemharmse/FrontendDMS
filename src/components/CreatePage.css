@@ -50,6 +50,11 @@ body {
   /* Ensures it doesn’t go off-screen */
 }
 
+.Toastify__toast-container {
+  z-index: 9999 !important;
+  /* Makes sure the toast appears on top of other elements */
+}
+
 .logout-button-cp:hover {
   background-color: #cc1f1a;
 }
@@ -420,6 +425,15 @@ body {
 .input-box input:focus {
   border: 1px solid #120b5b;
   box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
+}
+
+.required-field {
+  color: red;
+  font-weight: bold;
+}
+
+.toast-top {
+  z-index: 10000;
 }
 
 /* Generate button styling */

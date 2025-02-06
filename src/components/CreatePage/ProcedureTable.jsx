@@ -2,7 +2,6 @@ import React from "react";
 import './ProcedureTable.css';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
-    const disciplineOptions = ["Engineering", "Finance", "Geology", "Metallurgy", "Mining", "Protection Services", "S&SD", "Survey", "Training", "VOHE"];
     const accountableOptions = ["Abel Moetji", "Andre Coetzee", "Anzel Swanepoel", "Quintin Coetzee", "Rossouw Snyders", "Willem Harmse"];
     const responsibleOptions = ["Abel Moetji", "Andre Coetzee", "Anzel Swanepoel", "Quintin Coetzee", "Rossouw Snyders", "Willem Harmse"];
 
@@ -12,14 +11,13 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
 
     return (
         <div className="input-box-2">
-            <h3 className="font-fam-labels">Procedure</h3>
+            <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
             <table className="vcr-table table-borders">
                 <thead className="cp-table-header">
                     <tr>
                         <th className="procCent">Nr</th>
                         <th className="procCent">Procedure Main Steps</th>
                         <th className="procCent">Procedure Sub Steps</th>
-                        <th className="procCent">Discipline</th>
                         <th className="procCent">Accountable</th>
                         <th className="procCent">Responsible</th>
                         <th className="procCent procAct"></th>
@@ -50,19 +48,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                                     rows="4"   // Adjust the number of rows for initial height
                                     placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
                                 />
-                            </td>
-                            <td>
-                                <select
-                                    className="table-control"
-                                    value={row.discipline}
-                                    onChange={(e) => handleInputChange(index, "discipline", e.target.value)}
-                                >
-                                    {disciplineOptions.map((option, i) => (
-                                        <option key={i} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
                             </td>
                             <td>
                                 <select

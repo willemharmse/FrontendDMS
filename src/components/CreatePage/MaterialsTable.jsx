@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MaterialsTable.css"; // Add styling here
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials }) => {
@@ -19,6 +19,13 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMaterials, setSelectedMaterials] = useState(new Set(usedMaterials));
     const [isNA, setIsNA] = useState(false);
+
+    useEffect(() => {
+        setSelectedMaterials(new Set(usedMaterials));
+        if (usedMaterials.length > 0) {
+            setIsNA(true); // Automatically check the box if equipment data exists
+        }
+    }, [usedMaterials]);
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./HandToolsTable.css"; // Add styling here
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools }) => {
@@ -19,6 +19,13 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools 
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedTools, setSelectedTools] = useState(new Set(usedHandTools));
     const [isNA, setIsNA] = useState(false);
+
+    useEffect(() => {
+        setSelectedTools(new Set(usedHandTools));
+        if (usedHandTools.length > 0) {
+            setIsNA(true); // Automatically check the box if equipment data exists
+        }
+    }, [usedHandTools]);
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);

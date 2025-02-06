@@ -31,7 +31,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
         if (field === "ref") {
             const filtered = files
                 .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase()))
-                .slice(0, 10); // Show only top 5 results
+                .slice(0, 15); // Show only top 5 results
 
             setFilteredOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -54,7 +54,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
         if (field === "ref") {
             const filtered = files
                 .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase()))
-                .slice(0, 10); // Show only top 10 results
+                .slice(0, 15); // Show only top 10 results
 
             setFilteredOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -75,6 +75,10 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
         }
     };
 
+    const removeFileExtension = (fileName) => {
+        return fileName.replace(/\.[^/.]+$/, "");
+    };
+
     const handleSelectOption = (index, value) => {
         const selectedFile = files.find(file => file.fileName === value);
 
@@ -88,13 +92,13 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
 
     return (
         <div className="input-box-2">
-            <h3 className="font-fam-labels">References</h3>
+            <h3 className="font-fam-labels">References <span className="required-field">*</span></h3>
             <table className="vcr-table table-borders">
                 <thead className="cp-table-header">
                     <tr>
                         <th className="refColCen refNum">Nr</th>
-                        <th className="refColCen refDocID">Document ID</th>
                         <th className="refColCen refRef">Reference</th>
+                        <th className="refColCen refDocID">Document ID</th>
                         <th className="refColCen refBut"></th>
                     </tr>
                 </thead>
@@ -104,22 +108,22 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                             <td>{row.nr}</td>
                             <td>
                                 <input
+                                    type="text"
+                                    className="table-control"
+                                    value={removeFileExtension(row.ref)}
+                                    onChange={(e) => handleDescChange(index, "ref", e.target.value)}
+                                    onFocus={() => setShowDropdown(index)}
+                                    onBlur={() => setTimeout(() => setShowDropdown(null), 200)}
+                                    ref={(el) => (inputRefs.current[index] = el)}
+                                />
+                            </td>
+                            <td>
+                                <input
                                     readOnly
                                     type="text"
                                     className="table-control"
                                     value={row.refDesc}
                                     onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                <input
-                                    type="text"
-                                    className="table-control"
-                                    value={row.ref}
-                                    onChange={(e) => handleDescChange(index, "ref", e.target.value)}
-                                    onFocus={() => setShowDropdown(index)}
-                                    onBlur={() => setTimeout(() => setShowDropdown(null), 200)}
-                                    ref={(el) => (inputRefs.current[index] = el)}
                                 />
                             </td>
                             <td className="ref-but-row">
@@ -148,7 +152,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                 >
                     {filteredOptions[showDropdown].map((file, i) => (
                         <li key={i} onMouseDown={() => handleSelectOption(showDropdown, file.fileName)}>
-                            {file.fileName}
+                            {removeFileExtension(file.fileName)}
                         </li>
                     ))}
                 </ul>
