@@ -65,7 +65,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        <button className="logout-button" onClick={() => navigate("/")}>
+        <button className="logout-button" onClick={() => navigate("/FrontendDMS/")}>
           Logout
         </button>
       </div>
