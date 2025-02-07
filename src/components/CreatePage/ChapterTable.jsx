@@ -46,7 +46,7 @@ const ChapterTable = ({ formData, setFormData }) => {
 
     return (
         <div className="chapter-table-container">
-            <h3 className="font-fam-labels">Sections</h3>
+            <h3 className="font-fam-labels">Sections <span className="required-field">*</span></h3>
             {formData.chapters.map((chapter, chapterIndex) => (
                 <div key={chapterIndex} className="chapter-container">
                     <h4>Section {chapter.chapterNumber}</h4>

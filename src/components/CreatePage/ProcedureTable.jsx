@@ -2,8 +2,23 @@ import React from "react";
 import './ProcedureTable.css';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
-    const accountableOptions = ["Abel Moetji", "Andre Coetzee", "Anzel Swanepoel", "Quintin Coetzee", "Rossouw Snyders", "Willem Harmse"];
-    const responsibleOptions = ["Abel Moetji", "Andre Coetzee", "Anzel Swanepoel", "Quintin Coetzee", "Rossouw Snyders", "Willem Harmse"];
+    const accountableOptions = [
+        "Select Designation", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
+        "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
+        "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
+        "Millwright", "Engineering Assistant"
+    ];
+
+    const responsibleOptions = [
+        "Select Designation", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
+        "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
+        "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
+        "Millwright", "Engineering Assistant"
+    ];
+
+
 
     const handleInputChange = (index, field, value) => {
         updateRow(index, field, value); // Call a prop function to update the row data
@@ -18,8 +33,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                         <th className="procCent">Nr</th>
                         <th className="procCent">Procedure Main Steps</th>
                         <th className="procCent">Procedure Sub Steps</th>
-                        <th className="procCent">Accountable</th>
-                        <th className="procCent">Responsible</th>
+                        <th className="procCent">Accountable and Responsible</th>
                         <th className="procCent procAct"></th>
                     </tr>
                 </thead>
@@ -50,30 +64,37 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                                 />
                             </td>
                             <td>
-                                <select
-                                    className="table-control"
-                                    value={row.accountable}
-                                    onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
-                                >
-                                    {accountableOptions.map((option, i) => (
-                                        <option key={i} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                            </td>
-                            <td>
-                                <select
-                                    className="table-control"
-                                    value={row.responsible}
-                                    onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
-                                >
-                                    {responsibleOptions.map((option, i) => (
-                                        <option key={i} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="select-container-proc">
+                                    <div className="select-wrapper">
+                                        <label className="select-label-proc">A:</label>
+                                        <select
+                                            className="table-control-proc"
+                                            value={row.accountable}
+                                            onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
+                                        >
+                                            {accountableOptions.sort().map((option, i) => (
+                                                <option key={i} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="select-wrapper">
+                                        <label className="select-label-proc">R:</label>
+                                        <select
+                                            className="table-control-proc"
+                                            value={row.responsible}
+                                            onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
+                                        >
+                                            {responsibleOptions.sort().map((option, i) => (
+                                                <option key={i} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 <button

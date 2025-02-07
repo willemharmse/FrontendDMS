@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
@@ -16,6 +16,7 @@ import MaterialsTable from "./CreatePage/MaterialsTable";
 import MobileMachineTable from "./CreatePage/MobileMachineTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
+import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -27,6 +28,11 @@ const CreatePage = () => {
   const [usedEquipment, setUsedEquipment] = useState([]);
   const [usedMobileMachine, setUsedMobileMachines] = useState([]);
   const [usedMaterials, setUsedMaterials] = useState([]);
+  const [loadedID, setLoadedID] = useState('');
+  const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
+  const [titleSet, setTitleSet] = useState(false);
+  const [userID, setUserID] = useState('');
+  const autoSaveInterval = useRef(null);
   const nameToPositionMap = {
     "Willem Harmse": "Software Developer",
     "Abel Moetji": "Engineer",
@@ -48,7 +54,87 @@ const CreatePage = () => {
     });
   };
 
+  const openLoadPopup = () => setLoadPopupOpen(true);
+  const closeLoadPopup = () => setLoadPopupOpen(false);
+
+  useEffect(() => {
+    if (titleSet && !autoSaveInterval.current) {
+      autoSaveInterval.current = setInterval(() => {
+        handleSave();
+      }, 120000); // Auto-save every 1 min
+    }
+
+    return () => {
+      if (autoSaveInterval.current) {
+        clearInterval(autoSaveInterval.current);
+        autoSaveInterval.current = null;
+      }
+    };
+  }, [titleSet]);
+
+  const handleSave = () => {
+    if (formData.title !== "") {
+      if (loadedID === '') {
+        saveData();
+
+        toast.success("Draft has been successfully saved", {
+          closeButton: false,
+          style: {
+            textAlign: 'center'
+          }
+        })
+      }
+      else if (loadedID !== '') {
+        updateData();
+
+        toast.success("Draft has been successfully updated", {
+          closeButton: false,
+          style: {
+            textAlign: 'center'
+          }
+        })
+      }
+    }
+    else {
+      toast.error("Please fill in at least the title field before saving.", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
+    }
+  };
+
   const saveData = async () => {
+    const dataToStore = {
+      usedAbbrCodes,       // your current state values
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+      formData,
+      userID
+    };
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToStore),
+      });
+      const result = await response.json();
+
+      if (result.id) {  // Ensure we receive an ID from the backend
+        setLoadedID(result.id);  // Update loadedID to track the saved document
+      }
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  };
+
+  const updateData = async () => {
     const dataToStore = {
       usedAbbrCodes,       // your current state values
       usedTermCodes,
@@ -61,7 +147,7 @@ const CreatePage = () => {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/modifySafe/${loadedID}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToStore),
@@ -86,9 +172,9 @@ const CreatePage = () => {
     }
   };
 
-  const loadData = async () => {
+  const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft`);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
       const storedData = await response.json();
       // Update your states as needed:
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -171,6 +257,7 @@ const CreatePage = () => {
         navigate("/FrontendDMS/403");
       }
 
+      setUserID(decodedToken.userId);
       setRole(decodedToken.role);
     }
   }, [navigate]);
@@ -179,7 +266,18 @@ const CreatePage = () => {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     console.log(formData)
+
+    if (e.target.name === "title" && e.target.value.trim() !== "") {
+      setTitleSet(true); // Enable auto-save only after title is entered
+    }
   };
+
+  useEffect(() => {
+    if (userID) {
+      console.log("User ID is set:", userID);
+      // Perform actions that depend on userID here
+    }
+  }, [userID]);
 
   // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
@@ -266,8 +364,8 @@ const CreatePage = () => {
           mainStep: "",
           SubStep: "",
           discipline: "Engineering",       // Default value for discipline
-          accountable: "Abel Moetji",      // Default value for accountable
-          responsible: "Abel Moetji"
+          accountable: "",      // Default value for accountable
+          responsible: ""
         }
       ]
     });
@@ -347,13 +445,19 @@ const CreatePage = () => {
 
   return (
     <div className="file-create-container">
-      {/* Sidebar */}
-      <header className="create-header">
-        <div className="header-left">
-          <img src="logo.webp" alt="Left Icon" onClick={() => navigate('/FrontendDMS/home')} />
-        </div>
-        <button className="logout-button-cp" onClick={() => navigate('/FrontendDMS/')}>Logout</button>
-      </header>
+      <button className="logo-button-create" onClick={() => navigate('/FrontendDMS/home')}>
+        <img src="logo.webp" alt="Home" />
+      </button>
+      <button className="log-button-create" onClick={() => navigate('/FrontendDMS/')}>
+        Log Out
+      </button>
+      <button className="load-button-create" onClick={openLoadPopup}>
+        Load Draft
+      </button>
+      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
+      <button className="save-button-create" onClick={handleSave}>
+        {loadedID === '' ? "Save Draft" : "Update Draft"}
+      </button>
 
       {/* Main content */}
       <div className="main-box">

@@ -97,20 +97,20 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('Date')}>Review Date</span>
                     {openMenu === 'Date' && (
                         <div className="date-menu-filter">
-                            <div className="date-filter-container">
+                            <div className="date-filter-row">
                                 <label className="date-label">From:</label>
                                 <input
                                     type="date"
-                                    placeholder="Start Date"
-                                    className="filter-input-file"
+                                    className="filter-input-date"
                                     value={filters.startDate}
                                     onChange={(e) => onFilterChange('startDate', e.target.value)}
                                 />
+                            </div>
+                            <div className="date-filter-row">
                                 <label className="date-label">To:</label>
                                 <input
                                     type="date"
-                                    placeholder="End Date"
-                                    className="filter-input-file"
+                                    className="filter-input-date"
                                     value={filters.endDate}
                                     onChange={(e) => onFilterChange('endDate', e.target.value)}
                                 />
