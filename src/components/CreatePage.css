@@ -8,6 +8,88 @@ body {
   background-color: #120b5b;
 }
 
+.log-button-create {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 10px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
+.save-button-create {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 230px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
+.load-button-create {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 120px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
+.logo-button-create {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  left: 10px;
+  /* Distance from the left */
+  width: 100px;
+  height: 100px;
+  background: none;
+  /* Remove background for a clean look */
+  border: none;
+  /* Remove borders */
+  cursor: pointer;
+  /* Make it clickable */
+  z-index: 10;
+  /* Ensure it appears above other elements */
+}
+
+.logo-button-create:hover {
+  transform: scale(1.125);
+  cursor: pointer;
+  background-color: transparent !important;
+}
+
+.logo-button-create img {
+  width: 100px;
+  /* Adjust logo size */
+  height: 100px;
+}
+
 .create-header {
   display: flex;
   justify-content: space-between;

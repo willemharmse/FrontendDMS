@@ -3,7 +3,7 @@ import './ProcedureTable.css';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
     const accountableOptions = [
-        "Select Designation", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
         "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
         "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
@@ -11,7 +11,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
     ];
 
     const responsibleOptions = [
-        "Select Designation", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
         "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
         "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
