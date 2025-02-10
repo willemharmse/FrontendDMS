@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import "./HandToolsTable.css"; // Add styling here
+import ToolPopup from "../ValueChanges/HandToolPopup";
 
-const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools }) => {
-    const HandTools = [
-        "Hammer",
-        "Screwdriver",
-        "Pliers",
-        "Wrench",
-        "Tape Measure",
-        "Hand Saw",
-        "Utility Knife",
-        "Chisel",
-        "Level",
-        "Adjustable Spanner"
-    ];
-
+const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role }) => {
     // State to control the popup and selected abbreviations
+    const [toolsData, setToolsData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedTools, setSelectedTools] = useState(new Set(usedHandTools));
     const [isNA, setIsNA] = useState(false);
+    const [showNewPopup, setShowNewPopup] = useState(false);
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/tool`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+
+            const data = await response.json();
+
+            setToolsData(data.tools);
+        } catch (error) {
+            console.error("Error fetching tools:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     useEffect(() => {
         setSelectedTools(new Set(usedHandTools));
@@ -54,19 +63,31 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools 
     };
 
     const handleSaveSelection = () => {
-        setUsedHandTools([...selectedTools]);
+        const selectedToolArray = [...selectedTools];
+        setUsedHandTools(selectedToolArray);
+
+        const selectedRows = selectedToolArray.map((tool) => {
+            const found = toolsData.find((item) => item.tool === tool);
+            return found || { tool }; // Fallback if not found
+        });
+
         setFormData({
             ...formData,
-            HandTools: [...selectedTools].map((tool) => ({
-                tool
-            })),
+            HandTools: selectedRows
         });
         setPopupVisible(false);
     };
 
     return (
-        <div className="input-box-2">
+        <div className="tool-input-box">
             <h3 className="font-fam-labels">Hand Tools</h3>
+            {role === "admin" && (
+                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tool</button>
+            )}
+            <ToolPopup
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+            />
             <div className="na-checkbox-container-tool">
                 <label>
                     <input
@@ -79,10 +100,10 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools 
             </div>
             {/* Popup */}
             {popupVisible && (
-                <div className="popup-overlay-ppe">
-                    <div className="popup-content-terms">
+                <div className="popup-overlay-tool">
+                    <div className="popup-content-tool">
                         <h4 className="center-tools">Select Hand Tools</h4>
-                        <div className="popup-table-wrapper-tools">
+                        <div className="popup-table-wrapper-tool">
                             <table className="popup-table font-fam">
                                 <thead className="tool-headers">
                                     <tr>
@@ -91,19 +112,27 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {HandTools.sort().map((tool, index) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox-inp-tool"
-                                                    checked={selectedTools.has(tool)}
-                                                    onChange={() => handleCheckboxChange(tool)}
-                                                />
-                                            </td>
-                                            <td>{tool}</td>
+                                    {toolsData.length > 0 ? (
+                                        toolsData
+                                            .sort((a, b) => a.tool.localeCompare(b.tool))
+                                            .map((item) => (
+                                                <tr key={item.tool}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox-inp-tool"
+                                                            checked={selectedTools.has(item.tool)}
+                                                            onChange={() => handleCheckboxChange(item.tool)}
+                                                        />
+                                                    </td>
+                                                    <td>{item.tool}</td>
+                                                </tr>
+                                            ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Loading tools...</td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

@@ -314,7 +314,7 @@ const MobileFileInfo = () => {
             file.fileName.toLowerCase().includes(filters.fileName.toLowerCase()) &&
             file.documentType.toLowerCase().includes(filters.documentType.toLowerCase()) &&
             file.status.toLowerCase().includes(filters.status.toLowerCase()) &&
-            file.owner.toLowerCase().includes(filters.author.toLowerCase()) &&
+            file.owner.some(o => o.toLowerCase().includes(filters.author.toLowerCase())) &&
             file.departmentHead.toLowerCase().includes(filters.deptHead.toLowerCase()) &&
             file.docID.toLowerCase().includes(filters.docID.toLowerCase()) &&
             (!filters.startDate || file.reviewDate >= filters.startDate) &&
@@ -508,7 +508,20 @@ const MobileFileInfo = () => {
                                 <div>
                                     <label>Author</label>
                                     <span>
-                                        {(file.owner)}
+                                        <td>
+                                            {Array.isArray(file.owner)
+                                                ? file.owner.join(", ")
+                                                : typeof file.owner === "string"
+                                                    ? (() => {
+                                                        try {
+                                                            const parsed = JSON.parse(file.owner);
+                                                            return Array.isArray(parsed) ? parsed.join(", ") : file.owner;
+                                                        } catch {
+                                                            return file.owner; // If JSON.parse fails, return the original string
+                                                        }
+                                                    })()
+                                                    : "No Owners"}
+                                        </td>
                                     </span>
                                 </div>
                                 <div>

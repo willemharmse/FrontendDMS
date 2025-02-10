@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./EquipmentTable.css"; // Add styling here
+import EquipmentPopup from "../ValueChanges/EquipmentPopup";
 
-const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment }) => {
-    const Equipment = [
-        "Ladder",
-        "Drill Machine",
-        "Air Compressor",
-        "Generator",
-        "Welding Machine",
-        "Grinding Machine",
-        "Jackhammer",
-        "Circular Saw",
-        "Chainsaw",
-        "Pressure Washer"
-    ];
-
+const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role }) => {
     // State to control the popup and selected abbreviations
+    const [eqpData, setEqpData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState(new Set(usedEquipment));
     const [isNA, setIsNA] = useState(false);
+    const [showNewPopup, setShowNewPopup] = useState(false);
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);
@@ -30,6 +20,25 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
             setIsNA(true); // Automatically check the box if equipment data exists
         }
     }, [usedEquipment]);
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/eqp`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+
+            const data = await response.json();
+
+            setEqpData(data.eqps);
+        } catch (error) {
+            console.error("Error fetching equipment:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     // Handle N/A checkbox toggle
     const handleNAToggle = () => {
@@ -54,19 +63,31 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     };
 
     const handleSaveSelection = () => {
-        setUsedEquipment([...selectedEquipment]);
+        const selectedEqpArray = [...selectedEquipment];
+        setUsedEquipment(selectedEqpArray);
+
+        const selectedRows = selectedEqpArray.map((eqp) => {
+            const found = eqpData.find((item) => item.eqp === eqp);
+            return found || { eqp }; // Fallback if not found
+        });
+
         setFormData({
             ...formData,
-            Equipment: [...selectedEquipment].map((eqp) => ({
-                eqp
-            })),
+            Equipment: selectedRows,
         });
         setPopupVisible(false);
     };
 
     return (
-        <div className="input-box-2">
+        <div className="eqp-input-box">
             <h3 className="font-fam-labels">Equipment</h3>
+            {role === "admin" && (
+                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
+            )}
+            <EquipmentPopup
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+            />
             <div className="na-checkbox-container-eqp">
                 <label>
                     <input
@@ -91,19 +112,27 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {Equipment.sort().map((eqp, index) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox-inp-eqp"
-                                                    checked={selectedEquipment.has(eqp)}
-                                                    onChange={() => handleCheckboxChange(eqp)}
-                                                />
-                                            </td>
-                                            <td>{eqp}</td>
+                                    {eqpData.length > 0 ? (
+                                        eqpData
+                                            .sort((a, b) => a.eqp.localeCompare(b.eqp))
+                                            .map((item) => (
+                                                <tr key={item.eqp}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox-inp-eqp"
+                                                            checked={selectedEquipment.has(item.eqp)}
+                                                            onChange={() => handleCheckboxChange(item.eqp)}
+                                                        />
+                                                    </td>
+                                                    <td>{item.eqp}</td>
+                                                </tr>
+                                            ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Loading abbreviations...</td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

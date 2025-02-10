@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import UploadPopup from "./UploadPage/UploadPopup";
 import { toast, ToastContainer } from 'react-toastify';
+import Select from "react-select";
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 
 
@@ -83,7 +84,7 @@ const UploadPage = () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('departmentHead', departmentHead);
-    formData.append('owner', owner);
+    formData.append('owner', JSON.stringify(owner));
     formData.append('documentType', documentType);
     formData.append('discipline', discipline);
     formData.append('status', status);
@@ -158,15 +159,14 @@ const UploadPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Author <span className="required-field">*</span></label>
-              <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-                <option value="">Select Author</option>
-                {users.map((user, index) => (
-                  <option key={index} value={user}>
-                    {user}
-                  </option>
-                ))}
-              </select>
+              <label className="up-select">Authors <span className="required-field">*</span></label>
+              <Select
+                options={users.map(user => ({ value: user, label: user }))}
+                isMulti
+                onChange={(selected) => setOwner(selected.map(s => s.value))}
+                className="sidebar-select-up"
+                placeholder="Select Authors"
+              />
             </div>
           </div>
           <div className="form-row">

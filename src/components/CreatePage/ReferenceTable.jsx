@@ -112,7 +112,20 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                     className="table-control"
                                     value={removeFileExtension(row.ref)}
                                     onChange={(e) => handleDescChange(index, "ref", e.target.value)}
-                                    onFocus={() => setShowDropdown(index)}
+                                    onFocus={() => {
+                                        setShowDropdown(index);
+                                        setFilteredOptions(prev => ({ ...prev, [index]: files.slice(0, 15) }));
+
+                                        // Ensure dropdown is positioned correctly on focus
+                                        if (inputRefs.current[index]) {
+                                            const rect = inputRefs.current[index].getBoundingClientRect();
+                                            setDropdownPosition({
+                                                top: rect.bottom + window.scrollY + 5,
+                                                left: rect.left + window.scrollX,
+                                                width: rect.width,
+                                            });
+                                        }
+                                    }}
                                     onBlur={() => setTimeout(() => setShowDropdown(null), 200)}
                                     ref={(el) => (inputRefs.current[index] = el)}
                                 />

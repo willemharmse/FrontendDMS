@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from "react";
 import "./PPETable.css"; // Add styling here
+import "../ValueChanges/PPEPopup.jsx";
+import PPEPopup from "../ValueChanges/PPEPopup.jsx";
 
-const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions }) => {
-    const PPEOptions = [
-        "Hard Hat",
-        "Safety Glasses",
-        "Earplugs",
-        "N95 Mask",
-        "Cut-Resistant Gloves",
-        "High-Visibility Vest",
-        "Steel-Toe Boots",
-        "Safety Harness",
-        "Flame-Resistant Coveralls",
-        "Face Shield"
-    ];
-
+const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role }) => {
     // State to control the popup and selected abbreviations
+    const [ppeData, setPPEData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedPPE, setSelectedPPE] = useState(new Set(usedPPEOptions));
     const [isNA, setIsNA] = useState(false);
+    const [showNewPopup, setShowNewPopup] = useState(false);
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/ppe`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+
+            const data = await response.json();
+
+            setPPEData(data.ppe);
+        } catch (error) {
+            console.error("Error fetching equipment:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     useEffect(() => {
         setSelectedPPE(new Set(usedPPEOptions));
@@ -55,19 +65,31 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions }) 
     };
 
     const handleSaveSelection = () => {
-        setUsedPPEOptions([...selectedPPE]);
+        const selectedPPEArray = [...selectedPPE];
+        setUsedPPEOptions(selectedPPEArray);
+
+        const selectedRows = selectedPPEArray.map((ppe) => {
+            const found = ppeData.find((item) => item.ppe === ppe);
+            return found || { ppe }; // Fallback if not found
+        });
+
         setFormData({
             ...formData,
-            PPEItems: [...selectedPPE].map((PPE) => ({
-                PPE
-            })),
+            PPEItems: selectedRows
         });
         setPopupVisible(false);
     };
 
     return (
-        <div className="input-box-2">
+        <div className="ppe-input-box">
             <h3 className="font-fam-labels">PPE</h3>
+            {role === "admin" && (
+                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add PPE</button>
+            )}
+            <PPEPopup
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+            />
             <div className="na-checkbox-container-ppe">
                 <label>
                     <input
@@ -92,19 +114,27 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions }) 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {PPEOptions.sort().map((PPE, index) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox-inp-ppe"
-                                                    checked={selectedPPE.has(PPE)}
-                                                    onChange={() => handleCheckboxChange(PPE)}
-                                                />
-                                            </td>
-                                            <td>{PPE}</td>
+                                    {ppeData.length > 0 ? (
+                                        ppeData
+                                            .sort((a, b) => a.ppe.localeCompare(b.ppe))
+                                            .map((item) => (
+                                                <tr key={item.ppe}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox-inp-ppe"
+                                                            checked={selectedPPE.has(item.ppe)}
+                                                            onChange={() => handleCheckboxChange(item.ppe)}
+                                                        />
+                                                    </td>
+                                                    <td>{item.ppe}</td>
+                                                </tr>
+                                            ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Loading machines...</td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

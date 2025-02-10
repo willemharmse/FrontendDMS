@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import "./MaterialsTable.css"; // Add styling here
+import MaterialPopup from "../ValueChanges/MaterialPopup";
 
-const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials }) => {
-    const Materials = [
-        "Concrete",
-        "Steel Rebar",
-        "Bricks",
-        "Cement",
-        "Wood Lumber",
-        "Glass Panels",
-        "PVC Pipes",
-        "Insulation Foam",
-        "Gravel",
-        "Asphalt"
-    ];
-
+const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role }) => {
     // State to control the popup and selected abbreviations
+    const [matsData, setMatsData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMaterials, setSelectedMaterials] = useState(new Set(usedMaterials));
     const [isNA, setIsNA] = useState(false);
+    const [showNewPopup, setShowNewPopup] = useState(false);
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/mat`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+
+            const data = await response.json();
+
+            setMatsData(data.mats);
+        } catch (error) {
+            console.error("Error fetching equipment:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     useEffect(() => {
         setSelectedMaterials(new Set(usedMaterials));
@@ -54,19 +63,31 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     };
 
     const handleSaveSelection = () => {
-        setUsedMaterials([...selectedMaterials]);
+        const selectedMatArray = [...selectedMaterials];
+        setUsedMaterials(selectedMatArray);
+
+        const selectedRows = selectedMatArray.map((mat) => {
+            const found = matsData.find((item) => item.mat === mat);
+            return found || { mat }; // Fallback if not found
+        });
+
         setFormData({
             ...formData,
-            Materials: [...selectedMaterials].map((mat) => ({
-                mat
-            })),
+            Materials: selectedRows
         });
         setPopupVisible(false);
     };
 
     return (
-        <div className="input-box-2">
+        <div className="mat-input-box">
             <h3 className="font-fam-labels">Materials</h3>
+            {role === "admin" && (
+                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add Material</button>
+            )}
+            <MaterialPopup
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+            />
             <div className="na-checkbox-container-mat">
                 <label>
                     <input
@@ -91,19 +112,27 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {Materials.sort().map((mat, index) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox-inp-mat"
-                                                    checked={selectedMaterials.has(mat)}
-                                                    onChange={() => handleCheckboxChange(mat)}
-                                                />
-                                            </td>
-                                            <td>{mat}</td>
+                                    {matsData.length > 0 ? (
+                                        matsData
+                                            .sort((a, b) => a.mat.localeCompare(b.mat))
+                                            .map((item) => (
+                                                <tr key={item.mat}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox-inp-mat"
+                                                            checked={selectedMaterials.has(item.mat)}
+                                                            onChange={() => handleCheckboxChange(item.mat)}
+                                                        />
+                                                    </td>
+                                                    <td>{item.mat}</td>
+                                                </tr>
+                                            ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Loading materials...</td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

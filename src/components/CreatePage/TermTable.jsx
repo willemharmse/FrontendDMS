@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
+import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 
 const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const navigate = useNavigate();
   const [showNewPopup, setShowNewPopup] = useState(false);
 
@@ -14,13 +16,23 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
     setSelectedTerms(new Set(usedTermCodes));
   }, [usedTermCodes]);
 
+  const fetchValues = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/def`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch values");
+      }
+
+      const data = await response.json();
+
+      setTermData(data.defs);
+    } catch (error) {
+      console.error("Error fetching abbreviations:", error)
+    }
+  };
+
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/def`)
-      .then((response) => response.json())
-      .then((data) => {
-        setTermData(data.defs);
-      })
-      .catch((error) => console.error("Error fetching terms:", error));
+    fetchValues();
   }, []);
 
   const handlePopupToggle = () => {
@@ -53,19 +65,25 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
     setPopupVisible(false);
   };
 
+  const openManagePopup = () => setIsManageOpen(true);
+  const closeManagePopup = () => setIsManageOpen(false);
+
   return (
     <div className="term-input-box">
       <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
       {role === "admin" && (
-        <button className="top-right-button-term" onClick={() => navigate("/FrontendDMS/manageTerms")}>Update Terms</button>
+        <button className="top-right-button-term" onClick={openManagePopup}>Update Terms</button>
       )}
       {role === "admin" && (
         <button className="top-right-button-term-2" onClick={() => setShowNewPopup(true)}>Add Terms</button>
       )}
       <TermPopup
         isOpen={showNewPopup}
-        onClose={() => setShowNewPopup(false)}
+        onClose={() => { setShowNewPopup(false); fetchValues(); }}
       />
+
+      {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
+
       {popupVisible && (
         <div className="popup-overlay-terms">
           <div className="popup-content-terms">

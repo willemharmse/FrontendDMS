@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
+import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 
 const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role }) => {
   const [abbrData, setAbbrData] = useState([]);
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const [selectedAbbrs, setSelectedAbbrs] = useState(new Set(usedAbbrCodes));
   const navigate = useNavigate();
   const [showNewPopup, setShowNewPopup] = useState(false);
@@ -15,13 +17,23 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
     setSelectedAbbrs(new Set(usedAbbrCodes));
   }, [usedAbbrCodes]);
 
+  const fetchValues = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch values");
+      }
+
+      const data = await response.json();
+
+      setAbbrData(data.abbrs);
+    } catch (error) {
+      console.error("Error fetching abbreviations:", error)
+    }
+  };
+
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr`)
-      .then((response) => response.json())
-      .then((data) => {
-        setAbbrData(data.abbrs);
-      })
-      .catch((error) => console.error("Error fetching abbreviations:", error));
+    fetchValues();
   }, []);
 
   const handlePopupToggle = () => {
@@ -54,19 +66,24 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
     setPopupVisible(false);
   };
 
+  const openManagePopup = () => setIsManageOpen(true);
+  const closeManagePopup = () => setIsManageOpen(false);
+
   return (
     <div className="abbr-input-box">
       <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
       {role === "admin" && (
-        <button className="top-right-button-abbr" onClick={() => navigate("/FrontendDMS/manageAbbrs")}>Update Abbreviations</button>
+        <button className="top-right-button-abbr" onClick={openManagePopup}>Update Abbreviations</button>
       )}
       {role === "admin" && (
         <button className="top-right-button-abbr-2" onClick={() => setShowNewPopup(true)}>Add Abbreviations</button>
       )}
       <AbbreviationPopup
         isOpen={showNewPopup}
-        onClose={() => setShowNewPopup(false)}
+        onClose={() => { setShowNewPopup(false); fetchValues(); }}
       />
+
+      {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
       {/* Popup */}
       {popupVisible && (
         <div className="popup-overlay-abbr">

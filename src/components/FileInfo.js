@@ -369,16 +369,20 @@ const FileInfo = () => {
           <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
         )}
         <div className="button-container">
-          <button className="text-format-log but-upload"
-            onClick={() => navigate("/FrontendDMS/upload")}
-          >
-            Upload Document
-          </button>
-          <button className="text-format-log but-batch"
-            onClick={() => navigate("/FrontendDMS/batchUpload")}
-          >
-            Batch Upload Documents
-          </button>
+          {adminRoles.includes(role) && (
+            <button className="text-format-log but-upload"
+              onClick={() => navigate("/FrontendDMS/upload")}
+            >
+              Upload Document
+            </button>
+          )}
+          {adminRoles.includes(role) && (
+            <button className="text-format-log but-batch"
+              onClick={() => navigate("/FrontendDMS/batchUpload")}
+            >
+              Batch Upload Documents
+            </button>
+          )}
         </div>
       </div>
 

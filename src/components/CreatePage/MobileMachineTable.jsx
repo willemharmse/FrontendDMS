@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import "./MobileMachineTable.css"; // Add styling here
+import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 
-const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine }) => {
-    const MobileMachine = [
-        "Forklift",
-        "Excavator",
-        "Bulldozer",
-        "Backhoe Loader",
-        "Crane",
-        "Skid Steer Loader",
-        "Road Roller",
-        "Dump Truck",
-        "Concrete Mixer Truck",
-        "Trencher"
-    ];
-
+const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role }) => {
     // State to control the popup and selected abbreviations
+    const [macData, setMacData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMMachine, setSelectedMMachine] = useState(new Set(usedMobileMachine));
     const [isNA, setIsNA] = useState(false);
+    const [showNewPopup, setShowNewPopup] = useState(false);
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/mac`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+
+            const data = await response.json();
+
+            setMacData(data.macs);
+        } catch (error) {
+            console.error("Error fetching equipment:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     useEffect(() => {
         setSelectedMMachine(new Set(usedMobileMachine));
@@ -54,19 +63,31 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     };
 
     const handleSaveSelection = () => {
-        setUsedMobileMachine([...selectedMMachine]);
+        const selectedMacArray = [...selectedMMachine];
+        setUsedMobileMachine(selectedMacArray);
+
+        const selectedRows = selectedMacArray.map((mac) => {
+            const found = macData.find((item) => item.mac === mac);
+            return found || { mac }; // Fallback if not found
+        });
+
         setFormData({
             ...formData,
-            MobileMachine: [...selectedMMachine].map((mac) => ({
-                mac
-            })),
+            MobileMachine: selectedRows
         });
         setPopupVisible(false);
     };
 
     return (
-        <div className="input-box-2">
+        <div className="mac-input-box">
             <h3 className="font-fam-labels">Mobile Machine</h3>
+            {role === "admin" && (
+                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machine</button>
+            )}
+            <MobileMachinePopup
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+            />
             <div className="na-checkbox-container-mac">
                 <label>
                     <input
@@ -91,19 +112,27 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {MobileMachine.sort().map((mac, index) => (
-                                        <tr key={index}>
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox-inp-mac"
-                                                    checked={selectedMMachine.has(mac)}
-                                                    onChange={() => handleCheckboxChange(mac)}
-                                                />
-                                            </td>
-                                            <td>{mac}</td>
+                                    {macData.length > 0 ? (
+                                        macData
+                                            .sort((a, b) => a.machine.localeCompare(b.machine))
+                                            .map((item) => (
+                                                <tr key={item.machine}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox-inp-mac"
+                                                            checked={selectedMMachine.has(item.machine)}
+                                                            onChange={() => handleCheckboxChange(item.machine)}
+                                                        />
+                                                    </td>
+                                                    <td>{item.machine}</td>
+                                                </tr>
+                                            ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Loading machines...</td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

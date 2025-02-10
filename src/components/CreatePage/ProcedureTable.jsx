@@ -3,7 +3,7 @@ import './ProcedureTable.css';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
     const accountableOptions = [
-        "", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
         "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
         "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
@@ -11,7 +11,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
     ];
 
     const responsibleOptions = [
-        "", "Engineering Manager", "Section Engineer", "Engineering Superintendent",
+        "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
         "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
         "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
@@ -66,13 +66,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                             <td>
                                 <div className="select-container-proc">
                                     <div className="select-wrapper">
-                                        <label className="select-label-proc">A:</label>
+                                        <label className="select-label-proc">R:</label>
                                         <select
                                             className="table-control-proc"
-                                            value={row.accountable}
-                                            onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
+                                            value={row.responsible}
+                                            onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
                                         >
-                                            {accountableOptions.sort().map((option, i) => (
+                                            <option value="">Select an option</option>
+                                            {responsibleOptions.sort().map((option, i) => (
                                                 <option key={i} value={option}>
                                                     {option}
                                                 </option>
@@ -81,13 +82,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                                     </div>
 
                                     <div className="select-wrapper">
-                                        <label className="select-label-proc">R:</label>
+                                        <label className="select-label-proc">A:</label>
                                         <select
                                             className="table-control-proc"
-                                            value={row.responsible}
-                                            onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
+                                            value={row.accountable}
+                                            onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
                                         >
-                                            {responsibleOptions.sort().map((option, i) => (
+                                            <option value="">Select an option</option>
+                                            {accountableOptions.sort().map((option, i) => (
                                                 <option key={i} value={option}>
                                                     {option}
                                                 </option>
