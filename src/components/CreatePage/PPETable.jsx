@@ -159,7 +159,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 <tbody>
                     {formData.PPEItems?.map((row, index) => (
                         <tr key={index}>
-                            <td>{row.PPE}</td>
+                            <td>{row.ppe}</td>
                             <td>
                                 <button
                                     className="remove-row-button"
