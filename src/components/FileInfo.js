@@ -333,7 +333,7 @@ const FileInfo = () => {
       file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchTextFilters = (
-      file.owner.toLowerCase().includes(filters.author.toLowerCase()) &&
+      file.owner.some(o => o.toLowerCase().includes(filters.author.toLowerCase())) &&
       file.departmentHead.toLowerCase().includes(filters.deptHead.toLowerCase()) &&
       file.docID.toLowerCase().includes(filters.docID.toLowerCase()) &&
       (!filters.startDate || file.reviewDate >= filters.startDate) &&
@@ -480,7 +480,20 @@ const FileInfo = () => {
                   {(adminRoles.includes(role) || role === 'auditor') && (
                     <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
-                  <td className="col">{file.owner}</td>
+                  <td>
+                    {Array.isArray(file.owner)
+                      ? file.owner.join(", ")
+                      : typeof file.owner === "string"
+                        ? (() => {
+                          try {
+                            const parsed = JSON.parse(file.owner);
+                            return Array.isArray(parsed) ? parsed.join(", ") : file.owner;
+                          } catch {
+                            return file.owner; // If JSON.parse fails, return the original string
+                          }
+                        })()
+                        : "No Owners"}
+                  </td>
                   <td className="col">{file.departmentHead}</td>
                   <td className="col">{(file.docID)}</td>
                   <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>

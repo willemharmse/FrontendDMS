@@ -83,7 +83,7 @@ function LoginPageMobile() {
                     </div>
                     {error && <div className="error-message-m">{error}</div>}
                     <button type="submit" className="login-button-m" disabled={loading}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Login'}</button>
-                    <button type="button" className="forgot-button-m" onClick={() => navigate('/mobileForgot')}>
+                    <button type="button" className="forgot-button-m" onClick={() => navigate('/FrontendDMS/mobileForgot')}>
                         Forgot Password?
                     </button>
                 </form>

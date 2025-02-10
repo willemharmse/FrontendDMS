@@ -102,7 +102,7 @@ function LoginPage() {
             <button type="submit" className="login-button" disabled={loading}>
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Login'}
             </button>
-            <button className="forgot-button" onClick={() => { navigate('/forgot') }}>Forgot Password</button>
+            <button className="forgot-button" onClick={() => { navigate('/FrontendDMS/forgot') }}>Forgot Password</button>
           </form>
         </div>
       </div>
