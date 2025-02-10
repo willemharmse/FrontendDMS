@@ -1,0 +1,109 @@
+.term-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.term-popup-content {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 450px;
+}
+
+.term-popup-title {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.term-input-group {
+    margin-bottom: 1.2rem;
+}
+
+.term-input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-weight: 500;
+}
+
+.term-popup-input {
+    width: 93%;
+    padding: 0.8rem;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.term-popup-input:focus {
+    border-color: #7EAC89;
+    outline: none;
+}
+
+.term-popup-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.term-popup-btn {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.term-popup-btn.confirm {
+    background-color: #7EAC89;
+    color: white;
+}
+
+.term-popup-btn.cancel {
+    background-color: #CB6F6F;
+    color: white;
+}
+
+.term-popup-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.term-popup-btn:active {
+    transform: translateY(0);
+}
+
+.term-message {
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.term-message.success {
+    background-color: #7EAC89;
+    color: black;
+    border: 1px solid #c3e6cb;
+}
+
+.term-message.error {
+    background-color: #CB6F6F;
+    color: black;
+    border: 1px solid #f5c6cb;
+}
