@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
@@ -9,7 +8,6 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
-  const navigate = useNavigate();
   const [showNewPopup, setShowNewPopup] = useState(false);
 
   useEffect(() => {
@@ -103,7 +101,10 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                     termData
                       .sort((a, b) => a.term.localeCompare(b.term))
                       .map((item) => (
-                        <tr key={item.term}>
+                        <tr key={item.term}
+                          onClick={() => handleCheckboxChange(item.term)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td>
                             <input
                               type="checkbox"

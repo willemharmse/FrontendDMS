@@ -122,6 +122,7 @@
     border-radius: 4px;
     cursor: pointer;
     width: 120px;
+    height: 46px;
 }
 
 .top-right-button-tool-2 {
@@ -140,6 +141,7 @@
     border-radius: 4px;
     cursor: pointer;
     width: 120px;
+    height: 46px;
 }
 
 /* Style for the N/A checkbox container */

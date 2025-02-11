@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
+import ManageHandTools from "../ValueChanges/ManageHandTools";
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role }) => {
     // State to control the popup and selected abbreviations
@@ -9,6 +10,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
     const [selectedTools, setSelectedTools] = useState(new Set(usedHandTools));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
+    const [isManageOpen, setIsManageOpen] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -78,16 +80,25 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
         setPopupVisible(false);
     };
 
+    const openManagePopup = () => setIsManageOpen(true);
+    const closeManagePopup = () => setIsManageOpen(false);
+
     return (
         <div className="tool-input-box">
             <h3 className="font-fam-labels">Hand Tools</h3>
             {role === "admin" && (
-                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tool</button>
+                <button className="top-right-button-tool" onClick={openManagePopup}>Update Tools</button>
+            )}
+            {role === "admin" && (
+                <button className="top-right-button-tool-2" onClick={() => setShowNewPopup(true)}>Add Tool</button>
             )}
             <ToolPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
             />
+
+            {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
+
             <div className="na-checkbox-container-tool">
                 <label>
                     <input
@@ -116,7 +127,10 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                         toolsData
                                             .sort((a, b) => a.tool.localeCompare(b.tool))
                                             .map((item) => (
-                                                <tr key={item.tool}>
+                                                <tr key={item.tool}
+                                                    onClick={() => handleCheckboxChange(item.tool)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <td>
                                                         <input
                                                             type="checkbox"

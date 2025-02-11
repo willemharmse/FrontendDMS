@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
+import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role }) => {
     // State to control the popup and selected abbreviations
@@ -9,6 +10,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     const [selectedMMachine, setSelectedMMachine] = useState(new Set(usedMobileMachine));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
+    const [isManageOpen, setIsManageOpen] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -78,16 +80,24 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
         setPopupVisible(false);
     };
 
+    const openManagePopup = () => setIsManageOpen(true);
+    const closeManagePopup = () => setIsManageOpen(false);
+
     return (
         <div className="mac-input-box">
             <h3 className="font-fam-labels">Mobile Machine</h3>
             {role === "admin" && (
-                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machine</button>
+                <button className="top-right-button-mac" onClick={openManagePopup}>Update Machines</button>
+            )}
+            {role === "admin" && (
+                <button className="top-right-button-mac-2" onClick={() => setShowNewPopup(true)}>Add Machine</button>
             )}
             <MobileMachinePopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
             />
+
+            {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}
             <div className="na-checkbox-container-mac">
                 <label>
                     <input
@@ -116,7 +126,10 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                         macData
                                             .sort((a, b) => a.machine.localeCompare(b.machine))
                                             .map((item) => (
-                                                <tr key={item.machine}>
+                                                <tr key={item.machine}
+                                                    onClick={() => handleCheckboxChange(item.machine)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <td>
                                                         <input
                                                             type="checkbox"

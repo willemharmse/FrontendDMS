@@ -169,7 +169,7 @@ body {
   /* Ensures word breaks for long strings */
   white-space: normal;
   /* Enables text wrapping */
-  width: 100px;
+  width: 3%;
   /* Set a width to see the wrapping effect */
   text-align: center;
   justify-content: space-between;

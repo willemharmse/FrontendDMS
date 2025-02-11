@@ -29,7 +29,7 @@ const HomePage = () => {
       <header className="header">
         <div className="header-content">
           <img src="logo.webp" alt="Logo" className="header-logo" />
-          <h1>TAU5 COMPLIANCEHUB</h1>
+          <h1>TAU5 COMPLIANCE HUB</h1>
         </div>
       </header>
 

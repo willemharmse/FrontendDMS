@@ -12,7 +12,7 @@ const MobileHomePage = () => {
             <header className="mobile-header">
                 <div className="mobile-header-content">
                     <img src="logo.webp" alt="Logo" className="mobile-header-logo" />
-                    <h1 className="mobile-header-title">TAU5 COMPLIANCEHUB</h1>
+                    <h1 className="mobile-header-title">TAU5 COMPLIANCE HUB</h1>
                 </div>
             </header>
 

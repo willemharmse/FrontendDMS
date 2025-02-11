@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
+import ManageMaterial from "../ValueChanges/ManageMaterial";
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role }) => {
     // State to control the popup and selected abbreviations
@@ -8,6 +9,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMaterials, setSelectedMaterials] = useState(new Set(usedMaterials));
     const [isNA, setIsNA] = useState(false);
+    const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
 
     const fetchValues = async () => {
@@ -78,16 +80,24 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
         setPopupVisible(false);
     };
 
+    const openManagePopup = () => setIsManageOpen(true);
+    const closeManagePopup = () => setIsManageOpen(false);
+
     return (
         <div className="mat-input-box">
             <h3 className="font-fam-labels">Materials</h3>
             {role === "admin" && (
-                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add Material</button>
+                <button className="top-right-button-mat" onClick={openManagePopup}>Update Materials</button>
+            )}
+            {role === "admin" && (
+                <button className="top-right-button-mat-2" onClick={() => setShowNewPopup(true)}>Add Material</button>
             )}
             <MaterialPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
             />
+
+            {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
             <div className="na-checkbox-container-mat">
                 <label>
                     <input
@@ -116,7 +126,10 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                         matsData
                                             .sort((a, b) => a.mat.localeCompare(b.mat))
                                             .map((item) => (
-                                                <tr key={item.mat}>
+                                                <tr key={item.mat}
+                                                    onClick={() => handleCheckboxChange(item.mat)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <td>
                                                         <input
                                                             type="checkbox"

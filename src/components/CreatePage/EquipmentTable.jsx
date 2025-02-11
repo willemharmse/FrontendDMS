@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./EquipmentTable.css"; // Add styling here
 import EquipmentPopup from "../ValueChanges/EquipmentPopup";
+import ManageEquipment from "../ValueChanges/ManageEquipment";
 
 const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role }) => {
     // State to control the popup and selected abbreviations
@@ -8,6 +9,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState(new Set(usedEquipment));
     const [isNA, setIsNA] = useState(false);
+    const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
 
     const handlePopupToggle = () => {
@@ -78,16 +80,24 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
         setPopupVisible(false);
     };
 
+    const openManagePopup = () => setIsManageOpen(true);
+    const closeManagePopup = () => setIsManageOpen(false);
+
     return (
         <div className="eqp-input-box">
             <h3 className="font-fam-labels">Equipment</h3>
             {role === "admin" && (
-                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
+                <button className="top-right-button-eqp" onClick={openManagePopup}>Update Equipment</button>
+            )}
+            {role === "admin" && (
+                <button className="top-right-button-eqp-2" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
             )}
             <EquipmentPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
             />
+
+            {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}
             <div className="na-checkbox-container-eqp">
                 <label>
                     <input
@@ -116,7 +126,10 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                         eqpData
                                             .sort((a, b) => a.eqp.localeCompare(b.eqp))
                                             .map((item) => (
-                                                <tr key={item.eqp}>
+                                                <tr key={item.eqp}
+                                                    onClick={() => handleCheckboxChange(item.eqp)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <td>
                                                         <input
                                                             type="checkbox"

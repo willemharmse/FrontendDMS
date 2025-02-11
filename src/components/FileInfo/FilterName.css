@@ -22,6 +22,10 @@
     text-align: center;
 }
 
+.file-info-row-height {
+    height: 57px;
+}
+
 .doc-num-filter {
     word-wrap: break-word;
     /* Allows long words to break and wrap to the next line */
@@ -77,7 +81,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 150px;
+    width: 170px;
     /* Set a width to see the wrapping effect */
     text-align: center;
 }
@@ -114,7 +118,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 100px;
+    width: 90px;
     /* Set a width to see the wrapping effect */
     text-align: center;
     justify-content: space-between;

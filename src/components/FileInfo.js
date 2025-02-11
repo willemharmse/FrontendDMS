@@ -446,7 +446,7 @@ const FileInfo = () => {
             </thead>
             <tbody>
               {filteredFiles.map((file, index) => (
-                <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""}`}>
+                <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
                   <td className="col">{index + 1}</td>
                   <td className="col">{file.discipline}</td>
                   <td
@@ -485,18 +485,26 @@ const FileInfo = () => {
                     <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
                   <td>
-                    {Array.isArray(file.owner)
-                      ? file.owner.join(", ")
-                      : typeof file.owner === "string"
-                        ? (() => {
-                          try {
-                            const parsed = JSON.parse(file.owner);
-                            return Array.isArray(parsed) ? parsed.join(", ") : file.owner;
-                          } catch {
-                            return file.owner; // If JSON.parse fails, return the original string
-                          }
-                        })()
-                        : "No Owners"}
+                    {
+                      Array.isArray(file.owner)
+                        ? file.owner.length > 1
+                          ? `${file.owner[0]}...` // Show first author and "..."
+                          : file.owner[0] // Just show the single author if there's only one
+                        : typeof file.owner === "string"
+                          ? (() => {
+                            try {
+                              const parsed = JSON.parse(file.owner);
+                              return Array.isArray(parsed)
+                                ? parsed.length > 1
+                                  ? `${parsed[0]}, ...` // Show first author and "..."
+                                  : parsed[0] // Just show the single author if there's only one
+                                : file.owner; // If parsed is not an array, show original string
+                            } catch {
+                              return file.owner; // If JSON.parse fails, return the original string
+                            }
+                          })()
+                          : "No Owners"
+                    }
                   </td>
                   <td className="col">{file.departmentHead}</td>
                   <td className="col">{(file.docID)}</td>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PPETable.css"; // Add styling here
-import "../ValueChanges/PPEPopup.jsx";
 import PPEPopup from "../ValueChanges/PPEPopup.jsx";
+import ManagePPE from "../ValueChanges/ManagePPE.jsx";
 
 const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role }) => {
     // State to control the popup and selected abbreviations
@@ -10,6 +10,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
     const [selectedPPE, setSelectedPPE] = useState(new Set(usedPPEOptions));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
+    const [isManageOpen, setIsManageOpen] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -46,7 +47,6 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
         const newValue = !isNA;
         setIsNA(newValue);
         if (!newValue) {
-            console.log("Clearing selections");
             // If unchecked, clear selections and update state accordingly
             setSelectedPPE(new Set());
             setUsedPPEOptions([]);
@@ -80,16 +80,24 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
         setPopupVisible(false);
     };
 
+    const openManagePopup = () => setIsManageOpen(true);
+    const closeManagePopup = () => setIsManageOpen(false);
+
     return (
         <div className="ppe-input-box">
             <h3 className="font-fam-labels">PPE</h3>
             {role === "admin" && (
-                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add PPE</button>
+                <button className="top-right-button-ppe" onClick={openManagePopup}>Update PPE</button>
+            )}
+            {role === "admin" && (
+                <button className="top-right-button-ppe-2" onClick={() => setShowNewPopup(true)}>Add PPE</button>
             )}
             <PPEPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
             />
+
+            {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
             <div className="na-checkbox-container-ppe">
                 <label>
                     <input
@@ -118,7 +126,10 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                         ppeData
                                             .sort((a, b) => a.ppe.localeCompare(b.ppe))
                                             .map((item) => (
-                                                <tr key={item.ppe}>
+                                                <tr key={item.ppe}
+                                                    onClick={() => handleCheckboxChange(item.ppe)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <td>
                                                         <input
                                                             type="checkbox"

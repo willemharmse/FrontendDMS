@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
@@ -10,7 +9,6 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
   const [popupVisible, setPopupVisible] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [selectedAbbrs, setSelectedAbbrs] = useState(new Set(usedAbbrCodes));
-  const navigate = useNavigate();
   const [showNewPopup, setShowNewPopup] = useState(false);
 
   useEffect(() => {
@@ -104,7 +102,10 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                     abbrData
                       .sort((a, b) => a.abbr.localeCompare(b.abbr))
                       .map((item) => (
-                        <tr key={item.abbr}>
+                        <tr key={item.abbr}
+                          onClick={() => handleCheckboxChange(item.abbr)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td>
                             <input
                               type="checkbox"

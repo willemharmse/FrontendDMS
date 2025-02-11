@@ -1,5 +1,5 @@
 .aim-textarea-pt {
-    width: 90%;
+    width: 95%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -14,6 +14,22 @@
 
 .procAct {
     width: 5%;
+}
+
+.procNr {
+    width: 3%;
+}
+
+.procMain {
+    width: 30%;
+}
+
+.procSub {
+    width: 44%;
+}
+
+.procAR {
+    width: 18%;
 }
 
 .select-container-proc {

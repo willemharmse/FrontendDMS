@@ -30,10 +30,10 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
             <table className="vcr-table table-borders">
                 <thead className="cp-table-header">
                     <tr>
-                        <th className="procCent">Nr</th>
-                        <th className="procCent">Procedure Main Steps</th>
-                        <th className="procCent">Procedure Sub Steps</th>
-                        <th className="procCent">Accountable and Responsible</th>
+                        <th className="procCent procNr">Nr</th>
+                        <th className="procCent procMain">Procedure Main Steps</th>
+                        <th className="procCent procSub">Procedure Sub Steps</th>
+                        <th className="procCent procAR">Accountable and Responsible</th>
                         <th className="procCent procAct"></th>
                     </tr>
                 </thead>
