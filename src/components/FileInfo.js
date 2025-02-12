@@ -484,23 +484,31 @@ const FileInfo = () => {
                   {(adminRoles.includes(role) || role === 'auditor') && (
                     <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
-                  <td>
+                  <td className="col">
                     {
                       Array.isArray(file.owner)
                         ? file.owner.length > 1
-                          ? `${file.owner[0]}...` // Show first author and "..."
-                          : file.owner[0] // Just show the single author if there's only one
+                          ? file.owner[0].length > 11
+                            ? `${file.owner[0].substring(0, 11)}..., ...` // Shorten first name if longer than 8 and add "..."
+                            : `${file.owner[0]}, ...` // Show first author and "..."
+                          : file.owner[0].length > 11
+                            ? `${file.owner[0].substring(0, 11)}...` // Shorten single name if longer than 8
+                            : file.owner[0] // Just show the single author if within limit
                         : typeof file.owner === "string"
                           ? (() => {
                             try {
                               const parsed = JSON.parse(file.owner);
                               return Array.isArray(parsed)
                                 ? parsed.length > 1
-                                  ? `${parsed[0]}, ...` // Show first author and "..."
-                                  : parsed[0] // Just show the single author if there's only one
-                                : file.owner; // If parsed is not an array, show original string
+                                  ? parsed[0].length > 11
+                                    ? `${parsed[0].substring(0, 11)}..., ...`
+                                    : `${parsed[0]}, ...`
+                                  : parsed[0].length > 11
+                                    ? `${parsed[0].substring(0, 11)}...`
+                                    : parsed[0]
+                                : file.owner;
                             } catch {
-                              return file.owner; // If JSON.parse fails, return the original string
+                              return file.owner.length > 11 ? `${file.owner.substring(0, 11)}...` : file.owner;
                             }
                           })()
                           : "No Owners"

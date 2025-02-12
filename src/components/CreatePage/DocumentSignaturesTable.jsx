@@ -2,25 +2,46 @@ import React, { useState } from "react";
 import "./DocumentSignaturesTable.css";
 
 const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) => {
-  const [selectedNames, setSelectedNames] = useState([]);
+  // Define separate name lists for each authorization type
+  const nameLists = {
+    Approver: ["Quintin Coetzee", "Rossouw Snyders", "Phil Johnson", "Colbert Smith", "Sizwe Dlamini", "Ernest Van Der Merwe", "Jacqualine Botha", "Simon Mbedzi", "Tshidi Molea", "Bryan Singo"],
+    Author: [],  // Placeholder
+    Reviewer: ["Anzel Swanepoel", "Andre Coetzee", "Abel Moetji"],
+  };
+
+  // Copy the Approver array into Author
+  nameLists.Author = [...nameLists.Approver];
+  nameLists.Author.push(...nameLists.Reviewer);
+  nameLists.Reviewer.push(...nameLists.Approver);
+
+  const [selectedNamesByAuth, setSelectedNamesByAuth] = useState({
+    Author: [],
+    Approver: [],
+    Reviewer: [],
+  });
 
   // Function to handle name selection
   const handleNameChange = (e, index) => {
     const selectedName = e.target.value;
     const prevName = rows[index].name;
+    const authType = rows[index].auth;
 
-    // If the name is changed (not just cleared), update the selected names array
-    if (selectedName && selectedName !== prevName) {
-      setSelectedNames((prevNames) => {
-        // Add the new name to the selected names if it's not already selected
-        return [...prevNames.filter((name) => name !== prevName), selectedName];
-      });
-    } else if (!selectedName) {
-      // If the name is cleared (i.e., selectedName is ""), remove it from the selected names
-      setSelectedNames((prevNames) => prevNames.filter((name) => name !== prevName));
-    }
+    setSelectedNamesByAuth((prev) => {
+      const updatedAuthNames = { ...prev };
 
-    // Update the selected name for the current row
+      // Remove the previous name if it exists
+      if (prevName) {
+        updatedAuthNames[authType] = updatedAuthNames[authType].filter((name) => name !== prevName);
+      }
+
+      // Add the new name if it's not empty
+      if (selectedName) {
+        updatedAuthNames[authType] = [...updatedAuthNames[authType], selectedName];
+      }
+
+      return updatedAuthNames;
+    });
+
     handleRowChange(e, index, "name");
   };
 
@@ -59,8 +80,12 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                   onChange={(e) => handleNameChange(e, index)}
                 >
                   <option value="">Select Name</option>
-                  {["Abel Moetji", "Andre Coetzee", "Anzel Swanepoel", "Quintin Coetzee", "Rossouw Snyders", "Willem Harmse"]
-                    .filter((name) => !selectedNames.includes(name) || name === row.name) // Exclude already selected names, but allow the current name to stay
+                  {nameLists[row.auth] // Get the correct name list based on the auth type
+                    .filter(
+                      (name) =>
+                        !selectedNamesByAuth[row.auth]?.includes(name) || name === row.name
+                    ) // Allow current row's name but exclude already selected ones
+                    .sort() // Sort alphabetically
                     .map((name) => (
                       <option key={name} value={name}>
                         {name}
@@ -81,7 +106,10 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                   className="remove-row-button font-fam"
                   onClick={() => {
                     // Remove the name from selected names when a row is removed
-                    setSelectedNames((prevNames) => prevNames.filter((name) => name !== row.name));
+                    setSelectedNamesByAuth((prev) => ({
+                      ...prev,
+                      [row.auth]: prev[row.auth].filter((name) => name !== row.name),
+                    }));
                     removeRow(index);
                   }}
                 >

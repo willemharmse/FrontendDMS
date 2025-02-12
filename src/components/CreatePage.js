@@ -40,6 +40,14 @@ const CreatePage = () => {
     "Anzel Swanepoel": "Workspace Manager",
     "Quintin Coetzee": "Director",
     "Andre Coetzee": "Technical Co-ordinator",
+    "Phil Johnson": "Geology",
+    "Colbert Smith": "Metallurgy",
+    "Sizwe Dlamini": "Mining",
+    "Ernest Van Der Merwe": "Protection Services",
+    "Jacqualine Botha": "S&SD",
+    "Simon Mbedzi": "Survey",
+    "Tshidi Molea": "Training",
+    "Bryan Singo": "VOHE"
   };
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
@@ -316,7 +324,12 @@ const CreatePage = () => {
       });
 
       if (!isValid) {
-        alert(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`);
+        toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
+          closeButton: false,
+          style: {
+            textAlign: 'center'
+          }
+        })
 
         // Revert the change if invalid
         rowToChange.auth = previousAuth;  // Revert to previous auth
@@ -412,7 +425,12 @@ const CreatePage = () => {
       initialRequiredRows.includes(rowToRemove.auth) &&
       formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
     ) {
-      alert(`You must keep at least one ${rowToRemove.auth}.`);
+      toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
       return;
     }
 
