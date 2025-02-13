@@ -496,8 +496,8 @@ const FileInfo = () => {
                       Array.isArray(file.owner)
                         ? file.owner.length > 1
                           ? file.owner[0].length > 11
-                            ? `${file.owner[0].substring(0, 11)}..., ...` // Shorten first name if longer than 8 and add "..."
-                            : `${file.owner[0]}, ...` // Show first author and "..."
+                            ? `${file.owner[0].substring(0, 11)}...` // Shorten first name if longer than 8 and add "..."
+                            : `${file.owner[0]}...` // Show first author and "..."
                           : file.owner[0].length > 11
                             ? `${file.owner[0].substring(0, 11)}...` // Shorten single name if longer than 8
                             : file.owner[0] // Just show the single author if within limit
@@ -508,8 +508,8 @@ const FileInfo = () => {
                               return Array.isArray(parsed)
                                 ? parsed.length > 1
                                   ? parsed[0].length > 11
-                                    ? `${parsed[0].substring(0, 11)}..., ...`
-                                    : `${parsed[0]}, ...`
+                                    ? `${parsed[0].substring(0, 11)}...`
+                                    : `${parsed[0]}...`
                                   : parsed[0].length > 11
                                     ? `${parsed[0].substring(0, 11)}...`
                                     : parsed[0]
