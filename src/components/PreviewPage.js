@@ -14,6 +14,13 @@ const PreviewPage = () => {
 
     const navigate = useNavigate();
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('rememberMe');
+        navigate('/FrontendDMS/');
+    };
+
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -56,7 +63,7 @@ const PreviewPage = () => {
                 <div className="sidebar-logo">
                     <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/documentManage')} />
                 </div>
-                <button className="sidebar-item text-format-log log-but" onClick={() => navigate('/FrontendDMS/')}>
+                <button className="sidebar-item text-format-log log-but" onClick={handleLogout}>
                     Log Out
                 </button>
             </div>

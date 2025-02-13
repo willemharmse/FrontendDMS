@@ -12,6 +12,13 @@ const HomePage = () => {
   const [clicked4, setClicked4] = useState(false);
   const [clicked5, setClicked5] = useState(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('rememberMe');
+    navigate('/FrontendDMS/');
+  };
+
   const handleClick = (setClicked, navigateTo) => {
     setClicked(true);
 
@@ -65,7 +72,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        <button className="logout-button" onClick={() => navigate("/FrontendDMS/")}>
+        <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>
       </div>

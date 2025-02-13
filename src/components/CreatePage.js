@@ -33,24 +33,15 @@ const CreatePage = () => {
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
   const autoSaveInterval = useRef(null);
-  const nameToPositionMap = {
-    "Willem Harmse": "Software Developer",
-    "Abel Moetji": "Engineer",
-    "Rossouw Snyders": "Operations Manager",
-    "Anzel Swanepoel": "Workspace Manager",
-    "Quintin Coetzee": "Director",
-    "Andre Coetzee": "Technical Co-ordinator",
-    "Phil Johnson": "Geology",
-    "Colbert Smith": "Metallurgy",
-    "Sizwe Dlamini": "Mining",
-    "Ernest Van Der Merwe": "Protection Services",
-    "Jacqualine Botha": "S&SD",
-    "Simon Mbedzi": "Survey",
-    "Tshidi Molea": "Training",
-    "Bryan Singo": "VOHE"
-  };
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('rememberMe');
+    navigate('/FrontendDMS/');
+  };
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = [...formData.procedureRows];
@@ -292,12 +283,6 @@ const CreatePage = () => {
     const newRows = [...formData.rows];
     const rowToChange = newRows[index];
 
-    // If the field being changed is "name", update the position based on the selected name
-    if (field === "name") {
-      const selectedName = e.target.value;
-      rowToChange.pos = nameToPositionMap[selectedName] || ""; // Set position based on name
-    }
-
     // Save the previous value of 'auth' before change for validation
     const previousAuth = rowToChange.auth;
 
@@ -466,8 +451,11 @@ const CreatePage = () => {
       <button className="logo-button-create" onClick={() => navigate('/FrontendDMS/home')}>
         <img src="logo.webp" alt="Home" />
       </button>
-      <button className="log-button-create" onClick={() => navigate('/FrontendDMS/')}>
+      <button className="log-button-create" onClick={handleLogout}>
         Log Out
+      </button>
+      <button className="import-button-create" onClick={() => navigate('/FrontendDMS/importValues')}>
+        Import Values
       </button>
       <button className="load-button-create" onClick={openLoadPopup}>
         Load Draft

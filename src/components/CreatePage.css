@@ -30,7 +30,7 @@ body {
   /* Positioned relative to the container */
   top: 10px;
   /* Distance from the top */
-  right: 230px;
+  right: 340px;
   /* Distance from the left */
   width: 100px;
   height: 50px;
@@ -43,6 +43,23 @@ body {
 }
 
 .load-button-create {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 10px;
+  /* Distance from the top */
+  right: 230px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
+.import-button-create {
   position: absolute;
   /* Positioned relative to the container */
   top: 10px;

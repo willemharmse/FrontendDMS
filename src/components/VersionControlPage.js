@@ -29,6 +29,13 @@ const VersionControlPage = () => {
         }
     }, [navigate]);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('rememberMe');
+        navigate('/FrontendDMS/');
+    };
+
     // Fetch existing files for the file select dropdown
     useEffect(() => {
         const fetchFiles = async () => {
@@ -94,7 +101,7 @@ const VersionControlPage = () => {
             <button className="vc-logo-btn" onClick={() => navigate("/FrontendDMS/home")}>
                 <img src="logo.webp" alt="Home" />
             </button>
-            <button className="vc-logout-btn" onClick={() => navigate("/FrontendDMS/")}>
+            <button className="vc-logout-btn" onClick={handleLogout}>
                 Log Out
             </button>
             <button className="vc-back-btn" onClick={() => navigate("/FrontendDMS/documentManage")}>

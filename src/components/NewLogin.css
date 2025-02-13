@@ -1,0 +1,191 @@
+.nl-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: rgb(0, 3, 8);
+    background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
+}
+
+.nl-login-card {
+    background-color: transparent;
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.nl-logo {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.nl-input-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    background: white;
+    background: transparent;
+}
+
+.nl-logo-img {
+    width: 150px;
+    height: 150px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+.nl-logo-img-text {
+    width: 300px;
+    height: 80px;
+    margin-bottom: 40px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nl-input-container i {
+    position: absolute;
+    left: 15px;
+    /* Adjust icon position */
+    color: black;
+    font-size: 1rem;
+}
+
+.nl-input-container input {
+    width: 100%;
+    padding: 12px 40px 12px 40px;
+    /* Adjusted to fit icon */
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: white;
+    outline: none;
+}
+
+.nl-password-toggle {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    width: 25px;
+    cursor: pointer;
+    color: black;
+}
+
+.nl-password-toggle:hover {
+    color: black;
+}
+
+.nl-input-container input[type=text] {
+    width: 100%;
+    padding: 12px 40px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: white;
+}
+
+.nl-input-container input[type=password] {
+    width: 100%;
+    padding: 12px 40px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: white;
+}
+
+.nl-input-container input::placeholder {
+    color: #bdc3c7;
+}
+
+.nl-login-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.nl-form-group {
+    margin-bottom: 15px;
+    background: transparent;
+}
+
+.nl-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: white;
+    font-weight: 500;
+}
+
+.nl-form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.nl-form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.nl-options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    /* Reduce the width */
+    max-width: 475px;
+
+    /* Set a max width */
+    margin: 0 auto 70px auto;
+    margin-bottom: 50px;
+}
+
+.nl-remember-me {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgb(107, 106, 106);
+}
+
+.nl-forgot-password {
+    color: rgb(107, 106, 106);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.nl-forgot-password:hover {
+    text-decoration: underline;
+}
+
+.nl-login-button {
+    width: 50%;
+    padding: 0.8rem;
+    background-color: rgb(155, 154, 154);
+    color: #120b5b;
+    border: none;
+    border-radius: 4px;
+    font-size: 20px;
+    font-weight: bolder;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.nl-login-button:hover {
+    background-color: #2980b9;
+}
+
+.nl-login-button-container {
+    display: flex;
+    justify-content: center;
+    /* Centers the button horizontally */
+    /* Adjust spacing */
+}

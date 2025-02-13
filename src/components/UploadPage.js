@@ -120,6 +120,13 @@ const UploadPage = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('rememberMe');
+    navigate('/FrontendDMS/');
+  };
+
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -129,7 +136,7 @@ const UploadPage = () => {
       <button className="logo-button" onClick={() => navigate('/FrontendDMS/home')}>
         <img src="logo.webp" alt="Home" />
       </button>
-      <button className="log-button-up" onClick={() => navigate('/FrontendDMS/')}>
+      <button className="log-button-up" onClick={handleLogout}>
         Log Out
       </button>
       <button className="back-button-up" onClick={() => navigate('/FrontendDMS/documentManage')}>

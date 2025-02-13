@@ -18,6 +18,13 @@ export default function BatchUpload() {
     const [loading, setLoading] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('rememberMe');
+        navigate('/FrontendDMS/');
+    };
+
     const handleClick = () => {
         if (!isFormValid()) {
             toast.error("Please fill in all required fields marked by a *", {
@@ -86,7 +93,7 @@ export default function BatchUpload() {
             <button className="logo-button-batch" onClick={() => navigate('/FrontendDMS/home')}>
                 <img src="logo.webp" alt="Home" />
             </button>
-            <button className="log-button-batch" onClick={() => navigate('/FrontendDMS/')}>
+            <button className="log-button-batch" onClick={handleLogout}>
                 Log Out
             </button>
             <button className="back-button-batch" onClick={() => navigate('/FrontendDMS/documentManage')}>

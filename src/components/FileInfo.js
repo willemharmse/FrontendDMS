@@ -49,6 +49,13 @@ const FileInfo = () => {
     endDate: ''
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem('rememberMe');
+    navigate('/FrontendDMS/');
+  };
+
   const handleFilterChange = (field, value) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -433,7 +440,7 @@ const FileInfo = () => {
               )}
               <button onClick={openRDPopup}>Change Date Formatting</button>
               <ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />
-              <button onClick={() => navigate('/FrontendDMS/')}>
+              <button onClick={handleLogout}>
                 Log Out
               </button>
             </div>

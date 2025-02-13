@@ -18,16 +18,17 @@ import MobileHomePage from './components/Mobile/MobileHomePage';
 import BatchUpload from './components/BatchUpload';
 import PreviewWord from './components/PreviewWord';
 import VersionControlPage from './components/VersionControlPage';
-import ManageAbbreviations from './components/ValueChanges/ManageAbbreviations';
-import ManageDefinitions from './components/ValueChanges/ManageDefinitions';
 import Tester from './components/tester';
 import ConstructionPage from './components/ConstructionPage';
+import ImportExcelPage from './components/ImportExcelPage';
+import NewLogin from './components/NewLogin';
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Desktop Routes */}
+        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/mobileLogin" /> : <NewLogin />} />
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <LoginPage />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path="FrontendDMS/documentManage" element={isMobile ? <Navigate to="/FrontendDMS/mobileFI" /> : <FileInfo />} />
@@ -40,9 +41,7 @@ function App() {
         <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
         <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <VersionControlPage />} />
-        <Route path='FrontendDMS/manageAbbrs' element={<ManageAbbreviations />} />
-        <Route path='FrontendDMS/manageTerms' element={<ManageDefinitions />} />
-        <Route path='FrontendDMS/tester' element={<Tester />} />
+        <Route path='FrontendDMS/importValues' element={<ImportExcelPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

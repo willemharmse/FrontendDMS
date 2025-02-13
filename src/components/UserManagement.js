@@ -27,6 +27,13 @@ const UserManagement = () => {
     const [showTeamManagement, setShowTeamManagement] = useState(false);
     const navigate = useNavigate();
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('rememberMe');
+        navigate('/FrontendDMS/');
+    };
+
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -217,7 +224,7 @@ const UserManagement = () => {
                     Add User
                 </button>
                 <button className="sidebar-item text-format-log back-but" onClick={() => navigate('/FrontendDMS/documentManage')}>Back</button>
-                <button className="sidebar-item text-format-log log-but-um" onClick={() => navigate('/FrontendDMS/')}>Log Out</button>
+                <button className="sidebar-item text-format-log log-but-um" onClick={handleLogout}>Log Out</button>
             </div>
 
             <div className="main-box-user">
