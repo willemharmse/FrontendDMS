@@ -11,7 +11,7 @@ body {
 .log-button-create {
   position: absolute;
   /* Positioned relative to the container */
-  top: 10px;
+  top: 35px;
   /* Distance from the top */
   right: 10px;
   /* Distance from the left */
@@ -28,7 +28,7 @@ body {
 .save-button-create {
   position: absolute;
   /* Positioned relative to the container */
-  top: 10px;
+  top: 35px;
   /* Distance from the top */
   right: 340px;
   /* Distance from the left */
@@ -45,7 +45,7 @@ body {
 .load-button-create {
   position: absolute;
   /* Positioned relative to the container */
-  top: 10px;
+  top: 35px;
   /* Distance from the top */
   right: 230px;
   /* Distance from the left */
@@ -62,7 +62,7 @@ body {
 .import-button-create {
   position: absolute;
   /* Positioned relative to the container */
-  top: 10px;
+  top: 35px;
   /* Distance from the top */
   right: 120px;
   /* Distance from the left */
@@ -541,9 +541,10 @@ body {
   height: 131px;
   margin: 10px 0;
   padding: 12px;
-  background-color: #7EAC89;
-  color: white;
+  background-color: #d7c8ac;
+  color: black;
   border: none;
+  font-weight: bolder;
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
@@ -551,7 +552,7 @@ body {
 }
 
 .generate-button:active:hover {
-  background-color: #7EAC89;
+  background-color: #d7c8ac;
 }
 
 .input-group-cpt {
@@ -636,8 +637,8 @@ body {
 .add-row-button {
   margin-top: 10px;
   width: 100%;
-  background-color: #7EAC89;
-  color: white;
+  background-color: #d7c8ac;
+  color: black;
   font-weight: bold;
   padding: 10px;
   border: none;
@@ -648,7 +649,8 @@ body {
 }
 
 .add-row-button:hover {
-  background-color: #3f9754;
+  background-color: #d7c8ac;
+  color: black;
 }
 
 .table-borders {

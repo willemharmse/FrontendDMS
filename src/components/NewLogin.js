@@ -60,7 +60,7 @@ const NewLogin = () => {
                     localStorage.setItem('token', data.token); // Persistent login
                     localStorage.setItem('rememberMe', 'true'); // Remember the preference
                 } else {
-                    sessionStorage.setItem('token', data.token); // Temporary login
+                    localStorage.setItem('token', data.token); // Temporary login
                     localStorage.removeItem('rememberMe'); // Clear rememberMe flag if unchecked
                 }
 

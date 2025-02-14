@@ -97,20 +97,20 @@
 /* Buttons */
 .mct-add-subheading-btn,
 .mct-add-chapter-btn {
-    background-color: #7EAC89;
-    color: white;
+    background-color: #d7c8ac;
+    color: black;
     border: none;
     padding: 10px;
+    font-weight: bold;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     margin-top: 10px;
     transition: background 0.3s ease-in-out;
 }
 
-.mct-add-subheading-btn:hover,
-.mct-add-chapter-btn:hover {
-    background-color: #3f9754;
+.mct-add-subheading-btn {
+    font-size: 14px !important;
 }
 
 /* Center section headings inside the chapter card */

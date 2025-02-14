@@ -177,7 +177,7 @@
 
 .dept-menu-filter {
     position: absolute;
-    top: 100px;
+    top: 90px;
     /* Adjust to make it appear above the table row */
     left: 0;
     transform: translateY(-100%);
@@ -192,9 +192,17 @@
     /* Ensures it can be interacted with */
 }
 
+.active-filter {
+    color: black;
+    background-color: lightgray;
+    /* Highlight active filters in blue */
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 .date-menu-filter {
     position: absolute;
-    top: 130px;
+    top: 120px;
     /* Adjust to make it appear above the table row */
     left: -75px;
     transform: translateY(-100%);

@@ -439,7 +439,7 @@ const CreatePage = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docx`);
+      saveAs(blob, `${documentName}.docm`);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
       console.error("Error generating document:", error);

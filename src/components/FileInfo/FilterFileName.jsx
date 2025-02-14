@@ -35,9 +35,9 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     </div>
                 </th>
             )}
-            <th className="col-own-filter">
+            <th className={`col-own-filter ${filters.author ? "active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Author')}>Author</span>
+                    <span className={`fileinfo-title-filter`} onClick={() => toggleMenu('Author')}>Author</span>
                     {openMenu === 'Author' && (
                         <div
                             className="fileinfo-menu-filter"
@@ -54,7 +54,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className="col-dept-head-filter">
+            <th className={`col-dept-head-filter ${filters.deptHead ? "active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('DeptHead')}>Department Head</span>
                     {openMenu === 'DeptHead' && (
@@ -73,7 +73,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className="col-docID-filter">
+            <th className={`col-docID-filter ${filters.docID ? "active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('DocID')}>Doc ID</span>
                     {openMenu === 'DocID' && (
@@ -92,7 +92,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className="col-date-filter">
+            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('Date')}>Review Date</span>
                     {openMenu === 'Date' && (
