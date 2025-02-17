@@ -126,10 +126,10 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                 </tbody>
               </table>
             </div>
-            <button className="save-selection-button" onClick={handleSaveSelection}>
+            <button className="save-selection-button-abbr" onClick={handleSaveSelection}>
               Save Selection
             </button>
-            <button className="close-popup-button" onClick={handlePopupToggle}>
+            <button className="close-popup-button-abbr" onClick={handlePopupToggle}>
               Close
             </button>
           </div>
@@ -137,45 +137,47 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       )}
 
       {/* Display selected abbreviations in a table */}
-      <table className="font-fam table-borders">
-        <thead className="cp-table-header">
-          <tr>
-            <th className="col-abbr-abbr">Abbreviations</th>
-            <th className="col-abbr-desc">Description</th>
-            <th className="col-abbr-act"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {formData.abbrRows.map((row, index) => (
-            <tr key={index}>
-              <td>{row.abbr}</td>
-              <td>{row.meaning}</td>
-              <td>
-                <button
-                  className="remove-row-button"
-                  onClick={() => {
-                    // Remove abbreviation from table and the selected abbreviations set
-                    setFormData({
-                      ...formData,
-                      abbrRows: formData.abbrRows.filter((_, i) => i !== index),
-                    });
-                    setUsedAbbrCodes(
-                      usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
-                    );
-
-                    // Update the selectedAbbrs state to reflect the removal
-                    const newSelectedAbbrs = new Set(selectedAbbrs);
-                    newSelectedAbbrs.delete(row.abbr);
-                    setSelectedAbbrs(newSelectedAbbrs);
-                  }}
-                >
-                  Remove
-                </button>
-              </td>
+      {selectedAbbrs.size > 0 && (
+        <table className="font-fam table-borders">
+          <thead className="cp-table-header">
+            <tr>
+              <th className="col-abbr-abbr">Abbreviations</th>
+              <th className="col-abbr-desc">Description</th>
+              <th className="col-abbr-act"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {formData.abbrRows.map((row, index) => (
+              <tr key={index}>
+                <td>{row.abbr}</td>
+                <td>{row.meaning}</td>
+                <td>
+                  <button
+                    className="remove-row-button"
+                    onClick={() => {
+                      // Remove abbreviation from table and the selected abbreviations set
+                      setFormData({
+                        ...formData,
+                        abbrRows: formData.abbrRows.filter((_, i) => i !== index),
+                      });
+                      setUsedAbbrCodes(
+                        usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
+                      );
+
+                      // Update the selectedAbbrs state to reflect the removal
+                      const newSelectedAbbrs = new Set(selectedAbbrs);
+                      newSelectedAbbrs.delete(row.abbr);
+                      setSelectedAbbrs(newSelectedAbbrs);
+                    }}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <button className="add-row-button" onClick={handlePopupToggle}>
         Select Abbreviations

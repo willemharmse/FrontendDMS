@@ -85,7 +85,15 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
 
     return (
         <div className="ppe-input-box">
-            <h3 className="font-fam-labels">PPE</h3>
+            <div className="ppe-header">
+                <h3 className="font-fam-labels">PPE</h3>
+                <input
+                    type="checkbox"
+                    className="na-checkbox-ppe"
+                    checked={isNA}
+                    onChange={handleNAToggle}
+                />
+            </div>
             {role === "admin" && (
                 <button className="top-right-button-ppe" onClick={openManagePopup}>Update PPE</button>
             )}
@@ -98,16 +106,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             />
 
             {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
-            <div className="na-checkbox-container-ppe">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isNA}
-                        onChange={handleNAToggle}
-                    />
-                    Applicable
-                </label>
-            </div>
+
             {/* Popup */}
             {popupVisible && (
                 <div className="popup-overlay-ppe">
@@ -160,43 +159,45 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             )}
 
             {/* Display selected abbreviations in a table */}
-            <table className="vcr-table font-fam table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="col-ppe-ppe">PPE</th>
-                        <th className="col-ppe-act"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {formData.PPEItems?.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.ppe}</td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => {
-                                        // Remove abbreviation from table and the selected abbreviations set
-                                        setFormData({
-                                            ...formData,
-                                            PPEItems: formData.PPEItems.filter((_, i) => i !== index),
-                                        });
-                                        setUsedPPEOptions(
-                                            usedPPEOptions.filter((PPE) => PPE !== row.PPE)
-                                        );
-
-                                        // Update the selectedAbbrs state to reflect the removal
-                                        const newSelectedPPE = new Set(selectedPPE);
-                                        newSelectedPPE.delete(row.PPE);
-                                        setSelectedPPE(newSelectedPPE);
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {selectedPPE.size > 0 && (
+                <table className="vcr-table font-fam table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="col-ppe-ppe">PPE</th>
+                            <th className="col-ppe-act"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {formData.PPEItems?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.ppe}</td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => {
+                                            // Remove abbreviation from table and the selected abbreviations set
+                                            setFormData({
+                                                ...formData,
+                                                PPEItems: formData.PPEItems.filter((_, i) => i !== index),
+                                            });
+                                            setUsedPPEOptions(
+                                                usedPPEOptions.filter((ppe) => ppe !== row.ppe)
+                                            );
+
+                                            // Update the selectedAbbrs state to reflect the removal
+                                            const newSelectedPPE = new Set(selectedPPE);
+                                            newSelectedPPE.delete(row.ppe);
+                                            setSelectedPPE(newSelectedPPE);
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
                 Select PPE

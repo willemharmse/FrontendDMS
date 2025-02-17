@@ -108,6 +108,15 @@
     width: 5%;
 }
 
+.save-selection-button-abbr,
+.close-popup-button-abbr {
+    margin-top: 10px;
+}
+
+.save-selection-button-abbr {
+    background-color: #7EAC89;
+}
+
 .popup-table-wrapper-abbr {
     overflow-y: auto;
     /* Allow vertical scrolling */

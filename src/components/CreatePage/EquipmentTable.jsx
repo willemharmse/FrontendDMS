@@ -85,7 +85,15 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
 
     return (
         <div className="eqp-input-box">
-            <h3 className="font-fam-labels">Equipment</h3>
+            <div className="eqp-header">
+                <h3 className="font-fam-labels">Equipment</h3>
+                <input
+                    type="checkbox"
+                    className="na-checkbox-eqp"
+                    checked={isNA}
+                    onChange={handleNAToggle}
+                />
+            </div>
             {role === "admin" && (
                 <button className="top-right-button-eqp" onClick={openManagePopup}>Update Equipment</button>
             )}
@@ -98,16 +106,6 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
             />
 
             {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}
-            <div className="na-checkbox-container-eqp">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isNA}
-                        onChange={handleNAToggle}
-                    />
-                    Applicable
-                </label>
-            </div>
             {/* Popup */}
             {popupVisible && (
                 <div className="popup-overlay-eqp">
@@ -160,43 +158,45 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
             )}
 
             {/* Display selected abbreviations in a table */}
-            <table className="vcr-table font-fam table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="col-eqp-eqp">Equipment</th>
-                        <th className="col-eqp-act"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {formData.Equipment?.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.eqp}</td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => {
-                                        // Remove abbreviation from table and the selected abbreviations set
-                                        setFormData({
-                                            ...formData,
-                                            Equipment: formData.Equipment.filter((_, i) => i !== index),
-                                        });
-                                        setUsedEquipment(
-                                            usedEquipment.filter((eqp) => eqp !== row.eqp)
-                                        );
-
-                                        // Update the selectedAbbrs state to reflect the removal
-                                        const newSelectedEquipment = new Set(selectedEquipment);
-                                        newSelectedEquipment.delete(row.eqp);
-                                        setSelectedEquipment(newSelectedEquipment);
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {selectedEquipment.size > 0 && (
+                <table className="vcr-table font-fam table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="col-eqp-eqp">Equipment</th>
+                            <th className="col-eqp-act"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {formData.Equipment?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.eqp}</td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => {
+                                            // Remove abbreviation from table and the selected abbreviations set
+                                            setFormData({
+                                                ...formData,
+                                                Equipment: formData.Equipment.filter((_, i) => i !== index),
+                                            });
+                                            setUsedEquipment(
+                                                usedEquipment.filter((eqp) => eqp !== row.eqp)
+                                            );
+
+                                            // Update the selectedAbbrs state to reflect the removal
+                                            const newSelectedEquipment = new Set(selectedEquipment);
+                                            newSelectedEquipment.delete(row.eqp);
+                                            setSelectedEquipment(newSelectedEquipment);
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
                 Select Equipment

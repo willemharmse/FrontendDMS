@@ -85,7 +85,15 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
 
     return (
         <div className="tool-input-box">
-            <h3 className="font-fam-labels">Hand Tools</h3>
+            <div className="tool-header">
+                <h3 className="font-fam-labels">Hand Tools</h3>
+                <input
+                    type="checkbox"
+                    className="na-checkbox-tool"
+                    checked={isNA}
+                    onChange={handleNAToggle}
+                />
+            </div>
             {role === "admin" && (
                 <button className="top-right-button-tool" onClick={openManagePopup}>Update Tools</button>
             )}
@@ -98,17 +106,6 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             />
 
             {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
-
-            <div className="na-checkbox-container-tool">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isNA}
-                        onChange={handleNAToggle}
-                    />
-                    Applicable
-                </label>
-            </div>
             {/* Popup */}
             {popupVisible && (
                 <div className="popup-overlay-tool">
@@ -161,43 +158,45 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             )}
 
             {/* Display selected abbreviations in a table */}
-            <table className="vcr-table font-fam table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="col-tool-tool">Tool</th>
-                        <th className="col-tool-act"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {formData.HandTools?.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.tool}</td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => {
-                                        // Remove abbreviation from table and the selected abbreviations set
-                                        setFormData({
-                                            ...formData,
-                                            HandTools: formData.HandTools.filter((_, i) => i !== index),
-                                        });
-                                        setUsedHandTools(
-                                            usedHandTools.filter((tool) => tool !== row.tool)
-                                        );
-
-                                        // Update the selectedAbbrs state to reflect the removal
-                                        const newSelectedTools = new Set(selectedTools);
-                                        newSelectedTools.delete(row.tool);
-                                        setSelectedTools(newSelectedTools);
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {selectedTools.size > 0 && (
+                <table className="vcr-table font-fam table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="col-tool-tool">Tool</th>
+                            <th className="col-tool-act"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {formData.HandTools?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.tool}</td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => {
+                                            // Remove abbreviation from table and the selected abbreviations set
+                                            setFormData({
+                                                ...formData,
+                                                HandTools: formData.HandTools.filter((_, i) => i !== index),
+                                            });
+                                            setUsedHandTools(
+                                                usedHandTools.filter((tool) => tool !== row.tool)
+                                            );
+
+                                            // Update the selectedAbbrs state to reflect the removal
+                                            const newSelectedTools = new Set(selectedTools);
+                                            newSelectedTools.delete(row.tool);
+                                            setSelectedTools(newSelectedTools);
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
                 Select Hand Tools

@@ -17,6 +17,8 @@ import MobileMachineTable from "./CreatePage/MobileMachineTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ const CreatePage = () => {
   const autoSaveInterval = useRef(null);
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -233,7 +236,7 @@ const CreatePage = () => {
   });
 
   const validateForm = () => {
-    const { title, documentType, aim, references, reviewDate, procedureRows, referenceRows } = formData;
+    const { title, documentType, aim, references, reviewDate } = formData;
     return (
       title &&
       documentType &&
@@ -338,7 +341,6 @@ const CreatePage = () => {
 
   // Add a new row to the table
   const addRow = () => {
-    const today = new Date().toISOString().split("T")[0]; // Format the date to yyyy-mm-dd
     setFormData({
       ...formData,
       rows: [
@@ -429,6 +431,8 @@ const CreatePage = () => {
   // Send data to backend to generate a Word document
   const handleGeneratePDF = async () => {
     const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+    setLoading(true);
+
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
         method: "POST",
@@ -440,9 +444,11 @@ const CreatePage = () => {
 
       const blob = await response.blob();
       saveAs(blob, `${documentName}.docm`);
+      setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
       console.error("Error generating document:", error);
+      setLoading(false);
     }
   };
 
@@ -451,6 +457,7 @@ const CreatePage = () => {
       <button className="logo-button-create" onClick={() => navigate('/FrontendDMS/home')}>
         <img src="logo.webp" alt="Home" />
       </button>
+      <h1 className="create-page-title">Create New Document</h1>
       <button className="log-button-create" onClick={handleLogout}>
         Log Out
       </button>
@@ -468,8 +475,6 @@ const CreatePage = () => {
       {/* Main content */}
       <div className="main-box">
         <div className="scrollable-box">
-          <h2 className="scrollable-box-title font-fam">Create New Document</h2>
-
           <div className="input-row">
             <div className="input-box-type">
               <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
@@ -551,7 +556,7 @@ const CreatePage = () => {
               onClick={handleClick}
               title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
             >
-              Generate File
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate File'}
             </button>
           </div>
         </div>

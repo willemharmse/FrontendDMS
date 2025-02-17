@@ -85,7 +85,15 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
 
     return (
         <div className="mat-input-box">
-            <h3 className="font-fam-labels">Materials</h3>
+            <div className="materials-header">
+                <h3 className="font-fam-labels">Materials</h3>
+                <input
+                    type="checkbox"
+                    className="na-checkbox-mat"
+                    checked={isNA}
+                    onChange={handleNAToggle}
+                />
+            </div>
             {role === "admin" && (
                 <button className="top-right-button-mat" onClick={openManagePopup}>Update Materials</button>
             )}
@@ -98,16 +106,6 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             />
 
             {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
-            <div className="na-checkbox-container-mat">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isNA}
-                        onChange={handleNAToggle}
-                    />
-                    Applicable
-                </label>
-            </div>
             {/* Popup */}
             {popupVisible && (
                 <div className="popup-overlay-mat">
@@ -160,43 +158,45 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             )}
 
             {/* Display selected abbreviations in a table */}
-            <table className="vcr-table font-fam table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="col-mat-mat">Material</th>
-                        <th className="col-mat-act"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {formData.Materials?.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.mat}</td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => {
-                                        // Remove abbreviation from table and the selected abbreviations set
-                                        setFormData({
-                                            ...formData,
-                                            Materials: formData.Materials.filter((_, i) => i !== index),
-                                        });
-                                        setUsedMaterials(
-                                            usedMaterials.filter((mat) => mat !== row.mat)
-                                        );
-
-                                        // Update the selectedAbbrs state to reflect the removal
-                                        const newSelectedMaterials = new Set(selectedMaterials);
-                                        newSelectedMaterials.delete(row.mat);
-                                        setSelectedMaterials(newSelectedMaterials);
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {selectedMaterials.size > 0 && (
+                <table className="vcr-table font-fam table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="col-mat-mat">Material</th>
+                            <th className="col-mat-act"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {formData.Materials?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.mat}</td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => {
+                                            // Remove abbreviation from table and the selected abbreviations set
+                                            setFormData({
+                                                ...formData,
+                                                Materials: formData.Materials.filter((_, i) => i !== index),
+                                            });
+                                            setUsedMaterials(
+                                                usedMaterials.filter((mat) => mat !== row.mat)
+                                            );
+
+                                            // Update the selectedAbbrs state to reflect the removal
+                                            const newSelectedMaterials = new Set(selectedMaterials);
+                                            newSelectedMaterials.delete(row.mat);
+                                            setSelectedMaterials(newSelectedMaterials);
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
                 Select Materials

@@ -200,6 +200,24 @@
     text-decoration: underline;
 }
 
+.active-filter-dept {
+    color: black;
+    background-color: lightgray;
+    /* Highlight active filters in blue */
+    font-weight: bold;
+    text-decoration: underline;
+    width: 300px;
+}
+
+.active-filter-review {
+    color: black;
+    background-color: lightgray;
+    /* Highlight active filters in blue */
+    font-weight: bold;
+    text-decoration: underline;
+    width: 160px;
+}
+
 .date-menu-filter {
     position: absolute;
     top: 120px;

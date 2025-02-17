@@ -124,55 +124,57 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                 </tbody>
               </table>
             </div>
-            <button className="save-selection-button" onClick={handleSaveSelection}>
+            <button className="save-selection-button-term" onClick={handleSaveSelection}>
               Save Selection
             </button>
-            <button className="close-popup-button" onClick={handlePopupToggle}>
+            <button className="close-popup-button-term" onClick={handlePopupToggle}>
               Close
             </button>
           </div>
         </div>
       )}
 
-      <table className="vcr-table table-borders">
-        <thead className="cp-table-header">
-          <tr>
-            <th className="col-term-term">Term</th>
-            <th className="col-term-desc">Definition</th>
-            <th className="col-term-act"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {formData.termRows.map((row, index) => (
-            <tr key={index}>
-              <td>{row.term}</td>
-              <td>{row.definition}</td>
-              <td>
-                <button
-                  className="remove-row-button"
-                  onClick={() => {
-                    // Remove abbreviation from table and the selected abbreviations set
-                    setFormData({
-                      ...formData,
-                      termRows: formData.termRows.filter((_, i) => i !== index),
-                    });
-                    setUsedTermCodes(
-                      usedTermCodes.filter((term) => term !== row.term)
-                    );
-
-                    // Update the selectedAbbrs state to reflect the removal
-                    const newSelectedTerms = new Set(selectedTerms);
-                    newSelectedTerms.delete(row.term);
-                    setSelectedTerms(newSelectedTerms);
-                  }}
-                >
-                  Remove
-                </button>
-              </td>
+      {selectedTerms.size > 0 && (
+        <table className="vcr-table table-borders">
+          <thead className="cp-table-header">
+            <tr>
+              <th className="col-term-term">Term</th>
+              <th className="col-term-desc">Definition</th>
+              <th className="col-term-act"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {formData.termRows.map((row, index) => (
+              <tr key={index}>
+                <td>{row.term}</td>
+                <td>{row.definition}</td>
+                <td>
+                  <button
+                    className="remove-row-button"
+                    onClick={() => {
+                      // Remove abbreviation from table and the selected abbreviations set
+                      setFormData({
+                        ...formData,
+                        termRows: formData.termRows.filter((_, i) => i !== index),
+                      });
+                      setUsedTermCodes(
+                        usedTermCodes.filter((term) => term !== row.term)
+                      );
+
+                      // Update the selectedAbbrs state to reflect the removal
+                      const newSelectedTerms = new Set(selectedTerms);
+                      newSelectedTerms.delete(row.term);
+                      setSelectedTerms(newSelectedTerms);
+                    }}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <button className="add-row-button" onClick={handlePopupToggle}>
         Select Terms

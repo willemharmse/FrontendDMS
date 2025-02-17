@@ -106,6 +106,15 @@
     align-items: center;
 }
 
+.save-selection-button-term,
+.close-popup-button-term {
+    margin-top: 10px;
+}
+
+.save-selection-button-term {
+    background-color: #7EAC89;
+}
+
 .top-right-button-term {
     position: absolute;
     top: 15px;

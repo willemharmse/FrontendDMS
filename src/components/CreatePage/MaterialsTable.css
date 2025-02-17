@@ -101,6 +101,13 @@
     align-items: center;
 }
 
+.materials-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Space between title and checkbox */
+}
+
 .top-right-button-mat {
     position: absolute;
     top: 15px;
@@ -145,29 +152,12 @@
 }
 
 /* Style for the N/A checkbox container */
-.na-checkbox-container-mat {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffffff;
-    background-color: #333;
-    width: 120px;
-    border-radius: 15px;
-}
-
-/* Style for the checkbox input */
-.na-checkbox-container-mat input[type="checkbox"] {
-    width: 18px;
-    margin-right: 8px;
+.na-checkbox-mat {
+    width: 20px;
+    height: 20px;
     cursor: pointer;
-    /* Red color to indicate N/A */
 }
 
-/* Style for disabled state */
-.na-checkbox-container-mat input[type="checkbox"]:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+.save-selection-button-mat {
+    background-color: #7EAC89;
 }

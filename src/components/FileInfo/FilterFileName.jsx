@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import './FilterName.css';
 
 const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
@@ -37,7 +37,15 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
             )}
             <th className={`col-own-filter ${filters.author ? "active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
-                    <span className={`fileinfo-title-filter`} onClick={() => toggleMenu('Author')}>Author</span>
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Author')}>
+                        {filters.author ? (
+                            <>
+                                <span>Author</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
+                            </>
+                        ) : (
+                            "Author"
+                        )}
+                    </span>
                     {openMenu === 'Author' && (
                         <div
                             className="fileinfo-menu-filter"
@@ -54,9 +62,17 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className={`col-dept-head-filter ${filters.deptHead ? "active-filter" : ""}`}>
+            <th className={`col-dept-head-filter ${filters.deptHead ? "active-filter-dept" : ""}`}>
                 <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('DeptHead')}>Department Head</span>
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('DeptHead')}>
+                        {filters.deptHead ? (
+                            <>
+                                <span>Department Head</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "0px" }} />
+                            </>
+                        ) : (
+                            "Department Head"
+                        )}
+                    </span>
                     {openMenu === 'DeptHead' && (
                         <div
                             className="dept-menu-filter"
@@ -75,7 +91,15 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
             </th>
             <th className={`col-docID-filter ${filters.docID ? "active-filter" : ""}`}>
                 <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('DocID')}>Doc ID</span>
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('DocID')}>
+                        {filters.docID ? (
+                            <>
+                                <span>Doc ID</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
+                            </>
+                        ) : (
+                            "Doc ID"
+                        )}
+                    </span>
                     {openMenu === 'DocID' && (
                         <div
                             className="fileinfo-menu-filter"
@@ -92,9 +116,17 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter" : ""}`}>
+            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter-review" : ""}`}>
                 <div className="fileinfo-container-filter">
-                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Date')}>Review Date</span>
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Date')}>
+                        {filters.startDate || filters.endDate ? (
+                            <>
+                                <span>Review Date</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "0px" }} />
+                            </>
+                        ) : (
+                            "Review Date"
+                        )}
+                    </span>
                     {openMenu === 'Date' && (
                         <div className="date-menu-filter">
                             <div className="date-filter-row">

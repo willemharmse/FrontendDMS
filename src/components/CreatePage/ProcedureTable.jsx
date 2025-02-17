@@ -27,89 +27,92 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
     return (
         <div className="input-box-2">
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
-            <table className="vcr-table table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="procCent procNr">Nr</th>
-                        <th className="procCent procMain">Procedure Main Steps</th>
-                        <th className="procCent procSub">Procedure Sub Steps</th>
-                        <th className="procCent procAR">Accountable and Responsible</th>
-                        <th className="procCent procAct"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {procedureRows.map((row, index) => (
-                        <tr key={index}>
-                            <td>
-                                {row.nr}
-                            </td>
-                            <td>
-                                <textarea
-                                    name="mainStep"
-                                    className="aim-textarea-pt font-fam"
-                                    value={row.mainStep}
-                                    onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
-                                    rows="4"   // Adjust the number of rows for initial height
-                                    placeholder="Enter the main step of the procedure here..." // Optional placeholder text
-                                />
-                            </td>
-                            <td>
-                                <textarea
-                                    name="SubStep"
-                                    className="aim-textarea-pt font-fam"
-                                    value={row.SubStep}
-                                    onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
-                                    rows="4"   // Adjust the number of rows for initial height
-                                    placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
-                                />
-                            </td>
-                            <td>
-                                <div className="select-container-proc">
-                                    <div className="select-wrapper">
-                                        <label className="select-label-proc">R:</label>
-                                        <select
-                                            className="table-control-proc"
-                                            value={row.responsible}
-                                            onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
-                                        >
-                                            <option value="">Select an option</option>
-                                            {responsibleOptions.sort().map((option, i) => (
-                                                <option key={i} value={option}>
-                                                    {option}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="select-wrapper">
-                                        <label className="select-label-proc">A:</label>
-                                        <select
-                                            className="table-control-proc"
-                                            value={row.accountable}
-                                            onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
-                                        >
-                                            <option value="">Select an option</option>
-                                            {accountableOptions.sort().map((option, i) => (
-                                                <option key={i} value={option}>
-                                                    {option}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => removeRow(index)}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {procedureRows.length > 0 && (
+                <table className="vcr-table table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="procCent procNr">Nr</th>
+                            <th className="procCent procMain">Procedure Main Steps</th>
+                            <th className="procCent procSub">Procedure Sub Steps</th>
+                            <th className="procCent procAR">Accountable and Responsible</th>
+                            <th className="procCent procAct"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {procedureRows.map((row, index) => (
+                            <tr key={index}>
+                                <td className="procCent">
+                                    {row.nr}
+                                </td>
+                                <td>
+                                    <textarea
+                                        name="mainStep"
+                                        className="aim-textarea-pt font-fam"
+                                        value={row.mainStep}
+                                        onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
+                                        rows="4"   // Adjust the number of rows for initial height
+                                        placeholder="Enter the main step of the procedure here..." // Optional placeholder text
+                                    />
+                                </td>
+                                <td>
+                                    <textarea
+                                        name="SubStep"
+                                        className="aim-textarea-pt font-fam"
+                                        value={row.SubStep}
+                                        onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
+                                        rows="4"   // Adjust the number of rows for initial height
+                                        placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
+                                    />
+                                </td>
+                                <td>
+                                    <div className="select-container-proc">
+                                        <div className="select-wrapper">
+                                            <label className="select-label-proc">R:</label>
+                                            <select
+                                                className="table-control-proc"
+                                                value={row.responsible}
+                                                onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
+                                            >
+                                                <option value="">Select an option</option>
+                                                {responsibleOptions.sort().map((option, i) => (
+                                                    <option key={i} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="select-wrapper">
+                                            <label className="select-label-proc">A:</label>
+                                            <select
+                                                className="table-control-proc"
+                                                value={row.accountable}
+                                                onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
+                                            >
+                                                <option value="">Select an option</option>
+                                                {accountableOptions.sort().map((option, i) => (
+                                                    <option key={i} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => removeRow(index)}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+
             <button className="add-row-button" onClick={addRow}>
                 + Add Row
             </button>

@@ -85,7 +85,15 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
 
     return (
         <div className="mac-input-box">
-            <h3 className="font-fam-labels">Mobile Machine</h3>
+            <div className="mac-header">
+                <h3 className="font-fam-labels">Mobile Machine</h3>
+                <input
+                    type="checkbox"
+                    className="na-checkbox-mac"
+                    checked={isNA}
+                    onChange={handleNAToggle}
+                />
+            </div>
             {role === "admin" && (
                 <button className="top-right-button-mac" onClick={openManagePopup}>Update Machines</button>
             )}
@@ -98,16 +106,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             />
 
             {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}
-            <div className="na-checkbox-container-mac">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isNA}
-                        onChange={handleNAToggle}
-                    />
-                    Applicable
-                </label>
-            </div>
+
             {/* Popup */}
             {popupVisible && (
                 <div className="popup-overlay-mac">
@@ -160,43 +159,45 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             )}
 
             {/* Display selected abbreviations in a table */}
-            <table className="vcr-table font-fam table-borders">
-                <thead className="cp-table-header">
-                    <tr>
-                        <th className="col-mac-mac">Mobile Machine</th>
-                        <th className="col-mac-act"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {formData.MobileMachine?.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.mac}</td>
-                            <td>
-                                <button
-                                    className="remove-row-button"
-                                    onClick={() => {
-                                        // Remove abbreviation from table and the selected abbreviations set
-                                        setFormData({
-                                            ...formData,
-                                            MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
-                                        });
-                                        setUsedMobileMachine(
-                                            usedMobileMachine.filter((mac) => mac !== row.mac)
-                                        );
-
-                                        // Update the selectedAbbrs state to reflect the removal
-                                        const newSelectedMachines = new Set(selectedMMachine);
-                                        newSelectedMachines.delete(row.mac);
-                                        setSelectedMMachine(newSelectedMachines);
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </td>
+            {selectedMMachine.size > 0 && (
+                <table className="vcr-table font-fam table-borders">
+                    <thead className="cp-table-header">
+                        <tr>
+                            <th className="col-mac-mac">Mobile Machine</th>
+                            <th className="col-mac-act"></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {formData.MobileMachine?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.mac}</td>
+                                <td>
+                                    <button
+                                        className="remove-row-button"
+                                        onClick={() => {
+                                            // Remove abbreviation from table and the selected abbreviations set
+                                            setFormData({
+                                                ...formData,
+                                                MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
+                                            });
+                                            setUsedMobileMachine(
+                                                usedMobileMachine.filter((mac) => mac !== row.mac)
+                                            );
+
+                                            // Update the selectedAbbrs state to reflect the removal
+                                            const newSelectedMachines = new Set(selectedMMachine);
+                                            newSelectedMachines.delete(row.mac);
+                                            setSelectedMMachine(newSelectedMachines);
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
                 Select Equipment
