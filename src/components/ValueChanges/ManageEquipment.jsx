@@ -80,7 +80,7 @@ const ManageEquipment = ({ closePopup, onClose }) => {
 
                 <div className="manEqp-form-group-manage">
                     <label>Equipment</label>
-                    <input className="manEqp-input" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
+                    <input spellcheck="true" className="manEqp-input" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manEqp-message-manage">{message}</div>}

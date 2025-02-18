@@ -80,7 +80,7 @@ const ManagePPE = ({ closePopup, onClose }) => {
 
                 <div className="manPPE-form-group-manage">
                     <label>PPE</label>
-                    <input className="manPPE-input" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
+                    <input spellcheck="true" className="manPPE-input" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manPPE-message-manage">{message}</div>}

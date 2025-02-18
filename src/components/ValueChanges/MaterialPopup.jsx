@@ -59,6 +59,7 @@ const MaterialPopup = ({ isOpen, onClose }) => {
                     <div className="mat-input-group">
                         <label>Material:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={mat}
                             onChange={(e) => setMat(e.target.value)}

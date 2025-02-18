@@ -85,12 +85,12 @@ const ManageAbbreviations = ({ closePopup, onClose }) => {
 
                 <div className="manAbbr-form-group-manage">
                     <label>Abbreviation</label>
-                    <input className="manAbbr-input" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
+                    <input spellcheck="true" className="manAbbr-input" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
                 </div>
 
                 <div className="manAbbr-form-group-manage">
                     <label>Meaning</label>
-                    <input className="manAbbr-input" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                    <input spellcheck="true" className="manAbbr-input" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manAbbr-message-manage">{message}</div>}

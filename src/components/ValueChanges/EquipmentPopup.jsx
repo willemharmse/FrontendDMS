@@ -59,6 +59,7 @@ const EquipmentPopup = ({ isOpen, onClose }) => {
                     <div className="eqp-input-group">
                         <label>Equipment:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={eqp}
                             onChange={(e) => setEqp(e.target.value)}

@@ -80,7 +80,7 @@ const ManageMaterial = ({ closePopup, onClose }) => {
 
                 <div className="manMat-form-group-manage">
                     <label>Material</label>
-                    <input className="manMat-input" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
+                    <input spellcheck="true" className="manMat-input" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manMat-message-manage">{message}</div>}

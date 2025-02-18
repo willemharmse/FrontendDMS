@@ -494,6 +494,7 @@ const CreatePage = () => {
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
               <div className="input-group-cpt">
                 <input
+                  spellcheck="true"
                   type="text"
                   name="title"
                   className="font-fam title-input"
@@ -517,6 +518,7 @@ const CreatePage = () => {
           <div className="input-box-aim-cp">
             <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
             <textarea
+              spellcheck="true"
               name="aim"
               className="aim-textarea font-fam"
               value={formData.aim}

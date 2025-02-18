@@ -59,6 +59,7 @@ const MobileMachinePopup = ({ isOpen, onClose }) => {
                     <div className="mac-input-group">
                         <label>Machine:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={machine}
                             onChange={(e) => setMachine(e.target.value)}

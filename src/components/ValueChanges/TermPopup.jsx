@@ -62,6 +62,7 @@ const TermPopup = ({ isOpen, onClose }) => {
                     <div className="term-input-group">
                         <label>Term:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={term}
                             onChange={(e) => setTerm(e.target.value)}
@@ -72,6 +73,7 @@ const TermPopup = ({ isOpen, onClose }) => {
                     <div className="term-input-group">
                         <label>Definition:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={definition}
                             onChange={(e) => setDefinition(e.target.value)}

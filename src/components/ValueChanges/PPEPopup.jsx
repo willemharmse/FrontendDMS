@@ -59,6 +59,7 @@ const PPEPopup = ({ isOpen, onClose }) => {
                     <div className="ppe-input-group">
                         <label>PPE:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={ppe}
                             onChange={(e) => setPPE(e.target.value)}

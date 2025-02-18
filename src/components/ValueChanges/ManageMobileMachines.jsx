@@ -80,7 +80,7 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
 
                 <div className="manMac-form-group-manage">
                     <label>Machine</label>
-                    <input className="manMac-input" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
+                    <input spellcheck="true" className="manMac-input" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manMac-message-manage">{message}</div>}

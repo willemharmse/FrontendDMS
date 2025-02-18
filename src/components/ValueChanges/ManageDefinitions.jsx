@@ -85,12 +85,12 @@ const ManageDefinitions = ({ closePopup, onClose }) => {
 
                 <div className="manDefs-form-group-manage">
                     <label>Term</label>
-                    <input className="manDefs-input" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
+                    <input spellcheck="true" className="manDefs-input" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                 </div>
 
                 <div className="manDefs-form-group-manage">
                     <label>Definition</label>
-                    <input className="manDefs-input" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                    <input spellcheck="true" className="manDefs-input" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manDefs-message-manage">{message}</div>}

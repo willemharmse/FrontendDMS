@@ -62,6 +62,7 @@ const AbbreviationPopup = ({ isOpen, onClose }) => {
                     <div className="abbr-input-group">
                         <label>Abbreviation:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={abbreviation}
                             onChange={(e) => setAbbreviation(e.target.value)}
@@ -72,6 +73,7 @@ const AbbreviationPopup = ({ isOpen, onClose }) => {
                     <div className="abbr-input-group">
                         <label>Description:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={meaning}
                             onChange={(e) => setMeaning(e.target.value)}

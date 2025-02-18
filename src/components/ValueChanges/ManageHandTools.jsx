@@ -80,7 +80,7 @@ const ManageHandTools = ({ closePopup, onClose }) => {
 
                 <div className="manTool-form-group-manage">
                     <label>Tool</label>
-                    <input className="manTool-input" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
+                    <input spellcheck="true" className="manTool-input" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manTool-message-manage">{message}</div>}

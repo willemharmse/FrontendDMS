@@ -59,6 +59,7 @@ const ToolPopup = ({ isOpen, onClose }) => {
                     <div className="tool-input-group">
                         <label>Tool:</label>
                         <input
+                            spellcheck="true"
                             type="text"
                             value={tool}
                             onChange={(e) => setTool(e.target.value)}
