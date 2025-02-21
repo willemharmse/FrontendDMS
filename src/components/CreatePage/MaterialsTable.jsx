@@ -86,13 +86,13 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     return (
         <div className="mat-input-box">
             <div className="materials-header">
-                <h3 className="font-fam-labels">Materials</h3>
                 <input
                     type="checkbox"
                     className="na-checkbox-mat"
                     checked={isNA}
                     onChange={handleNAToggle}
                 />
+                <h3 className="font-fam-labels">Materials</h3>
             </div>
             {role === "admin" && (
                 <button className="top-right-button-mat" onClick={openManagePopup}>Update Materials</button>

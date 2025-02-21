@@ -5,7 +5,7 @@ body {
   padding: 0;
   font-family: Arial, sans-serif;
   color: #333;
-  background-color: #120b5b;
+  background-color: #002060;
 }
 
 .create-page-title {
@@ -59,12 +59,46 @@ body {
   /* Reduce font size */
 }
 
+.save-button-create-standard {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 35px;
+  /* Distance from the top */
+  right: 230px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
 .load-button-create {
   position: absolute;
   /* Positioned relative to the container */
   top: 35px;
   /* Distance from the top */
   right: 230px;
+  /* Distance from the left */
+  width: 100px;
+  height: 50px;
+  background-color: rgb(204, 199, 199) !important;
+  justify-content: center;
+  color: rgb(0, 0, 0);
+  border-radius: 4px;
+  font-size: 14px;
+  /* Reduce font size */
+}
+
+.load-button-create-standard {
+  position: absolute;
+  /* Positioned relative to the container */
+  top: 35px;
+  /* Distance from the top */
+  right: 120px;
   /* Distance from the left */
   width: 100px;
   height: 50px;
@@ -184,7 +218,7 @@ body {
   height: 100vh;
   padding: 20px;
   box-sizing: border-box;
-  background-color: #120b5b;
+  background-color: #002060;
 }
 
 .text-format-log {
@@ -196,7 +230,7 @@ body {
 .sidebar {
   width: 275px;
   padding: 20px;
-  background-color: #120b5b;
+  background-color: #002060;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   /* Floating shadow effect */
@@ -211,7 +245,7 @@ body {
   margin-right: 20px;
   /* Adjust for the fixed header */
   padding: 20px;
-  background-color: #120b5b !important;
+  background-color: #002060 !important;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -351,13 +385,19 @@ body {
   /* Ensures even spacing on all sides */
   overflow-y: auto;
   /* Enables scrolling inside */
-  background-color: #120b5b !important;
+  background-color: #002060 !important;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   /* Centers content */
+}
+
+.scrollable-box.expanded {
+  margin-top: 0;
+  height: calc(100% - 10px);
+  /* Increase height when scrolled */
 }
 
 /* Title inside the scrollable box */
@@ -539,7 +579,7 @@ body {
 }
 
 .input-box input:focus {
-  border: 1px solid #120b5b;
+  border: 1px solid #002060;
   box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
 }
 
@@ -554,12 +594,28 @@ body {
 
 /* Generate button styling */
 .generate-button {
-  width: 50%;
+  width: 25%;
   height: 131px;
   margin: 10px 0;
   padding: 12px;
-  background-color: #d7c8ac;
-  color: black;
+  background-color: #7EAC89;
+  color: white;
+  border: none;
+  font-weight: bolder;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease-in-out;
+}
+
+/* Generate button styling */
+.pdf-button {
+  width: 25%;
+  height: 131px;
+  margin: 10px 0;
+  padding: 12px;
+  background-color: #7EAC89;
+  color: white;
   border: none;
   font-weight: bolder;
   border-radius: 6px;
@@ -569,7 +625,7 @@ body {
 }
 
 .generate-button:active:hover {
-  background-color: #d7c8ac;
+  background-color: #7EAC89;
 }
 
 .input-group-cpt {
@@ -686,4 +742,41 @@ body {
 
 .table-borders th {
   font-weight: bold;
+}
+
+/* For Webkit browsers (Chrome, Edge, Safari) */
+.scrollable-box::-webkit-scrollbar {
+  width: 8px;
+  /* Width of the scrollbar */
+}
+
+.scrollable-box::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  /* Track color */
+  border-radius: 10px;
+}
+
+.scrollable-box::-webkit-scrollbar-thumb {
+  background-color: #888;
+  /* Scrollbar color */
+  border-radius: 10px;
+  border: 2px solid #f0f0f0;
+  /* Adds padding effect */
+}
+
+
+.scrollable-box::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* Darker on hover */
+}
+
+.small {
+  transform: scale(0.85);
+  /* Adjust size */
+  transition: transform 0.3s ease-in-out;
+}
+
+.create-page-title.small {
+  font-size: 36px;
+  /* Adjust title size */
 }

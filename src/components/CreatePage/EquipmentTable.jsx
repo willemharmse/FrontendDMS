@@ -86,13 +86,13 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     return (
         <div className="eqp-input-box">
             <div className="eqp-header">
-                <h3 className="font-fam-labels">Equipment</h3>
                 <input
                     type="checkbox"
                     className="na-checkbox-eqp"
                     checked={isNA}
                     onChange={handleNAToggle}
                 />
+                <h3 className="font-fam-labels">Equipment</h3>
             </div>
             {role === "admin" && (
                 <button className="top-right-button-eqp" onClick={openManagePopup}>Update Equipment</button>

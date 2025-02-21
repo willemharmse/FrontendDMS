@@ -255,7 +255,7 @@ body {
   flex: 1;
   text-align: center;
   padding: 20px;
-  background-color: #120b5b;
+  background-color: #002060;
   color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -365,7 +365,7 @@ body {
 .sidebar {
   width: 275px;
   padding: 20px;
-  background-color: #120b5b;
+  background-color: #002060;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   /* Floating shadow effect */
@@ -498,7 +498,7 @@ body {
   font-size: 24px;
   margin-left: auto;
   padding: 10px;
-  background-color: #120b5b;
+  background-color: #002060;
   border-radius: 350px;
   color: white;
 }
@@ -509,7 +509,7 @@ body {
   padding: 10px;
   padding-top: 15px;
   text-align: center;
-  background-color: #120b5b;
+  background-color: #002060;
   border-radius: 350px;
   color: white;
 }
@@ -663,7 +663,7 @@ table {
 thead {
   position: sticky;
   top: 0;
-  background-color: #120b5b;
+  background-color: #002060;
   color: white;
   z-index: 1;
 }

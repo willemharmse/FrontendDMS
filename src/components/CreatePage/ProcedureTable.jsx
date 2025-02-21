@@ -21,8 +21,18 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
 
 
     const handleInputChange = (index, field, value) => {
-        updateRow(index, field, value); // Call a prop function to update the row data
+        const updatedRow = { ...procedureRows[index], [field]: value };
+
+        // Prevent selecting the same value for both Responsible and Accountable
+        if (field === "responsible" && value === updatedRow.accountable) {
+            updatedRow.accountable = ""; // Reset accountable if it conflicts
+        } else if (field === "accountable" && value === updatedRow.responsible) {
+            updatedRow.responsible = ""; // Reset responsible if it conflicts
+        }
+
+        updateRow(index, field, value);
     };
+
 
     return (
         <div className="input-box-2">
@@ -34,7 +44,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                             <th className="procCent procNr">Nr</th>
                             <th className="procCent procMain">Procedure Main Steps</th>
                             <th className="procCent procSub">Procedure Sub Steps</th>
-                            <th className="procCent procAR">Accountable and Responsible</th>
+                            <th className="procCent procAR">Responsible and Accountable</th>
                             <th className="procCent procAct"></th>
                         </tr>
                     </thead>
@@ -74,11 +84,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                                                 onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
                                             >
                                                 <option value="">Select an option</option>
-                                                {responsibleOptions.sort().map((option, i) => (
-                                                    <option key={i} value={option}>
-                                                        {option}
-                                                    </option>
-                                                ))}
+                                                {responsibleOptions
+                                                    .filter((option) => option !== row.accountable) // Exclude selected Accountable value
+                                                    .sort()
+                                                    .map((option, i) => (
+                                                        <option key={i} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
 
@@ -90,11 +103,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                                                 onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
                                             >
                                                 <option value="">Select an option</option>
-                                                {accountableOptions.sort().map((option, i) => (
-                                                    <option key={i} value={option}>
-                                                        {option}
-                                                    </option>
-                                                ))}
+                                                {accountableOptions
+                                                    .filter((option) => option !== row.responsible) // Exclude selected Responsible value
+                                                    .sort()
+                                                    .map((option, i) => (
+                                                        <option key={i} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
                                     </div>

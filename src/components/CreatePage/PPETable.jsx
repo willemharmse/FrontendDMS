@@ -86,13 +86,13 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
     return (
         <div className="ppe-input-box">
             <div className="ppe-header">
-                <h3 className="font-fam-labels">PPE</h3>
                 <input
                     type="checkbox"
                     className="na-checkbox-ppe"
                     checked={isNA}
                     onChange={handleNAToggle}
                 />
+                <h3 className="font-fam-labels">PPE</h3>
             </div>
             {role === "admin" && (
                 <button className="top-right-button-ppe" onClick={openManagePopup}>Update PPE</button>

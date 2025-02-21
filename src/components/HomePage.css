@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   vertical-align: auto;
-  background-color: #120b5b;
+  background-color: #002060;
   color: rgb(255, 255, 255);
   border-radius: 10px;
   width: 90%;
@@ -71,7 +71,7 @@
   cursor: pointer;
   display: flex;
   transition: background-color 0.2s, color 0.2s;
-  background-color: #120b5b;
+  background-color: #002060;
   color: white;
   flex-direction: column;
   justify-content: center;
@@ -96,12 +96,12 @@
 }
 
 .card:hover {
-  background-color: #190F7B;
+  background-color: #002060;
   color: white;
 }
 
 .card.clicked {
-  background-color: #190F7B;
+  background-color: #002060;
   /* Change this to the color you want */
   color: black;
   /*transform: scale(1.025);*/

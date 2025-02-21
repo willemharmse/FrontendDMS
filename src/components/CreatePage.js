@@ -22,6 +22,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const CreatePage = () => {
   const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const [usedPPEOptions, setUsedPPEOptions] = useState([]);
@@ -56,13 +57,41 @@ const CreatePage = () => {
     });
   };
 
+  useEffect(() => {
+    const scrollableBox = document.querySelector(".scrollable-box");
+
+    const handleScroll = () => {
+      if (scrollableBox.scrollTop > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    if (scrollableBox) {
+      scrollableBox.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (scrollableBox) {
+        scrollableBox.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
 
   useEffect(() => {
     if (titleSet && !autoSaveInterval.current) {
       autoSaveInterval.current = setInterval(() => {
-        handleSave();
+        //handleSave();
+        toast.success("Draft has been auto-saved", {
+          closeButton: false,
+          style: {
+            textAlign: 'center'
+          }
+        })
       }, 120000); // Auto-save every 1 min
     }
 
@@ -452,29 +481,54 @@ const CreatePage = () => {
     }
   };
 
+  const handleGenerateTex = async () => {
+    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/doc/generate-latex`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      const blob = await response.blob();
+      saveAs(blob, `output.pdf`);
+      setLoading(false);
+      //saveAs(blob, `${documentName}.pdf`);
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="file-create-container">
-      <button className="logo-button-create" onClick={() => navigate('/FrontendDMS/home')}>
+      <button className={`logo-button-create ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/home')}>
         <img src="logo.webp" alt="Home" />
       </button>
-      <h1 className="create-page-title">Create New Document</h1>
-      <button className="log-button-create" onClick={handleLogout}>
+      <h1 className={`create-page-title ${isScrolled ? "small" : ""}`}>Create New Document</h1>
+      <button className={`log-button-create ${isScrolled ? "small" : ""}`} onClick={handleLogout}>
         Log Out
       </button>
-      <button className="import-button-create" onClick={() => navigate('/FrontendDMS/importValues')}>
-        Import Values
-      </button>
-      <button className="load-button-create" onClick={openLoadPopup}>
+      {role === "admin" && (
+        <button className={`import-button-create ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/importValues')}>
+          Import Site Info
+        </button>
+      )}
+      <button className={role === "admin" ? `load-button-create ${isScrolled ? "small" : ""}` : `load-button-create-standard ${isScrolled ? "small" : ""}`} onClick={openLoadPopup}>
         Load Draft
       </button>
       {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
-      <button className="save-button-create" onClick={handleSave}>
+      <button className={role === "admin" ? `save-button-create ${isScrolled ? "small" : ""}` : `save-button-create-standard ${isScrolled ? "small" : ""}`} onClick={handleSave}>
         {loadedID === '' ? "Save Draft" : "Update Draft"}
       </button>
 
       {/* Main content */}
       <div className="main-box">
-        <div className="scrollable-box">
+        <div className={`scrollable-box ${isScrolled ? "expanded" : ""}`}>
           <div className="input-row">
             <div className="input-box-type">
               <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
@@ -500,7 +554,7 @@ const CreatePage = () => {
                   className="font-fam title-input"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Title of your document (e.g. Safety And Security)"
+                  placeholder="Title of your document (e.g. Working at Heights)"
                 />
                 <input
                   type="text"
@@ -559,6 +613,17 @@ const CreatePage = () => {
               title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate File'}
+            </button>
+            <button
+              className="pdf-button font-fam"
+              onClick={() => toast.error("Feature creation in progress.", {
+                closeButton: false,
+                style: {
+                  textAlign: 'center'
+                }
+              })}
+            >
+              Generate PDF
             </button>
           </div>
         </div>

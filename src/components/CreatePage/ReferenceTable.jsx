@@ -106,7 +106,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                     <tbody>
                         {referenceRows.map((row, index) => (
                             <tr key={index}>
-                                <td>{row.nr}</td>
+                                <td className="refCent">{row.nr}</td>
                                 <td>
                                     <input
                                         type="text"

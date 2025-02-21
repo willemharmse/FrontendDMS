@@ -10,7 +10,7 @@
 
 .construction-icon {
     font-size: 5rem;
-    color: #120b5b;
+    color: #002060;
     /* Orange color to indicate construction */
     margin-bottom: 20px;
 }
@@ -30,7 +30,7 @@
 .construction-back-to-home {
     padding: 10px 20px;
     font-size: 1rem;
-    background-color: #120b5b;
+    background-color: #002060;
     margin-top: 10px;
     color: white;
     border: none;

@@ -86,13 +86,13 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     return (
         <div className="mac-input-box">
             <div className="mac-header">
-                <h3 className="font-fam-labels">Mobile Machine</h3>
                 <input
                     type="checkbox"
                     className="na-checkbox-mac"
                     checked={isNA}
                     onChange={handleNAToggle}
                 />
+                <h3 className="font-fam-labels">Mobile Machine</h3>
             </div>
             {role === "admin" && (
                 <button className="top-right-button-mac" onClick={openManagePopup}>Update Machines</button>

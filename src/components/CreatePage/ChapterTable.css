@@ -74,7 +74,7 @@
 
 .mct-input:focus,
 .mct-textarea:focus {
-    border: 1px solid #120b5b;
+    border: 1px solid #002060;
     box-shadow: 0 0 5px rgba(18, 11, 91, 0.3);
 }
 

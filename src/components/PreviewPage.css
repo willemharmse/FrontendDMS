@@ -17,7 +17,7 @@ body {
 .sidebar {
     width: 275px;
     padding: 20px;
-    background-color: #120b5b;
+    background-color: #002060;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     /* Floating shadow effect */
@@ -134,7 +134,7 @@ body {
     font-size: 16px;
     font-weight: bold;
     color: white;
-    background-color: #120b5b;
+    background-color: #002060;
     border: none;
     border-radius: 5px;
     cursor: pointer;

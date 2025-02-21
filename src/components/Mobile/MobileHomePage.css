@@ -11,7 +11,7 @@
 /* Header */
 .mobile-header {
     width: 100%;
-    background-color: #120b5b;
+    background-color: #002060;
     color: white;
     text-align: center;
     padding: 20px;
@@ -47,7 +47,7 @@
 
 /* Cards */
 .mobile-card {
-    background-color: #120b5b;
+    background-color: #002060;
     color: white;
     padding: 20px;
     text-align: center;

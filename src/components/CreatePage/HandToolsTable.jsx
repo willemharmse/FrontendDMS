@@ -86,13 +86,13 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
     return (
         <div className="tool-input-box">
             <div className="tool-header">
-                <h3 className="font-fam-labels">Hand Tools</h3>
                 <input
                     type="checkbox"
                     className="na-checkbox-tool"
                     checked={isNA}
                     onChange={handleNAToggle}
                 />
+                <h3 className="font-fam-labels">Hand Tools</h3>
             </div>
             {role === "admin" && (
                 <button className="top-right-button-tool" onClick={openManagePopup}>Update Tools</button>

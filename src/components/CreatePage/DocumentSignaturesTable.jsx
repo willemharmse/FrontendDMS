@@ -9,6 +9,8 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
     Reviewer: [],
   });
 
+  const [selectedNames, setSelectedNames] = useState(new Set());
+
   const [nameToPositionMap, setNameToPositionMap] = useState({});
 
   useEffect(() => {
@@ -65,20 +67,12 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
   const handleNameChange = (e, index) => {
     const selectedName = e.target.value;
     const prevName = rows[index].name;
-    const authType = rows[index].auth;
 
-    setSelectedNamesByAuth((prev) => {
-      const updatedAuthNames = { ...prev };
-
-      if (prevName) {
-        updatedAuthNames[authType] = updatedAuthNames[authType].filter((name) => name !== prevName);
-      }
-
-      if (selectedName) {
-        updatedAuthNames[authType] = [...updatedAuthNames[authType], selectedName];
-      }
-
-      return updatedAuthNames;
+    setSelectedNames((prev) => {
+      const updatedNames = new Set(prev);
+      if (prevName) updatedNames.delete(prevName);
+      if (selectedName) updatedNames.add(selectedName);
+      return updatedNames;
     });
 
     handleRowChange(e, index, "name");
@@ -123,10 +117,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                 >
                   <option value="">Select Name</option>
                   {nameLists[row.auth]
-                    .filter(
-                      (name) =>
-                        !selectedNamesByAuth[row.auth]?.includes(name) || name === row.name
-                    )
+                    .filter((name) => !selectedNames.has(name) || name === row.name)
                     .sort()
                     .map((name) => (
                       <option key={name} value={name}>
@@ -147,10 +138,11 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
                 <button
                   className="remove-row-button font-fam"
                   onClick={() => {
-                    setSelectedNamesByAuth((prev) => ({
-                      ...prev,
-                      [row.auth]: prev[row.auth].filter((name) => name !== row.name),
-                    }));
+                    setSelectedNames((prev) => {
+                      const updatedNames = new Set(prev);
+                      updatedNames.delete(row.name);
+                      return updatedNames;
+                    });
                     removeRow(index);
                   }}
                 >
