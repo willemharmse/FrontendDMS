@@ -11,6 +11,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     const [isNA, setIsNA] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);
@@ -111,6 +112,13 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                 <div className="popup-overlay-eqp">
                     <div className="popup-content-terms">
                         <h4 className="center-eqp">Select Equipment</h4>
+                        <input
+                            type="text"
+                            className="search-bar-eqp"
+                            placeholder="Search equipment..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <div className="popup-table-wrapper-eqp">
                             <table className="popup-table font-fam">
                                 <thead className="eqp-headers">
@@ -122,6 +130,9 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                 <tbody>
                                     {eqpData.length > 0 ? (
                                         eqpData
+                                            .filter((item) =>
+                                                item.eqp.toLowerCase().includes(searchTerm.toLowerCase())
+                                            )
                                             .sort((a, b) => a.eqp.localeCompare(b.eqp))
                                             .map((item) => (
                                                 <tr key={item.eqp}

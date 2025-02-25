@@ -11,6 +11,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const fetchValues = async () => {
         try {
@@ -112,6 +113,13 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 <div className="popup-overlay-mac">
                     <div className="popup-content-terms">
                         <h4 className="center-mac">Select Mobile Machines</h4>
+                        <input
+                            type="text"
+                            className="search-bar-mac"
+                            placeholder="Search mobile machines..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <div className="popup-table-wrapper-mac">
                             <table className="popup-table font-fam">
                                 <thead className="mac-headers">
@@ -123,6 +131,9 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                 <tbody>
                                     {macData.length > 0 ? (
                                         macData
+                                            .filter((item) =>
+                                                item.machine.toLowerCase().includes(searchTerm.toLowerCase())
+                                            )
                                             .sort((a, b) => a.machine.localeCompare(b.machine))
                                             .map((item) => (
                                                 <tr key={item.machine}

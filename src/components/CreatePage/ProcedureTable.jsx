@@ -1,7 +1,7 @@
 import React from "react";
 import './ProcedureTable.css';
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) => {
     const accountableOptions = [
         "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
@@ -35,7 +35,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
 
 
     return (
-        <div className="input-box-2">
+        <div className={`input-box-2 ${error ? "error-proc" : ""}`}>
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
             {procedureRows.length > 0 && (
                 <table className="vcr-table table-borders">
@@ -129,7 +129,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow }) => {
                 </table>
             )}
 
-            <button className="add-row-button" onClick={addRow}>
+            <button className="add-row-button" onClick={addRow} disabled={procedureRows.some(row => !row.responsible || !row.accountable)} >
                 + Add Row
             </button>
         </div>

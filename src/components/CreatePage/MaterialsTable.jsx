@@ -11,6 +11,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     const [isNA, setIsNA] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const fetchValues = async () => {
         try {
@@ -111,6 +112,13 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 <div className="popup-overlay-mat">
                     <div className="popup-content-terms">
                         <h4 className="center-mat">Select Materials</h4>
+                        <input
+                            type="text"
+                            className="search-bar-mat"
+                            placeholder="Search materials..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <div className="popup-table-wrapper-mat">
                             <table className="popup-table font-fam">
                                 <thead className="mat-headers">
@@ -122,6 +130,9 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                 <tbody>
                                     {matsData.length > 0 ? (
                                         matsData
+                                            .filter((item) =>
+                                                item.mat.toLowerCase().includes(searchTerm.toLowerCase())
+                                            )
                                             .sort((a, b) => a.mat.localeCompare(b.mat))
                                             .map((item) => (
                                                 <tr key={item.mat}

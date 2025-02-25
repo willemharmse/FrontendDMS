@@ -32,6 +32,11 @@
     width: 18%;
 }
 
+.error-proc {
+    border: 2px solid #CB6F6F;
+    color: #CB6F6F;
+}
+
 .select-container-proc {
     display: flex;
     flex-direction: column;

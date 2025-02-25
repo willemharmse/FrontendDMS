@@ -27,6 +27,26 @@
     z-index: 1;
 }
 
+.search-bar-abbr {
+    width: 98%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    outline: none;
+}
+
+.search-bar-abbr:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.error-abbr {
+    border: 2px solid #CB6F6F;
+    color: #CB6F6F;
+}
+
 .popup-content-abbr {
     background-color: white;
     padding: 20px;

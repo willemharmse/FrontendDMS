@@ -3,13 +3,14 @@ import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 
-const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role }) => {
+const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error }) => {
   const [abbrData, setAbbrData] = useState([]);
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [selectedAbbrs, setSelectedAbbrs] = useState(new Set(usedAbbrCodes));
   const [showNewPopup, setShowNewPopup] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setSelectedAbbrs(new Set(usedAbbrCodes));
@@ -68,7 +69,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
   const closeManagePopup = () => setIsManageOpen(false);
 
   return (
-    <div className="abbr-input-box">
+    <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
       <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
       {role === "admin" && (
         <button className="top-right-button-abbr" onClick={openManagePopup}>Update Abbreviations</button>
@@ -85,8 +86,15 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       {/* Popup */}
       {popupVisible && (
         <div className="popup-overlay-abbr">
-          <div className="popup-content-terms">
+          <div className="popup-content-abbr">
             <h4 className="center-abbrs">Select Abbreviations</h4>
+            <input
+              type="text"
+              className="search-bar-abbr"
+              placeholder="Search abbreviations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <div className="popup-table-wrapper-abbr">
               <table className="popup-table font-fam">
                 <thead className="abbr-headers">
@@ -97,15 +105,14 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Check if abbrData is loaded */}
                   {abbrData.length > 0 ? (
                     abbrData
+                      .filter((item) =>
+                        item.abbr.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
                       .sort((a, b) => a.abbr.localeCompare(b.abbr))
                       .map((item) => (
-                        <tr key={item.abbr}
-                          onClick={() => handleCheckboxChange(item.abbr)}
-                          style={{ cursor: "pointer" }}
-                        >
+                        <tr key={item.abbr} onClick={() => handleCheckboxChange(item.abbr)} style={{ cursor: "pointer" }}>
                           <td>
                             <input
                               type="checkbox"
@@ -126,12 +133,8 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                 </tbody>
               </table>
             </div>
-            <button className="save-selection-button-abbr" onClick={handleSaveSelection}>
-              Save Selection
-            </button>
-            <button className="close-popup-button-abbr" onClick={handlePopupToggle}>
-              Close
-            </button>
+            <button className="save-selection-button-abbr" onClick={handleSaveSelection}>Save Selection</button>
+            <button className="close-popup-button-abbr" onClick={handlePopupToggle}>Close</button>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
@@ -39,6 +39,7 @@ const CreatePage = () => {
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -86,6 +87,8 @@ const CreatePage = () => {
     if (titleSet && !autoSaveInterval.current) {
       autoSaveInterval.current = setInterval(() => {
         //handleSave();
+        toast.dismiss();
+        toast.clearWaitingQueue();
         toast.success("Draft has been auto-saved", {
           closeButton: false,
           style: {
@@ -108,6 +111,8 @@ const CreatePage = () => {
       if (loadedID === '') {
         saveData();
 
+        toast.dismiss();
+        toast.clearWaitingQueue();
         toast.success("Draft has been successfully saved", {
           closeButton: false,
           style: {
@@ -118,6 +123,8 @@ const CreatePage = () => {
       else if (loadedID !== '') {
         updateData();
 
+        toast.dismiss();
+        toast.clearWaitingQueue();
         toast.success("Draft has been successfully updated", {
           closeButton: false,
           style: {
@@ -127,6 +134,8 @@ const CreatePage = () => {
       }
     }
     else {
+      toast.dismiss();
+      toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
         closeButton: false,
         style: {
@@ -191,7 +200,10 @@ const CreatePage = () => {
   };
 
   const handleClick = () => {
-    if (!validateForm()) {
+    const newErrors = validateForm();
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: false,
         style: {
@@ -264,19 +276,103 @@ const CreatePage = () => {
     reviewDate: 0
   });
 
+
+  const [history, setHistory] = useState([]);
+  const timeoutRef = useRef(null);
+  const previousFormData = useRef(formData);
+
+  // Function to save to history with a limit
+  const saveToHistory = useCallback(() => {
+    const currentState = {
+      formData,
+      usedAbbrCodes,
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+    };
+
+    setHistory((prev) => {
+      console.log(JSON.stringify(prev[prev.length - 1]) + "\n\n\n\n\n\n\n\n\n" + JSON.stringify(currentState))
+      if (prev.length > 0 && JSON.stringify(prev[prev.length - 1]) === JSON.stringify(currentState)) {
+        return prev; // Prevent duplicate saves
+      }
+      return [...prev, currentState]; // Save the new state
+    });
+  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials]);
+
+  // Detects form changes across all components with debounce
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(saveToHistory, 1000); // Only save after 1s of inactivity
+  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials]);
+
+  const undoLastChange = () => {
+    if (history.length > 1) {
+      const lastState = history[history.length - 2]; // Get the last valid state
+      // Restore the previous state
+      setFormData(lastState.formData);
+      setUsedAbbrCodes(lastState.usedAbbrCodes);
+      setUsedTermCodes(lastState.usedTermCodes);
+      setUsedPPEOptions(lastState.usedPPEOptions);
+      setUsedHandTools(lastState.usedHandTools);
+      setUsedEquipment(lastState.usedEquipment);
+      setUsedMobileMachines(lastState.usedMobileMachine);
+      setUsedMaterials(lastState.usedMaterials);
+
+      setHistory((prev) => prev.slice(0, -1)); // Remove last history entry
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Undo successful!", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
+    } else {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("No changes to undo.", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      })
+    }
+  };
+
   const validateForm = () => {
-    const { title, documentType, aim, references, reviewDate } = formData;
-    return (
-      title &&
-      documentType &&
-      aim &&
-      references &&
-      usedAbbrCodes.length > 0 &&
-      usedTermCodes.length > 0 &&
-      //procedureRows.length > 0 &&
-      //referenceRows.length > 0 &&
-      reviewDate
-    );
+    const newErrors = {};
+
+    if (!formData.title) newErrors.title = true;
+    if (!formData.documentType) newErrors.documentType = true;
+    if (!formData.aim) newErrors.aim = true;
+    if (!formData.reviewDate) newErrors.reviewDate = true;
+    if (formData.abbrRows.length === 0) newErrors.abbrs = true;
+    if (formData.termRows.length === 0) newErrors.terms = true;
+
+    if (formData.procedureRows.length === 0) {
+      newErrors.procedureRows = true;
+    } else {
+      formData.procedureRows.forEach((row, index) => {
+        if (!row.mainStep) newErrors.procedureRows = true;
+        if (!row.SubStep) newErrors.procedureRows = true;
+        if (!row.accountable) newErrors.procedureRows = true;
+        if (!row.responsible) newErrors.procedureRows = true;
+      });
+    }
+
+    if (formData.rows.length === 0) {
+      newErrors.signs = true;
+    } else {
+      formData.rows.forEach((row, index) => {
+        if (!row.name) newErrors.signs = true;
+      });
+    }
+
+    return newErrors;
   };
 
   // Authentication check
@@ -504,6 +600,29 @@ const CreatePage = () => {
     }
   };
 
+  const handleGeneratePPTX = async () => {
+    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ppt/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      const blob = await response.blob();
+      saveAs(blob, `output.pptx`);
+      setLoading(false);
+      //saveAs(blob, `${documentName}.pdf`);
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="file-create-container">
       <button className={`logo-button-create ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/home')}>
@@ -525,6 +644,9 @@ const CreatePage = () => {
       <button className={role === "admin" ? `save-button-create ${isScrolled ? "small" : ""}` : `save-button-create-standard ${isScrolled ? "small" : ""}`} onClick={handleSave}>
         {loadedID === '' ? "Save Draft" : "Update Draft"}
       </button>
+      <button className={role === "admin" ? `undo-button-create ${isScrolled ? "small" : ""}` : `undo-button-create-standard ${isScrolled ? "small" : ""}`} onClick={undoLastChange}>
+        Undo
+      </button>
 
       {/* Main content */}
       <div className="main-box">
@@ -544,7 +666,7 @@ const CreatePage = () => {
               </select>
             </div>
 
-            <div className="input-box-title">
+            <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
               <div className="input-group-cpt">
                 <input
@@ -567,9 +689,9 @@ const CreatePage = () => {
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} />
 
-          <div className="input-box-aim-cp">
+          <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
             <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
             <textarea
               spellcheck="true"
@@ -587,14 +709,14 @@ const CreatePage = () => {
           <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} />
           <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} />
           <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} />
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} />
-          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} />
+          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
 
-          <div className="input-row-but-review">
-            <div className="input-box-3">
+          <div className={`input-row-but-review`}>
+            <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
               <input
                 type="number"
@@ -616,12 +738,17 @@ const CreatePage = () => {
             </button>
             <button
               className="pdf-button font-fam"
-              onClick={() => toast.error("Feature creation in progress.", {
-                closeButton: false,
-                style: {
-                  textAlign: 'center'
-                }
-              })}
+              onClick={() => {
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.success("This feature is under development", {
+                  closeButton: false,
+                  style: {
+                    textAlign: 'center'
+                  }
+                })
+              }
+              }
             >
               Generate PDF
             </button>

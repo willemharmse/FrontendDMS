@@ -1,3 +1,8 @@
 .col-sig-act {
     width: 5%;
 }
+
+.error-sign {
+    border: 2px solid #CB6F6F;
+    color: #CB6F6F;
+}

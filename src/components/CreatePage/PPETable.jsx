@@ -11,6 +11,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const fetchValues = async () => {
         try {
@@ -112,6 +113,13 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 <div className="popup-overlay-ppe">
                     <div className="popup-content-terms">
                         <h4 className="center-ppe">Select PPE Options</h4>
+                        <input
+                            type="text"
+                            className="search-bar-ppe"
+                            placeholder="Search PPE..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <div className="popup-table-wrapper-ppe">
                             <table className="popup-table font-fam">
                                 <thead className="ppe-headers">
@@ -123,6 +131,9 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                 <tbody>
                                     {ppeData.length > 0 ? (
                                         ppeData
+                                            .filter((item) =>
+                                                item.ppe.toLowerCase().includes(searchTerm.toLowerCase())
+                                            )
                                             .sort((a, b) => a.ppe.localeCompare(b.ppe))
                                             .map((item) => (
                                                 <tr key={item.ppe}

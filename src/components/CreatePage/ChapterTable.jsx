@@ -45,7 +45,7 @@ const ChapterTable = ({ formData, setFormData }) => {
 
     return (
         <div className="modern-chapter-table">
-            <h3 className="font-fam-labels">Sections <span className="mct-required">*</span></h3>
+            <h3 className="font-fam-labels">Sections</h3>
             {formData.chapters.map((chapter, chapterIndex) => (
                 <div key={chapterIndex} className="mct-chapter-card">
                     <div className="mct-chapter-header">

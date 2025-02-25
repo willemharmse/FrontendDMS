@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./DocumentSignaturesTable.css";
 
-const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) => {
+const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, error }) => {
   const [nameLists, setNameLists] = useState({
     Approver: [],
     Author: [],
@@ -82,7 +82,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow }) =
   };
 
   return (
-    <div className="input-box-2">
+    <div className={`input-box-2 ${error ? "error-sign" : ""}`}>
       <h3 className="font-fam-labels">
         Document Signatures <span className="required-field">*</span>
       </h3>

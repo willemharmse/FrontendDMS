@@ -3,12 +3,13 @@ import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 
-const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role }) => {
+const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [showNewPopup, setShowNewPopup] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setSelectedTerms(new Set(usedTermCodes));
@@ -67,7 +68,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
   const closeManagePopup = () => setIsManageOpen(false);
 
   return (
-    <div className="term-input-box">
+    <div className={`term-input-box ${error ? "error-term" : ""}`}>
       <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
       {role === "admin" && (
         <button className="top-right-button-term" onClick={openManagePopup}>Update Terms</button>
@@ -86,6 +87,13 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
         <div className="popup-overlay-terms">
           <div className="popup-content-terms">
             <h4 className="center-tems">Select Terms</h4>
+            <input
+              type="text"
+              className="search-bar-term"
+              placeholder="Search term..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <div className="popup-table-wrapper">
               <table className="popup-table font-fam">
                 <thead className="terms-headers">
@@ -99,6 +107,9 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                   {/* Check if abbrData is loaded */}
                   {termData.length > 0 ? (
                     termData
+                      .filter((item) =>
+                        item.term.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
                       .sort((a, b) => a.term.localeCompare(b.term))
                       .map((item) => (
                         <tr key={item.term}

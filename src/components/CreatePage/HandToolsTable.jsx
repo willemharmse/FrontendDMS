@@ -11,6 +11,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const fetchValues = async () => {
         try {
@@ -111,6 +112,13 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 <div className="popup-overlay-tool">
                     <div className="popup-content-tool">
                         <h4 className="center-tools">Select Hand Tools</h4>
+                        <input
+                            type="text"
+                            className="search-bar-tool"
+                            placeholder="Search hand tools..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <div className="popup-table-wrapper-tool">
                             <table className="popup-table font-fam">
                                 <thead className="tool-headers">
@@ -122,6 +130,9 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                 <tbody>
                                     {toolsData.length > 0 ? (
                                         toolsData
+                                            .filter((item) =>
+                                                item.tool.toLowerCase().includes(searchTerm.toLowerCase())
+                                            )
                                             .sort((a, b) => a.tool.localeCompare(b.tool))
                                             .map((item) => (
                                                 <tr key={item.tool}

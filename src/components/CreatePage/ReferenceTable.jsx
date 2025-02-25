@@ -92,7 +92,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
 
     return (
         <div className="input-box-2">
-            <h3 className="font-fam-labels">References <span className="required-field">*</span></h3>
+            <h3 className="font-fam-labels">References</h3>
             {referenceRows.length > 0 && (
                 <table className="vcr-table table-borders">
                     <thead className="cp-table-header">
