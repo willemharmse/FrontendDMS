@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) => {
+    const test = true;
+
     const accountableOptions = [
         "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
@@ -63,7 +65,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
             if (!response.ok) {
                 toast.dismiss();
                 toast.clearWaitingQueue();
-                toast.error("Failed to generate the flowchart.", {
+                toast.error("Failed to generate the flowchart." + response.json, {
                     closeButton: false,
                     style: {
                         textAlign: 'center'
@@ -106,7 +108,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
         <div className={`proc-box ${error ? "error-proc" : ""}`}>
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
 
-            <button className="top-right-button-proc" onClick={handleImageGen}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Flowchart'}</button>
+            {!test && (
+                <button className="top-right-button-proc" onClick={handleImageGen}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Flowchart'}</button>
+            )}
 
             {procedureRows.length > 0 && (
                 <table className="vcr-table table-borders">
