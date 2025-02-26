@@ -18,7 +18,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import BurgerMenu from "./CreatePage/BurgerMenu";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -254,7 +255,7 @@ const CreatePage = () => {
   const [formData, setFormData] = useState({
     title: "",
     documentType: "Procedure",
-    aim: "",
+    aim: "The aim of the document is ",
     scope: "",
     date: new Date().toLocaleDateString(),
     version: "1",
@@ -614,7 +615,7 @@ const CreatePage = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `output.pptx`);
+      saveAs(blob, `output.png`);
       setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
@@ -629,23 +630,13 @@ const CreatePage = () => {
         <img src="logo.webp" alt="Home" />
       </button>
       <h1 className={`create-page-title ${isScrolled ? "small" : ""}`}>Create New Document</h1>
-      <button className={`log-button-create ${isScrolled ? "small" : ""}`} onClick={handleLogout}>
-        Log Out
-      </button>
-      {role === "admin" && (
-        <button className={`import-button-create ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/importValues')}>
-          Import Site Info
-        </button>
-      )}
-      <button className={role === "admin" ? `load-button-create ${isScrolled ? "small" : ""}` : `load-button-create-standard ${isScrolled ? "small" : ""}`} onClick={openLoadPopup}>
-        Load Draft
-      </button>
+      <BurgerMenu role={role} openLoadPopup={openLoadPopup} small={isScrolled} />
       {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
-      <button className={role === "admin" ? `save-button-create ${isScrolled ? "small" : ""}` : `save-button-create-standard ${isScrolled ? "small" : ""}`} onClick={handleSave}>
-        {loadedID === '' ? "Save Draft" : "Update Draft"}
+      <button className={`save-button-create ${isScrolled ? "small" : ""}`} onClick={handleSave} title="Save Draft">
+        {loadedID === '' ? <FontAwesomeIcon icon={faFloppyDisk} /> : <FontAwesomeIcon icon={faFloppyDisk} />}
       </button>
-      <button className={role === "admin" ? `undo-button-create ${isScrolled ? "small" : ""}` : `undo-button-create-standard ${isScrolled ? "small" : ""}`} onClick={undoLastChange}>
-        Undo
+      <button className={`undo-button-create ${isScrolled ? "small" : ""}`} onClick={undoLastChange} title="Undo Draft">
+        <FontAwesomeIcon icon={faRotateLeft} />
       </button>
 
       {/* Main content */}
@@ -738,17 +729,7 @@ const CreatePage = () => {
             </button>
             <button
               className="pdf-button font-fam"
-              onClick={() => {
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("This feature is under development", {
-                  closeButton: false,
-                  style: {
-                    textAlign: 'center'
-                  }
-                })
-              }
-              }
+              onClick={handleGeneratePPTX}
             >
               Generate PDF
             </button>

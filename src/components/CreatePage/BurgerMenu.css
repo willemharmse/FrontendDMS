@@ -1,0 +1,52 @@
+.burger-menu-container {
+    position: absolute;
+    top: 35px;
+    right: 0px;
+    z-index: 1000;
+}
+
+.menu-button-cp {
+    border: none;
+    padding: 11px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-right: 50px;
+    width: auto;
+    background: transparent;
+    color: rgb(204, 199, 199);
+    font-size: 30px;
+    height: 50px;
+}
+
+.menu-content {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 150px;
+    text-align: center;
+}
+
+.menu-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-content li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.menu-content li:last-child {
+    border-bottom: none;
+}
+
+.menu-content li:hover {
+    background: #f0f0f0;
+}

@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import './ProcedureTable.css';
+import { saveAs } from "file-saver";
+import { toast } from "react-toastify";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) => {
     const accountableOptions = [
@@ -18,7 +22,71 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
         "Millwright", "Engineering Assistant"
     ];
 
+    const [loading, setLoading] = useState(false);
 
+    const handleImageGen = async () => {
+        try {
+            // Ensure procedureRows is not empty
+            if (procedureRows.length === 0 || procedureRows.length === 0) {
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.warn("There should be at least two procedure steps or more.", {
+                    closeButton: false,
+                    style: {
+                        textAlign: 'center'
+                    }
+                })
+                return;
+            }
+
+            // Ensure all mainStep values are filled
+            if (procedureRows.some(row => !row.mainStep.trim())) {
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.warn("All procedure main steps must have a value.", {
+                    closeButton: false,
+                    style: {
+                        textAlign: 'center'
+                    }
+                })
+                return;
+            }
+
+            setLoading(true);
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ procedureRows }),
+            });
+
+            if (!response.ok) {
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.error("Failed to generate the flowchart.", {
+                    closeButton: false,
+                    style: {
+                        textAlign: 'center'
+                    }
+                })
+                setLoading(false);
+            } else {
+                const blob = await response.blob();
+                saveAs(blob, `flowchart.png`);
+                setLoading(false);
+            }
+        } catch {
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.error("Unable to generate flowchart.", {
+                closeButton: false,
+                style: {
+                    textAlign: 'center'
+                }
+            })
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (index, field, value) => {
         const updatedRow = { ...procedureRows[index], [field]: value };
@@ -35,8 +103,11 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
 
 
     return (
-        <div className={`input-box-2 ${error ? "error-proc" : ""}`}>
+        <div className={`proc-box ${error ? "error-proc" : ""}`}>
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
+
+            <button className="top-right-button-proc" onClick={handleImageGen}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Flowchart'}</button>
+
             {procedureRows.length > 0 && (
                 <table className="vcr-table table-borders">
                     <thead className="cp-table-header">
