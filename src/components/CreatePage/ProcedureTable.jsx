@@ -4,10 +4,9 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import FlowchartRenderer from "./FlowchartRenderer";
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) => {
-    const test = true;
-
     const accountableOptions = [
         "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
@@ -56,6 +55,8 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
 
             setLoading(true);
 
+            //setLoading(false);
+            /*
             const response = await fetch(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -65,7 +66,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
             if (!response.ok) {
                 toast.dismiss();
                 toast.clearWaitingQueue();
-                toast.error("Failed to generate the flowchart." + response.json, {
+                toast.error("Failed to generate the flowchart.", {
                     closeButton: false,
                     style: {
                         textAlign: 'center'
@@ -73,10 +74,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
                 })
                 setLoading(false);
             } else {
-                const blob = await response.blob();
-                saveAs(blob, `flowchart.png`);
-                setLoading(false);
+                console.log(response.data)
             }
+            */
         } catch {
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -108,9 +108,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
         <div className={`proc-box ${error ? "error-proc" : ""}`}>
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
 
-            {!test && (
-                <button className="top-right-button-proc" onClick={handleImageGen}>{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Flowchart'}</button>
-            )}
+            <FlowchartRenderer procedureRows={procedureRows} />
 
             {procedureRows.length > 0 && (
                 <table className="vcr-table table-borders">

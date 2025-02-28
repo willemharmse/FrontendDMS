@@ -54,7 +54,7 @@ const HomePage = () => {
           </div>
           <div className={`card ${clicked3 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked3, "/FrontendDMS/construction")}>
             <FontAwesomeIcon icon={faTriangleExclamation} className="logo" />
-            <h3>RISK ASSESSMENT</h3>
+            <h3>RISK MANAGEMENT</h3>
           </div>
         </div>
 

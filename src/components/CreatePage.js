@@ -602,26 +602,14 @@ const CreatePage = () => {
   };
 
   const handleGeneratePPTX = async () => {
-    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ppt/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate document");
-
-      const blob = await response.blob();
-      saveAs(blob, `output.png`);
-      setLoading(false);
-      //saveAs(blob, `${documentName}.pdf`);
-    } catch (error) {
-      console.error("Error generating document:", error);
-      setLoading(false);
-    }
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("Feature is under development", {
+      closeButton: false,
+      style: {
+        textAlign: 'center'
+      }
+    })
   };
 
   return (
