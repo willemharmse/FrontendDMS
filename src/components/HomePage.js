@@ -16,7 +16,7 @@ const HomePage = () => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     localStorage.removeItem('rememberMe');
-    navigate('/');
+    navigate('/FrontendDMS/');
   };
 
   const handleClick = (setClicked, navigateTo) => {
