@@ -17,7 +17,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 150px;
+    width: 120px;
     /* Set a width to see the wrapping effect */
     text-align: center;
 }

@@ -301,6 +301,11 @@ body {
 .file-name-cell {
   position: relative;
   cursor: pointer;
+  font-size: 13px;
+}
+
+.sidebar-select {
+  font-size: 13px;
 }
 
 .popup {
@@ -777,36 +782,96 @@ tbody tr:hover {
 
 @media (max-width: 1199px) {
   .col {
-    font-size: 7px;
+    font-size: 9px;
+  }
+
+  .info-box {
+    font-size: 9px;
+  }
+
+  .search-input {
+    font-size: 9px;
+  }
+
+  .but-upload {
+    font-size: 9px;
+  }
+
+  .but-batch {
+    font-size: 9px;
+  }
+
+  .sidebar-select {
+    font-size: 9px;
   }
 
   .file-name-cell {
     text-align: left;
-    font-size: 7px;
+    font-size: 9px;
     font-family: Arial;
   }
 }
 
 @media (min-width: 1200px) and (max-width: 1290px) {
   .col {
-    font-size: xx-small;
+    font-size: 11px;
+  }
+
+  .sidebar-select {
+    font-size: 11px;
+  }
+
+  .search-input {
+    font-size: 11px;
+  }
+
+  .but-upload {
+    font-size: 11px;
+  }
+
+  .but-batch {
+    font-size: 11px;
+  }
+
+  .info-box {
+    font-size: 11px;
   }
 
   .file-name-cell {
     text-align: left;
-    font-size: xx-small;
+    font-size: 11px;
     font-family: Arial;
   }
 }
 
 @media (min-width: 1291px) and (max-width: 1600px) {
   .col {
-    font-size: x-small;
+    font-size: 13px;
+  }
+
+  .but-upload {
+    font-size: 13px;
+  }
+
+  .but-batch {
+    font-size: 13px;
+  }
+
+  .search-input {
+    font-size: 13px;
+  }
+
+  .info-box {
+    font-size: 13px;
   }
 
   .file-name-cell {
     text-align: left;
-    font-size: x-small;
+    font-size: 13px;
     font-family: Arial;
+  }
+
+  .sidebar-select {
+    font-size: 13px;
   }
 }
