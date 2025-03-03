@@ -14,6 +14,7 @@ import HandToolTable from "./CreatePage/HandToolsTable";
 import EquipmentTable from "./CreatePage/EquipmentTable";
 import MaterialsTable from "./CreatePage/MaterialsTable";
 import MobileMachineTable from "./CreatePage/MobileMachineTable";
+import PicturesTable from "./CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
@@ -274,9 +275,39 @@ const CreatePage = () => {
     Equipment: [],
     MobileMachine: [],
     Materials: [],
+    pictures: [],
     reviewDate: 0
   });
 
+  const addPicRow = () => {
+    setFormData({
+      ...formData,
+      pictures: [
+        ...formData.pictures,
+        {
+          pic1: '',
+          pic2: ''
+        }
+      ]
+    });
+  };
+
+  const updatePicRow = (index, field, value) => {
+    const updatedPicRows = [...formData.pictures];
+    updatedPicRows[index][field] = value;  // Update the specific field in the row
+
+    setFormData({
+      ...formData,
+      pictures: updatedPicRows,  // Update the procedure rows in state
+    });
+  };
+
+  const removePicRow = (indexToRemove) => {
+    setFormData({
+      ...formData,
+      pictures: formData.pictures.filter((_, index) => index !== indexToRemove),
+    });
+  };
 
   const [history, setHistory] = useState([]);
   const timeoutRef = useRef(null);

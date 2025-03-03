@@ -12,31 +12,31 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
 
     return (
         <tr>
-            <th className="doc-num-filter">Nr</th>
-            <th className="col-dis-filter">
+            <th className="doc-num-filter col">Nr</th>
+            <th className="col-dis-filter col">
                 <div className="fileinfo-container-filter-1">
                     <span className="fileinfo-title-filter-1">Discipline</span>
                 </div>
             </th>
-            <th className="col-name-filter">
+            <th className="col-name-filter col">
                 <div className="fileinfo-container-filter-1">
                     <span className="fileinfo-title-filter-1">File Name</span>
                 </div>
             </th>
-            <th className="col-type-filter">
+            <th className="col-type-filter col">
                 <div className="fileinfo-container-filter-1">
                     <span className="fileinfo-title-filter-1">Document Type</span>
                 </div>
             </th>
             {(adminRoles.includes(role) || role === 'auditor') && (
-                <th className="col-stat-filter">
+                <th className="col-stat-filter col">
                     <div className="fileinfo-container-filter-1">
                         <span className="fileinfo-title-filter-1">Status</span>
                     </div>
                 </th>
             )}
             <th className={`col-own-filter ${filters.author ? "active-filter" : ""}`}>
-                <div className="fileinfo-container-filter">
+                <div className="fileinfo-container-filter col">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('Author')}>
                         {filters.author ? (
                             <>
@@ -48,7 +48,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     </span>
                     {openMenu === 'Author' && (
                         <div
-                            className="fileinfo-menu-filter"
+                            className="fileinfo-menu-filter col"
                             onMouseLeave={() => setOpenMenu(null)}
                         >
                             <input
@@ -62,7 +62,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className={`col-dept-head-filter ${filters.deptHead ? "active-filter-dept" : ""}`}>
+            <th className={`col-dept-head-filter ${filters.deptHead ? "active-filter-dept" : ""} col`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('DeptHead')}>
                         {filters.deptHead ? (
@@ -89,7 +89,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className={`col-docID-filter ${filters.docID ? "active-filter" : ""}`}>
+            <th className={`col-docID-filter ${filters.docID ? "active-filter" : ""} col`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('DocID')}>
                         {filters.docID ? (
@@ -116,7 +116,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
-            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter-review" : ""}`}>
+            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter-review" : ""} col`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('Date')}>
                         {filters.startDate || filters.endDate ? (
@@ -152,7 +152,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                 </div>
             </th>
             {adminRoles.includes(role) && (
-                <th className="col-act-filter">Actions</th>
+                <th className="col-act-filter col">Actions</th>
             )}
         </tr>
     );

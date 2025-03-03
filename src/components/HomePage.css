@@ -154,7 +154,7 @@
 
 /* Responsiveness */
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .content-sections {
     flex-direction: column;
     gap: 20px;
@@ -165,11 +165,24 @@
   }
 }
 
-@media (max-height: 768px) {
+@media (max-height: 600px) {
   .card {
-    height: 100px;
+    height: 80px;
   }
 
+  .card-blank {
+    height: 80px;
+  }
+
+  .logo {
+    font-size: 3rem;
+    margin-bottom: 3px;
+  }
+}
+
+@media (min-height: 601px) and (max-height: 1080px) {
+
+  .card,
   .card-blank {
     height: 100px;
   }

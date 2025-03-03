@@ -404,7 +404,9 @@ const FileInfo = () => {
           />
 
           <div className="info-box">Number of Documents: {filteredFiles.length}</div>
-          <div className="info-box">Number of Document Owners: {new Set(filteredFiles.map((file) => file.owner)).size}</div>
+          <div className="info-box">Number of Document Author: {
+            new Set(filteredFiles.flatMap((file) => Array.isArray(file.owner) ? file.owner : [file.owner])).size
+          }</div>
           <div className="sort-menu-icon" onClick={openSortModal}>
             <FontAwesomeIcon icon={faSort} />
           </div>

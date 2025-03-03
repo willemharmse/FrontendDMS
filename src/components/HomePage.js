@@ -16,7 +16,7 @@ const HomePage = () => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     localStorage.removeItem('rememberMe');
-    navigate('/FrontendDMS/');
+    navigate('/');
   };
 
   const handleClick = (setClicked, navigateTo) => {
@@ -48,21 +48,21 @@ const HomePage = () => {
             <FontAwesomeIcon icon={faFile} className="logo" />
             <h3>DOCUMENT MANAGEMENT</h3>
           </div>
-          <div className={`card ${clicked2 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked2, "/FrontendDMS/documentCreate")}>
-            <FontAwesomeIcon icon={faFileCirclePlus} className="logo" />
-            <h3>DOCUMENT DEVELOPMENT</h3>
-          </div>
-          <div className={`card ${clicked3 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked3, "/FrontendDMS/construction")}>
+          <div className={`card ${clicked2 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked2, "/FrontendDMS/construction")}>
             <FontAwesomeIcon icon={faTriangleExclamation} className="logo" />
             <h3>RISK MANAGEMENT</h3>
+          </div>
+          <div className={`card ${clicked3 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked3, "/FrontendDMS/construction")}>
+            <FontAwesomeIcon icon={faFileCircleCheck} className="logo" />
+            <h3>COMPLIANCE GOVERNANCE</h3>
           </div>
         </div>
 
         {/* Right Section */}
         <div className="section">
-          <div className={`card ${clicked4 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked4, "/FrontendDMS/construction")}>
-            <FontAwesomeIcon icon={faFileCircleCheck} className="logo" />
-            <h3>COMPLIANCE GOVERNANCE</h3>
+          <div className={`card ${clicked4 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked4, "/FrontendDMS/documentCreate")}>
+            <FontAwesomeIcon icon={faFileCirclePlus} className="logo" />
+            <h3>DOCUMENT DEVELOPMENT</h3>
           </div>
           <div className={`card ${clicked5 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked5, "/FrontendDMS/construction")}>
             <FontAwesomeIcon icon={faChalkboardTeacher} className="logo" />
