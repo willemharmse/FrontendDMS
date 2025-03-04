@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType }) => {
     const accountableOptions = [
         "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
@@ -108,7 +108,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error }) 
         <div className={`proc-box ${error ? "error-proc" : ""}`}>
             <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
 
-            <FlowchartRenderer procedureRows={procedureRows} />
+            <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
 
             {procedureRows.length > 0 && (
                 <table className="vcr-table table-borders">

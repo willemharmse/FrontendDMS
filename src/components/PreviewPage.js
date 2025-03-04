@@ -61,7 +61,7 @@ const PreviewPage = () => {
         <div className="pdf-info-container">
             <div className="sidebar">
                 <div className="sidebar-logo">
-                    <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/documentManage')} />
+                    <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/documentManage')} />
                 </div>
                 <button className="sidebar-item text-format-log log-but" onClick={handleLogout}>
                     Log Out

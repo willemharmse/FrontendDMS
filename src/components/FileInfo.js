@@ -368,7 +368,7 @@ const FileInfo = () => {
     <div className="file-info-container">
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
+          <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
         </div>
         <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
         <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
