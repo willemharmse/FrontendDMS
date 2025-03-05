@@ -10,6 +10,13 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     const cyRef = useRef(null);
     const [cy, setCy] = useState(null);
 
+    const capitalizeWords = (text) =>
+        text
+            .toLowerCase()
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+
     useEffect(() => {
         if (!procedureRows || procedureRows.length === 0) return;
 
@@ -25,7 +32,6 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
         })
             .then(response => {
                 const { elements } = response.data;
-                console.log(elements);
 
                 // Create a hidden div for rendering the graph
                 const hiddenDiv = document.createElement("div");
@@ -81,6 +87,25 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "text-max-width": "250px"
                             }
                         },
+                        {
+                            selector: "[id='CompletedNode']",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#008000", // Green color
+                                "color": "#fff", // White text
+                                "border-width": 2,
+                                "border-color": "#8a8a8a", // Dark green border
+                                "font-weight": "bold",
+                                "font-size": "16px",
+                                "width": "300px",
+                                "height": "80px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
                         // Styling for Edges (Connections)
                         {
                             selector: "edge",
@@ -103,6 +128,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
 
                 cyInstance.ready(() => {
                     const documentNode = cyInstance.$("[id='DocumentNode']");
+                    const completedNode = cyInstance.$("[id = 'CompletedNode']");
 
                     if (documentNode.length > 0) {
                         documentNode.style({
@@ -113,10 +139,26 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                             "text-valign": "center",
                             "text-halign": "center",
                             "font-size": "16px",
-                            "text-max-width": "300px"
+                            "text-max-width": "300px",
+
                         });
                     } else {
                         console.error("DocumentNode not found");
+                    }
+
+                    if (completedNode.length > 0) {
+                        completedNode.style({
+                            "background-color": "#7F7F7F", // Dark blue
+                            "color": "#fff", // White text
+                            "font-weight": "bold",
+                            "text-valign": "center",
+                            "text-halign": "center",
+                            "font-size": "16px",
+                            "text-max-width": "300px",
+                            "border-color": "#8a8a8a",
+                        });
+                    } else {
+                        console.error("CompletedNode not found");
                     }
                 });
             })
@@ -156,9 +198,10 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 padding: 180,
             });
 
+            const documentName = capitalizeWords(title) + " " + documentType + " Flowchart";
             const a = document.createElement("a");
             a.href = pngData;
-            a.download = "flowchart.png";
+            a.download = `${documentName}.png`;
             a.click();
         }
     };

@@ -748,7 +748,7 @@ const CreatePage = () => {
             </button>
             <button
               className="pdf-button font-fam"
-              onClick={handleGeneratePPTX}
+              disabled
             >
               Generate PDF
             </button>

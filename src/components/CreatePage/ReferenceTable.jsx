@@ -167,7 +167,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                     }}
                 >
                     {filteredOptions[showDropdown].map((file, i) => (
-                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, file.fileName)}>
+                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, removeFileExtension(file.fileName))}>
                             {removeFileExtension(file.fileName)}
                         </li>
                     ))}
