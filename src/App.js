@@ -28,7 +28,7 @@ function App() {
     <Router>
       <Routes>
         {/* Desktop Routes */}
-        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/mobileLogin" /> : <NewLogin />} />
+        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <LoginPage />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path="FrontendDMS/documentManage" element={isMobile ? <Navigate to="/FrontendDMS/mobileFI" /> : <FileInfo />} />

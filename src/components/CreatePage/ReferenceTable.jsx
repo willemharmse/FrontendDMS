@@ -70,7 +70,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
             setShowDropdown(index);
 
             // Check if the entered value exactly matches a file name
-            const matchedFile = files.find(file => file.fileName === value);
+            const matchedFile = files.find(file => file.fileName === value.toLowerCase());
             updateRefRow(index, "refDesc", matchedFile ? matchedFile.docID : ""); // If no match, keep it empty
         }
     };
@@ -80,7 +80,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
     };
 
     const handleSelectOption = (index, value) => {
-        const selectedFile = files.find(file => file.fileName === value);
+        const selectedFile = files.find(file => removeFileExtension(file.fileName) === value);
 
         updateRefRow(index, "ref", value);
 
