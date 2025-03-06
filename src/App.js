@@ -22,6 +22,8 @@ import Tester from './components/tester';
 import ConstructionPage from './components/ConstructionPage';
 import ImportExcelPage from './components/ImportExcelPage';
 import NewLogin from './components/NewLogin';
+import GeneratedFileInfo from './components/GeneratedFileInfo';
+import AdminApprovalPage from './components/ValueChanges/AdminApprovalPage';
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
         <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <VersionControlPage />} />
         <Route path='FrontendDMS/importValues' element={<ImportExcelPage />} />
+        <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
+        <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

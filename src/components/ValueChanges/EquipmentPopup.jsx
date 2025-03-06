@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const EquipmentPopup = ({ isOpen, onClose }) => {
+const EquipmentPopup = ({ isOpen, onClose, role }) => {
     const [eqp, setEqp] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -19,22 +19,46 @@ const EquipmentPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/eqp/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    eqp: eqp.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/eqp/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add equipment");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        eqp: eqp.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Equipment added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add equipment");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Equipment added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { eqp };
+                const type = "Equipment";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add equipment");
+
+                setLoading(false);
+                setMessage({ text: "Equipment added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding equipment:", error);

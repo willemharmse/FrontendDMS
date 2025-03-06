@@ -104,6 +104,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             <ToolPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                role={role}
             />
 
             {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const MaterialPopup = ({ isOpen, onClose }) => {
+const MaterialPopup = ({ isOpen, onClose, role }) => {
     const [mat, setMat] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -19,22 +19,46 @@ const MaterialPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/mat/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    mat: mat.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/mat/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add material");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        mat: mat.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Material added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add material");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Material added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { mat };
+                const type = "Material";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add material");
+
+                setLoading(false);
+                setMessage({ text: "Material added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding material:", error);

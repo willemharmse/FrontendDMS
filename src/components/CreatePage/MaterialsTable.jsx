@@ -104,6 +104,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             <MaterialPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                role={role}
             />
 
             {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const PPEPopup = ({ isOpen, onClose }) => {
+const PPEPopup = ({ isOpen, onClose, role }) => {
     const [ppe, setPPE] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -19,22 +19,46 @@ const PPEPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/ppe/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ppe: ppe.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/ppe/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add ppe");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ppe: ppe.trim()
+                    })
+                });
 
-            setMessage({ text: "PPE added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add ppe");
 
-            setLoading(false);
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "PPE added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { ppe };
+                const type = "PPE";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add ppe");
+
+                setLoading(false);
+                setMessage({ text: "PPE added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding ppe:", error);

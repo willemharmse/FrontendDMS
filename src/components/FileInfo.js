@@ -336,8 +336,14 @@ const FileInfo = () => {
 
   // Filter files based on selected values
   const filteredFiles = files.filter((file) => {
-    const matchesSearchQuery =
-      file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearchQuery = (
+      file.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.discipline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.documentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.owner.some(o => o.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      file.departmentHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.docID.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const matchTextFilters = (
       file.owner.some(o => o.toLowerCase().includes(filters.author.toLowerCase())) &&

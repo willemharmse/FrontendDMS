@@ -80,6 +80,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       <AbbreviationPopup
         isOpen={showNewPopup}
         onClose={() => { setShowNewPopup(false); fetchValues(); }}
+        role={role}
       />
 
       {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}

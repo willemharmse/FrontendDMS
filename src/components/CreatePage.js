@@ -586,6 +586,18 @@ const CreatePage = () => {
 
   // Send data to backend to generate a Word document
   const handleGeneratePDF = async () => {
+    const dataToStore = {
+      usedAbbrCodes,       // your current state values
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+      formData,
+      userID
+    };
+
     const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
     setLoading(true);
 
@@ -593,7 +605,7 @@ const CreatePage = () => {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToStore),
       });
 
       if (!response.ok) throw new Error("Failed to generate document");

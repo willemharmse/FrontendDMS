@@ -1,0 +1,93 @@
+.gen-file-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #ADADAD;
+}
+
+.main-box-gen-info {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Floating shadow effect */
+    position: relative;
+    z-index: 5;
+    /* Ensures the main content stays below the sidebar */
+    overflow: hidden;
+    /* Allows scrolling if content overflows */
+}
+
+/* For modern browsers */
+.table-container-gen::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.table-container-gen::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.table-container-gen::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.table-container-gen::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.table-container-gen {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.table-container-gen {
+    height: calc(100%);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.gen-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.gen-head {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+.gen-tr {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.gen-th {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}

@@ -158,11 +158,13 @@ const UploadPage = () => {
               <label>Discipline <span className="required-field">*</span></label>
               <select value={discipline} onChange={(e) => setDiscipline(e.target.value)}>
                 <option value="">Select Discipline</option>
-                {disciplines.map((discipline, index) => (
-                  <option key={index} value={discipline}>
-                    {discipline}
-                  </option>
-                ))}
+                {disciplines
+                  .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
+                  .map((discipline, index) => (
+                    <option key={index} value={discipline}>
+                      {discipline}
+                    </option>
+                  ))}
               </select>
             </div>
             <div className="form-group">

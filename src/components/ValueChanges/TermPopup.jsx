@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const TermPopup = ({ isOpen, onClose }) => {
+const TermPopup = ({ isOpen, onClose, role }) => {
     const [term, setTerm] = useState("");
     const [definition, setDefinition] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -20,23 +20,47 @@ const TermPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/def/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    term: term.trim(),
-                    definition: definition.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/def/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add term");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        term: term.trim(),
+                        definition: definition.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Term added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add term");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Term added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { term, definition };
+                const type = "Definition";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add term");
+
+                setLoading(false);
+                setMessage({ text: "Term added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding term:", error);

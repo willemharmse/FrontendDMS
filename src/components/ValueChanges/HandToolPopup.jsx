@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const ToolPopup = ({ isOpen, onClose }) => {
+const ToolPopup = ({ isOpen, onClose, role }) => {
     const [tool, setTool] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -19,22 +19,46 @@ const ToolPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/tool/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    tool: tool.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/tool/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add tool");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        tool: tool.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Tool added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add tool");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Tool added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { tool };
+                const type = "Tool";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add tool");
+
+                setLoading(false);
+                setMessage({ text: "Tool added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding tool:", error);

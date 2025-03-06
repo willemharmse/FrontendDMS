@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const AbbreviationPopup = ({ isOpen, onClose }) => {
+const AbbreviationPopup = ({ isOpen, onClose, role }) => {
     const [abbreviation, setAbbreviation] = useState("");
     const [meaning, setMeaning] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -20,23 +20,47 @@ const AbbreviationPopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    abbr: abbreviation.trim(),
-                    meaning: meaning.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/abbr/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add abbreviation");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        abbr: abbreviation.trim(),
+                        meaning: meaning.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Abbreviation added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add abbreviation");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Abbreviation added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { abbr: abbreviation, meaning };
+                const type = "Abbreviation";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add abbreviation");
+
+                setLoading(false);
+                setMessage({ text: "Abbreviation added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding abbreviation:", error);

@@ -470,7 +470,6 @@ body {
 .but-batch {
   background: none;
   border: none;
-  color: #fff;
   /* White text for contrast */
   cursor: pointer;
   font: inherit;

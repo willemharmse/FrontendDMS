@@ -35,6 +35,11 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
                         {role === "admin" && (
                             <li onClick={openLoadPopup}>Load draft</li>
                         )}
+                        {role === "adfgdmin" && (
+                            <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Check Suggestions</li>
+                        )}
+
+                        <li onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>View Files</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

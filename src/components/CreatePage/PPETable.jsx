@@ -104,6 +104,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             <PPEPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                role={role}
             />
 
             {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}

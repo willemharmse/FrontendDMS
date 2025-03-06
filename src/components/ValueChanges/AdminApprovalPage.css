@@ -1,0 +1,115 @@
+.admin-draft-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #ADADAD;
+}
+
+.main-box-admin-info {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Floating shadow effect */
+    position: relative;
+    z-index: 5;
+    /* Ensures the main content stays below the sidebar */
+    overflow: hidden;
+    /* Allows scrolling if content overflows */
+}
+
+.admin-title {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.draft-list-admin {
+    height: calc(100% - 90px);
+    /* Set a fixed height */
+    overflow-y: auto;
+    /* Allow scrolling */
+    padding: 10px;
+    border: 1px solid #ddd;
+    /* Optional: Adds a subtle border */
+    background-color: #f9f9f9;
+}
+
+.cent-admin-draft {
+    text-align: center;
+}
+
+.no-drafts {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+}
+
+.draft-card {
+    background: #ecf0f1;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draft-card h3 {
+    margin: 0;
+    color: #000000;
+}
+
+.draft-details {
+    justify-content: center;
+    text-align: center;
+}
+
+.draft-card p {
+    font-size: 14px;
+    color: #333;
+    word-wrap: break-word;
+}
+
+.draft-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.approve-btn {
+    background-color: #7EAC89;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.approve-btn:hover {
+    background-color: #7EAC89;
+}
+
+.decline-btn {
+    background-color: #CB6F6F;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.decline-btn:hover {
+    background-color: #CB6F6F;
+}
+
+.error-message {
+    color: red;
+    text-align: center;
+    margin-bottom: 10px;
+}

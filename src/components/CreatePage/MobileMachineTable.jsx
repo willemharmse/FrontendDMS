@@ -104,6 +104,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             <MobileMachinePopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                role={role}
             />
 
             {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}

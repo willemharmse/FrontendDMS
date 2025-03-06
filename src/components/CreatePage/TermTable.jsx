@@ -79,6 +79,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
       <TermPopup
         isOpen={showNewPopup}
         onClose={() => { setShowNewPopup(false); fetchValues(); }}
+        role={role}
       />
 
       {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}

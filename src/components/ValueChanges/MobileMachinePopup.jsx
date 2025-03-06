@@ -3,7 +3,7 @@ import "./MobileMachinePopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const MobileMachinePopup = ({ isOpen, onClose }) => {
+const MobileMachinePopup = ({ isOpen, onClose, role }) => {
     const [machine, setMachine] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -19,22 +19,46 @@ const MobileMachinePopup = ({ isOpen, onClose }) => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/mac/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    machine: machine.trim()
-                })
-            });
+            const route = role === "admin" ? `/api/docCreateVals/mac/add` : `/api/docCreateVals/draft`;
 
-            if (!response.ok) throw new Error("Failed to add machine");
+            if (role === "admin") {
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        machine: machine.trim()
+                    })
+                });
 
-            setLoading(false);
-            setMessage({ text: "Machine added successfully!", type: "success" });
+                if (!response.ok) throw new Error("Failed to add machine");
 
-            setTimeout(() => {
-                handleClose();
-            }, 1000);
+                setLoading(false);
+                setMessage({ text: "Machine added successfully!", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
+            else {
+                const data = { machine };
+                const type = "Mobile";
+                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        type, data
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to add machine");
+
+                setLoading(false);
+                setMessage({ text: "Machine added as a suggestion.", type: "success" });
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error("Error adding machine:", error);
