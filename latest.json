@@ -1,0 +1,11 @@
+{
+  "version": "v0.0.1",
+  "notes": "Your Release Notes go here",
+  "pub_date": "2020-06-22T19:25:57Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "Content of app-setup.nsis.sig or app.msi.sig, depending on the chosen format",
+      "url": "https://github.com/willemharmse/FrontendDMS/blob/a1c68e5c3bf9464b827be3efa897201d853d6250/TAU5%20Compliance%20Hub_0.0.1_x64_en-US.msi"
+    }
+  }
+}
