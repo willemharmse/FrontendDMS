@@ -3,7 +3,7 @@ import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 
-const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error }) => {
+const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
@@ -71,15 +71,14 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
     <div className={`term-input-box ${error ? "error-term" : ""}`}>
       <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
       {role === "admin" && (
-        <button className="top-right-button-term" onClick={openManagePopup}>Update Terms</button>
+        <button className="top-right-button-term-2" onClick={openManagePopup}>Update Terms</button>
       )}
-      {role === "admin" && (
-        <button className="top-right-button-term-2" onClick={() => setShowNewPopup(true)}>Add Terms</button>
-      )}
+      <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}>Add Terms</button>
       <TermPopup
         isOpen={showNewPopup}
         onClose={() => { setShowNewPopup(false); fetchValues(); }}
         role={role}
+        userID={userID}
       />
 
       {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}

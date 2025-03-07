@@ -3,7 +3,7 @@ import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
 import ManageMaterial from "../ValueChanges/ManageMaterial";
 
-const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role }) => {
+const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [matsData, setMatsData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -96,15 +96,14 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 <h3 className="font-fam-labels">Materials</h3>
             </div>
             {role === "admin" && (
-                <button className="top-right-button-mat" onClick={openManagePopup}>Update Materials</button>
+                <button className="top-right-button-mat-2" onClick={openManagePopup}>Update Materials</button>
             )}
-            {role === "admin" && (
-                <button className="top-right-button-mat-2" onClick={() => setShowNewPopup(true)}>Add Material</button>
-            )}
+            <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add Material</button>
             <MaterialPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
                 role={role}
+                userID={userID}
             />
 
             {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}

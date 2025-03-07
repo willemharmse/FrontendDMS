@@ -5,16 +5,15 @@ body {
     padding: 0;
     font-family: Arial, sans-serif;
     color: #333;
-    background-color: #ADADAD;
 }
 
-.text-format-log {
+.text-format-log-preview-pdf {
     color: black;
     background-color: #ADADAD !important;
     font-weight: bolder !important;
 }
 
-.sidebar {
+.sidebar-preview-pdf {
     width: 275px;
     padding: 20px;
     background-color: #002060;
@@ -27,7 +26,7 @@ body {
     /* Allows scrolling if content overflows */
 }
 
-.log-but {
+.log-but-preview-pdf {
     background: none;
     border: none;
     color: #333;
@@ -45,7 +44,7 @@ body {
     width: 50% !important;
 }
 
-.sidebar-item {
+.sidebar-item-preview-pdf {
     width: calc(100% - 30px);
     /* Full width minus padding for margins */
     margin: 10px;
@@ -59,12 +58,12 @@ body {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.sidebar-item:hover {
+.sidebar-item-preview-pdf:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.logo-img {
+.logo-img-preview-pdf {
     max-width: 100%;
     /* Ensures the image is responsive */
     height: auto;
@@ -81,10 +80,11 @@ body {
     height: 100vh;
     padding: 20px;
     box-sizing: border-box;
+    background-color: #ADADAD;
 }
 
 /* Ensure .main-box acts as a container for file preview */
-.main-box-preview {
+.main-box-preview-pdf {
     flex-grow: 1;
     padding: 0;
     margin-left: 20px;
@@ -128,7 +128,7 @@ body {
 }
 
 /* Back Button */
-.back-button {
+.back-button-preview-pdf {
     margin-top: 15px;
     padding: 12px 20px;
     font-size: 16px;
@@ -138,12 +138,21 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: 0.3s ease-in-out;
 }
 
-.back-button:hover {
-    background-color: #0e094a;
-    transform: scale(1.05);
+.back-button-preview-pdf:hover {
+    background-color: #002060;
+}
+
+.sidebar-logo-preview-pdf {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    /* Center horizontally */
+    align-items: center;
+    /* Center vertically */
+    height: 100px;
+    /* Adjust the height as needed */
 }
 
 /* Responsive Design for smaller screens */

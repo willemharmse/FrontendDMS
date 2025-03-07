@@ -59,16 +59,16 @@ const PreviewPage = () => {
 
     return (
         <div className="pdf-info-container">
-            <div className="sidebar">
-                <div className="sidebar-logo">
+            <div className="sidebar-preview-pdf">
+                <div className="sidebar-logo-preview-pdf">
                     <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/documentManage')} />
                 </div>
-                <button className="sidebar-item text-format-log log-but" onClick={handleLogout}>
+                <button className="sidebar-item-preview-pdf text-format-log-preview-pdf log-but-preview-pdf" onClick={handleLogout}>
                     Log Out
                 </button>
             </div>
 
-            <div className="main-box-preview">
+            <div className="main-box-preview-pdf">
                 <div className="file-preview-container">
                     <h2>File Preview</h2>
                     {fileUrl ? (
@@ -81,7 +81,7 @@ const PreviewPage = () => {
                     ) : (
                         <p>Loading file...</p>
                     )}
-                    <button onClick={() => navigate(-1)} className="back-button">Go Back</button>
+                    <button onClick={() => navigate(-1)} className="back-button-preview-pdf">Go Back</button>
                 </div>
             </div>
         </div>

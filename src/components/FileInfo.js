@@ -472,20 +472,20 @@ const FileInfo = () => {
 
                     {(hoveredFileId === file._id && !isTrashView) && (
                       <div
-                        className="popup"
+                        className="popup-file-info"
                         onMouseEnter={() => setHoveredFileId(file._id)}
                         onMouseLeave={() => setHoveredFileId(null)}
                       >
                         <div class="buttons-container">
                           <button
-                            className="btn accept"
+                            className="btn-popup-file-info accept"
                             onClick={() => handlePreview(file._id)}
                           >
                             Preview
                           </button>
                           {isActionAvailable && (
                             <button
-                              className="btn reject"
+                              className="btn-popup-file-info reject"
                               onClick={() => openDownloadModal(file._id, file.fileName)}
                             >
                               Download

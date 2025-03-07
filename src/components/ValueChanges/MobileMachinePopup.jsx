@@ -3,7 +3,7 @@ import "./MobileMachinePopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const MobileMachinePopup = ({ isOpen, onClose, role }) => {
+const MobileMachinePopup = ({ isOpen, onClose, role, userID }) => {
     const [machine, setMachine] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const MobileMachinePopup = ({ isOpen, onClose, role }) => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        type, data
+                        type, data, userID
                     })
                 });
 

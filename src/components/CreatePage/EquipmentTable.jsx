@@ -3,7 +3,7 @@ import "./EquipmentTable.css"; // Add styling here
 import EquipmentPopup from "../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../ValueChanges/ManageEquipment";
 
-const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role }) => {
+const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [eqpData, setEqpData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -96,15 +96,15 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                 <h3 className="font-fam-labels">Equipment</h3>
             </div>
             {role === "admin" && (
-                <button className="top-right-button-eqp" onClick={openManagePopup}>Update Equipment</button>
+                <button className="top-right-button-eqp-2" onClick={openManagePopup}>Update Equipment</button>
             )}
-            {role === "admin" && (
-                <button className="top-right-button-eqp-2" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
-            )}
+            <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
+
             <EquipmentPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
                 role={role}
+                userID={userID}
             />
 
             {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}

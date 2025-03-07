@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const MaterialPopup = ({ isOpen, onClose, role }) => {
+const MaterialPopup = ({ isOpen, onClose, role, userID }) => {
     const [mat, setMat] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const MaterialPopup = ({ isOpen, onClose, role }) => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        type, data
+                        type, data, userID
                     })
                 });
 

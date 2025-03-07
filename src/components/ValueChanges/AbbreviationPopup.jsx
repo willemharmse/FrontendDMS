@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const AbbreviationPopup = ({ isOpen, onClose, role }) => {
+const AbbreviationPopup = ({ isOpen, onClose, role, userID }) => {
     const [abbreviation, setAbbreviation] = useState("");
     const [meaning, setMeaning] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -48,7 +48,7 @@ const AbbreviationPopup = ({ isOpen, onClose, role }) => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        type, data
+                        type, data, userID
                     })
                 });
 

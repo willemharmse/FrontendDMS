@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const TermPopup = ({ isOpen, onClose, role }) => {
+const TermPopup = ({ isOpen, onClose, role, userID }) => {
     const [term, setTerm] = useState("");
     const [definition, setDefinition] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -48,7 +48,7 @@ const TermPopup = ({ isOpen, onClose, role }) => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        type, data
+                        type, data, userID
                     })
                 });
 

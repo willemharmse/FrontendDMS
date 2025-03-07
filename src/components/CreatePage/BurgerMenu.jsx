@@ -35,7 +35,7 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
                         {role === "admin" && (
                             <li onClick={openLoadPopup}>Load draft</li>
                         )}
-                        {role === "adfgdmin" && (
+                        {role === "admin" && (
                             <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Check Suggestions</li>
                         )}
 

@@ -3,7 +3,7 @@ import "./PPETable.css"; // Add styling here
 import PPEPopup from "../ValueChanges/PPEPopup.jsx";
 import ManagePPE from "../ValueChanges/ManagePPE.jsx";
 
-const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role }) => {
+const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [ppeData, setPPEData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -96,15 +96,14 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 <h3 className="font-fam-labels">PPE</h3>
             </div>
             {role === "admin" && (
-                <button className="top-right-button-ppe" onClick={openManagePopup}>Update PPE</button>
+                <button className="top-right-button-ppe-2" onClick={openManagePopup}>Update PPE</button>
             )}
-            {role === "admin" && (
-                <button className="top-right-button-ppe-2" onClick={() => setShowNewPopup(true)}>Add PPE</button>
-            )}
+            <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add PPE</button>
             <PPEPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
                 role={role}
+                userID={userID}
             />
 
             {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}

@@ -28,6 +28,14 @@
   /* Ensure it appears above other elements */
 }
 
+.error-upload-required {
+  border: 2px solid #CB6F6F;
+}
+
+.upload-font-components {
+  font-family: Arial;
+}
+
 .logo-button:hover {
   transform: scale(1.125);
   cursor: pointer;

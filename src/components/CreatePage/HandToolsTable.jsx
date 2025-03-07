@@ -3,7 +3,7 @@ import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
 import ManageHandTools from "../ValueChanges/ManageHandTools";
 
-const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role }) => {
+const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [toolsData, setToolsData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -96,15 +96,14 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 <h3 className="font-fam-labels">Hand Tools</h3>
             </div>
             {role === "admin" && (
-                <button className="top-right-button-tool" onClick={openManagePopup}>Update Tools</button>
+                <button className="top-right-button-tool-2" onClick={openManagePopup}>Update Tools</button>
             )}
-            {role === "admin" && (
-                <button className="top-right-button-tool-2" onClick={() => setShowNewPopup(true)}>Add Tool</button>
-            )}
+            <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tool</button>
             <ToolPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
                 role={role}
+                userID={userID}
             />
 
             {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}

@@ -3,7 +3,7 @@ import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
 
-const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role }) => {
+const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [macData, setMacData] = useState([]);
     const [popupVisible, setPopupVisible] = useState(false);
@@ -96,15 +96,14 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 <h3 className="font-fam-labels">Mobile Machine</h3>
             </div>
             {role === "admin" && (
-                <button className="top-right-button-mac" onClick={openManagePopup}>Update Machines</button>
+                <button className="top-right-button-mac-2" onClick={openManagePopup}>Update Machines</button>
             )}
-            {role === "admin" && (
-                <button className="top-right-button-mac-2" onClick={() => setShowNewPopup(true)}>Add Machine</button>
-            )}
+            <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machine</button>
             <MobileMachinePopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
                 role={role}
+                userID={userID}
             />
 
             {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}

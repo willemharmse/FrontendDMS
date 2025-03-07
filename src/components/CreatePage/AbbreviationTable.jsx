@@ -3,7 +3,7 @@ import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 
-const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error }) => {
+const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
@@ -72,15 +72,14 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
     <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
       <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
       {role === "admin" && (
-        <button className="top-right-button-abbr" onClick={openManagePopup}>Update Abbreviations</button>
+        <button className="top-right-button-abbr-2" onClick={openManagePopup}>Update Abbreviations</button>
       )}
-      {role === "admin" && (
-        <button className="top-right-button-abbr-2" onClick={() => setShowNewPopup(true)}>Add Abbreviations</button>
-      )}
+      <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}>Add Abbreviations</button>
       <AbbreviationPopup
         isOpen={showNewPopup}
         onClose={() => { setShowNewPopup(false); fetchValues(); }}
         role={role}
+        userID={userID}
       />
 
       {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
