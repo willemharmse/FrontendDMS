@@ -33,10 +33,10 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
                         )}
 
                         {role === "admin" && (
-                            <li onClick={openLoadPopup}>Load draft</li>
+                            <li onClick={openLoadPopup}>Load Draft</li>
                         )}
                         {role === "admin" && (
-                            <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Check Suggestions</li>
+                            <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Suggestions</li>
                         )}
 
                         <li onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>View Files</li>

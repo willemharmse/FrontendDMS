@@ -24,6 +24,11 @@
     color: #000;
 }
 
+.vc-font-change {
+    font-family: Arial;
+    font-size: 12px;
+}
+
 .vc-logo-btn:hover {
     transform: scale(1.125);
     background-color: transparent !important;
@@ -89,6 +94,8 @@
     display: block;
     margin-bottom: 5px;
     color: #333;
+    font-family: Arial;
+    font-size: 14px;
 }
 
 .vc-form-group input,

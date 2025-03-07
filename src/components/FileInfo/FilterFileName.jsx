@@ -152,7 +152,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                 </div>
             </th>
             {adminRoles.includes(role) && (
-                <th className="col-act-filter col">Actions</th>
+                <th className="col-act-filter col">Action</th>
             )}
         </tr>
     );

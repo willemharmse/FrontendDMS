@@ -39,7 +39,7 @@ const ReviewDatePopup = ({ isOpen, onClose, onUpdate, currVal }) => {
     return (
         <div className="review-popup-overlay">
             <div className="review-popup-content">
-                <h3 className="review-popup-title">Set Review Date Highlight (Days)</h3>
+                <h3 className="review-popup-title">Set Review Date Highlight Period (Days)</h3>
                 <input
                     type="text"
                     value={reviewDateVal}

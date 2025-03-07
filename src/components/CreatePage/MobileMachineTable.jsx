@@ -98,7 +98,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             {role === "admin" && (
                 <button className="top-right-button-mac-2" onClick={openManagePopup}>Update Machines</button>
             )}
-            <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machine</button>
+            <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machines</button>
             <MobileMachinePopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}

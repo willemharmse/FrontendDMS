@@ -108,14 +108,14 @@ const VersionControlPage = () => {
                 Back
             </button>
             <div className="vc-box">
-                <h2>Update File Version</h2>
+                <h2>Update File</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="vc-form-group">
                         <label htmlFor="existing-file-select">Select Existing File</label>
                         <select
                             id="existing-file-select"
                             value={selectedExistingFile}
-                            className="vc-select"
+                            className="vc-select vc-font-change"
                             onChange={(e) => setSelectedExistingFile(e.target.value)}
                         >
                             <option value="">Choose a file</option>
@@ -127,11 +127,11 @@ const VersionControlPage = () => {
                         </select>
                     </div>
                     <div className="vc-form-group">
-                        <label htmlFor="new-file">Select New File Version</label>
+                        <label htmlFor="new-file">Select New File</label>
                         <div className="vc-custom-file-input">
-                            <input type="file" id="new-file" onChange={handleNewFileChange} />
+                            <input type="file" id="new-file" className="vc-font-change" onChange={handleNewFileChange} />
                             <label htmlFor="new-file">Choose File</label>
-                            {newFile && <span className="vc-file-name">{newFile.name}</span>}
+                            {newFile && <span className="vc-file-name vc-font-change">{newFile.name}</span>}
                         </div>
                     </div>
                     <div className="vc-form-group">
@@ -139,6 +139,7 @@ const VersionControlPage = () => {
                         <select
                             id="vc-status-select"
                             value={status}
+                            className="vc-font-change"
                             onChange={(e) => setStatus(e.target.value)}
                         >
                             <option value="">Select Status</option>
@@ -153,10 +154,11 @@ const VersionControlPage = () => {
                             type="date"
                             id="vc-review-date"
                             value={reviewDate}
+                            className="vc-font-change"
                             onChange={(e) => setReviewDate(e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="vc-submit-btn" disabled={!isFormValid()}>
+                    <button type="submit" className="vc-submit-btn vc-font-change" disabled={!isFormValid()}>
                         Submit
                     </button>
                 </form>

@@ -98,7 +98,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             {role === "admin" && (
                 <button className="top-right-button-tool-2" onClick={openManagePopup}>Update Tools</button>
             )}
-            <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tool</button>
+            <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tools</button>
             <ToolPopup
                 isOpen={showNewPopup}
                 onClose={() => { setShowNewPopup(false); fetchValues(); }}
