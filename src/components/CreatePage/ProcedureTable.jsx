@@ -117,6 +117,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                             <th className="procCent procNr">Nr</th>
                             <th className="procCent procMain">Procedure Main Steps</th>
                             <th className="procCent procSub">Procedure Sub Steps</th>
+                            <th className="procCent procPrev">Previous Step</th>
                             <th className="procCent procAR">Responsible and Accountable</th>
                             <th className="procCent procAct"></th>
                         </tr>
@@ -145,6 +146,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
                                         rows="4"   // Adjust the number of rows for initial height
                                         placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
+                                    />
+                                </td>
+                                <td>
+                                    <input
+                                        name="SubStep"
+                                        className="aim-input-pt font-fam"
+                                        value={row.prevStep}
+                                        onChange={(e) => handleInputChange(index, "prevStep", e.target.value)}
                                     />
                                 </td>
                                 <td>

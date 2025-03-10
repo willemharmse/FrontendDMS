@@ -276,7 +276,10 @@ const CreatePage = () => {
     MobileMachine: [],
     Materials: [],
     pictures: [],
-    reviewDate: 0
+    reviewDate: 0,
+    changeTable: [
+      { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
+    ],
   });
 
   const addPicRow = () => {
@@ -521,7 +524,8 @@ const CreatePage = () => {
           SubStep: "",
           discipline: "Engineering",       // Default value for discipline
           accountable: "",      // Default value for accountable
-          responsible: ""
+          responsible: "",
+          prevStep: "-",
         }
       ]
     });

@@ -61,7 +61,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "font-weight": "bold",
                                 "font-size": "18px",
                                 "width": "300px",
-                                "height": "80px",
+                                "height": "60px",
                                 "font-family": "Arial, sans-serif",
                                 "text-wrap": "wrap",
 
@@ -81,7 +81,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "border-color": "#8a8a8a",
                                 "font-size": "14px",
                                 "width": "300px",
-                                "height": "80px",
+                                "height": "50px",
                                 "font-family": "Arial, sans-serif",
                                 "text-wrap": "wrap",
                                 "text-max-width": "250px"
@@ -101,8 +101,25 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "font-weight": "bold",
                                 "font-size": "16px",
                                 "width": "300px",
-                                "height": "80px",
+                                "height": "60px",
                                 "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
+                        {
+                            selector: "[shape='circle']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "",  // This makes the text a dot
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",  // Makes the background transparent
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "width": "30px",
+                                "height": "30px",
                                 "text-wrap": "wrap",
                             }
                         },
@@ -114,7 +131,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "line-color": "#555",
                                 "target-arrow-shape": "triangle",
                                 "target-arrow-color": "#555",
-                                "curve-style": "bezier"
+                                "curve-style": "bezier",
                             }
                         }
                     ],
@@ -159,6 +176,50 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                         });
                     } else {
                         console.error("CompletedNode not found");
+                    }
+                });
+
+                cyInstance.edges().forEach(edge => {
+                    if (edge.source().data('shape') === 'circle') {
+                        const targetPos = edge.target().position();
+                        const sourcePos = edge.source().position();
+
+                        const dx = targetPos.x - sourcePos.x;
+                        const dy = targetPos.y - sourcePos.y;
+
+                        // Determine bend direction based on target position
+                        const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
+
+                        edge.style({
+                            "curve-style": "taxi",
+                            "taxi-direction": "downward", // Adjust based on flow
+                            "line-color": "#000",
+                            "width": 2,
+                            "target-arrow-shape": "triangle",
+                            "target-arrow-color": "#000",
+                        });
+                    }
+                });
+
+                cyInstance.edges().forEach(edge => {
+                    if (edge.target().data('shape') === 'circle') {
+                        const targetPos = edge.target().position();
+                        const sourcePos = edge.source().position();
+
+                        const dx = targetPos.x - sourcePos.x;
+                        const dy = targetPos.y - sourcePos.y;
+
+                        // Determine bend direction based on target position
+                        const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
+
+                        edge.style({
+                            "curve-style": "taxi",
+                            "taxi-direction": "downward", // Adjust based on flow
+                            "line-color": "#000",
+                            "width": 2,
+                            "target-arrow-shape": "none",
+                            "target-arrow-color": "#000",
+                        });
                     }
                 });
             })

@@ -1,6 +1,16 @@
 .aim-textarea-pt {
-    width: 95%;
+    width: calc(100% - 20px);
     padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+}
+
+.aim-input-pt {
+    width: calc(100% - 10px);
+    padding: 5px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
@@ -14,6 +24,10 @@
 
 .procAct {
     width: 5%;
+}
+
+.procPrev {
+    width: 10%;
 }
 
 .procNr {
