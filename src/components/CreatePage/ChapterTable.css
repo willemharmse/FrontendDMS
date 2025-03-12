@@ -42,8 +42,8 @@
 }
 
 .mct-remove-btn {
-    background: #CB6F6F;
-    color: white;
+    background: transparent;
+    color: black;
     border: none;
     padding: 10px 9px;
     border-radius: 50%;
@@ -56,7 +56,7 @@
 }
 
 .mct-remove-btn:hover {
-    background: #a54f4f;
+    color: #CB6F6F;
 }
 
 /* Inputs */

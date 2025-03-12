@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PicturesTable.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) => {
     const handleInputChange = (index, field, value) => {
@@ -39,7 +41,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                 </td>
                                 <td className="ref-but-row">
                                     <button className="remove-row-button" onClick={() => removePicRow(index)}>
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./LoadDraftPopup.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     const [drafts, setDrafts] = useState([]);
@@ -72,7 +74,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                 <span className="draft-title">{draft.formData.title || "Untitled Draft"}</span>
                                 <div className="draft-buttons">
                                     <button className="draft-btn load" onClick={() => handleLoad(draft._id)}>Load</button>
-                                    <button className="draft-btn delete" onClick={() => confirmDelete(draft._id)}>✖</button>
+                                    <button className="draft-btn delete" onClick={() => confirmDelete(draft._id)}><FontAwesomeIcon icon={faTrash} /></button>
                                 </div>
                             </div>
                         ))

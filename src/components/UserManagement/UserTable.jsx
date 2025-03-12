@@ -35,7 +35,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
             <table>
                 <thead>
                     <tr>
-                        <th className="doc-num-user">Nr.</th>
+                        <th className="doc-num-user">Nr</th>
                         <th className="col-name-user">
                             <div className="name-container-user">
                                 <span className="username-title" onClick={toggleMenuUser}>Username</span>
@@ -55,7 +55,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                                 )}
                             </div>
                         </th>
-                        <th className="col-name-user">
+                        <th className="col-role-user">
                             <div className="role-container-user">
                                 <span className="role-title" onClick={toggleMenuRole}>Role</span>
                                 {isMenuOpenRole && (
@@ -74,8 +74,8 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                                 )}
                             </div>
                         </th>
-                        <th className="col-action-user">Action</th>
-                        <th className="col-action-user">Action</th>
+                        <th className="col-action-user">Edit</th>
+                        <th className="col-action-user">Remove</th>
                     </tr>
                 </thead>
                 <tbody>

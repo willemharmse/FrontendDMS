@@ -31,8 +31,8 @@
 }
 
 .nl-logo-img {
-    width: 150px;
-    height: 150px;
+    width: 140px;
+    height: 170px;
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -105,7 +105,9 @@
 }
 
 .nl-login-title {
+    font-size: 65px;
     text-align: center;
+    font-weight: bolder;
     margin-bottom: 30px;
     color: white;
 }
@@ -167,21 +169,50 @@
 }
 
 .nl-login-button {
-    width: 50%;
+    width: 40%;
     padding: 0.8rem;
-    background-color: rgb(155, 154, 154);
-    color: black;
+    color: #002060;
+    /* Enhances contrast */
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 20px;
-    font-weight: bolder;
+    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.2s;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    box-shadow:
+        inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        /* Inner top-left highlight */
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    /* Outer shadow for depth */
+    transition: all 0.2s;
 }
 
 .nl-login-button:hover {
-    background-color: #333;
-    color: white;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Brighter highlight */
+            #e0e0e0 30%,
+            /* Lighter silver */
+            #b8b8b8 60%,
+            /* Soft metallic */
+            #808080 100%
+            /* Darker contrast */
+        );
+    box-shadow:
+        inset 4px 4px 6px rgba(255, 255, 255, 0.9),
+        inset -4px -4px 6px rgba(0, 0, 0, 0.7),
+        3px 3px 5px rgba(0, 0, 0, 0.5);
 }
 
 .nl-login-button-container {
@@ -189,4 +220,25 @@
     justify-content: center;
     /* Centers the button horizontally */
     /* Adjust spacing */
+}
+
+.nl-logo-bottom-container {
+    position: fixed;
+    bottom: 30px;
+    left: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.nl-logo-bottom {
+    width: 50px;
+    height: 50px;
+}
+
+.nl-logo-bottom-text {
+    font-size: 0.7rem;
+    color: white;
+    margin-top: 5px;
 }

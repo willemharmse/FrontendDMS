@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -201,7 +203,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                             setSelectedMMachine(newSelectedMachines);
                                         }}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>
@@ -211,7 +213,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             )}
 
             <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                Select Equipment
+                Select Mobile Machines
             </button>
         </div>
     );

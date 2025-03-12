@@ -1,91 +1,48 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChalkboardTeacher, faFileCircleCheck, faFileCirclePlus, faFile, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGraduationCap, faClipboardList, faFileAlt, faFolderOpen, faFileSignature } from "@fortawesome/free-solid-svg-icons";
 import "./HomePage.css";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [clicked1, setClicked1] = useState(false);
-  const [clicked2, setClicked2] = useState(false);
-  const [clicked3, setClicked3] = useState(false);
-  const [clicked4, setClicked4] = useState(false);
-  const [clicked5, setClicked5] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
-    localStorage.removeItem('rememberMe');
-    navigate('/FrontendDMS/');
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    localStorage.removeItem("rememberMe");
+    navigate("/FrontendDMS/");
   };
 
-  const handleClick = (setClicked, navigateTo) => {
-    setClicked(true);
-
-    setTimeout(() => {
-      setClicked(false); // Reset color first
-      setTimeout(() => {
-        navigate(navigateTo); // Navigate after transition ends
-      }, 350); // Wait for transition to complete before navigating
-    }, 200); // Ensure this matches your transition duration
-  };
+  const menuItems = [
+    { title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManage" },
+    { title: "Document Development", src: "DC.png", icon: faFileSignature, path: "/FrontendDMS/documentCreate" },
+    { title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/construction" },
+    { title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/construction" },
+    { title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/construction" },
+  ];
 
   return (
     <div className="homepage-container">
-      {/* Header Section */}
       <header className="header">
-        <div className="header-content">
-          <img src="logo.webp" alt="Logo" className="header-logo" />
-          <h1>TAU5 COMPLIANCE HUB</h1>
-        </div>
+        <img src="CH_Logo.png" alt="Logo" className="header-logo" />
+        <h1>ComplianceHub</h1>
       </header>
-
-      {/* Content Sections */}
-      <div className="content-sections">
-        {/* Left Section */}
-        <div className="section">
-          <div className={`card ${clicked1 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked1, "/FrontendDMS/documentManage")}>
+      <div className="content-grid">
+        {menuItems.map((item, index) => (
+          <div key={index} className="card" onClick={() => navigate(item.path)}>
             <div className="card-content">
-              <FontAwesomeIcon icon={faFile} className="logo" />
-              <h3>DOCUMENT MANAGEMENT</h3>
+              <img src={item.src} alt="Logo" className={`${item.src === "TM.png" ? "card-icon-hat" : "card-icon"} ${item.src === "DM.png" ? "card-icon-dm" : "card-icon"} ${item.src === "RM.png" ? "card-icon-rm" : "card-icon"} ${item.src === "DC.png" ? "card-icon-dc" : "card-icon"} ${item.src === "CM.png" ? "card-icon-cm" : "card-icon"}`} />
             </div>
+            <h3>{item.title}</h3>
           </div>
-          <div className={`card ${clicked2 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked2, "/FrontendDMS/construction")}>
-            <div className="card-content">
-              <FontAwesomeIcon icon={faTriangleExclamation} className="logo" />
-              <h3>RISK MANAGEMENT</h3>
-            </div>
-          </div>
-          <div className={`card ${clicked3 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked3, "/FrontendDMS/construction")}>
-            <div className="card-content">
-              <FontAwesomeIcon icon={faFileCircleCheck} className="logo" />
-              <h3>COMPLIANCE GOVERNANCE</h3>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="section">
-          <div className={`card ${clicked4 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked4, "/FrontendDMS/documentCreate")}>
-            <div className="card-content">
-              <FontAwesomeIcon icon={faFileCirclePlus} className="logo" />
-              <h3>DOCUMENT DEVELOPMENT</h3>
-            </div>
-          </div>
-          <div className={`card ${clicked5 ? 'clicked' : ''}`} onClick={() => handleClick(setClicked5, "/FrontendDMS/construction")}>
-            <div className="card-content">
-              <FontAwesomeIcon icon={faChalkboardTeacher} className="logo" />
-              <h3>TRAINING MANAGEMENT</h3>
-            </div>
-          </div>
-          <div className="card-blank">
-          </div>
-        </div>
-
-        <button className="logout-button" onClick={handleLogout}>
-          Logout
-        </button>
+        ))}
       </div>
+      <div className="logo-bottom-container">
+        <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
+        <p className="logo-bottom-text">A TAU5 PRODUCT</p>
+      </div>
+      <button className="logout-button" onClick={handleLogout}>Log Out</button>
     </div>
   );
 };

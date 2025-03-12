@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
@@ -173,7 +175,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                       setSelectedAbbrs(newSelectedAbbrs);
                     }}
                   >
-                    Remove
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>

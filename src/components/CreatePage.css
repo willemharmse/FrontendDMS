@@ -642,8 +642,8 @@ body {
 }
 
 .remove-row-button {
-  background-color: #CB6F6F;
-  color: white;
+  background-color: transparent;
+  color: black;
   font-weight: bold;
   border: none;
   padding: 6px 10px;
@@ -654,7 +654,7 @@ body {
 }
 
 .remove-row-button:hover {
-  background-color: #cc1f1a;
+  color: #CB6F6F;
 }
 
 .cp-table-header {

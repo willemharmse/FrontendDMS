@@ -393,7 +393,7 @@ const FileInfo = () => {
             <button className="text-format-log but-batch"
               onClick={() => navigate("/FrontendDMS/batchUpload")}
             >
-              Batch Upload Documents
+              Upload Batch Documents
             </button>
           )}
         </div>

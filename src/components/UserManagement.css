@@ -21,6 +21,22 @@ body {
     font-weight: bolder !important;
 }
 
+.button-container-um {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    bottom: 20px;
+    /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
 .sidebar {
     width: 275px;
     padding: 20px;
@@ -35,7 +51,7 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 20px;
+    width: 10%;
     text-align: center;
 }
 
@@ -43,7 +59,7 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 350px;
+    width: 40%;
     text-align: center;
 }
 
@@ -51,7 +67,7 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 350px;
+    width: 25%;
     text-align: center;
 }
 
@@ -59,7 +75,7 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 200px;
+    width: 15%;
     text-align: center;
 }
 
@@ -311,7 +327,7 @@ tbody tr:hover {
     background-color: #f9f9f9;
 }
 
-.sidebar-item {
+.sidebar-item-um {
     width: calc(100% - 30px);
     margin: 10px;
     text-align: center;
@@ -323,9 +339,9 @@ tbody tr:hover {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.sidebar-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.sidebar-item-um:hover {
+    transform: translateY(0px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 .sidebar-logo {

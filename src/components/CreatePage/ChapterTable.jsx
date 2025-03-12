@@ -1,5 +1,7 @@
 import React from "react";
 import "./ChapterTable.css"; // Updated CSS filename
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const ChapterTable = ({ formData, setFormData }) => {
     const addChapter = () => {
@@ -50,7 +52,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                 <div key={chapterIndex} className="mct-chapter-card">
                     <div className="mct-chapter-header">
                         <h4>Section {chapter.chapterNumber}</h4>
-                        <button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}>×</button>
+                        <button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}><FontAwesomeIcon icon={faTrash} /></button>
                     </div>
                     <label>Section Title:</label>
                     <input
@@ -64,7 +66,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                         <div key={subheadingIndex} className="mct-subheading-card">
                             <div className="mct-subheading-header">
                                 <h5>Subheading {subheadingIndex + 1}</h5>
-                                <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}>×</button>
+                                <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} /></button>
                             </div>
                             <input
                                 className="mct-input"

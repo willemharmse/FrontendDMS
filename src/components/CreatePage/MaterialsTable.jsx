@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
 import ManageMaterial from "../ValueChanges/ManageMaterial";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -200,7 +202,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                             setSelectedMaterials(newSelectedMaterials);
                                         }}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

@@ -3,7 +3,7 @@ import './ProcedureTable.css';
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType }) => {
@@ -117,7 +117,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                             <th className="procCent procNr">Nr</th>
                             <th className="procCent procMain">Procedure Main Steps</th>
                             <th className="procCent procSub">Procedure Sub Steps</th>
-                            <th className="procCent procPrev">Previous Step</th>
+                            <th className="procCent procPrev">Predecessor<div className="procFineText">(Immediate Prior Steps)</div></th>
                             <th className="procCent procAR">Responsible and Accountable</th>
                             <th className="procCent procAct"></th>
                         </tr>
@@ -149,12 +149,48 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                     />
                                 </td>
                                 <td>
-                                    <input
-                                        name="SubStep"
-                                        className="aim-input-pt font-fam"
-                                        value={row.prevStep}
-                                        onChange={(e) => handleInputChange(index, "prevStep", e.target.value)}
-                                    />
+                                    <div className="prev-step-container-ref">
+                                        {(row.prevStep ? row.prevStep.split(";") : []).map((step, stepIndex) => (
+                                            <div key={stepIndex} className="prev-step-input-ref">
+                                                <input
+                                                    type="text"
+                                                    className="aim-input-pt font-fam"
+                                                    value={step}
+                                                    onChange={(e) => {
+                                                        let updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
+
+                                                        if (stepIndex < updatedSteps.length) {
+                                                            updatedSteps[stepIndex] = e.target.value;
+                                                        } else {
+                                                            updatedSteps.push(e.target.value);
+                                                        }
+
+                                                        updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                    }}
+                                                    placeholder="Enter step"
+                                                />
+                                                <button
+                                                    className="remove-step-button-ref"
+                                                    onClick={() => {
+                                                        const updatedSteps = row.prevStep ? row.prevStep.split(";").filter((_, i) => i !== stepIndex) : [];
+                                                        updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            className="add-step-button-ref"
+                                            onClick={() => {
+                                                const updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
+                                                updatedSteps.push("");
+                                                updateRow(index, "prevStep", updatedSteps.join(";"));
+                                            }}
+                                        >
+                                            + Add Predecessor
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
                                     <div className="select-container-proc">
@@ -202,7 +238,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         className="remove-row-button"
                                         onClick={() => removeRow(index)}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

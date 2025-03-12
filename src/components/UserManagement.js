@@ -212,19 +212,21 @@ const UserManagement = () => {
                     <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
                 </div>
                 {role === 'admin' && (
-                    <button className="sidebar-button-add sidebar-item" onClick={() => setShowTeamManagement(!showTeamManagement)}>
+                    <button className="sidebar-button-add sidebar-item-um" onClick={() => setShowTeamManagement(!showTeamManagement)}>
                         {showTeamManagement ? "User Management" : "Department Management"}
                     </button>
                 )}
                 <button
-                    className="sidebar-button-add sidebar-item"
+                    className="sidebar-button-add sidebar-item-um"
                     onClick={openModal}
                     disabled={showTeamManagement} // Disable when Team Management is selected
                 >
                     Add User
                 </button>
-                <button className="sidebar-item text-format-log back-but" onClick={() => navigate('/FrontendDMS/documentManage')}>Back</button>
-                <button className="sidebar-item text-format-log log-but-um" onClick={handleLogout}>Log Out</button>
+                <div className="button-container-um">
+                    <button className="text-format-log but-upload" onClick={() => navigate('/FrontendDMS/documentManage')}>Back</button>
+                    <button className="text-format-log but-upload" onClick={handleLogout}>Log Out</button>
+                </div>
             </div>
 
             <div className="main-box-user">

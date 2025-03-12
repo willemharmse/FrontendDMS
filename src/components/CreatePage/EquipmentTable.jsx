@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./EquipmentTable.css"; // Add styling here
 import EquipmentPopup from "../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../ValueChanges/ManageEquipment";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -201,7 +203,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                             setSelectedEquipment(newSelectedEquipment);
                                         }}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

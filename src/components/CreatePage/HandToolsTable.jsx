@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
 import ManageHandTools from "../ValueChanges/ManageHandTools";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -200,7 +202,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                             setSelectedTools(newSelectedTools);
                                         }}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

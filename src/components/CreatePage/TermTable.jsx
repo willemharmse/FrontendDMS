@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
@@ -178,7 +180,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                       setSelectedTerms(newSelectedTerms);
                     }}
                   >
-                    Remove
+                    <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </td>
               </tr>

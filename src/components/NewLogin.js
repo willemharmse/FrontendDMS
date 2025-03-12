@@ -80,8 +80,8 @@ const NewLogin = () => {
     return (
         <div className="nl-login-container">
             <div className="nl-login-card">
-                <img src='logo.png' className='nl-logo-img' />
-                <img src='logo-text.png' className='nl-logo-img-text' />
+                <img src='CH_Logo.png' className='nl-logo-img' />
+                <div className="nl-login-title">ComplianceHub</div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="nl-form-group">
@@ -132,9 +132,14 @@ const NewLogin = () => {
                     </div>
 
                     <div className="nl-login-button-container">
-                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Log in'}</button>
+                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Log In'}</button>
                     </div>
                 </form>
+
+                <div className="logo-bottom-container">
+                    <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
+                    <p className="logo-bottom-text">A TAU5 PRODUCT</p>
+                </div>
             </div>
         </div>
     );

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ReferenceTable.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }) => {
     const [files, setFiles] = useState([]);
@@ -142,7 +144,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                 </td>
                                 <td className="ref-but-row">
                                     <button className="remove-row-button" onClick={() => removeRefRow(index)}>
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>

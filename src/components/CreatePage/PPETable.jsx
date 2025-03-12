@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./PPETable.css"; // Add styling here
 import PPEPopup from "../ValueChanges/PPEPopup.jsx";
 import ManagePPE from "../ValueChanges/ManagePPE.jsx";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -201,7 +203,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                             setSelectedPPE(newSelectedPPE);
                                         }}
                                     >
-                                        Remove
+                                        <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </td>
                             </tr>
