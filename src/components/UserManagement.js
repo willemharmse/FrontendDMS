@@ -207,7 +207,7 @@ const UserManagement = () => {
 
     return (
         <div className="user-info-container">
-            <div className="sidebar">
+            <div className="sidebar-um">
                 <div className="sidebar-logo">
                     <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
                 </div>

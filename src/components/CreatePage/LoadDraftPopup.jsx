@@ -71,7 +71,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                     ) : (
                         drafts.map((draft) => (
                             <div key={draft._id} className="draft-item">
-                                <span className="draft-title">{draft.formData.title || "Untitled Draft"}</span>
+                                <span className="draft-title">{draft.formData.title + " " + draft.formData.documentType || "Untitled Draft"}</span>
                                 <div className="draft-buttons">
                                     <button className="draft-btn load" onClick={() => handleLoad(draft._id)}>Load</button>
                                     <button className="draft-btn delete" onClick={() => confirmDelete(draft._id)}><FontAwesomeIcon icon={faTrash} /></button>

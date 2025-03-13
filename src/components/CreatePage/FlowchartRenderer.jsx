@@ -260,50 +260,11 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 padding: 180,
             });
 
-            const img = new Image();
-            img.src = pngData;
-
-            img.onload = () => {
-                const maxAllowedHeight = 2000;
-                const totalHeight = img.height;
-                const numChunks = Math.ceil(totalHeight / maxAllowedHeight);
-
-                if (numChunks === 1) {
-                    // If the image is already within the limit, download directly
-                    const a = document.createElement("a");
-                    a.href = pngData;
-                    a.download = `${capitalizeWords(title)} ${documentType} Flowchart.png`;
-                    a.click();
-                    return;
-                }
-
-                // **Splitting logic**
-                const chunkHeight = Math.ceil(totalHeight / numChunks);
-                let startY = 0;
-
-                for (let i = 0; i < numChunks; i++) {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = Math.min(chunkHeight, totalHeight - startY); // Prevent overshooting height
-
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(
-                        img,
-                        0, startY, // Source start x, y
-                        img.width, canvas.height, // Source width, height
-                        0, 0, // Destination x, y
-                        img.width, canvas.height // Destination width, height
-                    );
-
-                    // Download each chunk
-                    const a = document.createElement("a");
-                    a.href = canvas.toDataURL("image/png");
-                    a.download = `${capitalizeWords(title)} ${documentType} Flowchart - Part ${i + 1}.png`;
-                    a.click();
-
-                    startY += chunkHeight;
-                }
-            };
+            const documentName = capitalizeWords(title) + " " + documentType + " Flowchart";
+            const a = document.createElement("a");
+            a.href = pngData;
+            a.download = `${documentName}.png`;
+            a.click();
         }
     };
 
