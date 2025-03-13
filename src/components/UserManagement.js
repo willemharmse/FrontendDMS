@@ -218,8 +218,7 @@ const UserManagement = () => {
                 )}
                 <button
                     className="sidebar-button-add sidebar-item-um"
-                    onClick={openModal}
-                    disabled={showTeamManagement} // Disable when Team Management is selected
+                    onClick={openModal}// Disable when Team Management is selected
                 >
                     Add User
                 </button>

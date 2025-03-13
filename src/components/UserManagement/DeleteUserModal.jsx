@@ -13,7 +13,7 @@ const DeleteUserModal = ({ isDeleteModalOpen, setIsDeleteModalOpen, deleteUser, 
                         className="modal-button confirm"
                         onClick={() => deleteUser(userToDelete._id)}
                     >
-                        Yes, Delete
+                        Delete
                     </button>
                     <button
                         className="modal-button cancel"
