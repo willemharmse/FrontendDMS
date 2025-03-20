@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const TermPopup = ({ isOpen, onClose, role, userID }) => {
+const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
     const [term, setTerm] = useState("");
     const [definition, setDefinition] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -56,6 +56,8 @@ const TermPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "Term added successfully!", type: "success" });
+
+                setTermData((prevData) => [...prevData, { term: term.trim() + " *", definition: definition.trim() }]);
 
                 setTimeout(() => {
                     handleClose();

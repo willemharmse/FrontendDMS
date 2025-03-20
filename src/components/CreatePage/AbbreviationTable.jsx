@@ -79,9 +79,10 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}>Add Abbreviations</button>
       <AbbreviationPopup
         isOpen={showNewPopup}
-        onClose={() => { setShowNewPopup(false); fetchValues(); }}
+        onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
         role={role}
         userID={userID}
+        setAbbrData={setAbbrData}
       />
 
       {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}

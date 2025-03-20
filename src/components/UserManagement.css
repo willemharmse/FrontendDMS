@@ -8,11 +8,13 @@ body {
 }
 
 .user-info-container {
+    font-family: Arial;
     display: flex;
     height: 100vh;
     padding: 20px;
+    padding-right: 15px;
     box-sizing: border-box;
-    background-color: #ADADAD;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
 }
 
 .text-format-log {
@@ -38,20 +40,25 @@ body {
 }
 
 .sidebar-um {
-    width: 275px;
+    width: 20%;
+    max-width: 250px;
     padding: 20px;
-    background-color: #002060;
+    background: linear-gradient(90deg, #001339 0%, #002060 100%);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .doc-num-user {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 10%;
+    width: 7%;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -59,7 +66,30 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 38%;
+    width: 33%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-email-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 20%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.icon-um-search {
+    color: gray;
+}
+
+.col-day-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -68,6 +98,7 @@ body {
     word-break: break-word;
     white-space: normal;
     width: 20%;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -75,12 +106,15 @@ body {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 16%;
+    width: 10%;
+    font-size: 16px;
     text-align: center;
 }
 
-.col {
+.col-um {
     text-align: center;
+    font-family: Arial;
+    font-size: 14px;
 }
 
 .top-section {
@@ -194,12 +228,11 @@ body {
 }
 
 .main-box-user {
-    flex-grow: 1;
-    padding: 20px;
-    margin-left: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex: 1;
+    width: 80%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
     position: relative;
     z-index: 5;
     overflow: hidden;
@@ -283,19 +316,20 @@ body {
 }
 
 .table-container-user {
-    height: calc(100% - 40px);
-    overflow-y: auto;
-    margin: 20px;
-    width: calc(100% - 40px);
+    height: calc(100% - 50px);
+    overflow-y: scroll;
+    width: 100%;
     /* Adjust width to account for margins */
     box-sizing: border-box;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    background-color: white;
+    border-radius: 0px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    background-color: white;
 }
 
 thead {
@@ -334,31 +368,215 @@ tbody tr:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.sidebar-logo {
-    margin-bottom: 20px;
+.sidebar-logo-um {
+    margin-bottom: 15px;
+    margin-top: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.logo-img {
+.logo-img-um {
     max-width: 100%;
     height: auto;
-    max-height: 60px;
+    max-height: 100px;
     object-fit: contain;
     cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
+
+.logo-img-um:hover {
+    transform: scale(1.05);
+}
+
+.logo-text-um {
+    color: white;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.filter-um {
+    margin-bottom: 20px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    height: 100px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+}
+
+.filter-text-um {
+    color: white;
+    font-size: 16px;
+    font-weight: bolder;
+    text-align: left;
+    margin-top: 10px;
+}
+
+.select-filter-um {
+    width: 100%;
+    height: 40%;
+    border-radius: 7px;
+    color: gray;
+}
+
+.top-section-um {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    height: 40px;
+}
+
+.um-input-container {
+    flex: 0 0 40%;
+    /* Takes 40% of the space */
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 100%;
+}
+
+.um-input-container i {
+    position: absolute;
+    right: 15px;
+    /* Adjust the right spacing */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    cursor: pointer;
+    /* Prevent interaction */
+}
+
+.search-input-um {
+    height: 100%;
+    width: 100%;
+    padding: 10px 40px 10px 10px;
+    /* Add right padding to avoid overlap */
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.info-box-um {
+    display: flex;
+    /* Enables flexbox */
+    align-items: center;
+    width: 15%;
+    /* Centers content vertically */
+    justify-content: center;
+    /* Centers content horizontally */
+    text-align: center;
+    font-size: 14px;
+    /* Ensures text is centered */
+    padding: 0px 15px;
+    /* Adds some vertical padding */
+    background-color: #002060;
+    color: white;
+    border-radius: 4px;
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(180, 161, 161, 0.1);
+}
+
+/* This creates the space in the middle */
+.spacer {
+    flex: 1;
+}
+
+/* Container for the right-aligned icons */
+.icons-container {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+    margin-right: 2px;
+}
+
+.sort-menu-icon-um,
+.burger-menu-icon-um {
+    cursor: pointer;
+    font-size: 28px;
+    padding: 8px 10px;
+    text-align: center;
+    color: gray;
+    border-radius: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.burger-menu-um {
+    position: absolute;
+    top: 40px;
+    /* Adjust based on your layout */
+    right: 5px;
+    background-color: #ffffff;
+    /* White background */
+    border: 1px solid #ddd;
+    /* Light gray border for better visibility */
+    border-radius: 8px;
+    /* Rounded corners for a modern look */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for popup effect */
+    padding: 15px;
+    padding-bottom: 5px;
+    z-index: 1000;
+    width: 200px;
+}
+
+.burger-menu-um button {
+    display: block;
+    /* Arrange buttons vertically */
+    width: 100%;
+    /* Make buttons full width of the menu */
+    background-color: #D3D3D3 !important;
+    /* Light gray button background */
+    border: 1px solid #ddd;
+    /* Match border with menu */
+    border-radius: 4px;
+    /* Slightly rounded corners */
+    padding: 10px;
+    margin-bottom: 10px;
+    /* Space between buttons */
+    font-size: 16px;
+    font-weight: lighter !important;
+    /* Comfortable text size */
+    text-align: center;
+    /* Align text to the left */
+    color: #333;
+    /* Dark text for readability */
+    cursor: pointer;
+    /* Pointer cursor for interactivity */
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 .action-button-user {
-    padding: 10px 15px;
+    padding: 10px 5px;
     font-size: 16px;
     font-weight: bold;
     border: none;
     border-radius: 5px;
+    width: 10%;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
     justify-content: center;
+}
+
+.action-button-user:disabled {
+    background-color: transparent;
+    cursor: default;
 }
 
 .edit-button-user {
@@ -394,6 +612,19 @@ tbody tr:hover {
 .delete-button-user:active {
     background-color: #CB6F6F;
     transform: scale(0.98);
+}
+
+.edit-button-user-hidden {
+    background-color: transparent;
+    /* Blue color */
+    color: transparent;
+}
+
+.delete-button-user-hidden {
+    background-color: transparent;
+    /* Blue color */
+    color: transparent;
+    text-align: center;
 }
 
 .tm-container {
@@ -589,4 +820,62 @@ tbody tr:hover {
     display: inline-block;
     width: 120px;
     /* Set a fixed width for consistency */
+}
+
+.but-um {
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    border: none;
+    color: #002060;
+    /* White text for contrast */
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    width: 85%;
+    margin: 5px 0;
+    /* Adds spacing between buttons */
+    display: flex;
+    justify-content: center;
+    /* Centers text inside button */
+    align-items: center;
+    /* Centers vertically */
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 40px;
+    /* Add extra padding on the left to accommodate the icon */
+    padding-right: 20px;
+}
+
+.button-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.button-icon {
+    position: absolute;
+    left: -20px;
+    font-size: 16px;
+    /* Adjust icon size as needed */
+}
+
+.button-text {
+    width: 100%;
+    text-align: center;
 }

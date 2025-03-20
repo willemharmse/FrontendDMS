@@ -45,6 +45,13 @@ body {
   text-align: center;
 }
 
+.dm-input-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-grow: 1;
+}
+
 .upload-button {
   background-color: #51a551 !important;
   color: white;
@@ -638,13 +645,25 @@ body {
 }
 
 .search-input {
-  width: calc(100% - 66%);
-  /* Full width minus padding */
-  padding: 10px;
+  height: 100%;
+  width: 100%;
+  padding: 10px 40px 10px 10px;
+  /* Add right padding to avoid overlap */
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.dm-input-container i {
+  position: absolute;
+  right: 15px;
+  /* Adjust the right spacing */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  cursor: pointer;
+  /* Prevent interaction */
 }
 
 .search-input-viewer {

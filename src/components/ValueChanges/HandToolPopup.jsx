@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const ToolPopup = ({ isOpen, onClose, role, userID }) => {
+const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
     const [tool, setTool] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -54,6 +54,8 @@ const ToolPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "Tool added as a suggestion.", type: "success" });
+
+                setToolsData((prevData) => [...prevData, { tool: tool.trim() + " *" }]);
 
                 setTimeout(() => {
                     handleClose();

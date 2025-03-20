@@ -22,6 +22,7 @@ import Tester from './components/tester';
 import ConstructionPage from './components/ConstructionPage';
 import ImportExcelPage from './components/ImportExcelPage';
 import NewLogin from './components/NewLogin';
+import ReviewPage from './components/ReviewPage';
 import GeneratedFileInfo from './components/GeneratedFileInfo';
 import AdminApprovalPage from './components/ValueChanges/AdminApprovalPage';
 
@@ -46,6 +47,7 @@ function App() {
         <Route path='FrontendDMS/importValues' element={<ImportExcelPage />} />
         <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
         <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
+        <Route path='/review/:fileId' element={<ReviewPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

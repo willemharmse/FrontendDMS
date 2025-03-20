@@ -1,0 +1,137 @@
+.create-user-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+.create-user-modal {
+    background: #f2f2f2;
+    padding: 20px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border-radius: 5px;
+    width: 50%;
+    max-width: 500px;
+    height: 540px;
+    min-height: 540px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Flexbox for title and close button */
+.create-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px;
+    font-family: Arial;
+}
+
+.def-colour {
+    color: gray;
+}
+
+.norm-colour {
+    color: black;
+}
+
+.create-user-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+    text-align: left;
+    font-family: Arial;
+}
+
+.create-user-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 5%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Increase size of form fields */
+.create-user-group {
+    margin-bottom: 15px;
+    padding: 20px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.create-user-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.create-user-label {
+    display: block;
+    font-size: 16px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.create-user-input {
+    width: 90%;
+    margin-left: 12px;
+    padding: 12px;
+    font-family: Arial;
+    margin-top: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.create-user-select {
+    width: 95%;
+    margin-left: 12px;
+    padding: 12px;
+    margin-top: 15px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Button should remain visible on smaller screens */
+.create-user-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 3px;
+}
+
+/* Make modal responsive */
+@media (max-width: 600px) {
+    .create-user-modal {
+        width: 90%;
+        max-width: none;
+        min-height: 70%;
+    }
+}

@@ -103,9 +103,10 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add Materials</button>
             <MaterialPopup
                 isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
                 role={role}
                 userID={userID}
+                setMatsData={setMatsData}
             />
 
             {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}

@@ -3,12 +3,17 @@ import cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
 import axios from "axios";
 import { toast } from "react-toastify";
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 cytoscape.use(dagre);
 
 const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     const cyRef = useRef(null);
     const [cy, setCy] = useState(null);
+    const [pages, setPages] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const maxNodesPerPage = 14 // Adjust based on your needs
 
     const capitalizeWords = (text) =>
         text
@@ -17,12 +22,152 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ");
 
+    const createContinuationNode = (label) => ({
+        data: {
+            id: `continuation-${label}`,
+            label: label,
+            shape: 'circle',
+            continuationLabel: label
+        }
+    });
+
+    const splitFlowchartIntoPages = (elements) => {
+        if (!elements || !Array.isArray(elements)) return [];
+
+        // Separate nodes and edges from flat elements array
+        const nodes = elements.filter(el => !el.data.source && !el.data.target && !el.data.id?.startsWith('continuation-'));
+        const edges = elements.filter(el => el.data.source && el.data.target);
+
+        // Initialize pages
+        const result = [];
+        let continuationCounter = 0;
+        const continuationLabels = {};
+
+        // Function to add a continuation label
+        const getNextContinuationLabel = () => {
+            const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return labels[continuationCounter++ % labels.length];
+        };
+
+        // Track which nodes are already assigned to pages
+        const assignedNodes = new Set();
+
+        // Track each node's page assignment for edge creation
+        const nodePageMap = {};
+
+        // Assign nodes to pages based on flow
+        let currentPageNodes = [];
+        let pageIndex = 0;
+
+        // Start with the first node (usually document node)
+        let nodesToProcess = [nodes[0]];
+
+        while (nodesToProcess.length > 0) {
+            const node = nodesToProcess.shift();
+
+            if (assignedNodes.has(node.data.id)) continue;
+
+            // Add node to current page
+            currentPageNodes.push(node);
+            assignedNodes.add(node.data.id);
+            nodePageMap[node.data.id] = pageIndex;
+
+            // Find outgoing edges from this node
+            const outgoingEdges = edges.filter(edge => edge.data.source === node.data.id);
+
+            // Add target nodes to process queue if they haven't been assigned
+            for (const edge of outgoingEdges) {
+                const targetNode = nodes.find(n => n.data.id === edge.data.target);
+                if (targetNode && !assignedNodes.has(targetNode.data.id)) {
+                    nodesToProcess.push(targetNode);
+                }
+            }
+
+            // Start new page if maximum nodes reached
+            if (currentPageNodes.length >= maxNodesPerPage && nodesToProcess.length > 0) {
+                result.push({
+                    elements: [...currentPageNodes],
+                    edges: [] // We'll add edges later
+                });
+
+                currentPageNodes = [];
+                pageIndex++;
+            }
+        }
+
+        // Add the last page if there are any remaining nodes
+        if (currentPageNodes.length > 0) {
+            result.push({
+                elements: [...currentPageNodes],
+                edges: []
+            });
+        }
+
+        // Now process edges and create continuation nodes
+        for (const edge of edges) {
+            const sourcePage = nodePageMap[edge.data.source];
+            const targetPage = nodePageMap[edge.data.target];
+
+            if (sourcePage === undefined || targetPage === undefined) continue;
+
+            // If source and target are on the same page, add edge directly
+            if (sourcePage === targetPage) {
+                result[sourcePage].edges.push(edge);
+            }
+            // If they're on different pages, create continuation nodes
+            else {
+                // Generate a unique key for this cross-page connection
+                const edgeKey = `${edge.data.source}-${edge.data.target}`;
+
+                // Create or reuse continuation label
+                let continuationLabel;
+                if (!continuationLabels[edgeKey]) {
+                    continuationLabel = getNextContinuationLabel();
+                    continuationLabels[edgeKey] = continuationLabel;
+                } else {
+                    continuationLabel = continuationLabels[edgeKey];
+                }
+
+                // Create continuation node for source page
+                const sourcePageContinuationNode = createContinuationNode(continuationLabel);
+                result[sourcePage].elements.push(sourcePageContinuationNode);
+
+                // Add edge from source to continuation node
+                result[sourcePage].edges.push({
+                    data: {
+                        id: `${edge.data.source}-to-${sourcePageContinuationNode.data.id}`,
+                        source: edge.data.source,
+                        target: sourcePageContinuationNode.data.id
+                    }
+                });
+
+                // Create continuation node for target page
+                const targetPageContinuationNode = createContinuationNode(continuationLabel);
+                result[targetPage].elements.push(targetPageContinuationNode);
+
+                // Add edge from continuation node to target
+                result[targetPage].edges.push({
+                    data: {
+                        id: `${targetPageContinuationNode.data.id}-to-${edge.data.target}`,
+                        source: targetPageContinuationNode.data.id,
+                        target: edge.data.target
+                    }
+                });
+            }
+        }
+
+        // Merge elements and edges for each page
+        return result.map(page => ({
+            elements: [...page.elements, ...page.edges]
+        }));
+    };
+
     useEffect(() => {
         if (!procedureRows || procedureRows.length === 0) return;
 
         const numberedProcedureRows = procedureRows.map((row, index) => ({
             ...row,
-            mainStep: `${index + 1}. ${row.mainStep}`, // Add numbering to steps
+            mainStep: `${index + 1}. ${row.mainStep.trim()}`, // Add numbering and ensure no extra spaces
         }));
 
         axios.post(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
@@ -32,6 +177,11 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
         })
             .then(response => {
                 const { elements } = response.data;
+
+                // Split the flowchart into pages
+                const paginatedFlowchart = splitFlowchartIntoPages(elements);
+                setPages(paginatedFlowchart);
+                setCurrentPage(0);
 
                 // Create a hidden div for rendering the graph
                 const hiddenDiv = document.createElement("div");
@@ -44,7 +194,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
 
                 const cyInstance = cytoscape({
                     container: hiddenDiv,
-                    elements,
+                    elements: paginatedFlowchart.length > 0 ? paginatedFlowchart[0].elements : [],
                     style: [
                         // Styling for the Document Title Node
                         {
@@ -64,7 +214,6 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "height": "60px",
                                 "font-family": "Arial, sans-serif",
                                 "text-wrap": "wrap",
-
                             }
                         },
                         // Styling for Regular Nodes (Steps)
@@ -84,7 +233,8 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "height": "50px",
                                 "font-family": "Arial, sans-serif",
                                 "text-wrap": "wrap",
-                                "text-max-width": "250px"
+                                "text-max-width": "270px",
+                                "padding": "5px"
                             }
                         },
                         {
@@ -106,21 +256,40 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 "text-wrap": "wrap",
                             }
                         },
+                        // Styling for Continuation Nodes (Circles with Labels)
                         {
-                            selector: "[shape='circle']",
+                            selector: "[id^='continuation-']",
                             style: {
                                 "shape": "ellipse",
-                                "content": "",  // This makes the text a dot
+                                "content": "data(continuationLabel)",
                                 "text-valign": "center",
                                 "text-halign": "center",
-                                "background-color": "#D9D9D9",  // Makes the background transparent
+                                "background-color": "#D9D9D9",
                                 "color": "#000",
                                 "border-width": 2,
                                 "border-color": "#7F7F7F",
                                 "font-size": "16px",
-                                "width": "30px",
-                                "height": "30px",
-                                "text-wrap": "wrap",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
+                            }
+                        },
+                        // Keep existing circular node styling
+                        {
+                            selector: "[shape='circle']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "data(continuationLabel)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
                             }
                         },
                         // Styling for Edges (Connections)
@@ -157,7 +326,6 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                             "text-halign": "center",
                             "font-size": "16px",
                             "text-max-width": "300px",
-
                         });
                     } else {
                         console.error("DocumentNode not found");
@@ -179,52 +347,124 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                     }
                 });
 
+                // Apply edge styling for continuation nodes
                 cyInstance.edges().forEach(edge => {
-                    if (edge.source().data('shape') === 'circle') {
-                        const targetPos = edge.target().position();
-                        const sourcePos = edge.source().position();
+                    const sourceId = edge.source().id();
+                    const targetId = edge.target().id();
 
-                        const dx = targetPos.x - sourcePos.x;
-                        const dy = targetPos.y - sourcePos.y;
-
-                        // Determine bend direction based on target position
-                        const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
-
+                    if (sourceId.startsWith('continuation-') || targetId.startsWith('continuation-')) {
                         edge.style({
                             "curve-style": "taxi",
-                            "taxi-direction": "downward", // Adjust based on flow
+                            "taxi-direction": "downward",
                             "line-color": "#000",
                             "width": 2,
-                            "target-arrow-shape": "triangle",
-                            "target-arrow-color": "#000",
-                        });
-                    }
-                });
-
-                cyInstance.edges().forEach(edge => {
-                    if (edge.target().data('shape') === 'circle') {
-                        const targetPos = edge.target().position();
-                        const sourcePos = edge.source().position();
-
-                        const dx = targetPos.x - sourcePos.x;
-                        const dy = targetPos.y - sourcePos.y;
-
-                        // Determine bend direction based on target position
-                        const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
-
-                        edge.style({
-                            "curve-style": "taxi",
-                            "taxi-direction": "downward", // Adjust based on flow
-                            "line-color": "#000",
-                            "width": 2,
-                            "target-arrow-shape": "none",
+                            "target-arrow-shape": sourceId.startsWith('continuation-') ? "triangle" : "none",
                             "target-arrow-color": "#000",
                         });
                     }
                 });
             })
             .catch(error => console.error("Error fetching flowchart data:", error));
-    }, [procedureRows]);
+    }, [procedureRows, maxNodesPerPage]);
+
+    const renderPage = (pageIndex) => {
+        if (!cy || !pages || pages.length === 0 || pageIndex < 0 || pageIndex >= pages.length) {
+            return;
+        }
+
+        // Update cytoscape with the elements for the selected page
+        cy.elements().remove();
+        cy.add(pages[pageIndex].elements);
+
+        // Apply layout and styling
+        cy.layout({ name: 'dagre', rankDir: 'TB', nodeSep: 50 }).run();
+
+        // Apply specific node styling
+        cy.$("[id='DocumentNode']").style({
+            "background-color": "#002060",
+            "color": "#fff",
+            "font-weight": "bold",
+            "border-color": "#002850",
+            "text-valign": "center",
+            "text-halign": "center",
+            "font-size": "16px",
+            "text-max-width": "300px",
+        });
+
+        cy.$("[id='CompletedNode']").style({
+            "background-color": "#7F7F7F",
+            "color": "#fff",
+            "font-weight": "bold",
+            "text-valign": "center",
+            "text-halign": "center",
+            "font-size": "16px",
+            "text-max-width": "300px",
+            "border-color": "#8a8a8a",
+        });
+
+        // Apply edge styling for continuation nodes
+        cy.edges().forEach(edge => {
+            const sourceId = edge.source().id();
+            const targetId = edge.target().id();
+
+            if (sourceId.startsWith('continuation-') || targetId.startsWith('continuation-')) {
+                edge.style({
+                    "curve-style": "taxi",
+                    "taxi-direction": "downward",
+                    "line-color": "#000",
+                    "width": 2,
+                    "target-arrow-shape": sourceId.startsWith('continuation-') ? "triangle" : "none",
+                    "target-arrow-color": "#000",
+                });
+            }
+        });
+
+        cy.edges().forEach(edge => {
+            if (edge.source().data('shape') === 'circle') {
+                const targetPos = edge.target().position();
+                const sourcePos = edge.source().position();
+
+                const dx = targetPos.x - sourcePos.x;
+                const dy = targetPos.y - sourcePos.y;
+
+                // Determine bend direction based on target position
+                const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
+
+                edge.style({
+                    "curve-style": "taxi",
+                    "taxi-direction": "downward", // Adjust based on flow
+                    "line-color": "#000",
+                    "width": 2,
+                    "target-arrow-shape": "triangle",
+                    "target-arrow-color": "#000",
+                });
+            }
+        });
+
+        cy.edges().forEach(edge => {
+            if (edge.target().data('shape') === 'circle') {
+                const targetPos = edge.target().position();
+                const sourcePos = edge.source().position();
+
+                const dx = targetPos.x - sourcePos.x;
+                const dy = targetPos.y - sourcePos.y;
+
+                // Determine bend direction based on target position
+                const bendDistance = dx > 0 ? 60 : -60; // Bend right if target is on the right, left otherwise
+
+                edge.style({
+                    "curve-style": "taxi",
+                    "taxi-direction": "downward", // Adjust based on flow
+                    "line-color": "#000",
+                    "width": 2,
+                    "target-arrow-shape": "none",
+                    "target-arrow-color": "#000",
+                });
+            }
+        });
+
+        setCurrentPage(pageIndex);
+    };
 
     const exportImage = () => {
         if (procedureRows.length < 2) {
@@ -247,32 +487,108 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             return;
         }
 
-        if (cy) {
-            cy.zoomingEnabled(false);
-            cy.style().selector("core").css({ "background-color": "#fff" }).update();
+        if (cy && pages && pages.length > 0) {
+            // If only one page, download directly
+            if (pages.length === 1) {
+                renderPage(0);
+                setTimeout(() => {
+                    cy.zoomingEnabled(false);
+                    cy.style().selector("core").css({ "background-color": "#fff" }).update();
 
-            const pngData = cy.png({
-                full: true,
-                bg: "#ffffff",
-                scale: 2,
-                maxWidth: 1200,
-                maxHeight: 960,
-                padding: 180,
-            });
+                    const pngData = cy.png({
+                        full: true,
+                        bg: "#ffffff",
+                        scale: 2,
+                        maxWidth: 1200,
+                        maxHeight: 960,
+                        padding: 180,
+                    });
 
-            const documentName = capitalizeWords(title) + " " + documentType + " Flowchart";
-            const a = document.createElement("a");
-            a.href = pngData;
-            a.download = `${documentName}.png`;
-            a.click();
+                    const documentName = capitalizeWords(title) + " " + documentType + " Flowchart";
+                    const a = document.createElement("a");
+                    a.href = pngData;
+                    a.download = `${documentName}.png`;
+                    a.click();
+                }, 500);
+                return;
+            }
+
+            // For multiple pages, create a zip file
+            const exportAllPages = async () => {
+                const zip = new JSZip();
+                const imgFolder = zip.folder("flowchart-images");
+
+                // Show loading toast
+                const toastId = toast.info("Preparing flowchart download...", {
+                    closeButton: false,
+                    autoClose: false,
+                    style: { textAlign: 'center' }
+                });
+
+                for (let i = 0; i < pages.length; i++) {
+                    // Update toast
+                    toast.update(toastId, {
+                        render: `Generating page ${i + 1} of ${pages.length}...`,
+                        closeButton: false,
+                        autoClose: false
+                    });
+
+                    // Render the page
+                    renderPage(i);
+
+                    // Wait for layout to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    cy.zoomingEnabled(false);
+                    cy.style().selector("core").css({ "background-color": "#fff" }).update();
+
+                    const pngData = cy.png({
+                        full: true,
+                        bg: "#ffffff",
+                        scale: 2,
+                        maxWidth: 1200,
+                        maxHeight: 960,
+                        padding: 180,
+                    });
+
+                    // Convert base64 to blob
+                    const base64Data = pngData.replace(/^data:image\/png;base64,/, "");
+                    const fileName = `${capitalizeWords(title)}_${documentType}_Flowchart_Page_${i + 1}.png`;
+
+                    // Add to zip
+                    imgFolder.file(fileName, base64Data, { base64: true });
+                }
+
+                // Generate the zip file
+                toast.update(toastId, {
+                    render: "Creating zip file...",
+                    closeButton: false,
+                    autoClose: false
+                });
+
+                const content = await zip.generateAsync({ type: "blob" });
+                saveAs(content, `${capitalizeWords(title)}_${documentType}_Flowchart.zip`);
+
+                // Close toast and show success
+                toast.dismiss(toastId);
+                toast.success("Flowchart downloaded successfully!", {
+                    autoClose: 3000,
+                    style: { textAlign: 'center' }
+                });
+            };
+
+            exportAllPages();
         }
     };
 
-
     return (
-        <button onClick={exportImage} className="top-right-button-proc">
-            Download Flowchart
-        </button>
+        <div className="flowchart-container">
+            <div className="flowchart-buttons">
+                <button onClick={exportImage} className="top-right-button-proc">
+                    Download Flowchart
+                </button>
+            </div>
+        </div>
     );
 };
 

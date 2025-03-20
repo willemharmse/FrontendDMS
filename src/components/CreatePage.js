@@ -599,7 +599,8 @@ const CreatePage = () => {
       usedMobileMachine,
       usedMaterials,
       formData,
-      userID
+      userID,
+      azureFN: ""
     };
 
     const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
@@ -645,17 +646,6 @@ const CreatePage = () => {
       console.error("Error generating document:", error);
       setLoading(false);
     }
-  };
-
-  const handleGeneratePPTX = async () => {
-    toast.dismiss();
-    toast.clearWaitingQueue();
-    toast.success("Feature is under development", {
-      closeButton: false,
-      style: {
-        textAlign: 'center'
-      }
-    })
   };
 
   return (

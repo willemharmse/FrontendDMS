@@ -104,9 +104,10 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
 
             <EquipmentPopup
                 isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
                 role={role}
                 userID={userID}
+                setEqpData={setEqpData}
             />
 
             {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}

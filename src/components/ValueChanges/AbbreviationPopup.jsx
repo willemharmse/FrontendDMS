@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const AbbreviationPopup = ({ isOpen, onClose, role, userID }) => {
+const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
     const [abbreviation, setAbbreviation] = useState("");
     const [meaning, setMeaning] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -56,6 +56,8 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "Abbreviation added as a suggestion.", type: "success" });
+
+                setAbbrData((prevData) => [...prevData, { abbr: abbreviation.trim() + " *", meaning: meaning.trim() }]);
 
                 setTimeout(() => {
                     handleClose();

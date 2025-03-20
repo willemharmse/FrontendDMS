@@ -5,8 +5,10 @@ import "./UserManagement.css";
 import AddUserModal from './UserManagement/AddUserModal';
 import DeleteUserModal from './UserManagement/DeleteUserModal';
 import EditUserModal from './UserManagement/EditUserModal';
-import TeamManagement from "./UserManagement/TeamManagement";
 import UserTable from "./UserManagement/UserTable";
+import { toast, ToastContainer } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const UserManagement = () => {
     const [error, setError] = useState(null);
@@ -14,6 +16,7 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [userToEdit, setUserToEdit] = useState(null);
@@ -23,9 +26,14 @@ const UserManagement = () => {
     const [formError, setFormError] = useState('');
     const adminRoles = ['admin', 'developer'];
     const leaderRoles = ['teamleader'];
-    const [departments, setDepartments] = useState([]);
-    const [showTeamManagement, setShowTeamManagement] = useState(false);
+    const [roles, setRoles] = useState([]);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
+
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -33,6 +41,18 @@ const UserManagement = () => {
         localStorage.removeItem('rememberMe');
         navigate('/FrontendDMS/');
     };
+
+    useEffect(() => {
+        if (formError) {
+            toast.error(formError, {
+                closeButton: false,
+                style: {
+                    textAlign: 'center'
+                }
+            })
+            setFormError('');
+        }
+    }, [formError]);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -77,6 +97,8 @@ const UserManagement = () => {
                 return a.username.localeCompare(b.username);
             });
 
+            const uniqueRoles = [...new Set(data.users.map(user => user.role))].sort();
+            setRoles(uniqueRoles);
             setUsers(sortedUsers);
         } catch (error) {
             setError(error.message);
@@ -86,18 +108,12 @@ const UserManagement = () => {
     useEffect(() => {
         if (loggedInUserId) {
             fetchUsers();
-            fetchTeams();
         }
     }, [loggedInUserId]);
 
     const createUser = async () => {
-        if (!newUser.username || !newUser.password || !newUser.role) {
+        if (!newUser.username || !newUser.email || !newUser.role) {
             setFormError('All fields are required.');
-            return;
-        }
-
-        if (newUser.password.length < 8 || newUser.password.length > 30) {
-            setFormError('Password must be between 8 and 30 characters.');
             return;
         }
 
@@ -112,8 +128,15 @@ const UserManagement = () => {
             });
             if (!response.ok) throw new Error('Failed to create user');
 
+            toast.success("User account created.", {
+                closeButton: false,
+                style: {
+                    textAlign: 'center'
+                }
+            })
+
             setIsModalOpen(false);
-            setNewUser({ username: '', password: '', role: '' });
+            setNewUser({ username: '', email: '', role: '' });
             setFormError('');
             fetchUsers();
         } catch (error) {
@@ -121,6 +144,16 @@ const UserManagement = () => {
             setFormError('Failed to create user.');
         }
     };
+
+    const filteredUsers = users.filter((user) => {
+        const matchesSearchQuery = (
+            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        const matchesFilters = !selectedRole || selectedRole === user.role;
+
+        return matchesSearchQuery && matchesFilters;
+    });
 
     const deleteUser = async (userId) => {
         try {
@@ -136,20 +169,6 @@ const UserManagement = () => {
             setError(error.message);
         }
         setIsDeleteModalOpen(false);
-    };
-
-    const fetchTeams = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch teams');
-            }
-
-            const data = await response.json();
-            setDepartments(data.departments);
-        } catch (error) {
-            setError(error.message);
-        }
     };
 
     const updateUser = async () => {
@@ -189,18 +208,6 @@ const UserManagement = () => {
         setIsEditModalOpen(true);
     };
 
-    const filteredUsers = users.filter((user) => {
-        const isTeamLeader = leaderRoles.includes(role);
-
-        // Team leaders should only see standard users, guests, and auditors
-        const matchesRole = isTeamLeader
-            ? !(adminRoles.includes(user.role) || leaderRoles.includes(user.role))
-            : true;
-
-        return matchesRole;
-    });
-
-
     if (error) {
         return <div>Error: {error}</div>;
     }
@@ -208,44 +215,98 @@ const UserManagement = () => {
     return (
         <div className="user-info-container">
             <div className="sidebar-um">
-                <div className="sidebar-logo">
-                    <img src="logo.webp" alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
+                <div className="sidebar-logo-um">
+                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+                    <p className="logo-text-um">User Management</p>
                 </div>
-                {role === 'admin' && (
-                    <button className="sidebar-button-add sidebar-item-um" onClick={() => setShowTeamManagement(!showTeamManagement)}>
-                        {showTeamManagement ? "User Management" : "Department Management"}
-                    </button>
-                )}
-                <button
-                    className="sidebar-button-add sidebar-item-um"
-                    onClick={openModal}// Disable when Team Management is selected
-                >
-                    Add User
-                </button>
+
+                <div className="filter-um">
+                    <p className="filter-text-um">Filter</p>
+                    <select className="select-filter-um" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
+                        <option value="">Role</option>
+                        {roles
+                            .map((role, index) => (
+                                <option key={index} value={role}>
+                                    {formatRole(role)}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+
                 <div className="button-container-um">
-                    <button className="text-format-log but-upload" onClick={() => navigate('/FrontendDMS/documentManage')}>Back</button>
-                    <button className="text-format-log but-upload" onClick={handleLogout}>Log Out</button>
+                    <button className="but-um" onClick={() => navigate("/FrontendDMS/construction")}>
+                        <div className="button-content">
+                            <FontAwesomeIcon icon={faPeopleGroup} className="button-icon" />
+                            <span className="button-text">Departments</span>
+                        </div>
+                    </button>
+                    <button className="but-um" onClick={openModal}>
+                        <div className="button-content">
+                            <FontAwesomeIcon icon={faUser} className="button-icon" />
+                            <span className="button-text">Add User</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 
             <div className="main-box-user">
-                {showTeamManagement ? (
-                    <TeamManagement
-                        departments={departments}
-                        users={users}
-                        formatRole={formatRole}
-                        fetchDepartments={fetchTeams}
-                    />
-                ) : (
-                    <UserTable
-                        filteredUsers={users}
-                        openEditModal={openEditModal}
-                        setUserToDelete={setUserToDelete}
-                        setIsDeleteModalOpen={setIsDeleteModalOpen}
-                        formatRole={formatRole}
-                        loggedInUserId={loggedInUserId}
-                    />
-                )}
+                <div className="top-section-um">
+                    <div className="um-input-container">
+                        <input
+                            className="search-input-um"
+                            type="text"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                        {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                    </div>
+
+                    <div className="info-box-um">Number of Users: {filteredUsers.length}</div>
+
+                    {/* This div creates the space in the middle */}
+                    <div className="spacer"></div>
+
+                    {/* Container for right-aligned icons */}
+                    <div className="icons-container">
+                        {adminRoles.includes(role) && (
+                            <div className="burger-menu-icon-um">
+                                <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/documentManage')} icon={faArrowLeft} />
+                            </div>
+                        )}
+                        <div className="sort-menu-icon-um">
+                            <FontAwesomeIcon icon={faSort} />
+                        </div>
+                        {adminRoles.includes(role) && (
+                            <div className="burger-menu-icon-um">
+                                <FontAwesomeIcon icon={faBell} />
+                            </div>
+                        )}
+                        {adminRoles.includes(role) && (
+                            <div className="burger-menu-icon-um">
+                                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                            </div>
+                        )}
+                        {isMenuOpen && (
+                            <div className="burger-menu-um"
+                                onMouseLeave={() => setIsMenuOpen(false)}
+                            >
+                                <button onClick={handleLogout}>
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <UserTable
+                    filteredUsers={filteredUsers}
+                    openEditModal={openEditModal}
+                    setUserToDelete={setUserToDelete}
+                    setIsDeleteModalOpen={setIsDeleteModalOpen}
+                    formatRole={formatRole}
+                    loggedInUserId={loggedInUserId}
+                />
             </div>
 
             <AddUserModal
@@ -273,6 +334,7 @@ const UserManagement = () => {
                 userToEdit={userToEdit}
                 setUserToEdit={setUserToEdit}
             />
+            <ToastContainer />
         </div>
     );
 };

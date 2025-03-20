@@ -105,7 +105,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 130px;
+    width: 150px;
     /* Set a width to see the wrapping effect */
     text-align: center;
     justify-content: space-between;
@@ -118,7 +118,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 90px;
+    width: 50px;
     /* Set a width to see the wrapping effect */
     text-align: center;
     justify-content: space-between;

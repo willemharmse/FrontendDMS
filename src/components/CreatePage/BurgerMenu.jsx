@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./BurgerMenu.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const BurgerMenu = ({ role, openLoadPopup, small }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +21,41 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
         navigate("/FrontendDMS/");
     };
 
+    const handleDownload = async () => {
+        try {
+            // Using axios to download a file
+            const response = await axios.get(`${process.env.REACT_APP_URL}/api/test/export-excel`, {
+                responseType: 'blob' // Important for file downloads
+            });
+
+            // Extract filename from Content-Disposition header
+            const contentDisposition = response.headers['content-disposition'];
+            console.log('Content-Disposition:', contentDisposition);
+            let fileName = 'database_export.xlsx'; // Default filename
+
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename\*?=([^;]+)/i);
+                if (match) {
+                    fileName = match[1].trim().replace(/['"]/g, ''); // Remove quotes if present
+                }
+            }
+
+            // Create a download link and trigger it
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Error exporting Excel:', error);
+            alert('Error exporting Excel file. Please try again.');
+        } finally {
+            console.log('Export complete');
+        }
+    };
+
     return (
         <div className="burger-menu-container">
             <button className={`menu-button-cp ${small ? " small" : ""}`} onClick={toggleMenu} title="Show more options">
@@ -30,6 +66,10 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
                     <ul>
                         {role === "admin" && (
                             <li onClick={() => navigate('/FrontendDMS/importValues')}>Import Site Info</li>
+                        )}
+
+                        {role === "abc" && (
+                            <li onClick={handleDownload}>Export Site Info</li>
                         )}
 
                         {role === "admin" && (

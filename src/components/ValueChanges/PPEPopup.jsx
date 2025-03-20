@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const PPEPopup = ({ isOpen, onClose, role, userID }) => {
+const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
     const [ppe, setPPE] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -54,6 +54,8 @@ const PPEPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "PPE added as a suggestion.", type: "success" });
+
+                setPPEData((prevData) => [...prevData, { ppe: ppe.trim() + " *" }]);
 
                 setTimeout(() => {
                     handleClose();

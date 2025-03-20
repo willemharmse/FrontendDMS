@@ -103,9 +103,10 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add Machines</button>
             <MobileMachinePopup
                 isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); fetchValues(); }}
+                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
                 role={role}
                 userID={userID}
+                setMacData={setMacData}
             />
 
             {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}

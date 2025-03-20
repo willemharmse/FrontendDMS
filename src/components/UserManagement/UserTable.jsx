@@ -30,6 +30,14 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
         user.role.toLowerCase().includes(roleFilter)
     );
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString); // Convert to Date object
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
+        return `${day}.${month}.${year}`;
+    };
+
     return (
         <div className="table-container-user">
             <table>
@@ -39,79 +47,52 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                         <th className="col-name-user">
                             <div className="name-container-user">
                                 <span className="username-title" onClick={toggleMenuUser}>Username</span>
-                                {isMenuOpenUser && (
-                                    <div
-                                        className="name-menu-user"
-                                        onMouseLeave={() => setIsMenuOpenUser(false)}
-                                    >
-                                        <input
-                                            type="text"
-                                            placeholder="Filter by username"
-                                            value={usernameFilter}
-                                            onChange={handleUsernameFilterChange}
-                                            className="filter-input"
-                                        />
-                                    </div>
-                                )}
                             </div>
                         </th>
+                        <th className="col-email-user">Email</th>
                         <th className="col-role-user">
                             <div className="role-container-user">
                                 <span className="role-title" onClick={toggleMenuRole}>Role</span>
-                                {isMenuOpenRole && (
-                                    <div
-                                        className="role-menu-user"
-                                        onMouseLeave={() => setIsMenuOpenRole(false)}
-                                    >
-                                        <input
-                                            type="text"
-                                            placeholder="Filter by role"
-                                            value={roleFilter}
-                                            onChange={handleRoleFilterChange}
-                                            className="filter-input"
-                                        />
-                                    </div>
-                                )}
                             </div>
                         </th>
-                        <th className="col-action-user">Edit</th>
-                        <th className="col-action-user">Remove</th>
+                        <th className="col-day-user">Date Added</th>
+                        <th className="col-action-user">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {filteredUsersList.map((user, index) => (
                         <tr key={user._id}>
-                            <td className="col">{index + 1}</td>
-                            <td className="col">{user.username}</td>
-                            <td className="col">{formatRole(user.role)}</td>
-                            <td className="col">
-                                {user._id !== loggedInUserId && (
+                            <td className="col-um">{index + 1}</td>
+                            <td className="col-um">{user.username}</td>
+                            <td className="col-um">{user.email ? user.email : ""}</td>
+                            <td className="col-um">{formatRole(user.role)}</td>
+                            <td className="col-um">{user.dateAdded ? formatDate(user.dateAdded) : ""}</td>
+                            <td className="col-um">
+                                <div className='inline-actions-um'>
                                     <button
-                                        className="action-button-user edit-button-user"
+                                        className={user._id !== loggedInUserId ? `action-button-user edit-button-user` : "action-button-user edit-button-user-hidden"}
                                         onClick={() => openEditModal(user)}
+                                        disabled={!(user._id !== loggedInUserId)}
                                     >
                                         <FontAwesomeIcon icon={faPenToSquare} />
                                     </button>
-                                )}
-                            </td>
-                            <td className="col">
-                                {user._id !== loggedInUserId && (
                                     <button
-                                        className="action-button-user delete-button-user"
+                                        className={user._id !== loggedInUserId ? "action-button-user delete-button-user" : "action-button-user edit-button-user-hidden"}
                                         onClick={() => {
                                             setUserToDelete(user);
                                             setIsDeleteModalOpen(true);
                                         }}
+                                        disabled={!(user._id !== loggedInUserId)}
                                     >
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
-                                )}
+                                </div>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-        </div>
+        </div >
     );
 };
 

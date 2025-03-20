@@ -1,0 +1,206 @@
+.update-file-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+.update-file-modal {
+    background: #f2f2f2;
+    padding: 20px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border-radius: 5px;
+    width: 50%;
+    max-width: 500px;
+    height: 540px;
+    min-height: 540px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Flexbox for title and close button */
+.update-file-header {
+    transform: translateY(+50%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px;
+    font-family: Arial;
+}
+
+.side-by-side-container {
+    display: flex;
+    gap: 14px
+}
+
+.def-colour {
+    color: gray;
+}
+
+.norm-colour {
+    color: black;
+}
+
+.update-file-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+
+    text-align: left;
+    font-family: Arial;
+}
+
+.update-file-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 5%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Increase size of form fields */
+.update-file-group {
+    margin-bottom: 7px;
+    padding: 20px 0;
+    transform: translateY(-19%);
+    background-color: white;
+    border-radius: 5px;
+}
+
+.update-file-group-top {
+    margin-bottom: 8px;
+    padding: 20px 0;
+    transform: translateY(-25%);
+    background-color: white;
+    border-radius: 5px;
+}
+
+.update-file-group-side {
+    margin-bottom: 15px;
+    padding: 20px 0;
+    background-color: white;
+    transform: translateY(-18%);
+    border-radius: 5px;
+    flex: 1;
+}
+
+.update-file-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.update-file-label-file-name {
+    display: block;
+    font-size: 12px;
+    font-family: Arial;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.update-file-label {
+    display: block;
+    font-size: 16px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.update-file-input-file {
+    width: 80%;
+    margin-left: 12px;
+    padding: 12px;
+    font-family: Arial;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 2px;
+    opacity: 0.6;
+    filter: brightness(50%);
+}
+
+.update-file-select {
+    width: 95%;
+    margin-left: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.update-file-select-file {
+    width: 90%;
+    margin-left: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Button should remain visible on smaller screens */
+.update-file-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+    transform: translateY(-45%);
+}
+
+.update-file-button-select-file {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 0px;
+}
+
+/* Make modal responsive */
+@media (max-width: 600px) {
+    .update-file-modal {
+        width: 90%;
+        max-width: none;
+        min-height: 70%;
+    }
+}

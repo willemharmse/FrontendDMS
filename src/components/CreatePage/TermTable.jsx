@@ -78,9 +78,10 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
       <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}>Add Terms</button>
       <TermPopup
         isOpen={showNewPopup}
-        onClose={() => { setShowNewPopup(false); fetchValues(); }}
+        onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
         role={role}
         userID={userID}
+        setTermData={setTermData}
       />
 
       {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}

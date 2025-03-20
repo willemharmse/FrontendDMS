@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSort, faSpinner, faX } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import FilterFileName from "./FileInfo/FilterFileName";
 import "./FileInfo.css";
 import Select from "react-select";
 import ReviewDatePopup from "./FileInfo/ReviewDatePopup";
+import UploadPopup from "./FileInfo/UploadPopup";
+import UpdateFileModal from "./FileInfo/UpdateFileModal";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const FileInfo = () => {
   const [files, setFiles] = useState([]); // State to hold the file data
@@ -40,6 +44,8 @@ const FileInfo = () => {
   const [reviewDateVal, setReviewDateVal] = useState("");
   const [isRDPopupOpen, setIsRDPopupOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [upload, setUpload] = useState(false);
+  const [update, setUpdate] = useState(false);
 
   const [filters, setFilters] = useState({
     author: '',
@@ -48,6 +54,24 @@ const FileInfo = () => {
     startDate: '',
     endDate: ''
   });
+
+  const openUpload = () => {
+    setUpload(true);
+  };
+
+  const closeUpload = () => {
+    setUpload(!upload);
+    fetchFiles();
+  };
+
+  const openUpdate = () => {
+    setUpdate(true);
+  };
+
+  const closeUpdate = () => {
+    setUpdate(!update);
+    fetchFiles();
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -144,7 +168,6 @@ const FileInfo = () => {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
-
       const sortedFiles = data.files.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate));
 
       setFiles(sortedFiles);
@@ -159,6 +182,10 @@ const FileInfo = () => {
     } catch (error) {
       setError(error.message);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   const restoreFile = async (fileId) => {
@@ -372,6 +399,8 @@ const FileInfo = () => {
 
   return (
     <div className="file-info-container">
+      {upload && (<UploadPopup onClose={closeUpload} />)}
+      {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} />)}
       <div className="sidebar">
         <div className="sidebar-logo">
           <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
@@ -384,7 +413,7 @@ const FileInfo = () => {
         <div className="button-container">
           {adminRoles.includes(role) && (
             <button className="text-format-log but-upload"
-              onClick={() => navigate("/FrontendDMS/upload")}
+              onClick={openUpload}
             >
               Upload Document
             </button>
@@ -401,13 +430,17 @@ const FileInfo = () => {
 
       <div className="main-box-file-info">
         <div className="top-section">
-          <input
-            className="search-input"
-            type="text"
-            placeholder="Search documents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="dm-input-container">
+
+            <input
+              className="search-input"
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery !== "" && (<i onClick={clearSearch}><FontAwesomeIcon icon={faX} /></i>)}
+          </div>
 
           <div className="info-box">Number of Documents: {filteredFiles.length}</div>
           <div className="info-box">Number of Document Authors: {
@@ -426,7 +459,7 @@ const FileInfo = () => {
             <div className="burger-menu"
               onMouseLeave={() => setIsMenuOpen(false)}
             >
-              <button onClick={() => navigate('/FrontendDMS/updateFile')}>
+              <button onClick={openUpdate}>
                 Update File
               </button>
               <button
@@ -500,38 +533,25 @@ const FileInfo = () => {
                     <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
                   <td className="col">
-                    {
-                      Array.isArray(file.owner)
-                        ? file.owner.length > 1
-                          ? file.owner[0].length > 11
-                            ? `${file.owner[0].substring(0, 11)}...` // Shorten first name if longer than 8 and add "..."
-                            : `${file.owner[0]}...` // Show first author and "..."
-                          : file.owner[0].length > 11
-                            ? `${file.owner[0].substring(0, 11)}...` // Shorten single name if longer than 8
-                            : file.owner[0] // Just show the single author if within limit
-                        : typeof file.owner === "string"
-                          ? (() => {
-                            try {
-                              const parsed = JSON.parse(file.owner);
-                              return Array.isArray(parsed)
-                                ? parsed.length > 1
-                                  ? parsed[0].length > 11
-                                    ? `${parsed[0].substring(0, 11)}...`
-                                    : `${parsed[0]}...`
-                                  : parsed[0].length > 11
-                                    ? `${parsed[0].substring(0, 11)}...`
-                                    : parsed[0]
-                                : file.owner;
-                            } catch {
-                              return file.owner.length > 11 ? `${file.owner.substring(0, 11)}...` : file.owner;
-                            }
-                          })()
-                          : "No Owners"
-                    }
+                    {Array.isArray(file.owner)
+                      ? file.owner[0] // Show first author from array
+                      : typeof file.owner === "string"
+                        ? (() => {
+                          try {
+                            const parsed = JSON.parse(file.owner);
+                            return Array.isArray(parsed) ? parsed[0] : file.owner;
+                          } catch {
+                            return file.owner;
+                          }
+                        })()
+                        : "No Owners"}
                   </td>
+
                   <td className="col">{file.departmentHead}</td>
                   <td className="col">{(file.docID)}</td>
                   <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
+                  <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
+                  <td className="col">{formatDate(file.uploadDate)}</td>
                   {adminRoles.includes(role) && (
                     <td className="col-action">
                       <button
@@ -648,6 +668,7 @@ const FileInfo = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div >
   );
 };

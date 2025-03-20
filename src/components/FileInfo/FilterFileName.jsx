@@ -151,8 +151,70 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     )}
                 </div>
             </th>
+            <th className={`col-own-filter ${filters.uploader ? "active-filter" : ""}`}>
+                <div className="fileinfo-container-filter col">
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('Uploader')}>
+                        {filters.uploader ? (
+                            <>
+                                <span>Uploaded By</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
+                            </>
+                        ) : (
+                            "Uploaded By"
+                        )}
+                    </span>
+                    {openMenu === 'Uploader' && (
+                        <div
+                            className="fileinfo-menu-filter col"
+                            onMouseLeave={() => setOpenMenu(null)}
+                        >
+                            <input
+                                type="text"
+                                placeholder="Filter by author"
+                                className="filter-input-file"
+                                value={filters.uploader}
+                                onChange={(e) => onFilterChange('uploader', e.target.value)}
+                            />
+                        </div>
+                    )}
+                </div>
+            </th>
+            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter-review" : ""} col`}>
+                <div className="fileinfo-container-filter">
+                    <span className="fileinfo-title-filter" onClick={() => toggleMenu('UploadDate')}>
+                        {filters.startDate || filters.endDate ? (
+                            <>
+                                <span>Upload Date</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "0px" }} />
+                            </>
+                        ) : (
+                            "Upload Date"
+                        )}
+                    </span>
+                    {openMenu === 'UploadDate' && (
+                        <div className="date-menu-filter">
+                            <div className="date-filter-row">
+                                <label className="date-label">From:</label>
+                                <input
+                                    type="date"
+                                    className="filter-input-date"
+                                    value={filters.UploadDate}
+                                    onChange={(e) => onFilterChange('UploadDate', e.target.value)}
+                                />
+                            </div>
+                            <div className="date-filter-row">
+                                <label className="date-label">To:</label>
+                                <input
+                                    type="date"
+                                    className="filter-input-date"
+                                    value={filters.UploadDate}
+                                    onChange={(e) => onFilterChange('UploadDate', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </th>
             {adminRoles.includes(role) && (
-                <th className="col-act-filter col">Action</th>
+                <th className="col-act-filter col"></th>
             )}
         </tr>
     );

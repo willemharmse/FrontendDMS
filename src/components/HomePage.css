@@ -217,7 +217,118 @@
   margin-top: 5px;
 }
 
-@media (max-width: 1320px) {
+@media (min-width: 0px) and (max-width: 1099px) {
+  .logout-button {
+    position: fixed;
+    bottom: 35px;
+    right: 60px;
+    color: #002060;
+    font-weight: bolder !important;
+    border: none;
+    border-radius: 6px;
+    padding: 15px 25px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100px;
+    background: linear-gradient(180deg,
+        #ffffff 0%,
+        /* Bright highlight */
+        #d9d9d9 30%,
+        /* Light silver */
+        #a8a8a8 60%,
+        /* Mid-tone silver */
+        #707070 100%
+        /* Darker base */
+      );
+    box-shadow:
+      inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+      /* Inner top-left highlight */
+      inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+      /* Inner bottom-right shadow */
+      2px 2px 4px rgba(0, 0, 0, 0.4);
+    /* Outer shadow for depth */
+    transition: all 0.2s;
+  }
+
+  .logo-bottom {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logo-bottom-container {
+    bottom: 20px;
+    left: 60px;
+  }
+
+  .logo-bottom-text {
+    font-size: 0.5rem;
+    color: white;
+    margin-top: 5px;
+  }
+
+  .card {
+    width: 120px;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, max-content));
+    gap: 23px;
+    width: 100%;
+    max-width: 1300px;
+    /* Adjust as needed */
+    justify-content: center;
+    /* Centers items horizontally */
+    align-items: center;
+    /* Centers items vertically */
+    margin: auto;
+    margin-top: 0px;
+    margin-bottom: 10px;
+  }
+
+  .card h3 {
+    background-color: transparent;
+    font-size: 1.1rem;
+    font-weight: bolder;
+    margin-top: 60px;
+    transform: translateY(-50px);
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1320px) {
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, max-content));
+    gap: 20px;
+    width: 100%;
+    max-width: 1300px;
+    /* Adjust as needed */
+    justify-content: center;
+    /* Centers items horizontally */
+    align-items: center;
+    /* Centers items vertically */
+    margin: auto;
+    margin-top: 0px;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    margin-top: 0px;
+  }
+
+  .header {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-align: center;
+    margin-bottom: 0px;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1320px) {
   .content-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, max-content));
@@ -311,7 +422,7 @@
   }
 }
 
-@media (min-height: 600px) and (max-height: 769px) {
+@media (min-height: 550px) and (max-height: 769px) {
 
   /* Card Styles */
   .card {

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const EquipmentPopup = ({ isOpen, onClose, role, userID }) => {
+const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
     const [eqp, setEqp] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -54,6 +54,8 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "Equipment added as a suggestion.", type: "success" });
+
+                setEqpData((prevData) => [...prevData, { eqp: eqp.trim() + " *" }]);
 
                 setTimeout(() => {
                     handleClose();

@@ -3,8 +3,7 @@ import "./MaterialPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-
-const MaterialPopup = ({ isOpen, onClose, role, userID }) => {
+const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
     const [mat, setMat] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
@@ -54,6 +53,8 @@ const MaterialPopup = ({ isOpen, onClose, role, userID }) => {
 
                 setLoading(false);
                 setMessage({ text: "Material added as a suggestion.", type: "success" });
+
+                setMatsData((prevData) => [...prevData, { mat: mat.trim() + " *" }]);
 
                 setTimeout(() => {
                     handleClose();

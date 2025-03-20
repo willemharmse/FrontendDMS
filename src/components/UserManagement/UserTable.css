@@ -1,25 +1,10 @@
-.name-container-user {
-    position: relative;
-    display: inline-block;
-    /* Ensures the title and menu are grouped together */
-}
+.inline-actions-um {
+    display: flex;
+    gap: 5px;
+    justify-content: space-evenly;
+    align-items: center;
+    /* Ensures vertical alignment */
 
-.role-container-user {
-    position: relative;
-    display: inline-block;
-    /* Ensures the title and menu are grouped together */
-}
-
-.username-title {
-    cursor: pointer;
-    position: relative;
-    /* Keeps it positioned as part of the flow */
-}
-
-.role-title {
-    cursor: pointer;
-    position: relative;
-    /* Keeps it positioned as part of the flow */
 }
 
 .name-menu-user {
