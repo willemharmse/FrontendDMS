@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner, faX } from "@fortawesome/free-solid-svg-icons";
+import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import FilterFileName from "./FileInfo/FilterFileName";
 import "./FileInfo.css";
@@ -15,6 +15,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const FileInfo = () => {
+  const { type } = useParams();
   const [files, setFiles] = useState([]); // State to hold the file data
   const [disciplines, setDisciplines] = useState([]);
   const [docTypes, setDocTypes] = useState([]);
@@ -157,7 +158,7 @@ const FileInfo = () => {
 
   // Fetch files from the API
   const fetchFiles = async () => {
-    const route = isTrashView ? '/api/file/trash' : '/api/file/';
+    const route = isTrashView ? `/api/file/trash/` : (type === "All Document" ? `/api/file/` : `/api/file/type/${type}`);
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
         headers: {
@@ -316,6 +317,20 @@ const FileInfo = () => {
 
   };
 
+  const imageMap = {
+    "All Document": "All.png",
+    Audit: "audit.png",
+    Guideline: "guide.png",
+    Policy: "policy.png",
+    Procedure: "procedure.png",
+    Standard: "standard.png",
+    "Risk Assessment": "risk.png",
+  };
+
+  const image = (type) => {
+    return imageMap[type]; // Fallback to "default.png" if type is not found
+  };
+
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
       case 'approved': return 'status-approved';
@@ -392,7 +407,9 @@ const FileInfo = () => {
 
     return matchesSearchQuery && matchesFilters && matchesApproval && matchTextFilters;
   });
-  //7EAC89 CB6F6F
+
+  const overdueCount = filteredFiles.filter(doc => new Date(doc.reviewDate) < new Date()).length;
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -401,96 +418,125 @@ const FileInfo = () => {
     <div className="file-info-container">
       {upload && (<UploadPopup onClose={closeUpload} />)}
       {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} />)}
-      <div className="sidebar">
-        <div className="sidebar-logo">
-          <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
+
+      <div className="sidebar-um">
+        <div className="sidebar-logo-um">
+          <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+          <p className="logo-text-um">Document Management</p>
         </div>
-        <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
-        <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
-        {adminRoles.includes(role) && (
-          <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
+
+        <div className="filter-dm-fi">
+          <p className="filter-text-dm-fi">Filter</p>
+          <div className="button-container-dm-fi">
+            {(type === "All Document" || isTrashView) && (
+              <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
+            )}
+            <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
+            {adminRoles.includes(role) && (
+              <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
+            )}
+          </div>
+        </div>
+        {!isTrashView && (
+          <div className="filter-dm-fi-2">
+            <p className="filter-text-dm-fi">Upload</p>
+            <div className="button-container-dm-fi">
+              <button className="but-dm-fi" onClick={openUpload}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                  <span className="button-text">Single Document</span>
+                </div>
+              </button>
+              <button className="but-dm-fi" onClick={() => navigate("/FrontendDMS/batchUpload")}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                  <span className="button-text">Batch Documents</span>
+                </div>
+              </button>
+            </div>
+          </div>
         )}
-        <div className="button-container">
-          {adminRoles.includes(role) && (
-            <button className="text-format-log but-upload"
-              onClick={openUpload}
-            >
-              Upload Document
-            </button>
-          )}
-          {adminRoles.includes(role) && (
-            <button className="text-format-log but-batch"
-              onClick={() => navigate("/FrontendDMS/batchUpload")}
-            >
-              Upload Batch Documents
-            </button>
-          )}
+        <div className="sidebar-logo-dm-fi">
+          <img src={isTrashView ? `${process.env.PUBLIC_URL}/trash.png` : `${process.env.PUBLIC_URL}/${image(type)}`} alt="Logo" className="logo-img-dm-fi" />
+          <p className="logo-text-dm-fi">{isTrashView ? `Trashed Files` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
         </div>
       </div>
 
       <div className="main-box-file-info">
-        <div className="top-section">
-          <div className="dm-input-container">
 
+        <div className="top-section-um">
+          <div className="um-input-container">
             <input
-              className="search-input"
+              className="search-input-um"
               type="text"
-              placeholder="Search documents..."
+              placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery !== "" && (<i onClick={clearSearch}><FontAwesomeIcon icon={faX} /></i>)}
+            {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+            {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className="info-box">Number of Documents: {filteredFiles.length}</div>
-          <div className="info-box">Number of Document Authors: {
-            new Set(filteredFiles.flatMap((file) => Array.isArray(file.owner) ? file.owner : [file.owner])).size
-          }</div>
-          <div className="sort-menu-icon" onClick={openSortModal}>
-            <FontAwesomeIcon icon={faSort} />
-          </div>
-          {adminRoles.includes(role) && (
-            <div className="burger-menu-icon" onClick={toggleMenu}>
-              &#9776; {/* This is a simple burger menu icon */}
-            </div>
+          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of Documents: {filteredFiles.length}</div>
+          {!isTrashView && (
+            <div className="info-box-fih">Review Overdue: {overdueCount}</div>
           )}
 
-          {isMenuOpen && (
-            <div className="burger-menu"
-              onMouseLeave={() => setIsMenuOpen(false)}
-            >
-              <button onClick={openUpdate}>
-                Update File
-              </button>
-              <button
-                onClick={toggleTrashView}
+          {/* This div creates the space in the middle */}
+          <div className="spacer"></div>
+
+          {/* Container for right-aligned icons */}
+          <div className="icons-container">
+            <div className="burger-menu-icon-um">
+              <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/documentManageHome')} icon={faArrowLeft} />
+            </div>
+            <div className="sort-menu-icon-um">
+              <FontAwesomeIcon icon={faSort} onClick={openSortModal} />
+            </div>
+            <div className="burger-menu-icon-um">
+              <FontAwesomeIcon icon={faBell} />
+            </div>
+            <div className="burger-menu-icon-um">
+              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+            </div>
+            {isMenuOpen && (
+              <div className="burger-menu"
+                onMouseLeave={() => setIsMenuOpen(false)}
               >
-                {isTrashView ? "Show All Files" : "Show Trash"}
-              </button>
-              <button
-                onClick={() => navigate("/FrontendDMS/userManagement")}
-              >
-                Manage Users
-              </button>
-              {role === 'developer' && (
-                < button
-                  onClick={() => navigate("/FrontendDMS/repair")}
-                >
-                  Repair Fields
+                <button onClick={openUpdate}>
+                  Update File
                 </button>
-              )}
-              <button onClick={openRDPopup}>Change Date Formatting</button>
-              <ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />
-              <button onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          )}
+                <button
+                  onClick={toggleTrashView}
+                >
+                  {isTrashView ? "Show All Files" : "Show Trash"}
+                </button>
+                <button
+                  onClick={() => navigate("/FrontendDMS/userManagement")}
+                >
+                  Manage Users
+                </button>
+                {role === 'developer' && (
+                  < button
+                    onClick={() => navigate("/FrontendDMS/repair")}
+                  >
+                    Repair Fields
+                  </button>
+                )}
+                <button onClick={openRDPopup}>Change Date Formatting</button>
+                <ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />
+                <button onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="table-container-file">
           <table>
             <thead>
-              <FilterFileName adminRoles={adminRoles} role={role} filters={filters} onFilterChange={handleFilterChange} />
+              <FilterFileName adminRoles={adminRoles} role={role} filters={filters} onFilterChange={handleFilterChange} trashed={isTrashView} />
             </thead>
             <tbody>
               {filteredFiles.map((file, index) => (
@@ -553,9 +599,9 @@ const FileInfo = () => {
                   <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
                   <td className="col">{formatDate(file.uploadDate)}</td>
                   {adminRoles.includes(role) && (
-                    <td className="col-action">
+                    <td className={isTrashView ? "col-action trashed" : "col-action"}>
                       <button
-                        className="delete-button col-but"
+                        className={isTrashView ? "delete-button col-but trashed-color" : "delete-button col-but"}
                         onClick={() => openModal(file._id, file.fileName)}
                       >
                         <FontAwesomeIcon icon={faTrash} />
@@ -563,7 +609,7 @@ const FileInfo = () => {
 
                       {isTrashView && (
                         <button
-                          className="delete-button col-but-res"
+                          className={isTrashView ? "delete-button col-but-res trashed-color" : "delete-button col-but-res"}
                           onClick={() => restoreFile(file._id)}
                         >
                           <FontAwesomeIcon icon={faRotate} />

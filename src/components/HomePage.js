@@ -15,7 +15,7 @@ const HomePage = () => {
   };
 
   const menuItems = [
-    { title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManage" },
+    { title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManageHome" },
     { title: "Document Development", src: "DC.png", icon: faFileSignature, path: "/FrontendDMS/documentCreate" },
     { title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/construction" },
     { title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/construction" },

@@ -84,80 +84,82 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
   };
 
   return (
-    <div className={`input-box-2 ${error ? "error-sign" : ""}`}>
-      <h3 className="font-fam-labels">
-        Document Signatures <span className="required-field">*</span>
-      </h3>
-      <table className="vcr-table-2 font-fam table-borders">
-        <thead className="cp-table-header">
-          <tr>
-            <th className="font-fam cent">Authorizations</th>
-            <th className="font-fam cent">Name</th>
-            <th className="font-fam cent">Position</th>
-            <th className="font-fam cent col-sig-act"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              <td>
-                <select
-                  className="table-control font-fam"
-                  value={row.auth}
-                  onChange={(e) => handleRowChange(e, index, "auth")}
-                >
-                  <option value="Author">Author</option>
-                  <option value="Approver">Approver</option>
-                  <option value="Reviewer">Reviewer</option>
-                </select>
-              </td>
-              <td>
-                <select
-                  className="table-control font-fam"
-                  value={row.name}
-                  onChange={(e) => handleNameChange(e, index)}
-                >
-                  <option value="">Select Name</option>
-                  {nameLists[row.auth]
-                    .filter((name) => !selectedNames.has(name) || name === row.name)
-                    .sort()
-                    .map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                </select>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  className="table-control font-fam"
-                  value={row.pos}
-                  readOnly
-                />
-              </td>
-              <td>
-                <button
-                  className="remove-row-button font-fam"
-                  onClick={() => {
-                    setSelectedNames((prev) => {
-                      const updatedNames = new Set(prev);
-                      updatedNames.delete(row.name);
-                      return updatedNames;
-                    });
-                    removeRow(index);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
+    <div className="input-row">
+      <div className={`input-box-2 ${error ? "error-sign" : ""}`}>
+        <h3 className="font-fam-labels">
+          Document Signatures <span className="required-field">*</span>
+        </h3>
+        <table className="vcr-table-2 font-fam table-borders">
+          <thead className="cp-table-header">
+            <tr>
+              <th className="font-fam cent">Authorizations</th>
+              <th className="font-fam cent">Name</th>
+              <th className="font-fam cent">Position</th>
+              <th className="font-fam cent col-sig-act">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <button className="add-row-button font-fam" onClick={addRow}>
-        + Add Row
-      </button>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={index}>
+                <td>
+                  <select
+                    className="table-control font-fam"
+                    value={row.auth}
+                    onChange={(e) => handleRowChange(e, index, "auth")}
+                  >
+                    <option value="Author">Author</option>
+                    <option value="Approver">Approver</option>
+                    <option value="Reviewer">Reviewer</option>
+                  </select>
+                </td>
+                <td>
+                  <select
+                    className="table-control font-fam"
+                    value={row.name}
+                    onChange={(e) => handleNameChange(e, index)}
+                  >
+                    <option value="">Select Name</option>
+                    {nameLists[row.auth]
+                      .filter((name) => !selectedNames.has(name) || name === row.name)
+                      .sort()
+                      .map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    className="table-control font-fam"
+                    value={row.pos}
+                    readOnly
+                  />
+                </td>
+                <td>
+                  <button
+                    className="remove-row-button font-fam"
+                    onClick={() => {
+                      setSelectedNames((prev) => {
+                        const updatedNames = new Set(prev);
+                        updatedNames.delete(row.name);
+                        return updatedNames;
+                      });
+                      removeRow(index);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button className="add-row-button font-fam" onClick={addRow}>
+          + Add Row
+        </button>
+      </div>
     </div>
   );
 };

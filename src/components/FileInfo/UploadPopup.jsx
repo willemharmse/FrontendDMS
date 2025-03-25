@@ -267,10 +267,10 @@ const UploadPopup = ({ onClose }) => {
                                 </div>
                             </div>
                             <div className={`upload-file-page-form-group ${errors.author ? "error-upload-required-up" : ""}`}>
-                                <label>Authors<span className="required-field">*</span></label>
+                                <label>Owner<span className="required-field">*</span></label>
                                 <div className="upload-file-page-select-container">
                                     <select value={owner} className="upload-file-page-select" onChange={(e) => setOwner(e.target.value)}>
-                                        <option>Select Author</option>
+                                        <option>Select Owner</option>
                                         {users
                                             .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
                                             .map((user, index) => (

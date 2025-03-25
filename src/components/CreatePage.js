@@ -19,11 +19,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
 
 const CreatePage = () => {
   const navigate = useNavigate();
+  const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
@@ -625,47 +626,61 @@ const CreatePage = () => {
     }
   };
 
-  const handleGenerateTex = async () => {
-    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/doc/generate-latex`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate document");
-
-      const blob = await response.blob();
-      saveAs(blob, `output.pdf`);
-      setLoading(false);
-      //saveAs(blob, `${documentName}.pdf`);
-    } catch (error) {
-      console.error("Error generating document:", error);
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="file-create-container">
-      <button className={`logo-button-create ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/home')}>
-        <img src="logo.webp" alt="Home" />
-      </button>
-      <h1 className={`create-page-title ${isScrolled ? "small" : ""}`}>Create New Document</h1>
-      <BurgerMenu role={role} openLoadPopup={openLoadPopup} small={isScrolled} />
-      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
-      <button className={`save-button-create ${isScrolled ? "small" : ""}`} onClick={handleSave} title="Save Draft">
-        {loadedID === '' ? <FontAwesomeIcon icon={faFloppyDisk} /> : <FontAwesomeIcon icon={faFloppyDisk} />}
-      </button>
-      <button className={`undo-button-create ${isScrolled ? "small" : ""}`} onClick={undoLastChange} title="Undo Draft">
-        <FontAwesomeIcon icon={faRotateLeft} />
-      </button>
+      <div className="sidebar-um">
+        <div className="sidebar-logo-um">
+          <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+          <p className="logo-text-um">Document Development</p>
+        </div>
 
-      {/* Main content */}
-      <div className="main-box">
-        <div className={`scrollable-box ${isScrolled ? "expanded" : ""}`}>
+        <div className="button-container-create">
+          <button className="but-um" onClick={() => navigate("/FrontendDMS/importValues")}>
+            <div className="button-content">
+              <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+              <span className="button-text">Import Site Info</span>
+            </div>
+          </button>
+          <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
+            <div className="button-content">
+              <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+              <span className="button-text">Load Draft</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
+      <div className="main-box-create">
+        <div className="top-section-create-page">
+          <div className="icons-container-create-page">
+            <div className="burger-menu-icon-create-page-1">
+              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} />
+            </div>
+
+            <div className="burger-menu-icon-create-page-1">
+              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} />
+            </div>
+          </div>
+
+          {/* This div creates the space in the middle */}
+          <div className="spacer"></div>
+
+          {/* Container for right-aligned icons */}
+          <div className="icons-container-create-page">
+            <div className="burger-menu-icon-create-page-2">
+              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate('/FrontendDMS/home')} />
+            </div>
+            <div className="burger-menu-icon-create-page-2">
+              <FontAwesomeIcon icon={faBell} />
+            </div>
+            <div className="burger-menu-icon-create-page-3">
+              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsOpenMenu(!isOpenMenu)} />
+            </div>
+          </div>
+          <BurgerMenu role={role} openLoadPopup={openLoadPopup} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />
+        </div>
+
+        <div className={`scrollable-box`}>
           <div className="input-row">
             <div className="input-box-type">
               <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
@@ -693,30 +708,26 @@ const CreatePage = () => {
                   onChange={handleInputChange}
                   placeholder="Title of your document (e.g. Working at Heights)"
                 />
-                <input
-                  type="text"
-                  className="font-fam document-type-input"
-                  value={formData.documentType}
-                  onChange={handleInputChange}
-                  disabled
-                />
+                <span className="type-create-page">{formData.documentType}</span>
               </div>
             </div>
           </div>
 
           <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} />
 
-          <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
-            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
-            <textarea
-              spellcheck="true"
-              name="aim"
-              className="aim-textarea font-fam"
-              value={formData.aim}
-              onChange={handleInputChange}
-              rows="4"   // Adjust the number of rows for initial height
-              placeholder="Enter the aim of the document here..." // Optional placeholder text
-            />
+          <div className="input-row">
+            <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
+              <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
+              <textarea
+                spellcheck="true"
+                name="aim"
+                className="aim-textarea font-fam"
+                value={formData.aim}
+                onChange={handleInputChange}
+                rows="5"   // Adjust the number of rows for initial height
+                placeholder="Enter the aim of the document here..." // Optional placeholder text
+              />
+            </div>
           </div>
 
           <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
@@ -731,26 +742,28 @@ const CreatePage = () => {
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
           <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
-          <div className={`input-row-but-review`}>
+          <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
               <input
                 type="number"
                 name="reviewDate"
-                className="aim-textarea font-fam"
+                className="aim-textarea cent-create font-fam"
                 value={formData.reviewDate}
                 onChange={handleInputChange}
                 placeholder="Enter the review period in months" // Optional placeholder text
               />
             </div>
+          </div>
 
+          <div className="input-row-buttons">
             {/* Generate File Button */}
             <button
               className="generate-button font-fam"
               onClick={handleClick}
               title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
             >
-              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate File'}
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
             <button
               className="pdf-button font-fam"

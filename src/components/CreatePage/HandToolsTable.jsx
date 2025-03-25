@@ -87,134 +87,136 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
     const closeManagePopup = () => setIsManageOpen(false);
 
     return (
-        <div className="tool-input-box">
-            <div className="tool-header">
-                <input
-                    type="checkbox"
-                    className="na-checkbox-tool"
-                    checked={isNA}
-                    onChange={handleNAToggle}
-                />
-                <h3 className="font-fam-labels">Hand Tools</h3>
-            </div>
-            {role === "admin" && (
-                <button className="top-right-button-tool-2" onClick={openManagePopup}>Update Tools</button>
-            )}
-            <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add Tools</button>
-            <ToolPopup
-                isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
-                role={role}
-                userID={userID}
-                setToolsData={setToolsData}
-            />
-
-            {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
-            {/* Popup */}
-            {popupVisible && (
-                <div className="popup-overlay-tool">
-                    <div className="popup-content-tool">
-                        <h4 className="center-tools">Select Hand Tools</h4>
-                        <input
-                            type="text"
-                            className="search-bar-tool"
-                            placeholder="Search hand tools..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <div className="popup-table-wrapper-tool">
-                            <table className="popup-table font-fam">
-                                <thead className="tool-headers">
-                                    <tr>
-                                        <th className="inp-size-tool">Select</th>
-                                        <th>Tool</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {toolsData.length > 0 ? (
-                                        toolsData
-                                            .filter((item) =>
-                                                item.tool.toLowerCase().includes(searchTerm.toLowerCase())
-                                            )
-                                            .sort((a, b) => a.tool.localeCompare(b.tool))
-                                            .map((item) => (
-                                                <tr key={item.tool}
-                                                    onClick={() => handleCheckboxChange(item.tool)}
-                                                    style={{ cursor: "pointer" }}
-                                                >
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="checkbox-inp-tool"
-                                                            checked={selectedTools.has(item.tool)}
-                                                            onChange={() => handleCheckboxChange(item.tool)}
-                                                        />
-                                                    </td>
-                                                    <td>{item.tool}</td>
-                                                </tr>
-                                            ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">Loading tools...</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button className="save-selection-button-tool" onClick={handleSaveSelection}>
-                            Save Selection
-                        </button>
-                        <button className="close-popup-button-tool" onClick={handlePopupToggle}>
-                            Close
-                        </button>
-                    </div>
+        <div className="input-row">
+            <div className="tool-input-box">
+                <div className="tool-header">
+                    <input
+                        type="checkbox"
+                        className="na-checkbox-tool"
+                        checked={isNA}
+                        onChange={handleNAToggle}
+                    />
+                    <h3 className="font-fam-labels">Hand Tools</h3>
                 </div>
-            )}
+                {role === "admin" && (
+                    <button className="top-right-button-tool-2" onClick={openManagePopup}>Update</button>
+                )}
+                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add</button>
+                <ToolPopup
+                    isOpen={showNewPopup}
+                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    role={role}
+                    userID={userID}
+                    setToolsData={setToolsData}
+                />
 
-            {/* Display selected abbreviations in a table */}
-            {selectedTools.size > 0 && (
-                <table className="vcr-table font-fam table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="col-tool-tool">Tool</th>
-                            <th className="col-tool-act"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formData.HandTools?.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.tool}</td>
-                                <td>
-                                    <button
-                                        className="remove-row-button"
-                                        onClick={() => {
-                                            // Remove abbreviation from table and the selected abbreviations set
-                                            setFormData({
-                                                ...formData,
-                                                HandTools: formData.HandTools.filter((_, i) => i !== index),
-                                            });
-                                            setUsedHandTools(
-                                                usedHandTools.filter((tool) => tool !== row.tool)
-                                            );
+                {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
+                {/* Popup */}
+                {popupVisible && (
+                    <div className="popup-overlay-tool">
+                        <div className="popup-content-tool">
+                            <h4 className="center-tools">Select Hand Tools</h4>
+                            <input
+                                type="text"
+                                className="search-bar-tool"
+                                placeholder="Search hand tools..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <div className="popup-table-wrapper-tool">
+                                <table className="popup-table font-fam">
+                                    <thead className="tool-headers">
+                                        <tr>
+                                            <th className="inp-size-tool">Select</th>
+                                            <th>Tool</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {toolsData.length > 0 ? (
+                                            toolsData
+                                                .filter((item) =>
+                                                    item.tool.toLowerCase().includes(searchTerm.toLowerCase())
+                                                )
+                                                .sort((a, b) => a.tool.localeCompare(b.tool))
+                                                .map((item) => (
+                                                    <tr key={item.tool}
+                                                        onClick={() => handleCheckboxChange(item.tool)}
+                                                        style={{ cursor: "pointer" }}
+                                                    >
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox-inp-tool"
+                                                                checked={selectedTools.has(item.tool)}
+                                                                onChange={() => handleCheckboxChange(item.tool)}
+                                                            />
+                                                        </td>
+                                                        <td>{item.tool}</td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="3">Loading tools...</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button className="save-selection-button-tool" onClick={handleSaveSelection}>
+                                Save Selection
+                            </button>
+                            <button className="close-popup-button-tool" onClick={handlePopupToggle}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
 
-                                            // Update the selectedAbbrs state to reflect the removal
-                                            const newSelectedTools = new Set(selectedTools);
-                                            newSelectedTools.delete(row.tool);
-                                            setSelectedTools(newSelectedTools);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+                {/* Display selected abbreviations in a table */}
+                {selectedTools.size > 0 && (
+                    <table className="vcr-table font-fam table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="col-tool-tool">Tool</th>
+                                <th className="col-tool-act">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {formData.HandTools?.map((row, index) => (
+                                <tr key={index}>
+                                    <td>{row.tool}</td>
+                                    <td>
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => {
+                                                // Remove abbreviation from table and the selected abbreviations set
+                                                setFormData({
+                                                    ...formData,
+                                                    HandTools: formData.HandTools.filter((_, i) => i !== index),
+                                                });
+                                                setUsedHandTools(
+                                                    usedHandTools.filter((tool) => tool !== row.tool)
+                                                );
 
-            <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                Select Hand Tools
-            </button>
+                                                // Update the selectedAbbrs state to reflect the removal
+                                                const newSelectedTools = new Set(selectedTools);
+                                                newSelectedTools.delete(row.tool);
+                                                setSelectedTools(newSelectedTools);
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
+                    Select Hand Tools
+                </button>
+            </div>
         </div>
     );
 };

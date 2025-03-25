@@ -9,50 +9,52 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
     };
 
     return (
-        <div className="pic-box">
-            <h3 className="font-fam-labels">Pictures</h3>
-            {picturesRows.length > 0 && (
-                <table className="vcr-table table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="picColCen picOne">Picture Name</th>
-                            <th className="picColCen picTwo">Picture Name</th>
-                            <th className="picColCen picBut"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {picturesRows.map((row, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <input
-                                        type="text"
-                                        className="table-control"
-                                        value={row.pic1}
-                                        onChange={(e) => handleInputChange(index, "pic1", e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        className="table-control"
-                                        value={row.pic2}
-                                        onChange={(e) => handleInputChange(index, "pic2", e.target.value)}
-                                    />
-                                </td>
-                                <td className="ref-but-row">
-                                    <button className="remove-row-button" onClick={() => removePicRow(index)}>
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+        <div className="input-row">
+            <div className="pic-box">
+                <h3 className="font-fam-labels">Pictures</h3>
+                {picturesRows.length > 0 && (
+                    <table className="vcr-table table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="picColCen picOne">Picture Name</th>
+                                <th className="picColCen picTwo">Picture Name</th>
+                                <th className="picColCen picBut">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {picturesRows.map((row, index) => (
+                                <tr key={index}>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            className="table-control"
+                                            value={row.pic1}
+                                            onChange={(e) => handleInputChange(index, "pic1", e.target.value)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            className="table-control"
+                                            value={row.pic2}
+                                            onChange={(e) => handleInputChange(index, "pic2", e.target.value)}
+                                        />
+                                    </td>
+                                    <td className="ref-but-row">
+                                        <button className="remove-row-button" onClick={() => removePicRow(index)}>
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
 
-            <button className="add-row-button" onClick={addPicRow}>
-                + Add Row
-            </button>
+                <button className="add-row-button" onClick={addPicRow}>
+                    + Add Row
+                </button>
+            </div>
         </div>
     );
 };

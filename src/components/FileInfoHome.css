@@ -1,0 +1,185 @@
+/* Scrollable container with fixed layout */
+.scrollable-box-fi-home {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* Always 3 columns */
+    grid-template-rows: repeat(4, 1fr);
+    /* Always 4 rows */
+    gap: 40px;
+    padding: 16px;
+    width: calc(100% - 40px);
+    /* Adjust based on your design */
+    height: 90vh;
+    margin: auto;
+    overflow-y: auto;
+}
+
+/* Document card */
+.document-card-fi-home {
+    background: linear-gradient(135deg, #7F7F7F 0%, #BFBFBF 100%);
+    /* Darker gradient */
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    /* Slightly stronger shadow */
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 230px;
+    cursor: pointer;
+}
+
+.filter-fih-upload {
+    margin-bottom: 20px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    height: 280px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+}
+
+.button-container-fih-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    /* Adjust as needed */
+    left: 50%;
+    top: 410px;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
+.filter-fih {
+    margin-bottom: 20px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    height: 50px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+}
+
+.button-container-fih {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    /* Adjust as needed */
+    left: 50%;
+    top: 210px;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
+.info-box-fih {
+    display: flex;
+    /* Enables flexbox */
+    align-items: center;
+    width: 25%;
+    max-width: 225px;
+    /* Centers content vertically */
+    justify-content: center;
+    /* Centers content horizontally */
+    text-align: center;
+    font-size: 14px;
+    /* Ensures text is centered */
+    padding: 0px 15px;
+    /* Adds some vertical padding */
+    background-color: #002060;
+    color: white;
+    border-radius: 4px;
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(180, 161, 161, 0.1);
+}
+
+.document-card-fi-home-all {
+    background: linear-gradient(90deg, #001339 0%, #002060 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 220px;
+    cursor: pointer;
+}
+
+/* Empty card styling */
+.empty-card-fi-home {
+    visibility: hidden;
+    /* Ensures empty slots are always seen */
+}
+
+/* Icon */
+.document-icon-fi-home {
+    font-size: 2.5rem;
+    margin-bottom: 0px;
+}
+
+/* Title */
+.document-title-fi-home {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1px;
+}
+
+/* Info */
+.document-info-fi-home {
+    margin-top: 1px;
+    font-size: 0.9rem;
+    margin-bottom: 1px;
+}
+
+.icon-fi-home {
+    width: 100%;
+    /* Adjust the percentage as needed */
+    max-width: 130px;
+    /* Prevents it from getting too large on bigger screens */
+    height: auto;
+    /* Maintains the aspect ratio */
+    object-fit: contain;
+    background-color: #002060;
+    padding: 15px;
+    border-radius: 90px;
+    /* Prevents distortion */
+    display: block;
+    margin: auto;
+}
+
+.icon-fi-home-all {
+    width: 100%;
+    /* Adjust the percentage as needed */
+    max-width: 130px;
+    /* Prevents it from getting too large on bigger screens */
+    height: auto;
+    /* Maintains the aspect ratio */
+    object-fit: contain;
+    padding: 15px;
+    border-radius: 90px;
+    /* Prevents distortion */
+    display: block;
+    margin: auto;
+}

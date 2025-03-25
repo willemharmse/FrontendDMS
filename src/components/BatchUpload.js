@@ -96,7 +96,7 @@ export default function BatchUpload() {
             <button className="log-button-batch" onClick={handleLogout}>
                 Log Out
             </button>
-            <button className="back-button-batch" onClick={() => navigate('/FrontendDMS/documentManage')}>
+            <button className="back-button-batch" onClick={() => navigate(-1)}>
                 Back
             </button>
 

@@ -173,8 +173,9 @@ body {
   display: flex;
   height: 100vh;
   padding: 20px;
+  padding-right: 10px;
   box-sizing: border-box;
-  background-color: #002060;
+  background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
 }
 
 .text-format-log {
@@ -195,15 +196,20 @@ body {
   /* Allows scrolling if content overflows */
 }
 
-.main-box {
-  width: 100%;
-  margin-top: 80px;
-  margin-right: 20px;
-  /* Adjust for the fixed header */
-  padding: 20px;
-  background-color: #002060 !important;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.top-section-create-page {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  height: 40px;
+}
+
+.main-box-create {
+  flex: 1;
+  width: 80%;
+  margin-left: 10px;
+  background-color: transparent;
+  border-radius: 3px;
   position: relative;
   z-index: 5;
   overflow: hidden;
@@ -333,34 +339,63 @@ body {
 }
 
 .scrollable-box {
-  height: calc(100% - 40px);
+  height: calc(100% - 48px);
   /* Full height minus 20px margin on top & bottom */
-  width: calc(100% - 40px);
-  /* Full width minus 20px margin on left & right */
-  margin: 20px;
+  width: 100%;
   /* Ensures even spacing on all sides */
   overflow-y: auto;
   /* Enables scrolling inside */
-  background-color: #002060 !important;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   /* Centers content */
 }
 
-.scrollable-box.expanded {
-  margin-top: 0;
-  height: calc(100% - 10px);
-  /* Increase height when scrolled */
+.burger-menu-icon-create-page-1 {
+  cursor: pointer;
+  font-size: 24px;
+  padding: 8px 8px;
+  text-align: center;
+  color: #002060;
+  border-radius: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Title inside the scrollable box */
-.scrollable-box-title {
+.burger-menu-icon-create-page-2 {
+  cursor: pointer;
+  font-size: 24px;
+  padding: 10px 8px;
   text-align: center;
-  margin-bottom: 15px;
-  color: white;
+  color: gray;
+  border-radius: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.burger-menu-icon-create-page-3 {
+  cursor: pointer;
+  font-size: 28px;
+  padding: 8px 8px;
+  text-align: center;
+  color: gray;
+  border-radius: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icons-container-create-page {
+  display: flex;
+  gap: 3px;
+  justify-content: flex-end;
+  margin-right: 2px;
 }
 
 /* Each input is inside its own box */
@@ -383,7 +418,7 @@ body {
 .input-box-type {
   background-color: white;
   padding: 15px;
-  margin: 10px 0;
+  margin-bottom: 10px;
   /* Keeps it aligned */
   width: 30%;
   /* Makes the boxes shorter */
@@ -398,7 +433,6 @@ body {
 .input-box-title {
   background-color: white;
   padding: 15px;
-  margin: 10px 0;
   /* Keeps it aligned */
   width: 70%;
   /* Makes the boxes shorter */
@@ -415,8 +449,7 @@ body {
   padding: 15px;
   margin: 10px 0;
   /* Keeps it aligned */
-  width: 90%;
-  max-width: calc(100% - 10px);
+  width: 100%;
   /* Makes the boxes shorter */
   /* Prevents overly long input fields */
   border-radius: 8px;
@@ -427,7 +460,7 @@ body {
 }
 
 .aim-textarea {
-  width: 100%;
+  width: calc(100% - 20px);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -438,17 +471,28 @@ body {
 
 .input-row {
   display: flex;
-  gap: 20px;
-  width: 92%;
+  gap: 15px;
+  width: calc(100% - 10px);
   /* Adjust the spacing as needed */
   align-items: flex-start;
   /* optional, align vertically as needed */
 }
 
+.input-row-buttons {
+  margin-top: 5px;
+  width: calc(100% - 10px);
+  display: flex;
+  justify-content: center;
+  /* Centers horizontally */
+  align-items: center;
+  /* Centers vertically */
+  gap: 10px;
+}
+
 .input-row-but-review {
   display: flex;
   gap: 20px;
-  width: 92%;
+  width: 100%;
   /* Adjust the spacing as needed */
   align-items: flex-start;
   /* optional, align vertically as needed */
@@ -464,12 +508,31 @@ body {
   outline: none;
 }
 
+.cent-create {
+  text-align: center;
+}
+
+.button-container-create {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers buttons horizontally */
+  justify-content: center;
+  /* Centers buttons vertically */
+  position: absolute;
+  top: 175px;
+  /* Adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  /* Centers horizontally */
+  width: 100%;
+}
+
 .input-box-2 {
   background-color: white;
   padding: 15px;
-  margin: 10px 0;
   /* Keeps it aligned */
-  width: 90%;
+  width: 100%;
   /* Makes the boxes shorter */
   /* Prevents overly long input fields */
   border-radius: 8px;
@@ -482,9 +545,8 @@ body {
 .input-box-3 {
   background-color: white;
   padding: 15px;
-  margin: 10px 0;
-  /* Keeps it aligned */
-  width: 50%;
+  width: 100%;
+  margin-top: 10px;
   /* Makes the boxes shorter */
   /* Prevents overly long input fields */
   border-radius: 8px;
@@ -525,7 +587,7 @@ body {
 }
 
 .input-box-aim-cp textarea {
-  width: 100%;
+  width: calc(100% - 20px);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -550,11 +612,11 @@ body {
 
 /* Generate button styling */
 .generate-button {
-  width: 25%;
-  height: 131px;
-  margin: 10px 0;
-  padding: 12px;
-  background-color: #7EAC89;
+  width: 15%;
+  height: 80%;
+  margin-top: 10px;
+  padding: 15px;
+  background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
   color: white;
   border: none;
   font-weight: bolder;
@@ -566,16 +628,16 @@ body {
 
 /* Generate button styling */
 .pdf-button {
-  width: 25%;
-  height: 131px;
-  margin: 10px 0;
-  padding: 12px;
-  background-color: #7EAC89;
+  width: 15%;
+  height: 80%;
+  margin-top: 10px;
+  background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+  color: white;
   color: white;
   border: none;
   font-weight: bolder;
   border-radius: 6px;
-  cursor: pointer;
+  cursor: not-allowed;
   font-size: 16px;
   transition: background 0.3s ease-in-out;
 }
@@ -605,12 +667,15 @@ body {
 }
 
 .input-group-cpt .title-input {
-  border-right: none;
   /* Remove border between the two inputs */
-  width: calc(100% - 150px);
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
+  width: calc(100% - 120px);
   /* Allow the title input to take most of the space */
+}
+
+.type-create-page {
+  margin-left: 10px;
+  width: 5%;
+  font-size: 16px;
 }
 
 .input-group-cpt .document-type-input {
@@ -666,20 +731,17 @@ body {
 /* Add Row Button */
 .add-row-button {
   margin-top: 10px;
-  width: 100%;
-  background-color: #d7c8ac;
-  color: black;
+  height: 80%;
+  width: 15%;
+  background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+  color: white;
   font-weight: bold;
-  padding: 10px;
+  padding: 14px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   transition: background 0.3s ease;
-}
-
-.add-row-button:hover {
-  color: black;
 }
 
 .table-borders {

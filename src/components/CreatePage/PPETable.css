@@ -14,9 +14,8 @@
 .ppe-input-box {
     background-color: white;
     padding: 15px;
-    margin: 10px 0;
     /* Keeps it aligned */
-    width: 90%;
+    width: 100%;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;
@@ -44,13 +43,32 @@
     /* Ensure button stays above other content */
     /* Add any additional styling (padding, colors, etc.) */
     padding: 5px 10px;
-    background-color: #d7c8ac;
-    color: black;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    color: #002060;
+    font-weight: 600;
+    font-size: 14px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     width: 120px;
     height: 46px;
+    text-align: center;
+    border-radius: 6px;
+    box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
 }
 
 .top-right-button-ppe-2 {
@@ -63,13 +81,32 @@
     /* Ensure button stays above other content */
     /* Add any additional styling (padding, colors, etc.) */
     padding: 5px 10px;
-    background-color: #d7c8ac;
-    color: black;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    color: #002060;
+    font-weight: 600;
+    font-size: 14px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     width: 120px;
     height: 46px;
+    text-align: center;
+    border-radius: 6px;
+    box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
 }
 
 .def-size-ppe {

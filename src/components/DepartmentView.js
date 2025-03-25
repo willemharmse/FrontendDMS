@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import "./UserManagement.css";
+import "./DepartmentView.css";
 import AddUserModal from './UserManagement/AddUserModal';
 import DeleteUserModal from './UserManagement/DeleteUserModal';
 import EditUserModal from './UserManagement/EditUserModal';
 import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faCirclePlus, faCalculator } from '@fortawesome/free-solid-svg-icons';
+import TeamManagement from "./UserManagement/TeamManagement";
+import TeamTable from "./UserManagement/TeamTable";
+import RemoveUserModal from "./UserManagement/RemoveUserModal";
 
-const UserManagement = () => {
+const DepartmentView = () => {
+    const { deptId } = useParams();
     const [error, setError] = useState(null);
-    const [token, setToken] = useState('');
     const [users, setUsers] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [userToEdit, setUserToEdit] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [role, setRole] = useState('');
-    const [newUser, setNewUser] = useState({ username: '', password: '', role: '' });
     const [formError, setFormError] = useState('');
     const adminRoles = ['admin', 'developer'];
     const leaderRoles = ['teamleader'];
-    const [roles, setRoles] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [department, setDepartment] = useState([]);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -58,7 +58,6 @@ const UserManagement = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            console.log(decodedToken);
             setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
 
@@ -81,7 +80,7 @@ const UserManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/members/${deptId}`, {
                 headers: {
                     //'Authorization': `Bearer ${token}`
                 }
@@ -91,15 +90,29 @@ const UserManagement = () => {
             }
             const data = await response.json();
 
-            // Sort users by a specific property, e.g., 'name'
-            const sortedUsers = data.users.sort((a, b) => {
+            const sortedUsers = data.members.sort((a, b) => {
                 // Replace 'name' with the property you want to sort by
                 return a.username.localeCompare(b.username);
             });
 
-            const uniqueRoles = [...new Set(data.users.map(user => user.role))].sort();
-            setRoles(uniqueRoles);
             setUsers(sortedUsers);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
+
+    const fetchDepartment = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/details/${deptId}`, {
+                headers: {
+                    //'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
+            setDepartment(data.department);
         } catch (error) {
             setError(error.message);
         }
@@ -108,42 +121,9 @@ const UserManagement = () => {
     useEffect(() => {
         if (loggedInUserId) {
             fetchUsers();
+            fetchDepartment();
         }
     }, [loggedInUserId]);
-
-    const createUser = async () => {
-        if (!newUser.username || !newUser.email || !newUser.role) {
-            setFormError('All fields are required.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/create`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(newUser)
-            });
-            if (!response.ok) throw new Error('Failed to create user');
-
-            toast.success("User account created.", {
-                closeButton: false,
-                style: {
-                    textAlign: 'center'
-                }
-            })
-
-            setIsModalOpen(false);
-            setNewUser({ username: '', email: '', role: '' });
-            setFormError('');
-            fetchUsers();
-        } catch (error) {
-            console.error('Error creating user:', error);
-            setFormError('Failed to create user.');
-        }
-    };
 
     const filteredUsers = users.filter((user) => {
         const matchesSearchQuery = (
@@ -155,13 +135,20 @@ const UserManagement = () => {
         return matchesSearchQuery && matchesFilters;
     });
 
-    const deleteUser = async (userId) => {
+    const removeUser = async () => {
+        const dataToStore = {
+            departmentId: deptId,
+            userId: userToDelete._id
+        };
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/delete/${userId}`, {
-                method: 'DELETE',
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/remove/`, {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     //'Authorization': `Bearer ${token}`,
                 },
+                body: JSON.stringify(dataToStore)
             });
             if (!response.ok) throw new Error('Failed to delete user');
             fetchUsers();
@@ -171,41 +158,10 @@ const UserManagement = () => {
         setIsDeleteModalOpen(false);
     };
 
-    const updateUser = async () => {
-        if (!userToEdit.username || !userToEdit.role) {
-            setFormError('All fields except password are required.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/update/${userToEdit._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(userToEdit),
-            });
-            if (!response.ok) throw new Error('Failed to update user');
-
-            setIsEditModalOpen(false);
-            fetchUsers();
-        } catch (error) {
-            setFormError('Failed to update user.');
-        }
-    };
-
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setFormError('');
-    };
-
-    const openEditModal = (user) => {
-        setUserToEdit({ ...user, password: '' }); // Do not pre-fill the password
-        setIsEditModalOpen(true);
+    const iconMap = {
+        faSearch: faSearch,
+        faCalculator: faCalculator
+        // Add other icons as needed
     };
 
     if (error) {
@@ -216,36 +172,24 @@ const UserManagement = () => {
         <div className="user-info-container">
             <div className="sidebar-um">
                 <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">User Management</p>
+                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+                    <p className="logo-text-dept">Department Management</p>
                 </div>
 
-                <div className="filter-um">
-                    <p className="filter-text-um">Filter</p>
-                    <select className="select-filter-um" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
-                        <option value="">Role</option>
-                        {roles
-                            .map((role, index) => (
-                                <option key={index} value={role}>
-                                    {formatRole(role)}
-                                </option>
-                            ))}
-                    </select>
+                <div className="filter-fih">
+                    <div className="button-container-dept">
+                        <button className="but-um">
+                            <div className="button-content">
+                                <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
+                                <span className="button-text">Add Member</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
-                <div className="button-container-um">
-                    <button className="but-um" onClick={() => navigate("/FrontendDMS/departmentManage")}>
-                        <div className="button-content">
-                            <FontAwesomeIcon icon={faPeopleGroup} className="button-icon" />
-                            <span className="button-text">Departments</span>
-                        </div>
-                    </button>
-                    <button className="but-um" onClick={openModal}>
-                        <div className="button-content">
-                            <FontAwesomeIcon icon={faUser} className="button-icon" />
-                            <span className="button-text">Add User</span>
-                        </div>
-                    </button>
+                <div className="sidebar-logo-dm-fi">
+                    <FontAwesomeIcon icon={iconMap[department.icon]} alt="Logo" className="logo-img-dept-view" />
+                    <p className="logo-text-dm-fi">{department.department}</p>
                 </div>
             </div>
 
@@ -275,9 +219,6 @@ const UserManagement = () => {
                                 <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
                             </div>
                         )}
-                        <div className="sort-menu-icon-um">
-                            <FontAwesomeIcon icon={faSort} />
-                        </div>
                         {adminRoles.includes(role) && (
                             <div className="burger-menu-icon-um">
                                 <FontAwesomeIcon icon={faBell} />
@@ -299,9 +240,8 @@ const UserManagement = () => {
                         )}
                     </div>
                 </div>
-                <UserTable
-                    filteredUsers={filteredUsers}
-                    openEditModal={openEditModal}
+                <TeamTable
+                    team={users}
                     setUserToDelete={setUserToDelete}
                     setIsDeleteModalOpen={setIsDeleteModalOpen}
                     formatRole={formatRole}
@@ -309,34 +249,16 @@ const UserManagement = () => {
                 />
             </div>
 
-            <AddUserModal
-                isModalOpen={isModalOpen}
-                closeModal={() => setIsModalOpen(false)}
-                createUser={createUser}
-                formError={formError}
-                newUser={newUser}
-                setNewUser={setNewUser}
-                role={role}
-            />
-
-            <DeleteUserModal
+            <RemoveUserModal
                 isDeleteModalOpen={isDeleteModalOpen}
                 setIsDeleteModalOpen={setIsDeleteModalOpen}
-                deleteUser={deleteUser}
+                deleteUser={removeUser}
                 userToDelete={userToDelete}
-            />
-
-            <EditUserModal
-                isEditModalOpen={isEditModalOpen}
-                setIsEditModalOpen={setIsEditModalOpen}
-                updateUser={updateUser}
-                formError={formError}
-                userToEdit={userToEdit}
-                setUserToEdit={setUserToEdit}
+                department={department.department}
             />
             <ToastContainer />
         </div>
     );
 };
 
-export default UserManagement;
+export default DepartmentView;

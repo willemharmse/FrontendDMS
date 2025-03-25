@@ -71,123 +71,125 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
   const closeManagePopup = () => setIsManageOpen(false);
 
   return (
-    <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
-      <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
-      {role === "admin" && (
-        <button className="top-right-button-abbr-2" onClick={openManagePopup}>Update Abbreviations</button>
-      )}
-      <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}>Add Abbreviations</button>
-      <AbbreviationPopup
-        isOpen={showNewPopup}
-        onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
-        role={role}
-        userID={userID}
-        setAbbrData={setAbbrData}
-      />
+    <div className="input-row">
+      <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
+        <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
+        {role === "admin" && (
+          <button className="top-right-button-abbr-2" onClick={openManagePopup}>Update</button>
+        )}
+        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}>Add</button>
+        <AbbreviationPopup
+          isOpen={showNewPopup}
+          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          role={role}
+          userID={userID}
+          setAbbrData={setAbbrData}
+        />
 
-      {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
-      {/* Popup */}
-      {popupVisible && (
-        <div className="popup-overlay-abbr">
-          <div className="popup-content-abbr">
-            <h4 className="center-abbrs">Select Abbreviations</h4>
-            <input
-              type="text"
-              className="search-bar-abbr"
-              placeholder="Search abbreviations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="popup-table-wrapper-abbr">
-              <table className="popup-table font-fam">
-                <thead className="abbr-headers">
-                  <tr>
-                    <th className="inp-size-abbr">Select</th>
-                    <th>Abbreviation</th>
-                    <th className="def-size-abbr">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {abbrData.length > 0 ? (
-                    abbrData
-                      .filter((item) =>
-                        item.abbr.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                      .sort((a, b) => a.abbr.localeCompare(b.abbr))
-                      .map((item) => (
-                        <tr key={item.abbr} onClick={() => handleCheckboxChange(item.abbr)} style={{ cursor: "pointer" }}>
-                          <td>
-                            <input
-                              type="checkbox"
-                              className="checkbox-inp-abbr"
-                              checked={selectedAbbrs.has(item.abbr)}
-                              onChange={() => handleCheckboxChange(item.abbr)}
-                            />
-                          </td>
-                          <td>{item.abbr}</td>
-                          <td>{item.meaning}</td>
-                        </tr>
-                      ))
-                  ) : (
+        {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
+        {/* Popup */}
+        {popupVisible && (
+          <div className="popup-overlay-abbr">
+            <div className="popup-content-abbr">
+              <h4 className="center-abbrs">Select Abbreviations</h4>
+              <input
+                type="text"
+                className="search-bar-abbr"
+                placeholder="Search abbreviations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="popup-table-wrapper-abbr">
+                <table className="popup-table font-fam">
+                  <thead className="abbr-headers">
                     <tr>
-                      <td colSpan="3">Loading abbreviations...</td>
+                      <th className="inp-size-abbr">Select</th>
+                      <th>Abbreviation</th>
+                      <th className="def-size-abbr">Description</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {abbrData.length > 0 ? (
+                      abbrData
+                        .filter((item) =>
+                          item.abbr.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .sort((a, b) => a.abbr.localeCompare(b.abbr))
+                        .map((item) => (
+                          <tr key={item.abbr} onClick={() => handleCheckboxChange(item.abbr)} style={{ cursor: "pointer" }}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                className="checkbox-inp-abbr"
+                                checked={selectedAbbrs.has(item.abbr)}
+                                onChange={() => handleCheckboxChange(item.abbr)}
+                              />
+                            </td>
+                            <td>{item.abbr}</td>
+                            <td>{item.meaning}</td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3">Loading abbreviations...</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <button className="save-selection-button-abbr" onClick={handleSaveSelection}>Save Selection</button>
+              <button className="close-popup-button-abbr" onClick={handlePopupToggle}>Close</button>
             </div>
-            <button className="save-selection-button-abbr" onClick={handleSaveSelection}>Save Selection</button>
-            <button className="close-popup-button-abbr" onClick={handlePopupToggle}>Close</button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Display selected abbreviations in a table */}
-      {selectedAbbrs.size > 0 && (
-        <table className="font-fam table-borders">
-          <thead className="cp-table-header">
-            <tr>
-              <th className="col-abbr-abbr">Abbreviations</th>
-              <th className="col-abbr-desc">Description</th>
-              <th className="col-abbr-act"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {formData.abbrRows.map((row, index) => (
-              <tr key={index}>
-                <td>{row.abbr}</td>
-                <td>{row.meaning}</td>
-                <td>
-                  <button
-                    className="remove-row-button"
-                    onClick={() => {
-                      // Remove abbreviation from table and the selected abbreviations set
-                      setFormData({
-                        ...formData,
-                        abbrRows: formData.abbrRows.filter((_, i) => i !== index),
-                      });
-                      setUsedAbbrCodes(
-                        usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
-                      );
-
-                      // Update the selectedAbbrs state to reflect the removal
-                      const newSelectedAbbrs = new Set(selectedAbbrs);
-                      newSelectedAbbrs.delete(row.abbr);
-                      setSelectedAbbrs(newSelectedAbbrs);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>
+        {/* Display selected abbreviations in a table */}
+        {selectedAbbrs.size > 0 && (
+          <table className="font-fam table-borders">
+            <thead className="cp-table-header">
+              <tr>
+                <th className="col-abbr-abbr">Abbreviations</th>
+                <th className="col-abbr-desc">Description</th>
+                <th className="col-abbr-act">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {formData.abbrRows.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.abbr}</td>
+                  <td>{row.meaning}</td>
+                  <td>
+                    <button
+                      className="remove-row-button"
+                      onClick={() => {
+                        // Remove abbreviation from table and the selected abbreviations set
+                        setFormData({
+                          ...formData,
+                          abbrRows: formData.abbrRows.filter((_, i) => i !== index),
+                        });
+                        setUsedAbbrCodes(
+                          usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
+                        );
 
-      <button className="add-row-button" onClick={handlePopupToggle}>
-        Select Abbreviations
-      </button>
+                        // Update the selectedAbbrs state to reflect the removal
+                        const newSelectedAbbrs = new Set(selectedAbbrs);
+                        newSelectedAbbrs.delete(row.abbr);
+                        setSelectedAbbrs(newSelectedAbbrs);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <button className="add-row-button" onClick={handlePopupToggle}>
+          Select Abbreviations
+        </button>
+      </div>
     </div>
   );
 };

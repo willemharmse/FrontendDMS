@@ -70,129 +70,131 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
   const closeManagePopup = () => setIsManageOpen(false);
 
   return (
-    <div className={`term-input-box ${error ? "error-term" : ""}`}>
-      <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
-      {role === "admin" && (
-        <button className="top-right-button-term-2" onClick={openManagePopup}>Update Terms</button>
-      )}
-      <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}>Add Terms</button>
-      <TermPopup
-        isOpen={showNewPopup}
-        onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
-        role={role}
-        userID={userID}
-        setTermData={setTermData}
-      />
+    <div className="input-row">
+      <div className={`term-input-box ${error ? "error-term" : ""}`}>
+        <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
+        {role === "admin" && (
+          <button className="top-right-button-term-2" onClick={openManagePopup}>Update</button>
+        )}
+        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}>Add</button>
+        <TermPopup
+          isOpen={showNewPopup}
+          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          role={role}
+          userID={userID}
+          setTermData={setTermData}
+        />
 
-      {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
 
-      {popupVisible && (
-        <div className="popup-overlay-terms">
-          <div className="popup-content-terms">
-            <h4 className="center-tems">Select Terms</h4>
-            <input
-              type="text"
-              className="search-bar-term"
-              placeholder="Search term..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="popup-table-wrapper">
-              <table className="popup-table font-fam">
-                <thead className="terms-headers">
-                  <tr>
-                    <th className="inp-size">Select</th>
-                    <th>Term</th>
-                    <th className="def-size">Meaning</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Check if abbrData is loaded */}
-                  {termData.length > 0 ? (
-                    termData
-                      .filter((item) =>
-                        item.term.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                      .sort((a, b) => a.term.localeCompare(b.term))
-                      .map((item) => (
-                        <tr key={item.term}
-                          onClick={() => handleCheckboxChange(item.term)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td>
-                            <input
-                              type="checkbox"
-                              className="checkbox-inp-term"
-                              checked={selectedTerms.has(item.term)}
-                              onChange={() => handleCheckboxChange(item.term)}
-                            />
-                          </td>
-                          <td>{item.term}</td>
-                          <td>{item.definition}</td>
-                        </tr>
-                      ))) : (
+        {popupVisible && (
+          <div className="popup-overlay-terms">
+            <div className="popup-content-terms">
+              <h4 className="center-tems">Select Terms</h4>
+              <input
+                type="text"
+                className="search-bar-term"
+                placeholder="Search term..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="popup-table-wrapper">
+                <table className="popup-table font-fam">
+                  <thead className="terms-headers">
                     <tr>
-                      <td colSpan="3">Loading abbreviations...</td>
+                      <th className="inp-size">Select</th>
+                      <th>Term</th>
+                      <th className="def-size">Meaning</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {/* Check if abbrData is loaded */}
+                    {termData.length > 0 ? (
+                      termData
+                        .filter((item) =>
+                          item.term.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .sort((a, b) => a.term.localeCompare(b.term))
+                        .map((item) => (
+                          <tr key={item.term}
+                            onClick={() => handleCheckboxChange(item.term)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <td>
+                              <input
+                                type="checkbox"
+                                className="checkbox-inp-term"
+                                checked={selectedTerms.has(item.term)}
+                                onChange={() => handleCheckboxChange(item.term)}
+                              />
+                            </td>
+                            <td>{item.term}</td>
+                            <td>{item.definition}</td>
+                          </tr>
+                        ))) : (
+                      <tr>
+                        <td colSpan="3">Loading abbreviations...</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <button className="save-selection-button-term" onClick={handleSaveSelection}>
+                Save Selection
+              </button>
+              <button className="close-popup-button-term" onClick={handlePopupToggle}>
+                Close
+              </button>
             </div>
-            <button className="save-selection-button-term" onClick={handleSaveSelection}>
-              Save Selection
-            </button>
-            <button className="close-popup-button-term" onClick={handlePopupToggle}>
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {selectedTerms.size > 0 && (
-        <table className="vcr-table table-borders">
-          <thead className="cp-table-header">
-            <tr>
-              <th className="col-term-term">Term</th>
-              <th className="col-term-desc">Definition</th>
-              <th className="col-term-act"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {formData.termRows.map((row, index) => (
-              <tr key={index}>
-                <td>{row.term}</td>
-                <td>{row.definition}</td>
-                <td>
-                  <button
-                    className="remove-row-button"
-                    onClick={() => {
-                      // Remove abbreviation from table and the selected abbreviations set
-                      setFormData({
-                        ...formData,
-                        termRows: formData.termRows.filter((_, i) => i !== index),
-                      });
-                      setUsedTermCodes(
-                        usedTermCodes.filter((term) => term !== row.term)
-                      );
-
-                      // Update the selectedAbbrs state to reflect the removal
-                      const newSelectedTerms = new Set(selectedTerms);
-                      newSelectedTerms.delete(row.term);
-                      setSelectedTerms(newSelectedTerms);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>
+        {selectedTerms.size > 0 && (
+          <table className="vcr-table table-borders">
+            <thead className="cp-table-header">
+              <tr>
+                <th className="col-term-term">Term</th>
+                <th className="col-term-desc">Definition</th>
+                <th className="col-term-act">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {formData.termRows.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.term}</td>
+                  <td>{row.definition}</td>
+                  <td>
+                    <button
+                      className="remove-row-button"
+                      onClick={() => {
+                        // Remove abbreviation from table and the selected abbreviations set
+                        setFormData({
+                          ...formData,
+                          termRows: formData.termRows.filter((_, i) => i !== index),
+                        });
+                        setUsedTermCodes(
+                          usedTermCodes.filter((term) => term !== row.term)
+                        );
 
-      <button className="add-row-button" onClick={handlePopupToggle}>
-        Select Terms
-      </button>
+                        // Update the selectedAbbrs state to reflect the removal
+                        const newSelectedTerms = new Set(selectedTerms);
+                        newSelectedTerms.delete(row.term);
+                        setSelectedTerms(newSelectedTerms);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <button className="add-row-button" onClick={handlePopupToggle}>
+          Select Terms
+        </button>
+      </div>
     </div>
   );
 };

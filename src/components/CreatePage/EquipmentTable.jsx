@@ -87,135 +87,137 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     const closeManagePopup = () => setIsManageOpen(false);
 
     return (
-        <div className="eqp-input-box">
-            <div className="eqp-header">
-                <input
-                    type="checkbox"
-                    className="na-checkbox-eqp"
-                    checked={isNA}
-                    onChange={handleNAToggle}
-                />
-                <h3 className="font-fam-labels">Equipment</h3>
-            </div>
-            {role === "admin" && (
-                <button className="top-right-button-eqp-2" onClick={openManagePopup}>Update Equipment</button>
-            )}
-            <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add Equipment</button>
-
-            <EquipmentPopup
-                isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
-                role={role}
-                userID={userID}
-                setEqpData={setEqpData}
-            />
-
-            {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}
-            {/* Popup */}
-            {popupVisible && (
-                <div className="popup-overlay-eqp">
-                    <div className="popup-content-terms">
-                        <h4 className="center-eqp">Select Equipment</h4>
-                        <input
-                            type="text"
-                            className="search-bar-eqp"
-                            placeholder="Search equipment..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <div className="popup-table-wrapper-eqp">
-                            <table className="popup-table font-fam">
-                                <thead className="eqp-headers">
-                                    <tr>
-                                        <th className="inp-size-eqp">Select</th>
-                                        <th>Equipment</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {eqpData.length > 0 ? (
-                                        eqpData
-                                            .filter((item) =>
-                                                item.eqp.toLowerCase().includes(searchTerm.toLowerCase())
-                                            )
-                                            .sort((a, b) => a.eqp.localeCompare(b.eqp))
-                                            .map((item) => (
-                                                <tr key={item.eqp}
-                                                    onClick={() => handleCheckboxChange(item.eqp)}
-                                                    style={{ cursor: "pointer" }}
-                                                >
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="checkbox-inp-eqp"
-                                                            checked={selectedEquipment.has(item.eqp)}
-                                                            onChange={() => handleCheckboxChange(item.eqp)}
-                                                        />
-                                                    </td>
-                                                    <td>{item.eqp}</td>
-                                                </tr>
-                                            ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">Loading abbreviations...</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button className="save-selection-button-eqp" onClick={handleSaveSelection}>
-                            Save Selection
-                        </button>
-                        <button className="close-popup-button-eqp" onClick={handlePopupToggle}>
-                            Close
-                        </button>
-                    </div>
+        <div className="input-row">
+            <div className="eqp-input-box">
+                <div className="eqp-header">
+                    <input
+                        type="checkbox"
+                        className="na-checkbox-eqp"
+                        checked={isNA}
+                        onChange={handleNAToggle}
+                    />
+                    <h3 className="font-fam-labels">Equipment</h3>
                 </div>
-            )}
+                {role === "admin" && (
+                    <button className="top-right-button-eqp-2" onClick={openManagePopup}>Update</button>
+                )}
+                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add</button>
 
-            {/* Display selected abbreviations in a table */}
-            {selectedEquipment.size > 0 && (
-                <table className="vcr-table font-fam table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="col-eqp-eqp">Equipment</th>
-                            <th className="col-eqp-act"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formData.Equipment?.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.eqp}</td>
-                                <td>
-                                    <button
-                                        className="remove-row-button"
-                                        onClick={() => {
-                                            // Remove abbreviation from table and the selected abbreviations set
-                                            setFormData({
-                                                ...formData,
-                                                Equipment: formData.Equipment.filter((_, i) => i !== index),
-                                            });
-                                            setUsedEquipment(
-                                                usedEquipment.filter((eqp) => eqp !== row.eqp)
-                                            );
+                <EquipmentPopup
+                    isOpen={showNewPopup}
+                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    role={role}
+                    userID={userID}
+                    setEqpData={setEqpData}
+                />
 
-                                            // Update the selectedAbbrs state to reflect the removal
-                                            const newSelectedEquipment = new Set(selectedEquipment);
-                                            newSelectedEquipment.delete(row.eqp);
-                                            setSelectedEquipment(newSelectedEquipment);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+                {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}
+                {/* Popup */}
+                {popupVisible && (
+                    <div className="popup-overlay-eqp">
+                        <div className="popup-content-terms">
+                            <h4 className="center-eqp">Select Equipment</h4>
+                            <input
+                                type="text"
+                                className="search-bar-eqp"
+                                placeholder="Search equipment..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <div className="popup-table-wrapper-eqp">
+                                <table className="popup-table font-fam">
+                                    <thead className="eqp-headers">
+                                        <tr>
+                                            <th className="inp-size-eqp">Select</th>
+                                            <th>Equipment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {eqpData.length > 0 ? (
+                                            eqpData
+                                                .filter((item) =>
+                                                    item.eqp.toLowerCase().includes(searchTerm.toLowerCase())
+                                                )
+                                                .sort((a, b) => a.eqp.localeCompare(b.eqp))
+                                                .map((item) => (
+                                                    <tr key={item.eqp}
+                                                        onClick={() => handleCheckboxChange(item.eqp)}
+                                                        style={{ cursor: "pointer" }}
+                                                    >
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox-inp-eqp"
+                                                                checked={selectedEquipment.has(item.eqp)}
+                                                                onChange={() => handleCheckboxChange(item.eqp)}
+                                                            />
+                                                        </td>
+                                                        <td>{item.eqp}</td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="3">Loading abbreviations...</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button className="save-selection-button-eqp" onClick={handleSaveSelection}>
+                                Save Selection
+                            </button>
+                            <button className="close-popup-button-eqp" onClick={handlePopupToggle}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Display selected abbreviations in a table */}
+                {selectedEquipment.size > 0 && (
+                    <table className="vcr-table font-fam table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="col-eqp-eqp">Equipment</th>
+                                <th className="col-eqp-act">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {formData.Equipment?.map((row, index) => (
+                                <tr key={index}>
+                                    <td>{row.eqp}</td>
+                                    <td>
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => {
+                                                // Remove abbreviation from table and the selected abbreviations set
+                                                setFormData({
+                                                    ...formData,
+                                                    Equipment: formData.Equipment.filter((_, i) => i !== index),
+                                                });
+                                                setUsedEquipment(
+                                                    usedEquipment.filter((eqp) => eqp !== row.eqp)
+                                                );
 
-            <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                Select Equipment
-            </button>
+                                                // Update the selectedAbbrs state to reflect the removal
+                                                const newSelectedEquipment = new Set(selectedEquipment);
+                                                newSelectedEquipment.delete(row.eqp);
+                                                setSelectedEquipment(newSelectedEquipment);
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
+                    Select Equipment
+                </button>
+            </div>
         </div>
     );
 };

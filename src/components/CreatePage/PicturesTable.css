@@ -17,9 +17,8 @@
 .pic-box {
     background-color: white;
     padding: 15px;
-    margin: 10px 0;
-    /* Keeps it aligned */
-    width: 90%;
+    width: 100%;
+    margin-top: 10px;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;

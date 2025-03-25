@@ -1,6 +1,6 @@
 .burger-menu-container {
     position: absolute;
-    top: 35px;
+    top: -10px;
     right: 0px;
     z-index: 1000;
 }

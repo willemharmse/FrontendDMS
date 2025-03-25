@@ -105,151 +105,153 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
 
     return (
-        <div className={`proc-box ${error ? "error-proc" : ""}`}>
-            <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
+        <div className="input-row">
+            <div className={`proc-box ${error ? "error-proc" : ""}`}>
+                <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
 
-            <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
+                <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
 
-            {procedureRows.length > 0 && (
-                <table className="vcr-table table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="procCent procNr">Nr</th>
-                            <th className="procCent procMain">Procedure Main Steps</th>
-                            <th className="procCent procSub">Procedure Sub Steps</th>
-                            <th className="procCent procPrev">Predecessor<div className="procFineText">(Immediate Prior Steps)</div></th>
-                            <th className="procCent procAR">Responsible and Accountable</th>
-                            <th className="procCent procAct"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {procedureRows.map((row, index) => (
-                            <tr key={index}>
-                                <td className="procCent">
-                                    {row.nr}
-                                </td>
-                                <td>
-                                    <textarea
-                                        name="mainStep"
-                                        className="aim-textarea-pt font-fam"
-                                        value={row.mainStep}
-                                        onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
-                                        rows="4"   // Adjust the number of rows for initial height
-                                        placeholder="Enter the main step of the procedure here..." // Optional placeholder text
-                                    />
-                                </td>
-                                <td>
-                                    <textarea
-                                        name="SubStep"
-                                        className="aim-textarea-pt font-fam"
-                                        value={row.SubStep}
-                                        onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
-                                        rows="4"   // Adjust the number of rows for initial height
-                                        placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
-                                    />
-                                </td>
-                                <td>
-                                    <div className="prev-step-container-ref">
-                                        {(row.prevStep ? row.prevStep.split(";") : []).map((step, stepIndex) => (
-                                            <div key={stepIndex} className="prev-step-input-ref">
-                                                <input
-                                                    type="text"
-                                                    className="aim-input-pt font-fam"
-                                                    value={step}
-                                                    onChange={(e) => {
-                                                        let updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
-
-                                                        if (stepIndex < updatedSteps.length) {
-                                                            updatedSteps[stepIndex] = e.target.value;
-                                                        } else {
-                                                            updatedSteps.push(e.target.value);
-                                                        }
-
-                                                        updateRow(index, "prevStep", updatedSteps.join(";"));
-                                                    }}
-                                                    placeholder="Enter step"
-                                                />
-                                                <button
-                                                    className="remove-step-button-ref"
-                                                    onClick={() => {
-                                                        const updatedSteps = row.prevStep ? row.prevStep.split(";").filter((_, i) => i !== stepIndex) : [];
-                                                        updateRow(index, "prevStep", updatedSteps.join(";"));
-                                                    }}
-                                                >
-                                                    <FontAwesomeIcon icon={faTrash} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <button
-                                            className="add-step-button-ref"
-                                            onClick={() => {
-                                                const updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
-                                                updatedSteps.push("");
-                                                updateRow(index, "prevStep", updatedSteps.join(";"));
-                                            }}
-                                        >
-                                            + Add Predecessor
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className="select-container-proc">
-                                        <div className="select-wrapper">
-                                            <label className="select-label-proc">R:</label>
-                                            <select
-                                                className="table-control-proc"
-                                                value={row.responsible}
-                                                onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
-                                            >
-                                                <option value="">Select an option</option>
-                                                {responsibleOptions
-                                                    .filter((option) => option !== row.accountable) // Exclude selected Accountable value
-                                                    .sort()
-                                                    .map((option, i) => (
-                                                        <option key={i} value={option}>
-                                                            {option}
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="select-wrapper">
-                                            <label className="select-label-proc">A:</label>
-                                            <select
-                                                className="table-control-proc"
-                                                value={row.accountable}
-                                                onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
-                                            >
-                                                <option value="">Select an option</option>
-                                                {accountableOptions
-                                                    .filter((option) => option !== row.responsible) // Exclude selected Responsible value
-                                                    .sort()
-                                                    .map((option, i) => (
-                                                        <option key={i} value={option}>
-                                                            {option}
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <button
-                                        className="remove-row-button"
-                                        onClick={() => removeRow(index)}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+                {procedureRows.length > 0 && (
+                    <table className="vcr-table table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="procCent procNr">Nr</th>
+                                <th className="procCent procMain">Procedure Main Steps</th>
+                                <th className="procCent procSub">Procedure Sub Steps</th>
+                                <th className="procCent procPrev">Predecessor<div className="procFineText">(Immediate Prior Steps)</div></th>
+                                <th className="procCent procAR">Responsible and Accountable</th>
+                                <th className="procCent procAct">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {procedureRows.map((row, index) => (
+                                <tr key={index}>
+                                    <td className="procCent">
+                                        {row.nr}
+                                    </td>
+                                    <td>
+                                        <textarea
+                                            name="mainStep"
+                                            className="aim-textarea-pt font-fam"
+                                            value={row.mainStep}
+                                            onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
+                                            rows="4"   // Adjust the number of rows for initial height
+                                            placeholder="Enter the main step of the procedure here..." // Optional placeholder text
+                                        />
+                                    </td>
+                                    <td>
+                                        <textarea
+                                            name="SubStep"
+                                            className="aim-textarea-pt font-fam"
+                                            value={row.SubStep}
+                                            onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
+                                            rows="4"   // Adjust the number of rows for initial height
+                                            placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
+                                        />
+                                    </td>
+                                    <td>
+                                        <div className="prev-step-container-ref">
+                                            {(row.prevStep ? row.prevStep.split(";") : []).map((step, stepIndex) => (
+                                                <div key={stepIndex} className="prev-step-input-ref">
+                                                    <input
+                                                        type="text"
+                                                        className="aim-input-pt font-fam"
+                                                        value={step}
+                                                        onChange={(e) => {
+                                                            let updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
 
-            <button className="add-row-button" onClick={addRow} disabled={procedureRows.some(row => !row.responsible || !row.accountable)} >
-                + Add Row
-            </button>
+                                                            if (stepIndex < updatedSteps.length) {
+                                                                updatedSteps[stepIndex] = e.target.value;
+                                                            } else {
+                                                                updatedSteps.push(e.target.value);
+                                                            }
+
+                                                            updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                        }}
+                                                        placeholder="Enter step"
+                                                    />
+                                                    <button
+                                                        className="remove-step-button-ref"
+                                                        onClick={() => {
+                                                            const updatedSteps = row.prevStep ? row.prevStep.split(";").filter((_, i) => i !== stepIndex) : [];
+                                                            updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                        }}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrash} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button
+                                                className="add-step-button-ref"
+                                                onClick={() => {
+                                                    const updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
+                                                    updatedSteps.push("");
+                                                    updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                }}
+                                            >
+                                                + Add Predecessor
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="select-container-proc">
+                                            <div className="select-wrapper">
+                                                <label className="select-label-proc">R:</label>
+                                                <select
+                                                    className="table-control-proc"
+                                                    value={row.responsible}
+                                                    onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
+                                                >
+                                                    <option value="">Select an option</option>
+                                                    {responsibleOptions
+                                                        .filter((option) => option !== row.accountable) // Exclude selected Accountable value
+                                                        .sort()
+                                                        .map((option, i) => (
+                                                            <option key={i} value={option}>
+                                                                {option}
+                                                            </option>
+                                                        ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="select-wrapper">
+                                                <label className="select-label-proc">A:</label>
+                                                <select
+                                                    className="table-control-proc"
+                                                    value={row.accountable}
+                                                    onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
+                                                >
+                                                    <option value="">Select an option</option>
+                                                    {accountableOptions
+                                                        .filter((option) => option !== row.responsible) // Exclude selected Responsible value
+                                                        .sort()
+                                                        .map((option, i) => (
+                                                            <option key={i} value={option}>
+                                                                {option}
+                                                            </option>
+                                                        ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => removeRow(index)}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button className="add-row-button" onClick={addRow} disabled={procedureRows.some(row => !row.responsible || !row.accountable)} >
+                    + Add Row
+                </button>
+            </div>
         </div>
     );
 };

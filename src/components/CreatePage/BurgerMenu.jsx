@@ -5,14 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const BurgerMenu = ({ role, openLoadPopup, small }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const BurgerMenu = ({ role, openLoadPopup, isOpen, setIsOpen }) => {
     const navigate = useNavigate();
-
-
-    const toggleMenu = () => {
-        setIsOpen(!isOpen);
-    };
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -58,9 +52,6 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
 
     return (
         <div className="burger-menu-container">
-            <button className={`menu-button-cp ${small ? " small" : ""}`} onClick={toggleMenu} title="Show more options">
-                <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
-            </button>
             {isOpen && (
                 <div className="menu-content" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
@@ -72,9 +63,6 @@ const BurgerMenu = ({ role, openLoadPopup, small }) => {
                             <li onClick={handleDownload}>Export Site Info</li>
                         )}
 
-                        {role === "admin" && (
-                            <li onClick={openLoadPopup}>Load Draft</li>
-                        )}
                         {role === "admin" && (
                             <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Suggestions</li>
                         )}

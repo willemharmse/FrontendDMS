@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import './FilterName.css';
 
-const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
+const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) => {
     const [openMenu, setOpenMenu] = useState(null); // Track the currently open menu
 
     const toggleMenu = (menu) => {
@@ -11,7 +11,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
     };
 
     return (
-        <tr>
+        <tr className={trashed ? 'trashed' : ""}>
             <th className="doc-num-filter col">Nr</th>
             <th className="col-dis-filter col">
                 <div className="fileinfo-container-filter-1">
@@ -40,10 +40,10 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('Author')}>
                         {filters.author ? (
                             <>
-                                <span>Author</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
+                                <span>Owner</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
                             </>
                         ) : (
-                            "Author"
+                            "Owner"
                         )}
                     </span>
                     {openMenu === 'Author' && (
@@ -214,7 +214,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange }) => {
                 </div>
             </th>
             {adminRoles.includes(role) && (
-                <th className="col-act-filter col"></th>
+                <th className="col-act-filter col">Action</th>
             )}
         </tr>
     );

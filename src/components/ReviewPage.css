@@ -380,7 +380,7 @@ body {
     align-items: center;
 }
 
-.input-box-type {
+.input-box-type-review {
     background-color: white;
     padding: 15px;
     margin: 10px 0;
@@ -462,21 +462,6 @@ body {
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
-}
-
-.input-box-2 {
-    background-color: white;
-    padding: 15px;
-    margin: 10px 0;
-    /* Keeps it aligned */
-    width: 90%;
-    /* Makes the boxes shorter */
-    /* Prevents overly long input fields */
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .input-box-3-review-page {
@@ -643,7 +628,7 @@ body {
 }
 
 /* Add Row Button */
-.add-row-button {
+.add-row-button-rev {
     margin-top: 10px;
     width: 100%;
     background-color: #d7c8ac;
@@ -655,10 +640,6 @@ body {
     cursor: pointer;
     font-size: 16px;
     transition: background 0.3s ease;
-}
-
-.add-row-button:hover {
-    color: black;
 }
 
 .table-borders {

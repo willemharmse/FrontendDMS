@@ -98,6 +98,15 @@
     text-align: center;
 }
 
+.trashed {
+    background-color: #CB6F6F !important;
+
+}
+
+.trashed-color {
+    color: white !important;
+}
+
 .col-date-filter {
     word-wrap: break-word;
     /* Allows long words to break and wrap to the next line */
@@ -118,7 +127,8 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 50px;
+    width: 175px;
+
     /* Set a width to see the wrapping effect */
     text-align: center;
     justify-content: space-between;

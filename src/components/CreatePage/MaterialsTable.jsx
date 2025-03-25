@@ -87,134 +87,136 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     const closeManagePopup = () => setIsManageOpen(false);
 
     return (
-        <div className="mat-input-box">
-            <div className="materials-header">
-                <input
-                    type="checkbox"
-                    className="na-checkbox-mat"
-                    checked={isNA}
-                    onChange={handleNAToggle}
-                />
-                <h3 className="font-fam-labels">Materials</h3>
-            </div>
-            {role === "admin" && (
-                <button className="top-right-button-mat-2" onClick={openManagePopup}>Update Materials</button>
-            )}
-            <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add Materials</button>
-            <MaterialPopup
-                isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
-                role={role}
-                userID={userID}
-                setMatsData={setMatsData}
-            />
-
-            {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
-            {/* Popup */}
-            {popupVisible && (
-                <div className="popup-overlay-mat">
-                    <div className="popup-content-terms">
-                        <h4 className="center-mat">Select Materials</h4>
-                        <input
-                            type="text"
-                            className="search-bar-mat"
-                            placeholder="Search materials..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <div className="popup-table-wrapper-mat">
-                            <table className="popup-table font-fam">
-                                <thead className="mat-headers">
-                                    <tr>
-                                        <th className="inp-size-mat">Select</th>
-                                        <th>Material</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {matsData.length > 0 ? (
-                                        matsData
-                                            .filter((item) =>
-                                                item.mat.toLowerCase().includes(searchTerm.toLowerCase())
-                                            )
-                                            .sort((a, b) => a.mat.localeCompare(b.mat))
-                                            .map((item) => (
-                                                <tr key={item.mat}
-                                                    onClick={() => handleCheckboxChange(item.mat)}
-                                                    style={{ cursor: "pointer" }}
-                                                >
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="checkbox-inp-mat"
-                                                            checked={selectedMaterials.has(item.mat)}
-                                                            onChange={() => handleCheckboxChange(item.mat)}
-                                                        />
-                                                    </td>
-                                                    <td>{item.mat}</td>
-                                                </tr>
-                                            ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">Loading materials...</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button className="save-selection-button-mat" onClick={handleSaveSelection}>
-                            Save Selection
-                        </button>
-                        <button className="close-popup-button-mat" onClick={handlePopupToggle}>
-                            Close
-                        </button>
-                    </div>
+        <div className="input-row">
+            <div className="mat-input-box">
+                <div className="materials-header">
+                    <input
+                        type="checkbox"
+                        className="na-checkbox-mat"
+                        checked={isNA}
+                        onChange={handleNAToggle}
+                    />
+                    <h3 className="font-fam-labels">Materials</h3>
                 </div>
-            )}
+                {role === "admin" && (
+                    <button className="top-right-button-mat-2" onClick={openManagePopup}>Update</button>
+                )}
+                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add</button>
+                <MaterialPopup
+                    isOpen={showNewPopup}
+                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    role={role}
+                    userID={userID}
+                    setMatsData={setMatsData}
+                />
 
-            {/* Display selected abbreviations in a table */}
-            {selectedMaterials.size > 0 && (
-                <table className="vcr-table font-fam table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="col-mat-mat">Material</th>
-                            <th className="col-mat-act"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formData.Materials?.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.mat}</td>
-                                <td>
-                                    <button
-                                        className="remove-row-button"
-                                        onClick={() => {
-                                            // Remove abbreviation from table and the selected abbreviations set
-                                            setFormData({
-                                                ...formData,
-                                                Materials: formData.Materials.filter((_, i) => i !== index),
-                                            });
-                                            setUsedMaterials(
-                                                usedMaterials.filter((mat) => mat !== row.mat)
-                                            );
+                {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
+                {/* Popup */}
+                {popupVisible && (
+                    <div className="popup-overlay-mat">
+                        <div className="popup-content-terms">
+                            <h4 className="center-mat">Select Materials</h4>
+                            <input
+                                type="text"
+                                className="search-bar-mat"
+                                placeholder="Search materials..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <div className="popup-table-wrapper-mat">
+                                <table className="popup-table font-fam">
+                                    <thead className="mat-headers">
+                                        <tr>
+                                            <th className="inp-size-mat">Select</th>
+                                            <th>Material</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {matsData.length > 0 ? (
+                                            matsData
+                                                .filter((item) =>
+                                                    item.mat.toLowerCase().includes(searchTerm.toLowerCase())
+                                                )
+                                                .sort((a, b) => a.mat.localeCompare(b.mat))
+                                                .map((item) => (
+                                                    <tr key={item.mat}
+                                                        onClick={() => handleCheckboxChange(item.mat)}
+                                                        style={{ cursor: "pointer" }}
+                                                    >
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox-inp-mat"
+                                                                checked={selectedMaterials.has(item.mat)}
+                                                                onChange={() => handleCheckboxChange(item.mat)}
+                                                            />
+                                                        </td>
+                                                        <td>{item.mat}</td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="3">Loading materials...</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button className="save-selection-button-mat" onClick={handleSaveSelection}>
+                                Save Selection
+                            </button>
+                            <button className="close-popup-button-mat" onClick={handlePopupToggle}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
 
-                                            // Update the selectedAbbrs state to reflect the removal
-                                            const newSelectedMaterials = new Set(selectedMaterials);
-                                            newSelectedMaterials.delete(row.mat);
-                                            setSelectedMaterials(newSelectedMaterials);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+                {/* Display selected abbreviations in a table */}
+                {selectedMaterials.size > 0 && (
+                    <table className="vcr-table font-fam table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="col-mat-mat">Material</th>
+                                <th className="col-mat-act">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {formData.Materials?.map((row, index) => (
+                                <tr key={index}>
+                                    <td>{row.mat}</td>
+                                    <td>
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => {
+                                                // Remove abbreviation from table and the selected abbreviations set
+                                                setFormData({
+                                                    ...formData,
+                                                    Materials: formData.Materials.filter((_, i) => i !== index),
+                                                });
+                                                setUsedMaterials(
+                                                    usedMaterials.filter((mat) => mat !== row.mat)
+                                                );
 
-            <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                Select Materials
-            </button>
+                                                // Update the selectedAbbrs state to reflect the removal
+                                                const newSelectedMaterials = new Set(selectedMaterials);
+                                                newSelectedMaterials.delete(row.mat);
+                                                setSelectedMaterials(newSelectedMaterials);
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
+                    Select Materials
+                </button>
+            </div>
         </div>
     );
 };

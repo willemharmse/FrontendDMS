@@ -1,0 +1,15 @@
+.logo-img-dept-view {
+    max-width: 50%;
+    height: auto;
+    max-height: 50px;
+    object-fit: contain;
+    cursor: default;
+    display: block;
+    margin: 0 auto;
+    color: #002060;
+    padding: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 90px;
+    background-color: white;
+}

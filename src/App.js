@@ -25,6 +25,9 @@ import NewLogin from './components/NewLogin';
 import ReviewPage from './components/ReviewPage';
 import GeneratedFileInfo from './components/GeneratedFileInfo';
 import AdminApprovalPage from './components/ValueChanges/AdminApprovalPage';
+import FileInfoHome from './components/FileInfoHome';
+import DepartmentHome from './components/DepartmentHome';
+import DepartmentView from './components/DepartmentView';
 
 function App() {
   return (
@@ -34,7 +37,6 @@ function App() {
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <LoginPage />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
-        <Route path="FrontendDMS/documentManage" element={isMobile ? <Navigate to="/FrontendDMS/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/documentCreate" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <CreatePage />} />
         <Route path='FrontendDMS/upload' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UploadPage />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
@@ -48,6 +50,10 @@ function App() {
         <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
         <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
         <Route path='/review/:fileId' element={<ReviewPage />} />
+        <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
+        <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
+        <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
+        <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

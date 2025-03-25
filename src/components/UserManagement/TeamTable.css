@@ -1,0 +1,53 @@
+.inline-actions-um {
+    display: flex;
+    gap: 5px;
+    justify-content: space-evenly;
+    align-items: center;
+    /* Ensures vertical alignment */
+
+}
+
+.col-role-team {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 26%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-action-team {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.doc-num-team {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-name-team {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 29%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-day-team {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 27%;
+    font-size: 16px;
+    text-align: center;
+}

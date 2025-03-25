@@ -87,134 +87,137 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
     const closeManagePopup = () => setIsManageOpen(false);
 
     return (
-        <div className="ppe-input-box">
-            <div className="ppe-header">
-                <input
-                    type="checkbox"
-                    className="na-checkbox-ppe"
-                    checked={isNA}
-                    onChange={handleNAToggle}
-                />
-                <h3 className="font-fam-labels">PPE</h3>
-            </div>
-            {role === "admin" && (
-                <button className="top-right-button-ppe-2" onClick={openManagePopup}>Update PPE</button>
-            )}
-            <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add PPE</button>
-            <PPEPopup
-                isOpen={showNewPopup}
-                onClose={() => { setShowNewPopup(false); fetchValues(); }}
-                role={role}
-                userID={userID}
-            />
-
-            {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
-
-            {/* Popup */}
-            {popupVisible && (
-                <div className="popup-overlay-ppe">
-                    <div className="popup-content-terms">
-                        <h4 className="center-ppe">Select PPE Options</h4>
-                        <input
-                            type="text"
-                            className="search-bar-ppe"
-                            placeholder="Search PPE..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <div className="popup-table-wrapper-ppe">
-                            <table className="popup-table font-fam">
-                                <thead className="ppe-headers">
-                                    <tr>
-                                        <th className="inp-size-ppe">Select</th>
-                                        <th>PPE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {ppeData.length > 0 ? (
-                                        ppeData
-                                            .filter((item) =>
-                                                item.ppe.toLowerCase().includes(searchTerm.toLowerCase())
-                                            )
-                                            .sort((a, b) => a.ppe.localeCompare(b.ppe))
-                                            .map((item) => (
-                                                <tr key={item.ppe}
-                                                    onClick={() => handleCheckboxChange(item.ppe)}
-                                                    style={{ cursor: "pointer" }}
-                                                >
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="checkbox-inp-ppe"
-                                                            checked={selectedPPE.has(item.ppe)}
-                                                            onChange={() => handleCheckboxChange(item.ppe)}
-                                                        />
-                                                    </td>
-                                                    <td>{item.ppe}</td>
-                                                </tr>
-                                            ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">Loading machines...</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button className="save-selection-button-ppe" onClick={handleSaveSelection}>
-                            Save Selection
-                        </button>
-                        <button className="close-popup-button-ppe" onClick={handlePopupToggle}>
-                            Close
-                        </button>
-                    </div>
+        <div className="input-row">
+            <div className="ppe-input-box">
+                <div className="ppe-header">
+                    <input
+                        type="checkbox"
+                        className="na-checkbox-ppe"
+                        checked={isNA}
+                        onChange={handleNAToggle}
+                    />
+                    <h3 className="font-fam-labels">PPE</h3>
                 </div>
-            )}
+                {role === "admin" && (
+                    <button className="top-right-button-ppe-2" onClick={openManagePopup}>Update</button>
+                )}
+                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add</button>
+                <PPEPopup
+                    isOpen={showNewPopup}
+                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    role={role}
+                    userID={userID}
+                    setPPEData={setPPEData}  // Pass the setter to update PPE options locally
+                />
 
-            {/* Display selected abbreviations in a table */}
-            {selectedPPE.size > 0 && (
-                <table className="vcr-table font-fam table-borders">
-                    <thead className="cp-table-header">
-                        <tr>
-                            <th className="col-ppe-ppe">PPE</th>
-                            <th className="col-ppe-act"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formData.PPEItems?.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.ppe}</td>
-                                <td>
-                                    <button
-                                        className="remove-row-button"
-                                        onClick={() => {
-                                            // Remove abbreviation from table and the selected abbreviations set
-                                            setFormData({
-                                                ...formData,
-                                                PPEItems: formData.PPEItems.filter((_, i) => i !== index),
-                                            });
-                                            setUsedPPEOptions(
-                                                usedPPEOptions.filter((ppe) => ppe !== row.ppe)
-                                            );
+                {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
 
-                                            // Update the selectedAbbrs state to reflect the removal
-                                            const newSelectedPPE = new Set(selectedPPE);
-                                            newSelectedPPE.delete(row.ppe);
-                                            setSelectedPPE(newSelectedPPE);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
+                {/* Popup */}
+                {popupVisible && (
+                    <div className="popup-overlay-ppe">
+                        <div className="popup-content-terms">
+                            <h4 className="center-ppe">Select PPE Options</h4>
+                            <input
+                                type="text"
+                                className="search-bar-ppe"
+                                placeholder="Search PPE..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <div className="popup-table-wrapper-ppe">
+                                <table className="popup-table font-fam">
+                                    <thead className="ppe-headers">
+                                        <tr>
+                                            <th className="inp-size-ppe">Select</th>
+                                            <th>PPE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {ppeData.length > 0 ? (
+                                            ppeData
+                                                .filter((item) =>
+                                                    item.ppe.toLowerCase().includes(searchTerm.toLowerCase())
+                                                )
+                                                .sort((a, b) => a.ppe.localeCompare(b.ppe))
+                                                .map((item) => (
+                                                    <tr key={item.ppe}
+                                                        onClick={() => handleCheckboxChange(item.ppe)}
+                                                        style={{ cursor: "pointer" }}
+                                                    >
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox-inp-ppe"
+                                                                checked={selectedPPE.has(item.ppe)}
+                                                                onChange={() => handleCheckboxChange(item.ppe)}
+                                                            />
+                                                        </td>
+                                                        <td>{item.ppe}</td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="3">Loading machines...</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button className="save-selection-button-ppe" onClick={handleSaveSelection}>
+                                Save Selection
+                            </button>
+                            <button className="close-popup-button-ppe" onClick={handlePopupToggle}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Display selected abbreviations in a table */}
+                {selectedPPE.size > 0 && (
+                    <table className="vcr-table font-fam table-borders">
+                        <thead className="cp-table-header">
+                            <tr>
+                                <th className="col-ppe-ppe">PPE</th>
+                                <th className="col-ppe-act">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {formData.PPEItems?.map((row, index) => (
+                                <tr key={index}>
+                                    <td>{row.ppe}</td>
+                                    <td>
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => {
+                                                // Remove abbreviation from table and the selected abbreviations set
+                                                setFormData({
+                                                    ...formData,
+                                                    PPEItems: formData.PPEItems.filter((_, i) => i !== index),
+                                                });
+                                                setUsedPPEOptions(
+                                                    usedPPEOptions.filter((ppe) => ppe !== row.ppe)
+                                                );
 
-            <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                Select PPE
-            </button>
+                                                // Update the selectedAbbrs state to reflect the removal
+                                                const newSelectedPPE = new Set(selectedPPE);
+                                                newSelectedPPE.delete(row.ppe);
+                                                setSelectedPPE(newSelectedPPE);
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
+                    Select PPE
+                </button>
+            </div>
         </div>
     );
 };

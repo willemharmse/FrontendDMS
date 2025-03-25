@@ -12,8 +12,9 @@ body {
   display: flex;
   height: 100vh;
   padding: 20px;
+  padding-right: 10px;
   box-sizing: border-box;
-  background-color: #ADADAD;
+  background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
 }
 
 .text-format-log {
@@ -251,14 +252,6 @@ body {
   margin-bottom: 10px;
 }
 
-.tr-trash {
-  background-color: #cb6f6f98;
-}
-
-.tr-trash:hover {
-  background-color: #cb6f6f98;
-}
-
 .info-box {
   flex: 1;
   text-align: center;
@@ -460,18 +453,14 @@ body {
 }
 
 .main-box-file-info {
-  flex-grow: 1;
-  padding: 20px;
-  margin-left: 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  /* Floating shadow effect */
+  flex: 1;
+  width: 100%;
+  margin-left: 10px;
+  background-color: transparent;
+  border-radius: 3px;
   position: relative;
   z-index: 5;
-  /* Ensures the main content stays below the sidebar */
   overflow: hidden;
-  /* Allows scrolling if content overflows */
 }
 
 .but-upload,
@@ -535,9 +524,9 @@ body {
 
 .burger-menu {
   position: absolute;
-  top: 80px;
+  top: 40px;
   /* Adjust based on your layout */
-  right: 10px;
+  right: 0px;
   background-color: #ffffff;
   /* White background */
   border: 1px solid #ddd;
@@ -677,13 +666,11 @@ body {
 }
 
 .table-container-file {
-  height: calc(100% - 70px);
+  height: calc(100% - 50px);
   /* Full height minus padding */
   overflow-y: auto;
   margin: 0;
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 }
 
 table {
@@ -747,7 +734,119 @@ tbody tr:hover {
 }
 
 .sidebar-select {
-  margin-top: 20px;
+  margin-top: 5px;
+  width: 100%;
+}
+
+.sidebar-select .css-1u9des2-indicatorSeparator {
+  display: none;
+}
+
+.filter-dm-fi {
+  margin-bottom: 0px;
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  /* Centers everything */
+  width: 100%;
+}
+
+.filter-dm-fi-2 {
+  margin-bottom: 0px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  /* Centers everything */
+  width: 100%;
+}
+
+.filter-text-dm-fi {
+  color: white;
+  font-size: 16px;
+  font-weight: bolder;
+  text-align: left;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.button-container-dm-fi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /* Ensures a natural stacking */
+  gap: 1px;
+  /* Adds space between selects dynamically */
+  width: 100%;
+}
+
+.but-dm-fi {
+  background: linear-gradient(180deg,
+      #ffffff 0%,
+      /* Bright highlight */
+      #d9d9d9 30%,
+      /* Light silver */
+      #a8a8a8 60%,
+      /* Mid-tone silver */
+      #707070 100%
+      /* Darker base */
+    );
+  border: none;
+  color: #002060;
+  /* White text for contrast */
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+    inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+    /* Inner bottom-right shadow */
+    2px 2px 4px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s;
+  width: 100%;
+  margin: 5px 0;
+  /* Adds spacing between buttons */
+  display: flex;
+  justify-content: center;
+  /* Centers text inside button */
+  align-items: center;
+  /* Centers vertically */
+  font-size: 14px;
+  font-weight: bold;
+  padding-left: 40px;
+  /* Add extra padding on the left to accommodate the icon */
+  padding-right: 20px;
+}
+
+.sidebar-logo-dm-fi {
+  margin-top: auto;
+  /* Pushes it to the bottom */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img-dm-fi {
+  max-width: 50%;
+  height: auto;
+  max-height: 50px;
+  object-fit: contain;
+  cursor: default;
+  display: block;
+  margin: 0 auto;
+}
+
+.logo-text-dm-fi {
+  color: white;
+  font-size: 18px;
+  font-weight: bolder;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 5px;
 }
 
 .sidebar-item:hover {
