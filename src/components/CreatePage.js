@@ -677,7 +677,7 @@ const CreatePage = () => {
               <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsOpenMenu(!isOpenMenu)} />
             </div>
           </div>
-          <BurgerMenu role={role} openLoadPopup={openLoadPopup} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />
+          {isOpenMenu && (<BurgerMenu role={role} openLoadPopup={openLoadPopup} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />)}
         </div>
 
         <div className={`scrollable-box`}>

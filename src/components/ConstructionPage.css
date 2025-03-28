@@ -1,45 +1,124 @@
-.construction-container {
+.coming-soon-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: white;
-    text-align: center;
-}
-
-.construction-icon {
-    font-size: 5rem;
-    color: #002060;
-    /* Orange color to indicate construction */
-    margin-bottom: 20px;
-}
-
-.construction-title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.construction-message {
-    font-size: 1.2rem;
-    color: #000000;
-    margin-bottom: 20px;
-}
-
-.construction-back-to-home {
-    padding: 10px 20px;
-    font-size: 1rem;
-    background-color: #002060;
-    margin-top: 10px;
+    background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: auto;
+    text-align: center;
+    padding: 20px;
+    padding-bottom: 0px;
+    padding-top: 0px;
 }
 
-.construction-back-to-home:hover {
-    background-color: #002060;
+.notify-button {
+    width: 10%;
+    padding: 0.8rem;
+    color: #002060;
+    /* Enhances contrast */
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    box-shadow:
+        inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        /* Inner top-left highlight */
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    /* Outer shadow for depth */
+    transition: all 0.2s;
+    margin-top: 15px;
+}
+
+.notify-button:hover {
+    background-color: #0056b3;
+}
+
+.coming-soon-icon-box {
+    width: 130px;
+    height: 130px;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    box-shadow:
+        inset 5px 5px 5px rgba(255, 255, 255, 0.8),
+        /* Inner top-left highlight */
+        inset -5px -5px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        4px 4px 4px rgba(0, 0, 0, 0.4);
+    /* Outer shadow for depth */
+    transition: all 0.2s;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+    /* Adjust height to fit logos */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.coming-soon-icon {
+    width: 70px;
+    /* Adjust image size */
+    height: 100px;
+}
+
+.coming-soon-icon-TM {
+    width: 120px;
+    /* Adjust image size */
+    height: 80px;
+}
+
+.coming-soon-icon-RM {
+    width: 80px;
+    /* Adjust image size */
+    height: 100px;
+}
+
+.coming-soon-title {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+
+}
+
+.coming-soon-subtitle {
+    margin-top: 10px;
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 18px;
+}
+
+.coming-soon-description {
+    font-size: 16px;
+    max-width: 800px;
+    margin-bottom: 25px;
+    margin-top: 10px;
+}
+
+.coming-soon-footer {
+    margin-top: 5px;
+    font-size: 16px;
+    font-weight: bold;
 }

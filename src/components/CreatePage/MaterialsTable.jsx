@@ -3,7 +3,7 @@ import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
 import ManageMaterial from "../ValueChanges/ManageMaterial";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -28,6 +28,10 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
         } catch (error) {
             console.error("Error fetching equipment:", error)
         }
+    };
+
+    const clearSearch = () => {
+        setSearchTerm("");
     };
 
     useEffect(() => {
@@ -114,60 +118,70 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-mat">
-                        <div className="popup-content-terms">
-                            <h4 className="center-mat">Select Materials</h4>
-                            <input
-                                type="text"
-                                className="search-bar-mat"
-                                placeholder="Search materials..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <div className="popup-table-wrapper-mat">
-                                <table className="popup-table font-fam">
-                                    <thead className="mat-headers">
-                                        <tr>
-                                            <th className="inp-size-mat">Select</th>
-                                            <th>Material</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {matsData.length > 0 ? (
-                                            matsData
-                                                .filter((item) =>
-                                                    item.mat.toLowerCase().includes(searchTerm.toLowerCase())
-                                                )
-                                                .sort((a, b) => a.mat.localeCompare(b.mat))
-                                                .map((item) => (
-                                                    <tr key={item.mat}
-                                                        onClick={() => handleCheckboxChange(item.mat)}
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="checkbox-inp-mat"
-                                                                checked={selectedMaterials.has(item.mat)}
-                                                                onChange={() => handleCheckboxChange(item.mat)}
-                                                            />
-                                                        </td>
-                                                        <td>{item.mat}</td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Loading materials...</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                        <div className="popup-content-mat">
+                            <div className="review-date-header">
+                                <h2 className="review-date-title">Select Materials</h2>
+                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
                             </div>
-                            <button className="save-selection-button-mat" onClick={handleSaveSelection}>
-                                Save Selection
-                            </button>
-                            <button className="close-popup-button-mat" onClick={handlePopupToggle}>
-                                Close
-                            </button>
+
+                            <div className="review-date-group">
+                                <div className="mat-input-container">
+                                    <input
+                                        className="search-input-mat"
+                                        type="text"
+                                        placeholder="Search Material"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                                </div>
+                            </div>
+
+                            <div className="mat-table-group">
+                                <div className="popup-table-wrapper-mat">
+                                    <table className="popup-table font-fam">
+                                        <thead className="mat-headers">
+                                            <tr>
+                                                <th className="inp-size-mat">Select</th>
+                                                <th>Material</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {matsData.length > 0 ? (
+                                                matsData
+                                                    .filter((item) =>
+                                                        item.mat.toLowerCase().includes(searchTerm.toLowerCase())
+                                                    )
+                                                    .sort((a, b) => a.mat.localeCompare(b.mat))
+                                                    .map((item) => (
+                                                        <tr key={item.mat}
+                                                            onClick={() => handleCheckboxChange(item.mat)}
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="checkbox-inp-mat"
+                                                                    checked={selectedMaterials.has(item.mat)}
+                                                                    onChange={() => handleCheckboxChange(item.mat)}
+                                                                />
+                                                            </td>
+                                                            <td>{item.mat}</td>
+                                                        </tr>
+                                                    ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="3">Loading materials...</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="mat-buttons">
+                                <button onClick={handleSaveSelection} className="mat-button">Save Selection</button>
+                            </div>
                         </div>
                     </div>
                 )}

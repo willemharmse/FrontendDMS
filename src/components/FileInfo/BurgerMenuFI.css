@@ -1,11 +1,11 @@
-.burger-menu-container {
+.burger-menu-container-FI {
     position: absolute;
     top: -10px;
     right: 0px;
     z-index: 1000;
 }
 
-.menu-content {
+.menu-content-FI {
     position: absolute;
     top: 55px;
     right: 0px;
@@ -16,13 +16,13 @@
     text-align: center;
 }
 
-.menu-content ul {
+.menu-content-FI ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.menu-content li {
+.menu-content-FI li {
     font-family: Arial;
     color: black;
     display: flex;
@@ -38,10 +38,10 @@
     border-bottom: none !important;
 }
 
-.menu-content li:last-child {
+.menu-content-FI li:last-child {
     border-bottom: none;
 }
 
-.menu-content li:hover {
+.menu-content-FI li:hover {
     background: #cfcece;
 }

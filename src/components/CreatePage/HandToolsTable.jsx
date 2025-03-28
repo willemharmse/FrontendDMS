@@ -3,7 +3,7 @@ import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
 import ManageHandTools from "../ValueChanges/ManageHandTools";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -28,6 +28,10 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
         } catch (error) {
             console.error("Error fetching tools:", error)
         }
+    };
+
+    const clearSearch = () => {
+        setSearchTerm("");
     };
 
     useEffect(() => {
@@ -115,59 +119,69 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 {popupVisible && (
                     <div className="popup-overlay-tool">
                         <div className="popup-content-tool">
-                            <h4 className="center-tools">Select Hand Tools</h4>
-                            <input
-                                type="text"
-                                className="search-bar-tool"
-                                placeholder="Search hand tools..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <div className="popup-table-wrapper-tool">
-                                <table className="popup-table font-fam">
-                                    <thead className="tool-headers">
-                                        <tr>
-                                            <th className="inp-size-tool">Select</th>
-                                            <th>Tool</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {toolsData.length > 0 ? (
-                                            toolsData
-                                                .filter((item) =>
-                                                    item.tool.toLowerCase().includes(searchTerm.toLowerCase())
-                                                )
-                                                .sort((a, b) => a.tool.localeCompare(b.tool))
-                                                .map((item) => (
-                                                    <tr key={item.tool}
-                                                        onClick={() => handleCheckboxChange(item.tool)}
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="checkbox-inp-tool"
-                                                                checked={selectedTools.has(item.tool)}
-                                                                onChange={() => handleCheckboxChange(item.tool)}
-                                                            />
-                                                        </td>
-                                                        <td>{item.tool}</td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Loading tools...</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                            <div className="review-date-header">
+                                <h2 className="review-date-title">Select Hand Tools</h2>
+                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
                             </div>
-                            <button className="save-selection-button-tool" onClick={handleSaveSelection}>
-                                Save Selection
-                            </button>
-                            <button className="close-popup-button-tool" onClick={handlePopupToggle}>
-                                Close
-                            </button>
+
+                            <div className="review-date-group">
+                                <div className="tool-input-container">
+                                    <input
+                                        className="search-input-tool"
+                                        type="text"
+                                        placeholder="Search Hand Tool"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                                </div>
+                            </div>
+
+                            <div className="tool-table-group">
+                                <div className="popup-table-wrapper-tool">
+                                    <table className="popup-table font-fam">
+                                        <thead className="tool-headers">
+                                            <tr>
+                                                <th className="inp-size-tool">Select</th>
+                                                <th>Tool</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {toolsData.length > 0 ? (
+                                                toolsData
+                                                    .filter((item) =>
+                                                        item.tool.toLowerCase().includes(searchTerm.toLowerCase())
+                                                    )
+                                                    .sort((a, b) => a.tool.localeCompare(b.tool))
+                                                    .map((item) => (
+                                                        <tr key={item.tool}
+                                                            onClick={() => handleCheckboxChange(item.tool)}
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="checkbox-inp-tool"
+                                                                    checked={selectedTools.has(item.tool)}
+                                                                    onChange={() => handleCheckboxChange(item.tool)}
+                                                                />
+                                                            </td>
+                                                            <td>{item.tool}</td>
+                                                        </tr>
+                                                    ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="3">Loading tools...</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="tool-buttons">
+                                <button onClick={handleSaveSelection} className="tool-button">Save Selection</button>
+                            </div>
                         </div>
                     </div>
                 )}

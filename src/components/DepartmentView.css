@@ -1,15 +1,24 @@
 .logo-img-dept-view {
-    max-width: 50%;
-    height: auto;
-    max-height: 50px;
+    width: 60px;
+    /* Fixed width */
+    height: 60px;
     object-fit: contain;
     cursor: default;
-    display: block;
+    display: flex;
     margin: 0 auto;
     color: #002060;
     padding: 15px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border-radius: 90px;
+    padding: 10px;
+    border-radius: 50%;
     background-color: white;
+
+
+    /* Fixed height */
+
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    /* Ensures all icons are the same size */
+
+
 }

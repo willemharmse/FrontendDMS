@@ -3,7 +3,7 @@ import "./EquipmentTable.css"; // Add styling here
 import EquipmentPopup from "../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../ValueChanges/ManageEquipment";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -44,6 +44,10 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     useEffect(() => {
         fetchValues();
     }, []);
+
+    const clearSearch = () => {
+        setSearchTerm("");
+    };
 
     // Handle N/A checkbox toggle
     const handleNAToggle = () => {
@@ -115,60 +119,70 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-eqp">
-                        <div className="popup-content-terms">
-                            <h4 className="center-eqp">Select Equipment</h4>
-                            <input
-                                type="text"
-                                className="search-bar-eqp"
-                                placeholder="Search equipment..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <div className="popup-table-wrapper-eqp">
-                                <table className="popup-table font-fam">
-                                    <thead className="eqp-headers">
-                                        <tr>
-                                            <th className="inp-size-eqp">Select</th>
-                                            <th>Equipment</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {eqpData.length > 0 ? (
-                                            eqpData
-                                                .filter((item) =>
-                                                    item.eqp.toLowerCase().includes(searchTerm.toLowerCase())
-                                                )
-                                                .sort((a, b) => a.eqp.localeCompare(b.eqp))
-                                                .map((item) => (
-                                                    <tr key={item.eqp}
-                                                        onClick={() => handleCheckboxChange(item.eqp)}
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="checkbox-inp-eqp"
-                                                                checked={selectedEquipment.has(item.eqp)}
-                                                                onChange={() => handleCheckboxChange(item.eqp)}
-                                                            />
-                                                        </td>
-                                                        <td>{item.eqp}</td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Loading abbreviations...</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                        <div className="popup-content-eqp">
+                            <div className="review-date-header">
+                                <h2 className="review-date-title">Select Equipment</h2>
+                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
                             </div>
-                            <button className="save-selection-button-eqp" onClick={handleSaveSelection}>
-                                Save Selection
-                            </button>
-                            <button className="close-popup-button-eqp" onClick={handlePopupToggle}>
-                                Close
-                            </button>
+
+                            <div className="review-date-group">
+                                <div className="eqp-input-container">
+                                    <input
+                                        className="search-input-eqp"
+                                        type="text"
+                                        placeholder="Search Equipment"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                                </div>
+                            </div>
+
+                            <div className="eqp-table-group">
+                                <div className="popup-table-wrapper-eqp">
+                                    <table className="popup-table font-fam">
+                                        <thead className="eqp-headers">
+                                            <tr>
+                                                <th className="inp-size-eqp">Select</th>
+                                                <th>Equipment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {eqpData.length > 0 ? (
+                                                eqpData
+                                                    .filter((item) =>
+                                                        item.eqp.toLowerCase().includes(searchTerm.toLowerCase())
+                                                    )
+                                                    .sort((a, b) => a.eqp.localeCompare(b.eqp))
+                                                    .map((item) => (
+                                                        <tr key={item.eqp}
+                                                            onClick={() => handleCheckboxChange(item.eqp)}
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="checkbox-inp-eqp"
+                                                                    checked={selectedEquipment.has(item.eqp)}
+                                                                    onChange={() => handleCheckboxChange(item.eqp)}
+                                                                />
+                                                            </td>
+                                                            <td>{item.eqp}</td>
+                                                        </tr>
+                                                    ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="3">Loading abbreviations...</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="eqp-buttons">
+                                <button onClick={handleSaveSelection} className="eqp-button">Save Selection</button>
+                            </div>
                         </div>
                     </div>
                 )}

@@ -13,6 +13,31 @@ import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, 
 import TeamManagement from "./UserManagement/TeamManagement";
 import TeamTable from "./UserManagement/TeamTable";
 import RemoveUserModal from "./UserManagement/RemoveUserModal";
+import AddMembersDept from "./UserManagement/AddMembersDept";
+import DeletePopupUM from "./UserManagement/DeletePopupUM";
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import {
+    faBuilding,
+    faBriefcase,
+    faUserMd,
+    faGraduationCap,
+    faGavel,
+    faMicrochip,
+    faChartLine,
+    faFlask,
+    faCog,
+    faPencilRuler,
+    faUsers,
+    faBalanceScale,
+    faPalette,
+    faGlobe,
+    faBook,
+    faHeadset,
+    faHandsHelping,
+    faDollarSign,
+    faServer,
+    faUniversity
+} from "@fortawesome/free-solid-svg-icons";
 
 const DepartmentView = () => {
     const { deptId } = useParams();
@@ -29,6 +54,7 @@ const DepartmentView = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [department, setDepartment] = useState([]);
+    const [addMembersPopup, setAddMembersPopup] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -53,6 +79,15 @@ const DepartmentView = () => {
             setFormError('');
         }
     }, [formError]);
+
+    const showPopup = () => {
+        setAddMembersPopup(true);
+    }
+
+    const hidePopup = () => {
+        setAddMembersPopup(false);
+        fetchUsers();
+    }
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -160,8 +195,27 @@ const DepartmentView = () => {
 
     const iconMap = {
         faSearch: faSearch,
-        faCalculator: faCalculator
-        // Add other icons as needed
+        faCalculator: faCalculator,
+        faBuilding: faBuilding, // General Office / Administration
+        faBriefcase: faBriefcase, // Business / HR
+        faUserMd: faUserMd, // Medical / Healthcare
+        faGraduationCap: faGraduationCap, // Education / Training
+        faGavel: faGavel, // Legal
+        faMicrochip: faMicrochip, // Technology / IT
+        faChartLine: faChartLine, // Marketing / Sales
+        faFlask: faFlask, // Research / Science
+        faCog: faCog, // Engineering / Manufacturing
+        faPencilRuler: faPencilRuler, // Design / Architecture
+        faUsers: faUsers, // Human Resources
+        faBalanceScale: faBalanceScale, // Law / Compliance
+        faPalette: faPalette, // Arts / Creative
+        faGlobe: faGlobe, // International / Public Relations
+        faBook: faBook, // Library / Documentation
+        faHeadset: faHeadset, // Customer Support
+        faHandsHelping: faHandsHelping, // Social Services / NGO
+        faDollarSign: faDollarSign, // Finance / Accounting
+        faServer: faServer, // Data / Network Management
+        faUniversity: faUniversity // Academic Institution
     };
 
     if (error) {
@@ -178,10 +232,10 @@ const DepartmentView = () => {
 
                 <div className="filter-fih">
                     <div className="button-container-dept">
-                        <button className="but-um">
+                        <button className="but-um" onClick={showPopup}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
-                                <span className="button-text">Add Member</span>
+                                <span className="button-text">Add Members</span>
                             </div>
                         </button>
                     </div>
@@ -229,15 +283,7 @@ const DepartmentView = () => {
                                 <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                             </div>
                         )}
-                        {isMenuOpen && (
-                            <div className="burger-menu-um"
-                                onMouseLeave={() => setIsMenuOpen(false)}
-                            >
-                                <button onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
                 <TeamTable
@@ -248,14 +294,23 @@ const DepartmentView = () => {
                     loggedInUserId={loggedInUserId}
                 />
             </div>
+            {addMembersPopup && (
+                <AddMembersDept
+                    closePopup={hidePopup}
+                    deptID={deptId}
+                    popupVisible={addMembersPopup}
+                />
+            )}
 
-            <RemoveUserModal
-                isDeleteModalOpen={isDeleteModalOpen}
-                setIsDeleteModalOpen={setIsDeleteModalOpen}
-                deleteUser={removeUser}
-                userToDelete={userToDelete}
-                department={department.department}
-            />
+            {isDeleteModalOpen && (
+                <DeletePopupUM
+                    deleteUser={removeUser}
+                    department={department.department}
+                    form={"none"}
+                    setIsDeleteModalOpen={setIsDeleteModalOpen}
+                    userToDelete={userToDelete}
+                />
+            )}
             <ToastContainer />
         </div>
     );

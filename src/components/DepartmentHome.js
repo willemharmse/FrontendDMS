@@ -9,6 +9,30 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCirclePlus, faCalculator } from '@fortawesome/free-solid-svg-icons';
 import { icon } from "@fortawesome/fontawesome-svg-core";
+import AddDepartmentModal from "./UserManagement/AddDepartmentModal";
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import {
+    faBuilding,
+    faBriefcase,
+    faUserMd,
+    faGraduationCap,
+    faGavel,
+    faMicrochip,
+    faChartLine,
+    faFlask,
+    faCog,
+    faPencilRuler,
+    faUsers,
+    faBalanceScale,
+    faPalette,
+    faGlobe,
+    faBook,
+    faHeadset,
+    faHandsHelping,
+    faDollarSign,
+    faServer,
+    faUniversity
+} from "@fortawesome/free-solid-svg-icons";
 
 const DepartmentHome = () => {
     const [error, setError] = useState(null);
@@ -20,19 +44,20 @@ const DepartmentHome = () => {
     const leaderRoles = ['teamleader'];
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [upload, setUpload] = useState(false);
+    const [create, setCreate] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
         setSearchQuery("");
     };
 
-    const openUpload = () => {
-        setUpload(true);
+    const openAdd = () => {
+        setCreate(true);
     };
 
-    const closeUpload = () => {
-        setUpload(!upload);
+    const closeAdd = () => {
+        setCreate(!create);
+        fetchDepartments();
     };
 
     const handleLogout = () => {
@@ -69,8 +94,27 @@ const DepartmentHome = () => {
 
     const iconMap = {
         faSearch: faSearch,
-        faCalculator: faCalculator
-        // Add other icons as needed
+        faCalculator: faCalculator,
+        faBuilding: faBuilding, // General Office / Administration
+        faBriefcase: faBriefcase, // Business / HR
+        faUserMd: faUserMd, // Medical / Healthcare
+        faGraduationCap: faGraduationCap, // Education / Training
+        faGavel: faGavel, // Legal
+        faMicrochip: faMicrochip, // Technology / IT
+        faChartLine: faChartLine, // Marketing / Sales
+        faFlask: faFlask, // Research / Science
+        faCog: faCog, // Engineering / Manufacturing
+        faPencilRuler: faPencilRuler, // Design / Architecture
+        faUsers: faUsers, // Human Resources
+        faBalanceScale: faBalanceScale, // Law / Compliance
+        faPalette: faPalette, // Arts / Creative
+        faGlobe: faGlobe, // International / Public Relations
+        faBook: faBook, // Library / Documentation
+        faHeadset: faHeadset, // Customer Support
+        faHandsHelping: faHandsHelping, // Social Services / NGO
+        faDollarSign: faDollarSign, // Finance / Accounting
+        faServer: faServer, // Data / Network Management
+        faUniversity: faUniversity // Academic Institution
     };
 
     const fetchDepartments = async () => {
@@ -131,7 +175,7 @@ const DepartmentHome = () => {
 
                 <div className="filter-fih">
                     <div className="button-container-dept">
-                        <button className="but-um">
+                        <button className="but-um" onClick={openAdd}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
                                 <span className="button-text">Create Department</span>
@@ -177,15 +221,7 @@ const DepartmentHome = () => {
                                 <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                             </div>
                         )}
-                        {isMenuOpen && (
-                            <div className="burger-menu-um"
-                                onMouseLeave={() => setIsMenuOpen(false)}
-                            >
-                                <button onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
 
@@ -204,6 +240,7 @@ const DepartmentHome = () => {
                     ))}
                 </div>
             </div>
+            {create && (<AddDepartmentModal show={create} onClose={closeAdd} />)}
             <ToastContainer />
         </div>
     );

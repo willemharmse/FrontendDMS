@@ -13,6 +13,11 @@ import UploadPopup from "./FileInfo/UploadPopup";
 import UpdateFileModal from "./FileInfo/UpdateFileModal";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BurgerMenuFIMain from "./FileInfo/BurgerMenuFIMain";
+import DeletePopup from "./FileInfo/DeletePopup";
+import SortPopup from "./FileInfo/SortPopup";
+import DownloadPopup from "./FileInfo/DownloadPopup";
+import PopupMenu from "./FileInfo/PopupMenu";
 
 const FileInfo = () => {
   const { type } = useParams();
@@ -47,7 +52,7 @@ const FileInfo = () => {
   const [loading, setLoading] = useState(false);
   const [upload, setUpload] = useState(false);
   const [update, setUpdate] = useState(false);
-
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     author: '',
     deptHead: '',
@@ -74,12 +79,11 @@ const FileInfo = () => {
     fetchFiles();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
-    localStorage.removeItem('rememberMe');
-    navigate('/FrontendDMS/');
-  };
+  const openRDPopup = () => setIsRDPopupOpen(true);
+  const closeRDPopup = () => setIsRDPopupOpen(false);
+
+  const openSortModal = () => setIsSortModalOpen(true);
+  const closeSortModal = () => setIsSortModalOpen(false);
 
   const handleFilterChange = (field, value) => {
     setFilters((prevFilters) => ({
@@ -87,12 +91,6 @@ const FileInfo = () => {
       [field]: value,
     }));
   };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -108,7 +106,6 @@ const FileInfo = () => {
   }, [navigate]);
 
   useEffect(() => {
-    // Function to fetch users
     const fetchValues = async () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_URL}/api/valuesUpload/`);
@@ -125,9 +122,6 @@ const FileInfo = () => {
     fetchValues();
   }, []);
 
-  const openRDPopup = () => setIsRDPopupOpen(true);
-  const closeRDPopup = () => setIsRDPopupOpen(false);
-
   const handlePreview = (fileId) => {
     navigate(`/FrontendDMS/preview/${fileId}`);
   };
@@ -141,9 +135,6 @@ const FileInfo = () => {
   useEffect(() => {
     fetchFiles();
   }, [isTrashView]);
-
-  const openSortModal = () => setIsSortModalOpen(true);
-  const closeSortModal = () => setIsSortModalOpen(false);
 
   const handleSort = () => {
     const sortedFiles = [...files].sort((a, b) => {
@@ -340,7 +331,6 @@ const FileInfo = () => {
     }
   };
 
-
   const toggleTrashView = () => {
     setIsTrashView(!isTrashView);
   };
@@ -463,7 +453,6 @@ const FileInfo = () => {
       </div>
 
       <div className="main-box-file-info">
-
         <div className="top-section-um">
           <div className="um-input-container">
             <input
@@ -499,39 +488,11 @@ const FileInfo = () => {
             <div className="burger-menu-icon-um">
               <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
             </div>
-            {isMenuOpen && (
-              <div className="burger-menu"
-                onMouseLeave={() => setIsMenuOpen(false)}
-              >
-                <button onClick={openUpdate}>
-                  Update File
-                </button>
-                <button
-                  onClick={toggleTrashView}
-                >
-                  {isTrashView ? "Show All Files" : "Show Trash"}
-                </button>
-                <button
-                  onClick={() => navigate("/FrontendDMS/userManagement")}
-                >
-                  Manage Users
-                </button>
-                {role === 'developer' && (
-                  < button
-                    onClick={() => navigate("/FrontendDMS/repair")}
-                  >
-                    Repair Fields
-                  </button>
-                )}
-                <button onClick={openRDPopup}>Change Date Formatting</button>
-                <ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />
-                <button onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            )}
+            {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} openUpdate={openUpdate} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>
+
+        {isRDPopupOpen && (<ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />)}
 
         <div className="table-container-file">
           <table>
@@ -550,29 +511,9 @@ const FileInfo = () => {
                     {removeFileExtension(file.fileName)}
 
                     {(hoveredFileId === file._id && !isTrashView) && (
-                      <div
-                        className="popup-file-info"
-                        onMouseEnter={() => setHoveredFileId(file._id)}
-                        onMouseLeave={() => setHoveredFileId(null)}
-                      >
-                        <div class="buttons-container">
-                          <button
-                            className="btn-popup-file-info accept"
-                            onClick={() => handlePreview(file._id)}
-                          >
-                            Preview
-                          </button>
-                          {isActionAvailable && (
-                            <button
-                              className="btn-popup-file-info reject"
-                              onClick={() => openDownloadModal(file._id, file.fileName)}
-                            >
-                              Download
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      <PopupMenu file={file} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} />
                     )}
+
                   </td>
                   <td className="col">{file.documentType}</td>
                   {(adminRoles.includes(role) || role === 'auditor') && (
@@ -624,96 +565,10 @@ const FileInfo = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            {isTrashView && (
-              <p>Do you want to delete this file from trash?</p>
-            )}
-            {!isTrashView && (
-              <p>Do you want to delete this file?</p>
-            )}
-            <p>File: {selectedFileName}</p>
-            <div className="modal-actions">
-              {isTrashView && (
-                <button className="modal-button-FI confirm" onClick={deleteFileFromTrash} disabled={loading}>
-                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
-                </button>
-              )}
-              {!isTrashView && (
-                <button className="modal-button-FI confirm" onClick={deleteFile} disabled={loading}>
-                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
-                </button>
-              )}
-              <button className="modal-button-FI cancel" onClick={closeModal}>
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )
-      }
+      {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
+      {isSortModalOpen && (<SortPopup closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+      {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
 
-      {
-        isDownloadModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <p>Do you want to download this file?</p>
-              <p>File: {downloadFileName}</p>
-              <div className="modal-actions">
-                <button className="modal-button-FI cancel" onClick={confirmDownload} disabled={loading}>
-                  {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Yes'}
-                </button>
-                <button className="modal-button-FI confirm" onClick={closeDownloadModal}>
-                  No
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      {/* Sort Modal */}
-      {isSortModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Sort Files</h3>
-            <div>
-              <label htmlFor="sort-field">Field:</label>
-              <select
-                id="sort-field"
-                value={sortField}
-                onChange={(e) => setSortField(e.target.value)}
-              >
-                <option value="">Select Field</option>
-                <option value="owner">Author</option>
-                <option value="discipline">Discipline</option>
-                <option value="docID">Document ID</option>
-                <option value="documentType">Document Type</option>
-                <option value="fileName">File Name</option>
-                <option value="reviewDate">Review Date</option>
-                <option value="status">Status</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="sort-order">Order:</label>
-              <select
-                id="sort-order"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-              >
-                <option value="ascending">Ascending</option>
-                <option value="descending">Descending</option>
-              </select>
-            </div>
-            <div className="modal-actions-sort">
-              <button className="modal-button-FI cancel" onClick={handleSort}>Apply</button>
-              <button className="modal-button-FI confirm" onClick={closeSortModal}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
       <ToastContainer />
     </div >
   );

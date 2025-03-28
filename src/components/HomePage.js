@@ -17,16 +17,16 @@ const HomePage = () => {
   const menuItems = [
     { title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManageHome" },
     { title: "Document Development", src: "DC.png", icon: faFileSignature, path: "/FrontendDMS/documentCreate" },
-    { title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/construction" },
-    { title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/construction" },
-    { title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/construction" },
+    { title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/constructionRM" },
+    { title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/constructionTM" },
+    { title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/constructionCM" },
   ];
 
   return (
     <div className="homepage-container">
       <header className="header">
         <img src="CH_Logo.png" alt="Logo" className="header-logo" />
-        <h1>ComplianceHub</h1>
+        <h1>ComplianceHub{"\u2122"}</h1>
       </header>
       <div className="content-grid">
         {menuItems.map((item, index) => (

@@ -1,4 +1,4 @@
-.review-popup-overlay {
+.download-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,7 +11,7 @@
     z-index: 1000;
 }
 
-.review-popup-content {
+.download-popup-content {
     background: #f2f2f2;
     padding: 25px;
     padding-bottom: 20px;
@@ -22,8 +22,8 @@
     width: 90%;
 }
 
-.review-date-header {
-    transform: translateY(-30%);
+.download-file-header {
+    transform: translateY(-32%);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,15 +31,14 @@
     font-family: Arial;
 }
 
-.review-date-group {
-    margin-bottom: 10px;
-    transform: translateY(-4%);
+.download-file-group {
+    transform: translateY(-3%);
     padding: 20px 0;
     background-color: white;
     border-radius: 5px;
 }
 
-.review-date-title {
+.download-file-title {
     font-size: 20px;
     font-weight: bold;
     margin: 0;
@@ -49,7 +48,7 @@
     font-family: Arial;
 }
 
-.review-date-close {
+.download-file-close {
     background: none;
     color: #ADADAD;
     border: none;
@@ -59,12 +58,12 @@
     cursor: pointer;
 }
 
-.review-popup-title {
+.download-popup-title {
     font-size: 1.4rem;
     margin-bottom: 15px;
 }
 
-.review-popup-input {
+.download-popup-input {
     width: 90%;
     padding: 10px;
     font-size: 16px;
@@ -74,7 +73,7 @@
     text-align: center;
 }
 
-.review-date-label {
+.download-file-label {
     display: block;
     font-size: 19px;
     font-family: Arial;
@@ -83,7 +82,7 @@
     text-align: center;
 }
 
-.review-date-label-tc {
+.download-file-label-tc {
     display: block;
     color: #7F7F7F;
     font-size: 12px;
@@ -95,13 +94,13 @@
     text-align: center;
 }
 
-.review-popup-actions {
+.download-popup-actions {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
 }
 
-.review-popup-button {
+.download-popup-button {
     padding: 10px 15px !important;
     border: none !important;
     border-radius: 6px !important;
@@ -113,36 +112,76 @@
     transition: transform 0.2s ease, background-color 0.2s ease !important;
 }
 
-.review-popup-button.confirm {
+.download-popup-button.confirm {
     background-color: #7EAC89 !important;
     color: white !important;
 }
 
-.review-popup-button.cancel {
+.download-popup-button.cancel {
     background-color: #CB6F6F !important;
     color: white !important;
 }
 
-.review-popup-button:hover {
+.download-popup-button:hover {
     transform: scale(1.05) !important;
 }
 
-.review-popup-button:active {
+.download-popup-button:active {
     transform: scale(0.95) !important;
 }
 
-.review-date-buttons {
+.download-file-buttons {
+    margin-top: 18px;
     display: flex;
     justify-content: center;
 }
 
-.review-date-button {
-    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+.download-file-button-download {
+    background: linear-gradient(to bottom,
+            #B8D4C1 0%,
+            /* Lighter shade of 7EAC89 */
+            #91B299 25%,
+            /* Mid shade */
+            #7EAC89 50%,
+            /* Given color */
+            #5C8766 75%,
+            /* Darker shade */
+            #30503A 100%
+            /* Deepest shade */
+        );
+
     color: white;
     border: none;
     padding: 12px;
     margin-top: 2px;
     margin-left: auto;
+    margin-right: 10px;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.download-file-button-cancel {
+    background: linear-gradient(to bottom,
+            #E6A8A8 0%,
+            /* Lighter shade of CB6F6F */
+            #D17D7D 25%,
+            /* Mid shade */
+            #CB6F6F 50%,
+            /* Given color */
+            #963D3D 75%,
+            /* Darker shade */
+            #5A2020 100%
+            /* Deepest shade */
+        );
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: 10px;
     margin-right: auto;
     width: 30%;
     font-size: 16px;
@@ -150,4 +189,11 @@
     font-family: Arial;
     cursor: pointer;
     border-radius: 5px;
+}
+
+.download-file-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
 }

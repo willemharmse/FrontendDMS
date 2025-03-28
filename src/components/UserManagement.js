@@ -9,6 +9,8 @@ import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import DeletePopupUM from "./UserManagement/DeletePopupUM";
 
 const UserManagement = () => {
     const [error, setError] = useState(null);
@@ -100,6 +102,7 @@ const UserManagement = () => {
             const uniqueRoles = [...new Set(data.users.map(user => user.role))].sort();
             setRoles(uniqueRoles);
             setUsers(sortedUsers);
+            console.log(data);
         } catch (error) {
             setError(error.message);
         }
@@ -288,15 +291,7 @@ const UserManagement = () => {
                                 <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                             </div>
                         )}
-                        {isMenuOpen && (
-                            <div className="burger-menu-um"
-                                onMouseLeave={() => setIsMenuOpen(false)}
-                            >
-                                <button onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
                 <UserTable
@@ -319,12 +314,15 @@ const UserManagement = () => {
                 role={role}
             />
 
-            <DeleteUserModal
-                isDeleteModalOpen={isDeleteModalOpen}
-                setIsDeleteModalOpen={setIsDeleteModalOpen}
-                deleteUser={deleteUser}
-                userToDelete={userToDelete}
-            />
+            {isDeleteModalOpen && (
+                <DeletePopupUM
+                    deleteUser={deleteUser}
+                    department={"none"}
+                    form={"user"}
+                    setIsDeleteModalOpen={setIsDeleteModalOpen}
+                    userToDelete={userToDelete}
+                />
+            )}
 
             <EditUserModal
                 isEditModalOpen={isEditModalOpen}

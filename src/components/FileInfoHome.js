@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder } from '@fortawesome/free-solid-svg-icons';
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 
 const FileInfoHome = () => {
     const [error, setError] = useState(null);
@@ -177,15 +178,7 @@ const FileInfoHome = () => {
                                 <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                             </div>
                         )}
-                        {isMenuOpen && (
-                            <div className="burger-menu-um"
-                                onMouseLeave={() => setIsMenuOpen(false)}
-                            >
-                                <button onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
 

@@ -81,8 +81,7 @@ const NewLogin = () => {
         <div className="nl-login-container">
             <div className="nl-login-card">
                 <img src='CH_Logo.png' className='nl-logo-img' />
-                <div className="nl-login-title">ComplianceHub</div>
-
+                <div className="nl-login-title">ComplianceHub{"\u2122"}</div>
                 <form onSubmit={handleSubmit}>
                     <div className="nl-form-group">
                         <div className="nl-input-container">

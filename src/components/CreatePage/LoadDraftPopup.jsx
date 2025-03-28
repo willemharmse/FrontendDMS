@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./LoadDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
 const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     const [drafts, setDrafts] = useState([]);
@@ -19,6 +19,8 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                 }
 
                 const data = await response.json();
+
+                console.log(data);
                 setDrafts(data);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
@@ -64,23 +66,57 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     return (
         <div className="draftLoad-popup-overlay">
             <div className="draftLoad-popup-content">
-                <h3 className="draftLoad-popup-title">Select Draft to Load</h3>
-                <div className="draft-list">
-                    {drafts.length === 0 ? (
-                        <p>No drafts available</p>
-                    ) : (
-                        drafts.map((draft) => (
-                            <div key={draft._id} className="draft-item">
-                                <span className="draft-title">{draft.formData.title + " " + draft.formData.documentType || "Untitled Draft"}</span>
-                                <div className="draft-buttons">
-                                    <button className="draft-btn load" onClick={() => handleLoad(draft._id)}>Load</button>
-                                    <button className="draft-btn delete" onClick={() => confirmDelete(draft._id)}><FontAwesomeIcon icon={faTrash} /></button>
-                                </div>
-                            </div>
-                        ))
-                    )}
+                <div className="review-date-header">
+                    <h2 className="review-date-title">Load Draft</h2>
+                    <button className="review-date-close" onClick={onClose}>×</button>
                 </div>
-                <button className="draftLoad-popup-button" onClick={onClose}>Close</button>
+                <div className="draft-table-group">
+                    <div className="popup-table-wrapper-draft">
+                        <div className="draft-select-text">Select draft to load</div>
+                        <table className="popup-table font-fam">
+                            <thead className="draft-headers">
+                                <tr>
+                                    <th className="draft-nr">Nr</th>
+                                    <th className="draft-name">Draft Document</th>
+                                    <th className="draft-actions-load">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {drafts.length > 0 ? (
+                                    drafts
+                                        .map((item, index) => (
+                                            <tr key={item._id}>
+                                                <td className="draft-nr">
+                                                    {index + 1}
+                                                </td>
+                                                <td>{`${item.formData.title} ${item.formData.documentType}`}</td>
+                                                <td>
+                                                    <div className='inline-actions-um'>
+                                                        <button
+                                                            className={`action-button-user edit-button-user`}
+                                                            onClick={() => handleLoad(item._id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faRotateLeft} />
+                                                        </button>
+                                                        <button
+                                                            className={"action-button-user delete-button-user"}
+                                                            onClick={() => confirmDelete(item._id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3">Loading abbreviations...</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             {deleteConfirm.open && (

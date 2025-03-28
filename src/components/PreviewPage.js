@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import "./PreviewPage.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faRotate } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 
 const PreviewPage = () => {
     const [token, setToken] = useState('');
@@ -11,6 +16,7 @@ const PreviewPage = () => {
     const { fileId } = useParams();
     const [fileUrl, setFileUrl] = useState("");
     const [iframeHeight, setIframeHeight] = useState("100%");
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -59,18 +65,35 @@ const PreviewPage = () => {
 
     return (
         <div className="pdf-info-container">
-            <div className="sidebar-preview-pdf">
-                <div className="sidebar-logo-preview-pdf">
-                    <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/documentManage')} />
+            <div className="sidebar-um">
+                <div className="sidebar-logo-um">
+                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+                    <p className="logo-text-um">Document Preview</p>
                 </div>
-                <button className="sidebar-item-preview-pdf text-format-log-preview-pdf log-but-preview-pdf" onClick={handleLogout}>
-                    Log Out
-                </button>
             </div>
 
             <div className="main-box-preview-pdf">
+                <div className="top-section-um">
+                    {/* This div creates the space in the middle */}
+                    <div className="spacer"></div>
+
+                    {/* Container for right-aligned icons */}
+                    <div className="icons-container">
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
+                        </div>
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon icon={faBell} />
+                        </div>
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(true)} />
+                        </div>
+                    </div>
+                </div>
+
+                {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} role={"None"} />)}
+
                 <div className="file-preview-container">
-                    <h2>File Preview</h2>
                     {fileUrl ? (
                         <iframe
                             src={`${fileUrl}`}
@@ -81,7 +104,6 @@ const PreviewPage = () => {
                     ) : (
                         <p>Loading file...</p>
                     )}
-                    <button onClick={() => navigate(-1)} className="back-button-preview-pdf">Go Back</button>
                 </div>
             </div>
         </div>

@@ -1,4 +1,34 @@
-.review-popup-overlay {
+.sort-files-select-container::after {
+    content: '';
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.sort-files-select-container {
+    position: relative;
+}
+
+.sort-files-select {
+    width: 93%;
+    padding: 10px;
+    height: 50px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+}
+
+.sort-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,7 +41,7 @@
     z-index: 1000;
 }
 
-.review-popup-content {
+.sort-popup-content {
     background: #f2f2f2;
     padding: 25px;
     padding-bottom: 20px;
@@ -22,8 +52,8 @@
     width: 90%;
 }
 
-.review-date-header {
-    transform: translateY(-30%);
+.sort-file-header {
+    transform: translateY(-32%);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,15 +61,15 @@
     font-family: Arial;
 }
 
-.review-date-group {
-    margin-bottom: 10px;
-    transform: translateY(-4%);
+.sort-file-group {
+    transform: translateY(-3%);
     padding: 20px 0;
+    margin-bottom: 10px;
     background-color: white;
     border-radius: 5px;
 }
 
-.review-date-title {
+.sort-file-title {
     font-size: 20px;
     font-weight: bold;
     margin: 0;
@@ -49,7 +79,7 @@
     font-family: Arial;
 }
 
-.review-date-close {
+.sort-file-close {
     background: none;
     color: #ADADAD;
     border: none;
@@ -59,12 +89,12 @@
     cursor: pointer;
 }
 
-.review-popup-title {
+.sort-popup-title {
     font-size: 1.4rem;
     margin-bottom: 15px;
 }
 
-.review-popup-input {
+.sort-popup-input {
     width: 90%;
     padding: 10px;
     font-size: 16px;
@@ -74,7 +104,7 @@
     text-align: center;
 }
 
-.review-date-label {
+.sort-file-label {
     display: block;
     font-size: 19px;
     font-family: Arial;
@@ -83,7 +113,7 @@
     text-align: center;
 }
 
-.review-date-label-tc {
+.sort-file-label-tc {
     display: block;
     color: #7F7F7F;
     font-size: 12px;
@@ -95,13 +125,13 @@
     text-align: center;
 }
 
-.review-popup-actions {
+.sort-popup-actions {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
 }
 
-.review-popup-button {
+.sort-popup-button {
     padding: 10px 15px !important;
     border: none !important;
     border-radius: 6px !important;
@@ -113,30 +143,31 @@
     transition: transform 0.2s ease, background-color 0.2s ease !important;
 }
 
-.review-popup-button.confirm {
+.sort-popup-button.confirm {
     background-color: #7EAC89 !important;
     color: white !important;
 }
 
-.review-popup-button.cancel {
+.sort-popup-button.cancel {
     background-color: #CB6F6F !important;
     color: white !important;
 }
 
-.review-popup-button:hover {
+.sort-popup-button:hover {
     transform: scale(1.05) !important;
 }
 
-.review-popup-button:active {
+.sort-popup-button:active {
     transform: scale(0.95) !important;
 }
 
-.review-date-buttons {
+.sort-file-buttons {
+    margin-top: 15px;
     display: flex;
     justify-content: center;
 }
 
-.review-date-button {
+.sort-file-button {
     background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
     color: white;
     border: none;
@@ -150,4 +181,11 @@
     font-family: Arial;
     cursor: pointer;
     border-radius: 5px;
+}
+
+.sort-file-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 15px;
 }

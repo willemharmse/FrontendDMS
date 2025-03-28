@@ -3,7 +3,7 @@ import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
@@ -31,6 +31,10 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
     } catch (error) {
       console.error("Error fetching abbreviations:", error)
     }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
   };
 
   useEffect(() => {
@@ -91,54 +95,68 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
         {popupVisible && (
           <div className="popup-overlay-abbr">
             <div className="popup-content-abbr">
-              <h4 className="center-abbrs">Select Abbreviations</h4>
-              <input
-                type="text"
-                className="search-bar-abbr"
-                placeholder="Search abbreviations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div className="popup-table-wrapper-abbr">
-                <table className="popup-table font-fam">
-                  <thead className="abbr-headers">
-                    <tr>
-                      <th className="inp-size-abbr">Select</th>
-                      <th>Abbreviation</th>
-                      <th className="def-size-abbr">Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {abbrData.length > 0 ? (
-                      abbrData
-                        .filter((item) =>
-                          item.abbr.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                        .sort((a, b) => a.abbr.localeCompare(b.abbr))
-                        .map((item) => (
-                          <tr key={item.abbr} onClick={() => handleCheckboxChange(item.abbr)} style={{ cursor: "pointer" }}>
-                            <td>
-                              <input
-                                type="checkbox"
-                                className="checkbox-inp-abbr"
-                                checked={selectedAbbrs.has(item.abbr)}
-                                onChange={() => handleCheckboxChange(item.abbr)}
-                              />
-                            </td>
-                            <td>{item.abbr}</td>
-                            <td>{item.meaning}</td>
-                          </tr>
-                        ))
-                    ) : (
-                      <tr>
-                        <td colSpan="3">Loading abbreviations...</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="review-date-header">
+                <h2 className="review-date-title">Select Abbreviations</h2>
+                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
               </div>
-              <button className="save-selection-button-abbr" onClick={handleSaveSelection}>Save Selection</button>
-              <button className="close-popup-button-abbr" onClick={handlePopupToggle}>Close</button>
+
+              <div className="review-date-group">
+                <div className="abbr-input-container">
+                  <input
+                    className="search-input-abbr"
+                    type="text"
+                    placeholder="Search Abbreviation"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                  {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                </div>
+              </div>
+
+              <div className="abbr-table-group">
+                <div className="popup-table-wrapper-abbr">
+                  <table className="popup-table font-fam">
+                    <thead className="abbr-headers">
+                      <tr>
+                        <th className="inp-size-abbr">Select</th>
+                        <th>Abbreviation</th>
+                        <th className="def-size-abbr">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {abbrData.length > 0 ? (
+                        abbrData
+                          .filter((item) =>
+                            item.abbr.toLowerCase().includes(searchTerm.toLowerCase())
+                          )
+                          .sort((a, b) => a.abbr.localeCompare(b.abbr))
+                          .map((item) => (
+                            <tr key={item.abbr} onClick={() => handleCheckboxChange(item.abbr)} style={{ cursor: "pointer" }}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox-inp-abbr"
+                                  checked={selectedAbbrs.has(item.abbr)}
+                                  onChange={() => handleCheckboxChange(item.abbr)}
+                                />
+                              </td>
+                              <td>{item.abbr}</td>
+                              <td>{item.meaning}</td>
+                            </tr>
+                          ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3">Loading abbreviations...</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="abbr-buttons">
+                <button onClick={handleSaveSelection} className="abbr-button">Save Selection</button>
+              </div>
             </div>
           </div>
         )}

@@ -28,6 +28,9 @@ import AdminApprovalPage from './components/ValueChanges/AdminApprovalPage';
 import FileInfoHome from './components/FileInfoHome';
 import DepartmentHome from './components/DepartmentHome';
 import DepartmentView from './components/DepartmentView';
+import ConstructionCM from './components/ConstructionCM';
+import ConstructionRM from './components/ConstructionRM';
+import ConstructionTM from './components/ConstructionTM';
 
 function App() {
   return (
@@ -54,7 +57,9 @@ function App() {
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
         <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
-
+        <Route path="FrontendDMS/constructionCM" element={<ConstructionCM />} />
+        <Route path="FrontendDMS/constructionTM" element={<ConstructionTM />} />
+        <Route path="FrontendDMS/constructionRM" element={<ConstructionRM />} />
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />
         <Route path='FrontendDMS/mobileForgot' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <ForgotPasswordMobile />} />

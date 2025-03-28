@@ -3,7 +3,7 @@ import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -43,6 +43,10 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
 
     const handlePopupToggle = () => {
         setPopupVisible(!popupVisible);
+    };
+
+    const clearSearch = () => {
+        setSearchTerm("");
     };
 
     // Handle N/A checkbox toggle
@@ -115,60 +119,70 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-mac">
-                        <div className="popup-content-terms">
-                            <h4 className="center-mac">Select Mobile Machines</h4>
-                            <input
-                                type="text"
-                                className="search-bar-mac"
-                                placeholder="Search mobile machines..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <div className="popup-table-wrapper-mac">
-                                <table className="popup-table font-fam">
-                                    <thead className="mac-headers">
-                                        <tr>
-                                            <th className="inp-size-mac">Select</th>
-                                            <th>Mobile Machine</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {macData.length > 0 ? (
-                                            macData
-                                                .filter((item) =>
-                                                    item.machine.toLowerCase().includes(searchTerm.toLowerCase())
-                                                )
-                                                .sort((a, b) => a.machine.localeCompare(b.machine))
-                                                .map((item) => (
-                                                    <tr key={item.machine}
-                                                        onClick={() => handleCheckboxChange(item.machine)}
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="checkbox-inp-mac"
-                                                                checked={selectedMMachine.has(item.machine)}
-                                                                onChange={() => handleCheckboxChange(item.machine)}
-                                                            />
-                                                        </td>
-                                                        <td>{item.machine}</td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Loading machines...</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                        <div className="popup-content-mac">
+                            <div className="review-date-header">
+                                <h2 className="review-date-title">Select Mobile Machines</h2>
+                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
                             </div>
-                            <button className="save-selection-button-mac" onClick={handleSaveSelection}>
-                                Save Selection
-                            </button>
-                            <button className="close-popup-button-mac" onClick={handlePopupToggle}>
-                                Close
-                            </button>
+
+                            <div className="review-date-group">
+                                <div className="mac-input-container">
+                                    <input
+                                        className="search-input-mac"
+                                        type="text"
+                                        placeholder="Search Mobile Machine"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                                </div>
+                            </div>
+
+                            <div className="mac-table-group">
+                                <div className="popup-table-wrapper-mac">
+                                    <table className="popup-table font-fam">
+                                        <thead className="mac-headers">
+                                            <tr>
+                                                <th className="inp-size-mac">Select</th>
+                                                <th>Mobile Machine</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {macData.length > 0 ? (
+                                                macData
+                                                    .filter((item) =>
+                                                        item.machine.toLowerCase().includes(searchTerm.toLowerCase())
+                                                    )
+                                                    .sort((a, b) => a.machine.localeCompare(b.machine))
+                                                    .map((item) => (
+                                                        <tr key={item.machine}
+                                                            onClick={() => handleCheckboxChange(item.machine)}
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="checkbox-inp-mac"
+                                                                    checked={selectedMMachine.has(item.machine)}
+                                                                    onChange={() => handleCheckboxChange(item.machine)}
+                                                                />
+                                                            </td>
+                                                            <td>{item.machine}</td>
+                                                        </tr>
+                                                    ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="3">Loading machines...</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="mac-buttons">
+                                <button onClick={handleSaveSelection} className="mac-button">Save Selection</button>
+                            </div>
                         </div>
                     </div>
                 )}

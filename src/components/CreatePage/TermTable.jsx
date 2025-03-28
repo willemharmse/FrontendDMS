@@ -3,7 +3,7 @@ import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
@@ -30,6 +30,10 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
     } catch (error) {
       console.error("Error fetching abbreviations:", error)
     }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
   };
 
   useEffect(() => {
@@ -90,61 +94,71 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
         {popupVisible && (
           <div className="popup-overlay-terms">
             <div className="popup-content-terms">
-              <h4 className="center-tems">Select Terms</h4>
-              <input
-                type="text"
-                className="search-bar-term"
-                placeholder="Search term..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div className="popup-table-wrapper">
-                <table className="popup-table font-fam">
-                  <thead className="terms-headers">
-                    <tr>
-                      <th className="inp-size">Select</th>
-                      <th>Term</th>
-                      <th className="def-size">Meaning</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Check if abbrData is loaded */}
-                    {termData.length > 0 ? (
-                      termData
-                        .filter((item) =>
-                          item.term.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                        .sort((a, b) => a.term.localeCompare(b.term))
-                        .map((item) => (
-                          <tr key={item.term}
-                            onClick={() => handleCheckboxChange(item.term)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <td>
-                              <input
-                                type="checkbox"
-                                className="checkbox-inp-term"
-                                checked={selectedTerms.has(item.term)}
-                                onChange={() => handleCheckboxChange(item.term)}
-                              />
-                            </td>
-                            <td>{item.term}</td>
-                            <td>{item.definition}</td>
-                          </tr>
-                        ))) : (
-                      <tr>
-                        <td colSpan="3">Loading abbreviations...</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="review-date-header">
+                <h2 className="review-date-title">Select Terms</h2>
+                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
               </div>
-              <button className="save-selection-button-term" onClick={handleSaveSelection}>
-                Save Selection
-              </button>
-              <button className="close-popup-button-term" onClick={handlePopupToggle}>
-                Close
-              </button>
+
+              <div className="review-date-group">
+                <div className="term-input-container">
+                  <input
+                    className="search-input-term"
+                    type="text"
+                    placeholder="Search Term"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                  {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                </div>
+              </div>
+
+              <div className="term-table-group">
+                <div className="popup-table-wrapper">
+                  <table className="popup-table font-fam">
+                    <thead className="terms-headers">
+                      <tr>
+                        <th className="inp-size">Select</th>
+                        <th>Term</th>
+                        <th className="def-size">Meaning</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Check if abbrData is loaded */}
+                      {termData.length > 0 ? (
+                        termData
+                          .filter((item) =>
+                            item.term.toLowerCase().includes(searchTerm.toLowerCase())
+                          )
+                          .sort((a, b) => a.term.localeCompare(b.term))
+                          .map((item) => (
+                            <tr key={item.term}
+                              onClick={() => handleCheckboxChange(item.term)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox-inp-term"
+                                  checked={selectedTerms.has(item.term)}
+                                  onChange={() => handleCheckboxChange(item.term)}
+                                />
+                              </td>
+                              <td>{item.term}</td>
+                              <td>{item.definition}</td>
+                            </tr>
+                          ))) : (
+                        <tr>
+                          <td colSpan="3">Loading abbreviations...</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="term-buttons">
+                <button onClick={handleSaveSelection} className="term-button">Save Selection</button>
+              </div>
             </div>
           </div>
         )}
