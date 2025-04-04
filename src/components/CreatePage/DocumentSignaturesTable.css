@@ -6,3 +6,23 @@
     border: 2px solid #CB6F6F;
     color: #CB6F6F;
 }
+
+.add-row-button-ds {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    height: 30px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(-54%);
+    /* Centers the button */
+}

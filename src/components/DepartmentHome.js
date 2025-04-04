@@ -7,8 +7,9 @@ import "./DepartmentHome.css"
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCirclePlus, faCalculator } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCirclePlus, faCalculator, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { icon } from "@fortawesome/fontawesome-svg-core";
+import DeparmentList from "./UserManagement/DepartmentList";
 import AddDepartmentModal from "./UserManagement/AddDepartmentModal";
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import {
@@ -36,6 +37,7 @@ import {
 
 const DepartmentHome = () => {
     const [error, setError] = useState(null);
+    const [deletePopup, setDeletePopup] = useState(false);
     const [token, setToken] = useState('');
     const [departments, setDepartments] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
@@ -49,6 +51,15 @@ const DepartmentHome = () => {
 
     const clearSearch = () => {
         setSearchQuery("");
+    };
+
+    const openDelete = () => {
+        setDeletePopup(true);
+    };
+
+    const closeDelete = () => {
+        setDeletePopup(!deletePopup);
+        fetchDepartments();
     };
 
     const openAdd = () => {
@@ -167,6 +178,7 @@ const DepartmentHome = () => {
 
     return (
         <div className="user-info-container">
+            {deletePopup && (<DeparmentList closePopup={closeDelete} />)}
             <div className="sidebar-um">
                 <div className="sidebar-logo-um">
                     <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
@@ -179,6 +191,14 @@ const DepartmentHome = () => {
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
                                 <span className="button-text">Create Department</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div className="button-container-dept-2">
+                        <button className="but-um" onClick={openDelete}>
+                            <div className="button-content">
+                                <FontAwesomeIcon icon={faTrash} className="button-icon" />
+                                <span className="button-text">Delete Department</span>
                             </div>
                         </button>
                     </div>

@@ -90,7 +90,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                         </div>
                     </div>
                 ))}
-                <button className="add-row-button" onClick={addChapter}>+ Add Section</button>
+                <button className="add-row-button" onClick={addChapter}>Add</button>
             </div>
         </div>
     );

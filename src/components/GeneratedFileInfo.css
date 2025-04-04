@@ -2,23 +2,21 @@
     display: flex;
     height: 100vh;
     padding: 20px;
+    padding-right: 10px;
     box-sizing: border-box;
-    background-color: #ADADAD;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
 }
 
 .main-box-gen-info {
-    flex-grow: 1;
-    padding: 20px;
-    margin-left: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    /* Floating shadow effect */
+    flex: 1;
+    width: 100%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
     position: relative;
     z-index: 5;
-    /* Ensures the main content stays below the sidebar */
     overflow: hidden;
-    /* Allows scrolling if content overflows */
 }
 
 /* For modern browsers */
@@ -58,13 +56,11 @@
 }
 
 .table-container-gen {
-    height: calc(100%);
+    height: calc(100% - 50px);
     /* Full height minus padding */
     overflow-y: auto;
     margin: 0;
     box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 8px;
 }
 
 .gen-table {
@@ -81,13 +77,57 @@
 }
 
 .gen-tr {
-    padding: 10px;
+    padding: 5px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
 .gen-th {
+    padding: 5px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.gen-nr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.gen-fn {
+    width: 45%;
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.gen-stat {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.gen-rev {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.gen-act {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.gen-point {
+    cursor: pointer;
 }

@@ -20,9 +20,8 @@ const BurgerMenuFIMain = ({ role, isOpen, setIsOpen, openUpdate, toggleTrashView
             {isOpen && (
                 <div className="menu-content-FI-main" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        <li onClick={openUpdate}>Update File</li>
+                        {role === "admin" && (<li onClick={openUpdate}>Update File</li>)}
                         <li onClick={toggleTrashView}>{isTrashView ? "Show All Files" : "Show Trash"}</li>
-                        <li onClick={() => navigate("/FrontendDMS/userManagement")}>Manage Users</li>
                         <li onClick={openRDPopup}>Change Date Formatting</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>

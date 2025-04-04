@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./AddMembersDept.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast, ToastContainer } from 'react-toastify';
@@ -9,6 +9,8 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
     const [users, setUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const initiallySelectedUsers = useRef(new Set());
 
     const fetchValues = async () => {
         try {
@@ -53,6 +55,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
         if (popupVisible) {
             const matchedUsers = users.filter(user => usersData.some(dataUser => dataUser._id === user._id));
             setSelectedUsers(matchedUsers.map(user => user._id));
+            initiallySelectedUsers.current = new Set(matchedUsers.map(user => user._id));
         }
     }, [popupVisible, usersData, users]);
 
@@ -88,6 +91,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
 
             toast.success("Members Added.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -97,6 +101,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
         } catch (error) {
             toast.error("Members could not be added.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -138,10 +143,9 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
                             <tbody>
                                 {users.length > 0 ? (
                                     users
-                                        .filter((user) =>
-                                            user.username.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .sort((a, b) => a.username.localeCompare(b.username))
+                                        .filter(user => !initiallySelectedUsers.current.has(user._id)) // ❌ Exclude only initially selected users
+                                        .filter(user => user.username.toLowerCase().includes(searchTerm.toLowerCase())) // ✅ Apply search filter
+                                        .sort((a, b) => a.username.localeCompare(b.username)) // ✅ Sort users alphabetically
                                         .map(user => (
                                             <tr key={user._id} onClick={() => handleCheckboxChange(user._id)} style={{ cursor: "pointer" }}>
                                                 <td>

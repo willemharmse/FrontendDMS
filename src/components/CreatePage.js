@@ -25,7 +25,6 @@ import BurgerMenu from "./CreatePage/BurgerMenu";
 const CreatePage = () => {
   const navigate = useNavigate();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const [usedPPEOptions, setUsedPPEOptions] = useState([]);
@@ -44,13 +43,6 @@ const CreatePage = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
-    localStorage.removeItem('rememberMe');
-    navigate('/FrontendDMS/');
-  };
-
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = [...formData.procedureRows];
     updatedProcedureRows[index][field] = value;  // Update the specific field in the row
@@ -60,28 +52,6 @@ const CreatePage = () => {
       procedureRows: updatedProcedureRows,  // Update the procedure rows in state
     });
   };
-
-  useEffect(() => {
-    const scrollableBox = document.querySelector(".scrollable-box");
-
-    const handleScroll = () => {
-      if (scrollableBox.scrollTop > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    if (scrollableBox) {
-      scrollableBox.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      if (scrollableBox) {
-        scrollableBox.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, []);
 
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
@@ -118,10 +88,11 @@ const CreatePage = () => {
         toast.clearWaitingQueue();
         toast.success("Draft has been successfully saved", {
           closeButton: false,
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
-        })
+        });
       }
       else if (loadedID !== '') {
         updateData();
@@ -130,10 +101,11 @@ const CreatePage = () => {
         toast.clearWaitingQueue();
         toast.success("Draft has been successfully updated", {
           closeButton: false,
+          autoClose: 800, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
-        })
+        });
       }
     }
     else {
@@ -141,10 +113,11 @@ const CreatePage = () => {
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
         closeButton: false,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
     }
   };
 
@@ -208,11 +181,12 @@ const CreatePage = () => {
 
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
-        closeButton: false,
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
     } else {
       handleGeneratePDF();  // Call your function when the form is valid
     }
@@ -266,7 +240,9 @@ const CreatePage = () => {
       { auth: "Reviewer", name: "", pos: "", num: 2 },
       { auth: "Approver", name: "", pos: "", num: 3 },
     ],
-    procedureRows: [],
+    procedureRows: [{
+      nr: 1, mainStep: "", SubStep: "", accountable: "", responsible: "", prevStep: "-"
+    }],
     abbrRows: [],
     termRows: [],
     chapters: [],
@@ -284,15 +260,19 @@ const CreatePage = () => {
   });
 
   const addPicRow = () => {
-    setFormData({
-      ...formData,
-      pictures: [
-        ...formData.pictures,
-        {
-          pic1: '',
-          pic2: ''
-        }
-      ]
+    setFormData((prevData) => {
+      const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
+
+      return {
+        ...prevData,
+        pictures: [
+          ...prevData.pictures,
+          {
+            pic1: `Figure 1.${totalFigures}: `, // Assign next available number
+            pic2: `Figure 1.${totalFigures + 1}: `
+          }
+        ]
+      };
     });
   };
 
@@ -361,20 +341,22 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
-        closeButton: false,
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
     } else {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
-        closeButton: false,
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
     }
   };
 
@@ -434,13 +416,6 @@ const CreatePage = () => {
     }
   };
 
-  useEffect(() => {
-    if (userID) {
-      console.log("User ID is set:", userID);
-      // Perform actions that depend on userID here
-    }
-  }, [userID]);
-
   // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
     const newRows = [...formData.rows];
@@ -473,11 +448,12 @@ const CreatePage = () => {
 
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
-          closeButton: false,
+          closeButton: true,
+          autoClose: 800, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
-        })
+        });
 
         // Revert the change if invalid
         rowToChange.auth = previousAuth;  // Revert to previous auth
@@ -497,7 +473,6 @@ const CreatePage = () => {
       rows: newRows,
     }));
   };
-
 
   // Add a new row to the table
   const addRow = () => {
@@ -539,6 +514,13 @@ const CreatePage = () => {
     });
   };
 
+  const updateProcedureRows = (newProcedureRows) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      procedureRows: newProcedureRows, // Update procedureRows with new data
+    }));
+  };
+
   const addRefRow = () => {
     const lastNr = formData.references.length > 0 && typeof formData.references[formData.references.length - 1].nr === 'number'
       ? formData.references[formData.references.length - 1].nr
@@ -574,11 +556,12 @@ const CreatePage = () => {
       formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
-        closeButton: false,
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
       return;
     }
 
@@ -635,12 +618,6 @@ const CreatePage = () => {
         </div>
 
         <div className="button-container-create">
-          <button className="but-um" onClick={() => navigate("/FrontendDMS/importValues")}>
-            <div className="button-content">
-              <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-              <span className="button-text">Import Site Info</span>
-            </div>
-          </button>
           <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
             <div className="button-content">
               <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
@@ -673,8 +650,8 @@ const CreatePage = () => {
             <div className="burger-menu-icon-create-page-2">
               <FontAwesomeIcon icon={faBell} />
             </div>
-            <div className="burger-menu-icon-create-page-3">
-              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsOpenMenu(!isOpenMenu)} />
+            <div className="burger-menu-icon-create-page-3" onClick={() => setIsOpenMenu(!isOpenMenu)}>
+              <FontAwesomeIcon icon={faCircleUser} />
             </div>
           </div>
           {isOpenMenu && (<BurgerMenu role={role} openLoadPopup={openLoadPopup} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />)}
@@ -737,10 +714,9 @@ const CreatePage = () => {
           <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
           <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} />
+          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
-          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -756,6 +732,13 @@ const CreatePage = () => {
             </div>
           </div>
 
+          <div className="input-row">
+            <div className={`input-box-annexures`}>
+              <h3 className="font-fam-labels">Appendices</h3>
+            </div>
+          </div>
+
+          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
           <div className="input-row-buttons">
             {/* Generate File Button */}
             <button

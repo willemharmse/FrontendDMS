@@ -19,7 +19,6 @@ import BatchUpload from './components/BatchUpload';
 import PreviewWord from './components/PreviewWord';
 import VersionControlPage from './components/VersionControlPage';
 import Tester from './components/tester';
-import ConstructionPage from './components/ConstructionPage';
 import ImportExcelPage from './components/ImportExcelPage';
 import NewLogin from './components/NewLogin';
 import ReviewPage from './components/ReviewPage';
@@ -31,6 +30,7 @@ import DepartmentView from './components/DepartmentView';
 import ConstructionCM from './components/ConstructionCM';
 import ConstructionRM from './components/ConstructionRM';
 import ConstructionTM from './components/ConstructionTM';
+import AdminPage from './components/AdminPage';
 
 function App() {
   return (
@@ -38,13 +38,11 @@ function App() {
       <Routes>
         {/* Desktop Routes */}
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
-        <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <LoginPage />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path="FrontendDMS/documentCreate" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <CreatePage />} />
         <Route path='FrontendDMS/upload' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UploadPage />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
-        <Route path='FrontendDMS/construction' element={<ConstructionPage />} />
         <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />
         <Route path="FrontendDMS/repair" element={<DeveloperPage />} />
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
@@ -52,7 +50,7 @@ function App() {
         <Route path='FrontendDMS/importValues' element={<ImportExcelPage />} />
         <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
         <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
-        <Route path='/review/:fileId' element={<ReviewPage />} />
+        <Route path='FrontendDMS/review/:fileId' element={<ReviewPage />} />
         <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
@@ -60,6 +58,8 @@ function App() {
         <Route path="FrontendDMS/constructionCM" element={<ConstructionCM />} />
         <Route path="FrontendDMS/constructionTM" element={<ConstructionTM />} />
         <Route path="FrontendDMS/constructionRM" element={<ConstructionRM />} />
+        <Route path="FrontendDMS/admin" element={<AdminPage />} />
+
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />
         <Route path='FrontendDMS/mobileForgot' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <ForgotPasswordMobile />} />

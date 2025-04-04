@@ -16,6 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BurgerMenuFIMain from "./FileInfo/BurgerMenuFIMain";
 import DeletePopup from "./FileInfo/DeletePopup";
 import SortPopup from "./FileInfo/SortPopup";
+import BatchPopup from "./FileInfo/BatchUpload";
 import DownloadPopup from "./FileInfo/DownloadPopup";
 import PopupMenu from "./FileInfo/PopupMenu";
 
@@ -53,6 +54,7 @@ const FileInfo = () => {
   const [upload, setUpload] = useState(false);
   const [update, setUpdate] = useState(false);
   const navigate = useNavigate();
+  const [batch, setBatch] = useState(false);
   const [filters, setFilters] = useState({
     author: '',
     deptHead: '',
@@ -64,6 +66,15 @@ const FileInfo = () => {
   const openUpload = () => {
     setUpload(true);
   };
+
+  const openBatch = () => {
+    setBatch(true);
+  }
+
+  const closeBatch = () => {
+    setBatch(false);
+    fetchFiles();
+  }
 
   const closeUpload = () => {
     setUpload(!upload);
@@ -437,12 +448,6 @@ const FileInfo = () => {
                   <span className="button-text">Single Document</span>
                 </div>
               </button>
-              <button className="but-dm-fi" onClick={() => navigate("/FrontendDMS/batchUpload")}>
-                <div className="button-content">
-                  <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                  <span className="button-text">Batch Documents</span>
-                </div>
-              </button>
             </div>
           </div>
         )}
@@ -491,7 +496,7 @@ const FileInfo = () => {
             {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} openUpdate={openUpdate} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>
-
+        {batch && (<BatchPopup onClose={closeBatch} />)}
         {isRDPopupOpen && (<ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />)}
 
         <div className="table-container-file">

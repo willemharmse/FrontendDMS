@@ -5,13 +5,21 @@ import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icon
 
 const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) => {
     const handleInputChange = (index, field, value) => {
-        updatePicRow(index, field, value);
+        const prefix = `Figure 1.${index + 1}: `; // Auto-numbering format
+        let updatedValue = value.startsWith(prefix) ? value : prefix + value;
+
+        // Remove if only the prefix exists (no actual value after it)
+        if (updatedValue === prefix) {
+            updatedValue = "";
+        }
+
+        updatePicRow(index, field, updatedValue);
     };
 
     return (
         <div className="input-row">
             <div className="pic-box">
-                <h3 className="font-fam-labels">Pictures</h3>
+                <h3 className="font-fam-labels">Figures and Graphs</h3>
                 {picturesRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
@@ -52,7 +60,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                 )}
 
                 <button className="add-row-button" onClick={addPicRow}>
-                    + Add Row
+                    Add
                 </button>
             </div>
         </div>

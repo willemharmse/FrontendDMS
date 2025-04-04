@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./DocumentSignaturesTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, error }) => {
   const [nameLists, setNameLists] = useState({
@@ -156,8 +156,8 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
             ))}
           </tbody>
         </table>
-        <button className="add-row-button font-fam" onClick={addRow}>
-          + Add Row
+        <button className="add-row-button-ds font-fam" onClick={addRow}>
+          <FontAwesomeIcon icon={faPlusCircle} />
         </button>
       </div>
     </div>

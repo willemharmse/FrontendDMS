@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import BatchUpload from "./FileInfo/BatchUpload";
 
 const FileInfoHome = () => {
     const [error, setError] = useState(null);
@@ -20,6 +21,7 @@ const FileInfoHome = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [upload, setUpload] = useState(false);
+    const [batch, setBatch] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -33,6 +35,15 @@ const FileInfoHome = () => {
     const closeUpload = () => {
         setUpload(!upload);
     };
+
+    const openBatch = () => {
+        setBatch(true);
+    };
+
+    const closeBatch = () => {
+        setBatch(!batch);
+    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -117,6 +128,7 @@ const FileInfoHome = () => {
     return (
         <div className="user-info-container">
             {upload && (<UploadPopup onClose={closeUpload} />)}
+            {batch && (<BatchUpload onClose={closeBatch} />)}
             <div className="sidebar-um">
                 <div className="sidebar-logo-um">
                     <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
@@ -130,12 +142,6 @@ const FileInfoHome = () => {
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
                                 <span className="button-text">Single Document</span>
-                            </div>
-                        </button>
-                        <button className="but-um" onClick={() => navigate("/FrontendDMS/batchUpload")}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Batch Documents</span>
                             </div>
                         </button>
                     </div>
@@ -178,7 +184,7 @@ const FileInfoHome = () => {
                                 <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                             </div>
                         )}
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={true} />)}
                     </div>
                 </div>
 

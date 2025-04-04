@@ -26,6 +26,37 @@
     border-radius: 10px;
 }
 
+.load-draft-td {
+    cursor: pointer;
+}
+
+.delete-button-load-draft {
+    background-color: transparent;
+    /* Blue color */
+    color: #333;
+    text-align: center;
+}
+
+.action-button-load-draft {
+    padding: 10px 5px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    width: 20%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.load-draft-delete {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
 .draft-select-text {
     text-align: center;
     font-size: 18px;

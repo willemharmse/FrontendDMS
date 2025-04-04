@@ -3,7 +3,7 @@ import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
 import ManageMaterial from "../ValueChanges/ManageMaterial";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -103,9 +103,9 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     <h3 className="font-fam-labels">Materials</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-mat-2" onClick={openManagePopup}>Update</button>
+                    <button className="top-right-button-mat-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
                 )}
-                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}>Add</button>
+                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
                 <MaterialPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -228,7 +228,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 )}
 
                 <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select Materials
+                    Select
                 </button>
             </div>
         </div>

@@ -3,7 +3,7 @@ import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
@@ -79,9 +79,9 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
         <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
         {role === "admin" && (
-          <button className="top-right-button-abbr-2" onClick={openManagePopup}>Update</button>
+          <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
         )}
-        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}>Add</button>
+        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
         <AbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -205,7 +205,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
         )}
 
         <button className="add-row-button" onClick={handlePopupToggle}>
-          Select Abbreviations
+          Select
         </button>
       </div>
     </div>

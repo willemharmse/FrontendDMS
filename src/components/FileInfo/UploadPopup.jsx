@@ -80,6 +80,7 @@ const UploadPopup = ({ onClose }) => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -134,6 +135,7 @@ const UploadPopup = ({ onClose }) => {
             setLoading(false); // Reset loading state after response
             toast.success("File Uploaded Successfully", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }

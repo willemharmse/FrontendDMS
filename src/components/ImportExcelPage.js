@@ -26,6 +26,7 @@ export default function ImportExcelPage() {
         if (!file) {
             toast.error("Please select a file.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -47,6 +48,7 @@ export default function ImportExcelPage() {
             if (response.ok) {
                 toast.success("Values have been successfully imported", {
                     closeButton: false,
+                    autoClose: 800,
                     style: {
                         textAlign: 'center'
                     }
@@ -54,6 +56,7 @@ export default function ImportExcelPage() {
             } else {
                 toast.error(`Error: ${result.error}`, {
                     closeButton: false,
+                    autoClose: 800,
                     style: {
                         textAlign: 'center'
                     }
@@ -65,6 +68,7 @@ export default function ImportExcelPage() {
             setLoading(false);
             toast.error("Error has occured", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -90,7 +94,7 @@ export default function ImportExcelPage() {
             }}>
                 Download Template
             </button>
-            <button className="back-button-import" onClick={() => navigate('/FrontendDMS/documentCreate')}>
+            <button className="back-button-import" onClick={() => navigate(-1)}>
                 Back
             </button>
 

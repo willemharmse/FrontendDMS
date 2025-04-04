@@ -3,7 +3,7 @@ import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
@@ -78,9 +78,9 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
         <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
         {role === "admin" && (
-          <button className="top-right-button-term-2" onClick={openManagePopup}>Update</button>
+          <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
         )}
-        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}>Add</button>
+        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
         <TermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -206,7 +206,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
         )}
 
         <button className="add-row-button" onClick={handlePopupToggle}>
-          Select Terms
+          Select
         </button>
       </div>
     </div>

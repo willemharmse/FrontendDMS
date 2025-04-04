@@ -62,6 +62,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
         if (!isFormValid()) {
             toast.error("Please fill in all required fields", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -94,6 +95,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
 
             toast.success("File version updated successfully!", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }

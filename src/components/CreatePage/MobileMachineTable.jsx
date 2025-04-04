@@ -3,7 +3,7 @@ import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -103,9 +103,9 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     <h3 className="font-fam-labels">Mobile Machine</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-mac-2" onClick={openManagePopup}>Update</button>
+                    <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
                 )}
-                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}>Add</button>
+                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
                 <MobileMachinePopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -229,7 +229,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 )}
 
                 <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select Mobile Machines
+                    Select
                 </button>
             </div>
         </div>

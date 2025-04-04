@@ -155,7 +155,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                 )}
 
                 <button className="add-row-button" onClick={addRefRow}>
-                    + Add Row
+                    Add
                 </button>
 
                 {/* Floating Dropdown */}

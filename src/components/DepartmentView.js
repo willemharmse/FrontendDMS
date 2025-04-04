@@ -3,16 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import "./UserManagement.css";
 import "./DepartmentView.css";
-import AddUserModal from './UserManagement/AddUserModal';
-import DeleteUserModal from './UserManagement/DeleteUserModal';
-import EditUserModal from './UserManagement/EditUserModal';
-import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faCirclePlus, faCalculator } from '@fortawesome/free-solid-svg-icons';
-import TeamManagement from "./UserManagement/TeamManagement";
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faCirclePlus, faCalculator, faTrash } from '@fortawesome/free-solid-svg-icons';
 import TeamTable from "./UserManagement/TeamTable";
-import RemoveUserModal from "./UserManagement/RemoveUserModal";
 import AddMembersDept from "./UserManagement/AddMembersDept";
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
@@ -72,6 +66,7 @@ const DepartmentView = () => {
         if (formError) {
             toast.error(formError, {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }

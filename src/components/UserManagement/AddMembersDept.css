@@ -36,6 +36,19 @@
     /* Centers the container */
 }
 
+.dept-Name-delete {
+    width: 75%;
+}
+
+.dept-Act-delete {
+    width: 25%;
+    text-align: center;
+}
+
+.dept-Act-icon-delete {
+    text-align: center;
+}
+
 .dept-input-container i {
     position: absolute;
     right: 10px;
@@ -71,10 +84,41 @@
     border-radius: 5px;
 }
 
+.dept-table-group-2 {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
 .popup-table-wrapper-dept {
     overflow-y: auto;
     max-height: 300px;
     min-height: 300px;
+    width: 97%;
+    /* You can adjust the width as needed */
+    margin-bottom: 10px;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox for centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table vertically */
+    display: block;
+}
+
+.popup-table-wrapper-dept-2 {
+    overflow-y: auto;
+    max-height: 350px;
+    min-height: 350px;
     width: 97%;
     /* You can adjust the width as needed */
     margin-bottom: 10px;

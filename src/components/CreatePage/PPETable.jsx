@@ -3,7 +3,7 @@ import "./PPETable.css"; // Add styling here
 import PPEPopup from "../ValueChanges/PPEPopup.jsx";
 import ManagePPE from "../ValueChanges/ManagePPE.jsx";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -103,9 +103,9 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     <h3 className="font-fam-labels">PPE</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-ppe-2" onClick={openManagePopup}>Update</button>
+                    <button className="top-right-button-ppe-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
                 )}
-                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}>Add</button>
+                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
                 <PPEPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -228,7 +228,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 )}
 
                 <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select PPE
+                    Select
                 </button>
             </div>
         </div>

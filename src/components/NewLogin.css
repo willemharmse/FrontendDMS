@@ -242,3 +242,14 @@
     color: white;
     margin-top: 5px;
 }
+
+.nl-progress-bar {
+    width: 40%;
+    height: 4px;
+    background-color: #4caf50;
+    /* Change color as needed */
+    transition: width 0.2s ease-in-out;
+
+    margin-bottom: 5px;
+    border-radius: 4px;
+}

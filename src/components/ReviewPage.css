@@ -42,6 +42,20 @@ body {
     /* Reduce font size */
 }
 
+.input-box-3-review {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 0px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .review-page-save-button {
     position: absolute;
     /* Positioned relative to the container */

@@ -22,3 +22,19 @@
 
 
 }
+
+.button-container-dept-2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    /* Adjust as needed */
+    left: 50%;
+    top: 240px;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}

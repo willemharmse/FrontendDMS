@@ -471,8 +471,11 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.warn("There should be at least two procedure steps or more.", {
-                closeButton: false,
-                style: { textAlign: 'center' }
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
             });
             return;
         }
@@ -481,8 +484,11 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.warn("All procedure main steps must have a value.", {
-                closeButton: false,
-                style: { textAlign: 'center' }
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
             });
             return;
         }
@@ -521,7 +527,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 // Show loading toast
                 const toastId = toast.info("Preparing flowchart download...", {
                     closeButton: false,
-                    autoClose: false,
+                    autoClose: 800,
                     style: { textAlign: 'center' }
                 });
 
@@ -530,7 +536,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                     toast.update(toastId, {
                         render: `Generating page ${i + 1} of ${pages.length}...`,
                         closeButton: false,
-                        autoClose: false
+                        autoClose: 800
                     });
 
                     // Render the page
@@ -563,7 +569,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 toast.update(toastId, {
                     render: "Creating zip file...",
                     closeButton: false,
-                    autoClose: false
+                    autoClose: 800
                 });
 
                 const content = await zip.generateAsync({ type: "blob" });
@@ -572,7 +578,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 // Close toast and show success
                 toast.dismiss(toastId);
                 toast.success("Flowchart downloaded successfully!", {
-                    autoClose: 3000,
+                    autoClose: 800,
                     style: { textAlign: 'center' }
                 });
             };

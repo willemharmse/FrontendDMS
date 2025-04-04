@@ -68,6 +68,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
         if (!departmentName || !icon) {
             toast.error("Ensure all fields are entered.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -92,6 +93,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
 
             toast.success("Department Created.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -103,6 +105,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
         } catch (error) {
             toast.error("Department could not be created.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }

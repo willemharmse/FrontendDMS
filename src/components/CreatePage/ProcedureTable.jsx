@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import './ProcedureTable.css';
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
+import RewriteButton from "./RewriteButton";
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows }) => {
     const accountableOptions = [
         "Engineering Manager", "Section Engineer", "Engineering Superintendent",
         "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
@@ -25,6 +26,10 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        console.log(procedureRows);
+    }, [procedureRows]);
+
     const handleImageGen = async () => {
         try {
             // Ensure procedureRows is not empty
@@ -33,6 +38,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                 toast.clearWaitingQueue();
                 toast.warn("There should be at least two procedure steps or more.", {
                     closeButton: false,
+                    autoClose: 800,
                     style: {
                         textAlign: 'center'
                     }
@@ -46,6 +52,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                 toast.clearWaitingQueue();
                 toast.warn("All procedure main steps must have a value.", {
                     closeButton: false,
+                    autoClose: 800,
                     style: {
                         textAlign: 'center'
                     }
@@ -82,6 +89,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
             toast.clearWaitingQueue();
             toast.error("Unable to generate flowchart.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -108,7 +116,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         <div className="input-row">
             <div className={`proc-box ${error ? "error-proc" : ""}`}>
                 <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
-
+                <RewriteButton procedureData={procedureRows} updateRows={updateProcRows} />
                 <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
 
                 {procedureRows.length > 0 && (
@@ -173,8 +181,12 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     <button
                                                         className="remove-step-button-ref"
                                                         onClick={() => {
-                                                            const updatedSteps = row.prevStep ? row.prevStep.split(";").filter((_, i) => i !== stepIndex) : [];
-                                                            updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                            const updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
+                                                            if (updatedSteps.length > 1) {
+                                                                updateRow(index, "prevStep", updatedSteps.filter((_, i) => i !== stepIndex).join(";"));
+                                                            } else {
+                                                                toast.warn("At least one predecessor is required.", { autoClose: 800, closeButton: false });
+                                                            }
                                                         }}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} />
@@ -189,7 +201,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     updateRow(index, "prevStep", updatedSteps.join(";"));
                                                 }}
                                             >
-                                                + Add Predecessor
+                                                <FontAwesomeIcon icon={faPlus} />
                                             </button>
                                         </div>
                                     </td>
@@ -248,8 +260,8 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={addRow} disabled={procedureRows.some(row => !row.responsible || !row.accountable)} >
-                    + Add Row
+                <button className="add-row-button-ds font-fam" onClick={addRow} disabled={procedureRows.some(row => !row.responsible || !row.accountable)}>
+                    <FontAwesomeIcon icon={faPlusCircle} />
                 </button>
             </div>
         </div>

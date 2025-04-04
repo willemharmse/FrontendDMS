@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import "./UserManagement.css";
 import AddUserModal from './UserManagement/AddUserModal';
-import DeleteUserModal from './UserManagement/DeleteUserModal';
 import EditUserModal from './UserManagement/EditUserModal';
 import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
@@ -48,6 +47,7 @@ const UserManagement = () => {
         if (formError) {
             toast.error(formError, {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -102,7 +102,6 @@ const UserManagement = () => {
             const uniqueRoles = [...new Set(data.users.map(user => user.role))].sort();
             setRoles(uniqueRoles);
             setUsers(sortedUsers);
-            console.log(data);
         } catch (error) {
             setError(error.message);
         }
@@ -133,6 +132,7 @@ const UserManagement = () => {
 
             toast.success("User account created.", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -237,12 +237,6 @@ const UserManagement = () => {
                 </div>
 
                 <div className="button-container-um">
-                    <button className="but-um" onClick={() => navigate("/FrontendDMS/departmentManage")}>
-                        <div className="button-content">
-                            <FontAwesomeIcon icon={faPeopleGroup} className="button-icon" />
-                            <span className="button-text">Departments</span>
-                        </div>
-                    </button>
                     <button className="but-um" onClick={openModal}>
                         <div className="button-content">
                             <FontAwesomeIcon icon={faUser} className="button-icon" />

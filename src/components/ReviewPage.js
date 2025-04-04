@@ -19,12 +19,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
-import BurgerMenu from "./CreatePage/BurgerMenu";
+import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isOpenMenu, setIsOpenMenu] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [usedPPEOptions, setUsedPPEOptions] = useState([]);
@@ -682,6 +683,13 @@ const ReviewPage = () => {
         }
     };
 
+    const updateProcedureRows = (newProcedureRows) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            procedureRows: newProcedureRows, // Update procedureRows with new data
+        }));
+    };
+
     const handleGeneratePPTX = async () => {
         const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
         setLoading(true);
@@ -706,24 +714,37 @@ const ReviewPage = () => {
     };
 
     return (
-        <div className="file-create-container-review-page">
-            <button className={`logo-button-create-review-page ${isScrolled ? "small" : ""}`} onClick={() => navigate('/FrontendDMS/home')}>
-                <img src="logo.webp" alt="Home" />
-            </button>
-            <h1 className={`review-page-title ${isScrolled ? "small" : ""}`}>Review Document</h1>
-            <BurgerMenu role={role} openLoadPopup={openLoadPopup} small={isScrolled} />
-            {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
-            <button className={`review-page-save-button ${isScrolled ? "small" : ""}`} onClick={handleSave} title="Save Draft">
-                {loadedID === '' ? <FontAwesomeIcon icon={faFloppyDisk} /> : <FontAwesomeIcon icon={faFloppyDisk} />}
-            </button>
-            <button className={`review-page-undo-button ${isScrolled ? "small" : ""}`} onClick={undoLastChange} title="Undo Draft">
-                <FontAwesomeIcon icon={faRotateLeft} />
-            </button>
+        <div className="file-create-container">
+            <div className="sidebar-um">
+                <div className="sidebar-logo-um">
+                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+                    <p className="logo-text-um">Review Document</p>
+                </div>
+            </div>
 
             {/* Main content */}
-            <div className="review-page-main-box">
-                <div className={`review-page-scrollable-box ${isScrolled ? "expanded" : ""}`}>
-                    <div className="review-page-input-row">
+            <div className="main-box-create">
+                <div className="top-section-create-page">
+                    {/* This div creates the space in the middle */}
+                    <div className="spacer"></div>
+
+                    {/* Container for right-aligned icons */}
+                    <div className="icons-container-create-page">
+                        <div className="burger-menu-icon-create-page-2">
+                            <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} />
+                        </div>
+                        <div className="burger-menu-icon-create-page-2">
+                            <FontAwesomeIcon icon={faBell} />
+                        </div>
+                        <div className="burger-menu-icon-create-page-3" onClick={() => setIsOpenMenu(!isOpenMenu)}>
+                            <FontAwesomeIcon icon={faCircleUser} />
+                        </div>
+                    </div>
+                    {isOpenMenu && (<BurgerMenuFI role={role} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />)}
+                </div>
+
+                <div className={`scrollable-box`}>
+                    <div className="input-row">
                         <div className={`review-page-input-box-title ${errors.title ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
                             <div className="input-group-review-page">
@@ -739,17 +760,19 @@ const ReviewPage = () => {
 
                     <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} />
 
-                    <div className={`input-box-aim-review-page ${errors.aim ? "error-create" : ""}`}>
-                        <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
-                        <textarea
-                            spellcheck="true"
-                            name="aim"
-                            className="aim-textarea-review-page font-fam"
-                            value={formData.aim}
-                            onChange={handleInputChange}
-                            rows="4"   // Adjust the number of rows for initial height
-                            placeholder="Enter the aim of the document here..." // Optional placeholder text
-                        />
+                    <div className="input-row">
+                        <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
+                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
+                            <textarea
+                                spellcheck="true"
+                                name="aim"
+                                className="aim-textarea font-fam"
+                                value={formData.aim}
+                                onChange={handleInputChange}
+                                rows="5"   // Adjust the number of rows for initial height
+                                placeholder="Enter the aim of the document here..." // Optional placeholder text
+                            />
+                        </div>
                     </div>
 
                     <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
@@ -759,47 +782,58 @@ const ReviewPage = () => {
                     <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
                     <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} />
+                    <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
                     <ChapterTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
-                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
-                    <div className={`input-box-aim-review-page ${errors.change ? "error-create" : ""}`}>
-                        <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
-                        <textarea
-                            spellcheck="true"
-                            name="aim"
-                            className="aim-textarea-review-page font-fam"
-                            value={change}
-                            onChange={(e) => setChange(e.target.value)}
-                            rows="4"   // Adjust the number of rows for initial height
-                            placeholder="Enter the reason for the document update..." // Optional placeholder text
-                        />
+                    <div className="input-row">
+                        <div className={`input-box-aim-cp ${errors.change ? "error-create" : ""}`}>
+                            <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
+                            <textarea
+                                spellcheck="true"
+                                name="aim"
+                                className="aim-textarea font-fam"
+                                value={change}
+                                onChange={(e) => setChange(e.target.value)}
+                                rows="4"   // Adjust the number of rows for initial height
+                                placeholder="Enter the reason for the document update..." // Optional placeholder text
+                            />
+                        </div>
                     </div>
 
-                    <div className={`input-row-but-review-page`}>
-                        <div className={`input-box-3-review-page ${errors.reviewDate ? "error-create" : ""}`}>
+                    <div className={`input-row`}>
+                        <div className={`input-box-3-review ${errors.reviewDate ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
                             <input
                                 type="number"
                                 name="reviewDate"
-                                className="aim-textarea-review-page font-fam"
+                                className="aim-textarea cent-create font-fam"
                                 value={formData.reviewDate}
                                 onChange={handleInputChange}
                                 placeholder="Enter the review period in months" // Optional placeholder text
                             />
                         </div>
+                    </div>
 
+                    <div className="input-row">
+                        <div className={`input-box-annexures`}>
+                            <h3 className="font-fam-labels">Appendices</h3>
+                        </div>
+                    </div>
+
+                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+
+                    <div className="input-row-buttons">
                         {/* Generate File Button */}
                         <button
-                            className="generate-button-review-page font-fam"
+                            className="generate-button font-fam"
                             onClick={handleClick}
                             title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
                         >
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Review File'}
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
                         <button
-                            className="pdf-button-review-page font-fam"
+                            className="pdf-button font-fam"
                             disabled
                         >
                             Generate PDF

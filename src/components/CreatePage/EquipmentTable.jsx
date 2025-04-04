@@ -3,7 +3,7 @@ import "./EquipmentTable.css"; // Add styling here
 import EquipmentPopup from "../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../ValueChanges/ManageEquipment";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -103,9 +103,9 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                     <h3 className="font-fam-labels">Equipment</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-eqp-2" onClick={openManagePopup}>Update</button>
+                    <button className="top-right-button-eqp-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
                 )}
-                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}>Add</button>
+                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
 
                 <EquipmentPopup
                     isOpen={showNewPopup}
@@ -229,7 +229,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                 )}
 
                 <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select Equipment
+                    Select
                 </button>
             </div>
         </div>

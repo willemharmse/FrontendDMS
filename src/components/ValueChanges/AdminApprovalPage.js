@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
+import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import "./AdminApprovalPage.css";
 
 const AdminApprovalPage = () => {
@@ -13,6 +14,7 @@ const AdminApprovalPage = () => {
     const adminRoles = ['admin', 'teamleader', 'developer'];
     const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [userID, setUserID] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedDraft, setSelectedDraft] = useState(null);
     const [comment, setComment] = useState("");
 
@@ -201,19 +203,34 @@ const AdminApprovalPage = () => {
 
     return (
         <div className="admin-draft-info-container">
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Logo" className="logo-img" onClick={() => navigate('/FrontendDMS/home')} />
-                </div>
-                <div className="button-container">
-                    <button className="text-format-log but-upload" onClick={() => navigate("/FrontendDMS/documentCreate")}>
-                        Back
-                    </button>
+            <div className="sidebar-um">
+                <div className="sidebar-logo-um">
+                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+                    <p className="logo-text-um">User Suggestions</p>
                 </div>
             </div>
 
-            <div className="main-box-admin-info">
-                <div className="table-container-admin-approve">
+            <div className="main-box-gen-info">
+                <div className="top-section-um">
+
+                    {/* This div creates the space in the middle */}
+                    <div className="spacer"></div>
+
+                    {/* Container for right-aligned icons */}
+                    <div className="icons-container">
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
+                        </div>
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon icon={faBell} />
+                        </div>
+                        <div className="burger-menu-icon-um">
+                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                        </div>
+                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+                    </div>
+                </div>
+                <div className="table-container-gen">
                     <table className="admin-approve-table">
                         <thead className="admin-approve-head">
                             <tr className="admin-approve-tr">

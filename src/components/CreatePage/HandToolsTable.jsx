@@ -3,7 +3,7 @@ import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
 import ManageHandTools from "../ValueChanges/ManageHandTools";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -103,9 +103,9 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     <h3 className="font-fam-labels">Hand Tools</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-tool-2" onClick={openManagePopup}>Update</button>
+                    <button className="top-right-button-tool-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
                 )}
-                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}>Add</button>
+                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
                 <ToolPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -228,7 +228,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 )}
 
                 <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select Hand Tools
+                    Select
                 </button>
             </div>
         </div>

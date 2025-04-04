@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./LoadDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 
 const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     const [drafts, setDrafts] = useState([]);
@@ -89,22 +89,14 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                                 <td className="draft-nr">
                                                     {index + 1}
                                                 </td>
-                                                <td>{`${item.formData.title} ${item.formData.documentType}`}</td>
-                                                <td>
-                                                    <div className='inline-actions-um'>
-                                                        <button
-                                                            className={`action-button-user edit-button-user`}
-                                                            onClick={() => handleLoad(item._id)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faRotateLeft} />
-                                                        </button>
-                                                        <button
-                                                            className={"action-button-user delete-button-user"}
-                                                            onClick={() => confirmDelete(item._id)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} />
-                                                        </button>
-                                                    </div>
+                                                <td onClick={() => handleLoad(item._id)} className="load-draft-td">{`${item.formData.title} ${item.formData.documentType}`}</td>
+                                                <td className="load-draft-delete">
+                                                    <button
+                                                        className={"action-button-load-draft delete-button-load-draft"}
+                                                        onClick={() => confirmDelete(item._id)}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrash} />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))

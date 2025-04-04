@@ -12,7 +12,6 @@ const NewLogin = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -48,20 +47,17 @@ const NewLogin = () => {
                 body: JSON.stringify({ username, password }),
             });
 
-            if (!response.ok) {
-                throw new Error('Login failed. Please check your credentials.');
-            }
+            if (!response.ok) throw new Error('Login failed. Please check your credentials.');
 
             const data = await response.json();
 
             if (data.token) {
-                // Store token based on "Remember Me" selection
                 if (rememberMe) {
-                    localStorage.setItem('token', data.token); // Persistent login
-                    localStorage.setItem('rememberMe', 'true'); // Remember the preference
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('rememberMe', 'true');
                 } else {
-                    localStorage.setItem('token', data.token); // Temporary login
-                    localStorage.removeItem('rememberMe'); // Clear rememberMe flag if unchecked
+                    localStorage.setItem('token', data.token);
+                    localStorage.removeItem('rememberMe');
                 }
 
                 const decodedToken = jwtDecode(data.token);
@@ -72,7 +68,9 @@ const NewLogin = () => {
         } catch (err) {
             setError(err.message);
         } finally {
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 500);
         }
     };
 
@@ -131,7 +129,7 @@ const NewLogin = () => {
                     </div>
 
                     <div className="nl-login-button-container">
-                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Log In'}</button>
+                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} className="fa-spin" /> : 'Log In'}</button>
                     </div>
                 </form>
 
