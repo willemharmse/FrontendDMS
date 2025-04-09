@@ -82,7 +82,6 @@ const DepartmentHome = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            console.log(decodedToken);
             setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
 

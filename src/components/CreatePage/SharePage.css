@@ -1,0 +1,207 @@
+.popup-overlay-share {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content-share {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 700px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 530px;
+    /* Ensure the popup does not stretch vertically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+.share-input-container {
+    position: relative;
+    height: 40px;
+    /* You can adjust the height as needed */
+    width: 97%;
+    /* Adjust width as needed to make the container less wide */
+    margin: 0 auto;
+    /* Centers the container */
+}
+
+.share-Name-delete {
+    width: 75%;
+}
+
+.share-Act-delete {
+    width: 25%;
+    text-align: center;
+}
+
+.share-Act-icon-delete {
+    text-align: center;
+}
+
+.share-input-container i {
+    position: absolute;
+    right: 10px;
+    /* Adjust to get the icon closer to the right edge */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    /* Increase font size for clarity */
+    cursor: pointer;
+}
+
+.search-input-share {
+    height: 100%;
+    width: 100%;
+    /* Take the full width of the container */
+    padding: 10px 40px 10px 10px;
+    /* Extra padding on the right to avoid icon overlap */
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.share-table-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.share-table-group-2 {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.popup-table-wrapper-share {
+    overflow-y: auto;
+    max-height: 300px;
+    min-height: 300px;
+    width: 97%;
+    /* You can adjust the width as needed */
+    margin-bottom: 10px;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox for centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table vertically */
+    display: block;
+}
+
+.popup-table-wrapper-share-2 {
+    overflow-y: auto;
+    max-height: 350px;
+    min-height: 350px;
+    width: 97%;
+    /* You can adjust the width as needed */
+    margin-bottom: 10px;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox for centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table vertically */
+    display: block;
+}
+
+.checkbox-inp-share {
+    appearance: none;
+    /* Remove default styling */
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    vertical-align: middle;
+    border-radius: 20%;
+    /* Fully rounded corners */
+    border: 2px solid #ccc;
+    /* Lighter border color */
+    background-color: white;
+    /* White background for unselected state */
+    position: relative;
+    /* Required for pseudo-elements */
+}
+
+/* When the checkbox is checked */
+.checkbox-inp-share:checked {
+    background-color: #002060;
+    /* Green background for checked state */
+    border-color: #002060;
+    /* Border color matches the background */
+}
+
+.inp-size-share {
+    width: 100px;
+}
+
+.share-headers {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+/* Custom checkmark with ::after for the checked state */
+.checkbox-inp-share:checked::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 3px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    /* Rotate to form a checkmark */
+}
+
+.share-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.share-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}

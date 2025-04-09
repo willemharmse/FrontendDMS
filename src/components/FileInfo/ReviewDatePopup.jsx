@@ -20,7 +20,7 @@ const ReviewDatePopup = ({ isOpen, onClose, onUpdate, currVal }) => {
         try {
             await fetch(`${process.env.REACT_APP_URL}/api/valuesUpload/update`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
                 body: JSON.stringify({ reviewDate: Number(reviewDateVal) }),
             });
             onUpdate(Number(reviewDateVal)); // Update parent component state

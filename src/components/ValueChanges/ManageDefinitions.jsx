@@ -51,6 +51,11 @@ const ManageDefinitions = ({ closePopup, onClose }) => {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/def/update/${selectedDefinition}`, {
                 term: termInp,
                 definition: definitionInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("Term updated successfully.");

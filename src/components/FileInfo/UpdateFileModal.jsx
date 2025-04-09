@@ -80,6 +80,9 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/version/update/${selectedExistingFile}`, {
                 method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: formData,
             });
             if (!response.ok) {

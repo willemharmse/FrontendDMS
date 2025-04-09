@@ -47,6 +47,11 @@ const ManagePPE = ({ closePopup, onClose }) => {
         try {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/ppe/update/${selectedPPE}`, {
                 ppe: ppeInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("PPE updated successfully.");

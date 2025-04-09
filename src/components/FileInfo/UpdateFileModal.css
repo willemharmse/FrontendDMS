@@ -20,8 +20,8 @@
     border-radius: 5px;
     width: 50%;
     max-width: 500px;
-    height: 540px;
-    min-height: 540px;
+    height: 530px;
+    min-height: 530px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     position: relative;
     display: flex;
@@ -31,12 +31,11 @@
 
 /* Flexbox for title and close button */
 .update-file-header {
-    transform: translateY(+50%);
+    transform: translateY(+25%);
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 5px;
     font-family: Arial;
 }
 

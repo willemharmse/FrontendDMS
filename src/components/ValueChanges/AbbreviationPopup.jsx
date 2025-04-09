@@ -25,7 +25,10 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
             if (role === "admin") {
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         abbr: abbreviation.trim(),
                         meaning: meaning.trim()
@@ -46,7 +49,10 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
                 const type = "Abbreviation";
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         type, data, userID
                     })

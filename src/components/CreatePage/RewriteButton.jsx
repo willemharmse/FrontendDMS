@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faRotateLeft, faSpinner, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 
 const RewriteButton = ({ procedureData, updateRows }) => {
     const [loading, setLoading] = useState(false);
@@ -69,6 +69,7 @@ const RewriteButton = ({ procedureData, updateRows }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
                 },
                 body: JSON.stringify({ prompt: prompt }),
             });
@@ -97,8 +98,8 @@ const RewriteButton = ({ procedureData, updateRows }) => {
         <div className="flowchart-container">
             <div className="flowchart-buttons">
                 <button onClick={changed ? handleRevert : handleOpenAIChat}
-                    disabled={loading} className="top-right-button-proc-2">
-                    {changed ? "Revert" : (loading ? <FontAwesomeIcon icon={faSpinner} spin /> : "AI Rewrite")}
+                    disabled={loading} className="top-right-button-proc-2" title='AI Rewrite'>
+                    {changed ? <FontAwesomeIcon icon={faRotateLeft} className="icon-um-search" /> : (loading ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faWandMagicSparkles} className="icon-um-search" />)}
                 </button>
             </div>
         </div>

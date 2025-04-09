@@ -48,7 +48,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                             onChange={(e) => handleInputChange(index, "pic2", e.target.value)}
                                         />
                                     </td>
-                                    <td className="ref-but-row">
+                                    <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => removePicRow(index)}>
                                             <FontAwesomeIcon icon={faTrash} />
                                         </button>

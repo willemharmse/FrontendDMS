@@ -176,7 +176,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                 <tr key={index}>
                   <td>{row.abbr}</td>
                   <td>{row.meaning}</td>
-                  <td>
+                  <td className="procCent">
                     <button
                       className="remove-row-button"
                       onClick={() => {

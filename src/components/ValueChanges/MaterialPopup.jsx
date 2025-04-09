@@ -23,7 +23,10 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
             if (role === "admin") {
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         mat: mat.trim()
                     })
@@ -43,7 +46,10 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                 const type = "Material";
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         type, data, userID
                     })

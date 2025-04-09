@@ -1,4 +1,4 @@
-.gen-file-info-container {
+.user-activity-log-info-container {
     display: flex;
     height: 100vh;
     padding: 20px;
@@ -8,7 +8,7 @@
     font-family: Arial;
 }
 
-.main-box-gen-info {
+.main-box-user-activity-log {
     flex: 1;
     width: 100%;
     margin-left: 10px;
@@ -20,7 +20,7 @@
 }
 
 /* For modern browsers */
-.table-container-gen::-webkit-scrollbar {
+.table-container-user-activity-log::-webkit-scrollbar {
     border-radius: 8px;
     width: 10px;
     /* Width of the vertical scrollbar */
@@ -28,19 +28,19 @@
     /* Height of the horizontal scrollbar */
 }
 
-.table-container-gen::-webkit-scrollbar-thumb {
+.table-container-user-activity-log::-webkit-scrollbar-thumb {
     background: #888;
     /* Color of the scrollbar thumb */
     border-radius: 5px;
     /* Rounded corners for the thumb */
 }
 
-.table-container-gen::-webkit-scrollbar-thumb:hover {
+.table-container-user-activity-log::-webkit-scrollbar-thumb:hover {
     background: #555;
     /* Darker color when hovered */
 }
 
-.table-container-gen::-webkit-scrollbar-track {
+.table-container-user-activity-log::-webkit-scrollbar-track {
     background: #e0e0e0;
     /* Color of the scrollbar track */
     border-radius: 8px;
@@ -48,14 +48,14 @@
 }
 
 /* For Firefox */
-.table-container-gen {
+.table-container-user-activity-log {
     scrollbar-width: thin;
     /* Makes the scrollbar thinner */
     scrollbar-color: #888 #e0e0e0;
     /* Thumb color, track color */
 }
 
-.table-container-gen {
+.table-container-user-activity-log {
     height: calc(100% - 50px);
     /* Full height minus padding */
     overflow-y: auto;
@@ -63,12 +63,12 @@
     box-sizing: border-box;
 }
 
-.gen-table {
+.user-activity-log-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.gen-head {
+.user-activity-log-head {
     position: sticky;
     top: 0;
     background-color: #002060;
@@ -76,19 +76,19 @@
     z-index: 1;
 }
 
-.gen-tr {
+.user-activity-log-tr {
     padding: 5px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-.gen-th {
+.user-activity-log-th {
     padding: 5px;
     text-align: center;
     border-bottom: 1px solid #ddd;
 }
 
-.gen-nr {
+.user-activity-log-nr {
     width: 5%;
     padding: 10px;
     text-align: center;
@@ -96,15 +96,7 @@
     font-size: 14px;
 }
 
-.gen-fn {
-    width: 30%;
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-stat {
+.user-activity-log-fn {
     width: 10%;
     padding: 10px;
     text-align: center;
@@ -112,15 +104,7 @@
     font-size: 14px;
 }
 
-.gen-rev {
-    width: 20%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-ver {
+.user-activity-log-stat {
     width: 10%;
     padding: 10px;
     text-align: center;
@@ -128,22 +112,14 @@
     font-size: 14px;
 }
 
-.gen-pub {
-    width: 15%;
+.user-activity-log-ver {
+    width: 75%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
     font-size: 14px;
 }
 
-.gen-act {
-    width: 10%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-point {
+.user-activity-log-point {
     cursor: pointer;
 }

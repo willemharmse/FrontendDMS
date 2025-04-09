@@ -48,7 +48,7 @@ const DeparmentList = ({ closePopup }) => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/department/delete/${deleteID}`, {
                 method: 'DELETE',
                 headers: {
-                    //'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 }
             });
 

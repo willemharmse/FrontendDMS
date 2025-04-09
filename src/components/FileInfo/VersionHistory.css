@@ -1,4 +1,4 @@
-.gen-file-info-container {
+.version-history-file-info-container {
     display: flex;
     height: 100vh;
     padding: 20px;
@@ -8,7 +8,7 @@
     font-family: Arial;
 }
 
-.main-box-gen-info {
+.main-box-version-history-file {
     flex: 1;
     width: 100%;
     margin-left: 10px;
@@ -20,7 +20,7 @@
 }
 
 /* For modern browsers */
-.table-container-gen::-webkit-scrollbar {
+.table-container-version-history-file::-webkit-scrollbar {
     border-radius: 8px;
     width: 10px;
     /* Width of the vertical scrollbar */
@@ -28,19 +28,19 @@
     /* Height of the horizontal scrollbar */
 }
 
-.table-container-gen::-webkit-scrollbar-thumb {
+.table-container-version-history-file::-webkit-scrollbar-thumb {
     background: #888;
     /* Color of the scrollbar thumb */
     border-radius: 5px;
     /* Rounded corners for the thumb */
 }
 
-.table-container-gen::-webkit-scrollbar-thumb:hover {
+.table-container-version-history-file::-webkit-scrollbar-thumb:hover {
     background: #555;
     /* Darker color when hovered */
 }
 
-.table-container-gen::-webkit-scrollbar-track {
+.table-container-version-history-file::-webkit-scrollbar-track {
     background: #e0e0e0;
     /* Color of the scrollbar track */
     border-radius: 8px;
@@ -48,14 +48,14 @@
 }
 
 /* For Firefox */
-.table-container-gen {
+.table-container-version-history-file {
     scrollbar-width: thin;
     /* Makes the scrollbar thinner */
     scrollbar-color: #888 #e0e0e0;
     /* Thumb color, track color */
 }
 
-.table-container-gen {
+.table-container-version-history-file {
     height: calc(100% - 50px);
     /* Full height minus padding */
     overflow-y: auto;
@@ -63,12 +63,12 @@
     box-sizing: border-box;
 }
 
-.gen-table {
+.version-history-file-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.gen-head {
+.version-history-file-head {
     position: sticky;
     top: 0;
     background-color: #002060;
@@ -76,19 +76,19 @@
     z-index: 1;
 }
 
-.gen-tr {
+.version-history-file-tr {
     padding: 5px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-.gen-th {
+.version-history-file-th {
     padding: 5px;
     text-align: center;
     border-bottom: 1px solid #ddd;
 }
 
-.gen-nr {
+.version-history-file-nr {
     width: 5%;
     padding: 10px;
     text-align: center;
@@ -96,23 +96,15 @@
     font-size: 14px;
 }
 
-.gen-fn {
-    width: 30%;
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-stat {
-    width: 10%;
+.version-history-file-fn {
+    width: 65%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
     font-size: 14px;
 }
 
-.gen-rev {
+.version-history-file-stat {
     width: 20%;
     padding: 10px;
     text-align: center;
@@ -120,7 +112,7 @@
     font-size: 14px;
 }
 
-.gen-ver {
+.version-history-file-ver {
     width: 10%;
     padding: 10px;
     text-align: center;
@@ -128,22 +120,25 @@
     font-size: 14px;
 }
 
-.gen-pub {
-    width: 15%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-act {
-    width: 10%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.gen-point {
+.version-history-file-point {
     cursor: pointer;
+}
+
+.verion-download-button {
+    top: 15px;
+    right: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #333;
+    font-size: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
 }

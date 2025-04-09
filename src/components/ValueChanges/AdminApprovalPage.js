@@ -36,7 +36,7 @@ const AdminApprovalPage = () => {
             setUserID(decodedToken.userId);
 
             if (!adminRoles.includes(decodedToken.role)) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
         fetchDrafts();
@@ -57,7 +57,10 @@ const AdminApprovalPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${selectedDraft._id}/approve`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     comment, userID
                 })
@@ -77,7 +80,10 @@ const AdminApprovalPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${selectedDraft._id}/decline`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     comment, userID
                 })

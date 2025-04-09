@@ -47,6 +47,11 @@ const ManageMaterial = ({ closePopup, onClose }) => {
         try {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/mat/update/${selectedMaterial}`, {
                 mat: matInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("Material updated successfully.");

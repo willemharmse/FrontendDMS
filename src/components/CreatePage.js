@@ -19,12 +19,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
+import SharePage from "./CreatePage/SharePage";
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
+  const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const [usedPPEOptions, setUsedPPEOptions] = useState([]);
@@ -37,6 +39,7 @@ const CreatePage = () => {
   const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
+  const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const normalRoles = ['guest', 'standarduser', 'auditor'];
@@ -53,6 +56,22 @@ const CreatePage = () => {
     });
   };
 
+  const openShare = () => {
+    if (loadedID) {
+      setShare(true);
+    } else {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("Please save a draft before sharing.", {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+    }
+  };
+  const closeShare = () => { setShare(false); };
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
 
@@ -95,7 +114,7 @@ const CreatePage = () => {
         });
       }
       else if (loadedID !== '') {
-        updateData();
+        updateData(userIDs);
 
         toast.dismiss();
         toast.clearWaitingQueue();
@@ -131,13 +150,16 @@ const CreatePage = () => {
       usedMobileMachine,
       usedMaterials,
       formData,
-      userID
+      userIDs
     };
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(dataToStore),
       });
       const result = await response.json();
@@ -150,7 +172,7 @@ const CreatePage = () => {
     }
   };
 
-  const updateData = async () => {
+  const updateData = async (selectedUserIDs) => {
     const dataToStore = {
       usedAbbrCodes,       // your current state values
       usedTermCodes,
@@ -160,12 +182,17 @@ const CreatePage = () => {
       usedMobileMachine,
       usedMaterials,
       formData,
+      userIDs: selectedUserIDs,
+      userID
     };
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/modifySafe/${loadedID}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(dataToStore),
       });
       const result = await response.json();
@@ -192,6 +219,37 @@ const CreatePage = () => {
     }
   };
 
+  const handlePubClick = () => {
+    const newErrors = validateForm();
+    setErrors(newErrors);
+
+    if (loadedID === '') {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("Please load a draft before publishing.", {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      return;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields marked by a *", {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } else {
+      handlePublish();  // Call your function when the form is valid
+    }
+  };
+
   const loadData = async (loadID) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
@@ -204,6 +262,7 @@ const CreatePage = () => {
       setUsedEquipment(storedData.usedEquipment || []);
       setUsedMobileMachines(storedData.usedMobileMachine || []);
       setUsedMaterials(storedData.usedMaterials || []);
+      setUserIDs(storedData.userIDs || []);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev }));
     } catch (error) {
@@ -402,6 +461,7 @@ const CreatePage = () => {
       }
 
       setUserID(decodedToken.userId);
+      setUserIDs([decodedToken.userId]);
       setRole(decodedToken.role);
     }
   }, [navigate]);
@@ -593,7 +653,10 @@ const CreatePage = () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
         body: JSON.stringify(dataToStore),
       });
 
@@ -603,6 +666,49 @@ const CreatePage = () => {
       saveAs(blob, `${documentName}.docm`);
       setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    const dataToStore = {
+      usedAbbrCodes,       // your current state values
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+      formData,
+      userID,
+      azureFN: ""
+    };
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-document`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      toast.success(`Document published`, {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setLoading(false);
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -621,21 +727,36 @@ const CreatePage = () => {
           <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
             <div className="button-content">
               <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-              <span className="button-text">Load Draft</span>
+              <span className="button-text">Drafts</span>
+            </div>
+          </button>
+          <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
+            <div className="button-content">
+              <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+              <span className="button-text">Documents</span>
             </div>
           </button>
         </div>
       </div>
+      {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
       {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
             <div className="burger-menu-icon-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} />
+              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
             </div>
 
             <div className="burger-menu-icon-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} />
+              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+            </div>
+
+            <div className="burger-menu-icon-create-page-1">
+              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+            </div>
+
+            <div className="burger-menu-icon-create-page-1">
+              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>
           </div>
 

@@ -16,7 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BurgerMenuFIMain from "./FileInfo/BurgerMenuFIMain";
 import DeletePopup from "./FileInfo/DeletePopup";
 import SortPopup from "./FileInfo/SortPopup";
-import BatchPopup from "./FileInfo/BatchUpload";
+import BatchUpload from "./FileInfo/BatchUpload";
 import DownloadPopup from "./FileInfo/DownloadPopup";
 import PopupMenu from "./FileInfo/PopupMenu";
 
@@ -196,7 +196,7 @@ const FileInfo = () => {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/trash/restore/${fileId}`, {
         method: 'GET',
         headers: {
-          // 'Authorization': `Bearer ${token}` // Uncomment and fill in the token if needed
+          Authorization: `Bearer ${token}`,
         }
       });
       if (!response.ok) {
@@ -216,7 +216,7 @@ const FileInfo = () => {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/download/${fileId}`, {
         method: 'GET',
         headers: {
-          //'Authorization': `Bearer ${token}`, // Uncomment if needed
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -249,6 +249,9 @@ const FileInfo = () => {
       setLoading(true);
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/delete/${selectedFileId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete the file');
@@ -267,6 +270,9 @@ const FileInfo = () => {
     try {
       setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_URL}/api/file/trash/delete/${selectedFileId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete file from trash');
@@ -496,7 +502,7 @@ const FileInfo = () => {
             {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} openUpdate={openUpdate} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>
-        {batch && (<BatchPopup onClose={closeBatch} />)}
+        {batch && (<BatchUpload onClose={closeBatch} />)}
         {isRDPopupOpen && (<ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />)}
 
         <div className="table-container-file">
@@ -545,9 +551,9 @@ const FileInfo = () => {
                   <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
                   <td className="col">{formatDate(file.uploadDate)}</td>
                   {adminRoles.includes(role) && (
-                    <td className={isTrashView ? "col-action trashed" : "col-action"}>
+                    <td className={isTrashView ? "col-act trashed" : "col-act"}>
                       <button
-                        className={isTrashView ? "delete-button col-but trashed-color" : "delete-button col-but"}
+                        className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
                         onClick={() => openModal(file._id, file.fileName)}
                       >
                         <FontAwesomeIcon icon={faTrash} />
@@ -555,7 +561,7 @@ const FileInfo = () => {
 
                       {isTrashView && (
                         <button
-                          className={isTrashView ? "delete-button col-but-res trashed-color" : "delete-button col-but-res"}
+                          className={isTrashView ? "delete-button-fi col-but-res trashed-color" : "delete-button-fi col-but-res"}
                           onClick={() => restoreFile(file._id)}
                         >
                           <FontAwesomeIcon icon={faRotate} />

@@ -200,7 +200,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                             {formData.MobileMachine?.map((row, index) => (
                                 <tr key={index}>
                                     <td>{row.mac}</td>
-                                    <td>
+                                    <td className="procCent">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => {

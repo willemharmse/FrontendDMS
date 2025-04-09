@@ -47,6 +47,11 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
         try {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/mac/update/${selectedMachine}`, {
                 machine: macInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("Machine updated successfully.");

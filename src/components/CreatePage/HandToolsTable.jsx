@@ -199,7 +199,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                             {formData.HandTools?.map((row, index) => (
                                 <tr key={index}>
                                     <td>{row.tool}</td>
-                                    <td>
+                                    <td className="procCent">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => {

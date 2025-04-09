@@ -31,6 +31,8 @@ import ConstructionCM from './components/ConstructionCM';
 import ConstructionRM from './components/ConstructionRM';
 import ConstructionTM from './components/ConstructionTM';
 import AdminPage from './components/AdminPage';
+import UserActivity from './components/UserActivity';
+import VersionHistory from './components/FileInfo/VersionHistory';
 
 function App() {
   return (
@@ -59,6 +61,8 @@ function App() {
         <Route path="FrontendDMS/constructionTM" element={<ConstructionTM />} />
         <Route path="FrontendDMS/constructionRM" element={<ConstructionRM />} />
         <Route path="FrontendDMS/admin" element={<AdminPage />} />
+        <Route path="FrontendDMS/userActivity/:id" element={<UserActivity />} />
+        <Route path="FrontendDMS/versionHistory/:id" element={<VersionHistory />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

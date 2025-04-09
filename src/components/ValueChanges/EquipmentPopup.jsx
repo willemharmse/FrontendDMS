@@ -24,7 +24,10 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
             if (role === "admin") {
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         eqp: eqp.trim()
                     })
@@ -44,7 +47,10 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                 const type = "Equipment";
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         type, data, userID
                     })

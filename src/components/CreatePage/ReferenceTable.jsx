@@ -143,7 +143,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                             onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
                                         />
                                     </td>
-                                    <td className="ref-but-row">
+                                    <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => removeRefRow(index)}>
                                             <FontAwesomeIcon icon={faTrash} />
                                         </button>

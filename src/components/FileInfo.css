@@ -177,7 +177,7 @@ body {
   /* Ensures word breaks for long strings */
   white-space: normal;
   /* Enables text wrapping */
-  width: 3%;
+  width: 50px;
   /* Set a width to see the wrapping effect */
   text-align: center;
   justify-content: space-between;
@@ -282,6 +282,12 @@ body {
   /* Ensures the text is left-aligned */
   display: inline-block;
   /* Makes the button size just fit the text */
+}
+
+.delete-button-fi {
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
 }
 
 .file-name {

@@ -25,7 +25,10 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
             if (role === "admin") {
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         term: term.trim(),
                         definition: definition.trim()
@@ -46,7 +49,10 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                 const type = "Definition";
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         type, data, userID
                     })

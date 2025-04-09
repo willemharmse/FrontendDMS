@@ -8,6 +8,10 @@ body {
   background-color: #002060;
 }
 
+.disabled-share {
+  color: gray;
+}
+
 .create-page-title {
   position: absolute;
   left: calc(50% - 300px);

@@ -24,7 +24,10 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
             if (role === "admin") {
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         tool: tool.trim()
                     })
@@ -44,7 +47,10 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                 const type = "Tool";
                 const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
                         type, data, userID
                     })

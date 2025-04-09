@@ -67,7 +67,6 @@ const BurgerMenu = ({ role, openLoadPopup, isOpen, setIsOpen }) => {
                             <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Suggestions</li>
                         )}
 
-                        <li onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>View Files</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

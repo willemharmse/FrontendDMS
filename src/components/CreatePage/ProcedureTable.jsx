@@ -246,7 +246,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td className="procCent">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => removeRow(index)}

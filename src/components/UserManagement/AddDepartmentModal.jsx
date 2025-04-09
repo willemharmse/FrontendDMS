@@ -85,7 +85,8 @@ const AddDepartmentModal = ({ show, onClose }) => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/department/create`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify(dataToStore)
             });

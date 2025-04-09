@@ -111,6 +111,9 @@ const UploadPopup = ({ onClose }) => {
 
             const response = await fetch(`${process.env.REACT_APP_URL}/api/file/upload`, {
                 method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
                 body: formData,
             });
             if (!response.ok) {
@@ -127,11 +130,7 @@ const UploadPopup = ({ onClose }) => {
             setStatus('');
             setReviewDate('');
             setError(null);
-        } catch (error) {
-            setError(error.message);
-            setSuccessMessage('');
-            setLoading(false);
-        } finally {
+
             setLoading(false); // Reset loading state after response
             toast.success("File Uploaded Successfully", {
                 closeButton: false,
@@ -141,6 +140,10 @@ const UploadPopup = ({ onClose }) => {
                 }
 
             })
+        } catch (error) {
+            setError(error.message);
+            setSuccessMessage('');
+            setLoading(false);
         }
     };
 
@@ -291,7 +294,7 @@ const UploadPopup = ({ onClose }) => {
                                 <div className="upload-file-page-select-container">
                                     <select value={departmentHead} className="upload-file-page-select" onChange={(e) => setDepartmentHead(e.target.value)}>
                                         <option value="">Select Head</option>
-                                        {deptHeads.sort().map((head, index) => (
+                                        {deptHeads.sort((a, b) => a.localeCompare(b)).map((head, index) => (
                                             <option key={index} value={head}>
                                                 {head}
                                             </option>
@@ -318,7 +321,7 @@ const UploadPopup = ({ onClose }) => {
                                 <div className="upload-file-page-select-container">
                                     <select value={documentType} className="upload-file-page-select" onChange={(e) => setDocumentType(e.target.value)}>
                                         <option>Select Document Type</option>
-                                        {docTypes.map((type, index) => (
+                                        {docTypes.sort((a, b) => a.localeCompare(b)).map((type, index) => (
                                             <option key={index} value={type}>
                                                 {type}
                                             </option>

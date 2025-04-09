@@ -51,6 +51,11 @@ const ManageAbbreviations = ({ closePopup, onClose }) => {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr/update/${selectedAbbreviation}`, {
                 abbr: abbrInp,
                 meaning: meanInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("Abbreviation updated successfully.");

@@ -137,7 +137,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
                     readOnly
                   />
                 </td>
-                <td>
+                <td className="procCent">
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {

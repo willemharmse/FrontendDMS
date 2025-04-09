@@ -200,7 +200,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                             {formData.Equipment?.map((row, index) => (
                                 <tr key={index}>
                                     <td>{row.eqp}</td>
-                                    <td>
+                                    <td className="procCent">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => {

@@ -58,6 +58,7 @@ const UserManagement = () => {
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
+        setToken(storedToken);
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             console.log(decodedToken);
@@ -85,7 +86,7 @@ const UserManagement = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`, {
                 headers: {
-                    //'Authorization': `Bearer ${token}`
+
                 }
             });
             if (!response.ok) {
@@ -163,7 +164,7 @@ const UserManagement = () => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/user/delete/${userId}`, {
                 method: 'DELETE',
                 headers: {
-                    //'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`
                 },
             });
             if (!response.ok) throw new Error('Failed to delete user');
@@ -184,7 +185,8 @@ const UserManagement = () => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/user/update/${userToEdit._id}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(userToEdit),
             });

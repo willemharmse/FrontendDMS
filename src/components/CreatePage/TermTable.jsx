@@ -177,7 +177,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                 <tr key={index}>
                   <td>{row.term}</td>
                   <td>{row.definition}</td>
-                  <td>
+                  <td className="procCent">
                     <button
                       className="remove-row-button"
                       onClick={() => {

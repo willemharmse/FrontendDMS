@@ -5,6 +5,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 cytoscape.use(dagre);
 
@@ -590,8 +592,8 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     return (
         <div className="flowchart-container">
             <div className="flowchart-buttons">
-                <button onClick={exportImage} className="top-right-button-proc">
-                    Download Flowchart
+                <button onClick={exportImage} className="top-right-button-proc" title="Download Flowchart">
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
             </div>
         </div>

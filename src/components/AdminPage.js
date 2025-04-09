@@ -32,6 +32,7 @@ import {
     faServer,
     faUniversity
 } from "@fortawesome/free-solid-svg-icons";
+import ImportSiteInfo from "./UploadPage/ImportSiteInfo";
 
 const AdminPage = () => {
     const [error, setError] = useState(null);
@@ -45,6 +46,7 @@ const AdminPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [upload, setUpload] = useState(false);
     const [batch, setBatch] = useState(false);
+    const [importSI, setImportSI] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -53,6 +55,14 @@ const AdminPage = () => {
 
     const openUpload = () => {
         setUpload(true);
+    };
+
+    const openImportSI = () => {
+        setImportSI(true);
+    };
+
+    const closeImportSI = () => {
+        setImportSI(false);
     };
 
     const closeUpload = () => {
@@ -74,7 +84,6 @@ const AdminPage = () => {
             console.log(decodedToken);
             setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
-
         }
     }, [navigate]);
 
@@ -109,6 +118,7 @@ const AdminPage = () => {
         <div className="user-info-container">
             {upload && (<UploadPopup onClose={closeUpload} />)}
             {batch && (<BatchUpload onClose={closeBatch} />)}
+            {importSI && (<ImportSiteInfo onClose={closeImportSI} />)}
             <div className="sidebar-um">
                 <div className="sidebar-logo-um">
                     <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
@@ -151,7 +161,7 @@ const AdminPage = () => {
                             <h3 className="document-title-fi-home">Batch Upload Documents</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/importValues")}>
+                    <div className={`document-card-fi-home`} onClick={openImportSI}>
                         <>
                             <div className="icon-dept">
                                 <FontAwesomeIcon icon={faCloudUploadAlt} className={"icon-dept"} />

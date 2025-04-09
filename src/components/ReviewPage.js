@@ -635,16 +635,25 @@ const ReviewPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-document`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
                 body: JSON.stringify(dataToStore), // Now sending the correct dataToStore
             });
-
+            if (response.status === 404) throw new Error("Failed to generate document")
+            {
+                toast.success("File has been reviewed.", {
+                    closeButton: false,
+                    style: {
+                        textAlign: 'center'
+                    }
+                })
+            }
             if (!response.ok) throw new Error("Failed to generate document");
 
-            const blob = await response.blob();
-            saveAs(blob, `${documentName}.docm`);
             setLoading(false);
             getNewAzureFileName();
 
@@ -830,7 +839,7 @@ const ReviewPage = () => {
                             onClick={handleClick}
                             title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
                         >
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Review Document'}
                         </button>
                         <button
                             className="pdf-button font-fam"

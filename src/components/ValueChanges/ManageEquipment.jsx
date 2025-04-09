@@ -47,6 +47,11 @@ const ManageEquipment = ({ closePopup, onClose }) => {
         try {
             await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/eqp/update/${selectedEquipment}`, {
                 eqp: eqpInp,
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
             });
 
             setMessage("Equipment updated successfully.");

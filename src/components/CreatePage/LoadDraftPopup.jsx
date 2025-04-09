@@ -47,6 +47,9 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/delete/${draftId}`, {
                 method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
             });
 
             if (!response.ok) {
@@ -102,7 +105,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                         ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="3">Loading abbreviations...</td>
+                                        <td colSpan="3">Loading drafts...</td>
                                     </tr>
                                 )}
                             </tbody>

@@ -82,7 +82,7 @@ const GeneratedFileInfo = () => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/file//generated/download/${fileId}`, {
                 method: 'GET',
                 headers: {
-                    //'Authorization': `Bearer ${token}`, // Uncomment if needed
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -181,7 +181,9 @@ const GeneratedFileInfo = () => {
                             <tr>
                                 <th className="gen-th">Nr</th>
                                 <th className="gen-th">File Name</th>
-                                <th className="gen-th">Status</th>
+                                <th className="gen-th">Document Type</th>
+                                <th className="gen-th">Version</th>
+                                <th className="gen-th">Published By</th>
                                 <th className="gen-th">Review Date</th>
                                 <th className="gen-th">Action</th>
                             </tr>
@@ -191,7 +193,9 @@ const GeneratedFileInfo = () => {
                                 <tr key={file._id} className={`file-info-row-height gen-tr`}>
                                     <td className="gen-nr gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{index + 1}</td>
                                     <td className="gen-fn  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)} >{removeFileExtension(file.fileName)}</td>
-                                    <td className="gen-stat  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{file.status}</td>
+                                    <td className="gen-stat  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{file.formData.documentType}</td>
+                                    <td className="gen-ver  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{file.formData.version}</td>
+                                    <td className="gen-pub  gen-point">{file.publisher.username}</td>
                                     <td className="gen-rev  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{formatDate(file.reviewDate)}</td>
                                     <th className="gen-th"><FontAwesomeIcon icon={faDownload} className=" gen-point" onClick={() => downloadFile(file._id, file.fileName)} /></th>
                                 </tr>

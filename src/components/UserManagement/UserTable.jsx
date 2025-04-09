@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import './UserTable.css';
@@ -8,6 +9,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
     const [isMenuOpenRole, setIsMenuOpenRole] = useState(false);
     const [usernameFilter, setUsernameFilter] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+    const navigate = useNavigate();
 
     const toggleMenuUser = () => {
         setIsMenuOpenUser((prevState) => !prevState);
@@ -63,7 +65,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                     {filteredUsersList.map((user, index) => (
                         <tr key={user._id}>
                             <td className="col-um">{index + 1}</td>
-                            <td className="col-um">{user.username}</td>
+                            <td className="col-um" onClick={() => navigate(`/FrontendDMS/userActivity/${user._id}`)} style={{ cursor: "pointer" }}>{user.username}</td>
                             <td className="col-um">{user.email ? user.email : ""}</td>
                             <td className="col-um">{formatRole(user.role)}</td>
                             <td className="col-um">{user.dateAdded ? formatDate(user.dateAdded) : ""}</td>

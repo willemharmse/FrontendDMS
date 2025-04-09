@@ -24,6 +24,7 @@ function ForgotPassword() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                     body: JSON.stringify({ username, email }),
                 });
@@ -44,6 +45,7 @@ function ForgotPassword() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                     body: JSON.stringify({ username, otp }),
                 });
@@ -74,6 +76,7 @@ function ForgotPassword() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                     body: JSON.stringify({ username, newPassword }),
                 });

@@ -1,4 +1,4 @@
-.batch-popup-overlay {
+.import-si-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,56 +11,32 @@
     z-index: 1000;
 }
 
-.batch-popup-content {
+.import-si-popup-content {
     background: #f2f2f2;
     padding: 25px;
     padding-bottom: 20px;
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
     height: 100%;
-    max-height: 600px;
+    max-height: 250px;
 }
 
-.batch-nr {
-    width: 5%;
-}
-
-.batch-name {
-    width: 80%;
-}
-
-.batch-act {
-    width: 15%;
-    text-align: center;
-}
-
-.batch-del-button {
-    width: 90% !important;
-}
-
-.batch-del-act-button {
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    padding: 0px;
-}
-
-.batch-row-height-rows {
+.import-si-row-height-rows {
     height: 10px !important;
     padding-top: 1px !important;
     padding-bottom: 1px !important;
 }
 
-.batch-row-height-headers {
+.import-si-row-height-headers {
     height: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
 }
 
-.batch-table-group {
+.import-si-table-group {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -72,7 +48,7 @@
     border-radius: 5px;
 }
 
-.batch-table-group {
+.import-si-table-group {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -84,7 +60,7 @@
     border-radius: 5px;
 }
 
-.batch-headers {
+.import-si-headers {
     position: sticky;
     top: 0;
     background-color: #D9D9D9;
@@ -92,7 +68,7 @@
     z-index: 1;
 }
 
-.batch-table-wrapper-dept {
+.import-si-table-wrapper-dept {
     overflow-y: auto;
     max-height: 200px;
     min-height: 200px;
@@ -114,7 +90,7 @@
     display: block;
 }
 
-.batch-file-dropzone {
+.import-si-file-dropzone {
     border: 2px dashed #ccc;
     border-radius: 4px;
     padding: 30px;
@@ -132,32 +108,31 @@
     transition: all 0.3s ease;
 }
 
-.batch-file-header {
-    transform: translateY(-32%);
+.import-si-file-header {
+    transform: translateY(-30%);
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     font-family: Arial;
-    margin-top: 2px;
 }
 
-.batch-file-group {
-    transform: translateY(-3%);
+.import-si-file-group {
+    transform: translateY(+0%);
     padding: 20px 0;
     margin-bottom: 20px;
     background-color: white;
     border-radius: 5px;
 }
 
-.batch-file-group-table {
+.import-si-file-group-table {
     transform: translateY(-3%);
     padding: 20px 0;
     background-color: white;
     border-radius: 5px;
 }
 
-.batch-file-title {
+.import-si-file-title {
     font-size: 20px;
     font-weight: bold;
     margin: 0;
@@ -167,7 +142,7 @@
     font-family: Arial;
 }
 
-.batch-file-close {
+.import-si-file-close {
     background: none;
     color: #ADADAD;
     border: none;
@@ -177,12 +152,12 @@
     cursor: pointer;
 }
 
-.batch-popup-title {
+.import-si-popup-title {
     font-size: 1.4rem;
     margin-bottom: 15px;
 }
 
-.batch-popup-input {
+.import-si-popup-input {
     width: 90%;
     padding: 10px;
     font-size: 16px;
@@ -192,7 +167,7 @@
     text-align: center;
 }
 
-.batch-file-label {
+.import-si-file-label {
     display: block;
     font-size: 19px;
     font-family: Arial;
@@ -201,7 +176,7 @@
     text-align: center;
 }
 
-.batch-file-label-tc {
+.import-si-file-label-tc {
     display: block;
     color: #7F7F7F;
     font-size: 12px;
@@ -213,13 +188,13 @@
     text-align: center;
 }
 
-.batch-popup-actions {
+.import-si-popup-actions {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
 }
 
-.batch-popup-button {
+.import-si-popup-button {
     padding: 10px 15px !important;
     border: none !important;
     border-radius: 6px !important;
@@ -231,30 +206,30 @@
     transition: transform 0.2s ease, background-color 0.2s ease !important;
 }
 
-.batch-popup-button.confirm {
+.import-si-popup-button.confirm {
     background-color: #7EAC89 !important;
     color: white !important;
 }
 
-.batch-popup-button.cancel {
+.import-si-popup-button.cancel {
     background-color: #CB6F6F !important;
     color: white !important;
 }
 
-.batch-popup-button:hover {
+.import-si-popup-button:hover {
     transform: scale(1.05) !important;
 }
 
-.batch-popup-button:active {
+.import-si-popup-button:active {
     transform: scale(0.95) !important;
 }
 
-.batch-file-buttons {
+.import-si-file-buttons {
     display: flex;
     justify-content: center;
 }
 
-.batch-file-button {
+.import-si-file-button {
     background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
     color: white;
     border: none;
@@ -270,7 +245,7 @@
     border-radius: 5px;
 }
 
-.batch-file-button-files {
+.import-si-file-button-files {
     background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
     color: white;
     border: none;
@@ -287,7 +262,7 @@
     transform: translateY(-13%);
 }
 
-.batch-file-button-sub {
+.import-si-file-button-sub {
     background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
     color: white;
     border: none;
@@ -301,10 +276,10 @@
     font-family: Arial;
     cursor: pointer;
     border-radius: 5px;
-    transform: translateY(+10%);
+    transform: translateY(-15%);
 }
 
-.batch-file-text-xlsx {
+.import-si-file-text-xlsx {
     text-align: center;
     font-size: 16px;
     font-weight: 400;
@@ -312,7 +287,7 @@
     margin-top: 15px;
 }
 
-.batch-file-text {
+.import-si-file-text {
     text-align: center;
     font-size: 18px;
     font-weight: bold;

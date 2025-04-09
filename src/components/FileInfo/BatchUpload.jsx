@@ -71,23 +71,25 @@ const BatchUpload = ({ onClose }) => {
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_URL}/api/batch/validate-excel/test`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
             });
 
             setMessage(response.data.message);
             setErrors([]);
-        } catch (error) {
-            setLoading(false);
-            toast.error("Validation failed!", {
+            setLoading(false); // Reset loading state after response
+            toast.success("Files Uploaded", {
                 closeButton: false,
                 autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
             })
-        } finally {
-            setLoading(false); // Reset loading state after response
-            toast.success("Files Uploaded", {
+        } catch (error) {
+            setLoading(false);
+            toast.error("Validation failed!", {
                 closeButton: false,
                 autoClose: 800,
                 style: {
@@ -143,9 +145,9 @@ const BatchUpload = ({ onClose }) => {
                         <table className="batch-table font-fam">
                             <thead className="batch-headers">
                                 <tr>
-                                    <th className="batch-row-height-headers">Nr</th>
-                                    <th className="batch-row-height-headers">File</th>
-                                    <th className="batch-row-height-headers">Action</th>
+                                    <th className="batch-row-height-headers batch-nr">Nr</th>
+                                    <th className="batch-row-height-headers batch-name">File</th>
+                                    <th className="batch-row-height-headers batch-act">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -155,9 +157,9 @@ const BatchUpload = ({ onClose }) => {
                                             <tr key={index} >
                                                 <td className="batch-row-height-rows">{index + 1}</td>
                                                 <td className="batch-row-height-rows">{file.name}</td>
-                                                <td className="batch-row-height-rows">
+                                                <td className="batch-row-height-rows batch-del-act-button">
                                                     <button
-                                                        className={"action-button-user delete-button-user"}
+                                                        className={"action-button-user delete-button-user batch-del-button"}
                                                         onClick={() => handleRemoveFile(index)}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} />

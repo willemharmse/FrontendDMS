@@ -199,7 +199,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                             {formData.Materials?.map((row, index) => (
                                 <tr key={index}>
                                     <td>{row.mat}</td>
-                                    <td>
+                                    <td className="procCent">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => {
