@@ -22,6 +22,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
 import SharePage from "./CreatePage/SharePage";
+import { use } from "cytoscape";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const CreatePage = () => {
   const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
+  const loadedIDRef = useRef('');
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = [...formData.procedureRows];
@@ -74,29 +76,6 @@ const CreatePage = () => {
   const closeShare = () => { setShare(false); };
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
-
-  useEffect(() => {
-    if (titleSet && !autoSaveInterval.current) {
-      autoSaveInterval.current = setInterval(() => {
-        //handleSave();
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("Draft has been auto-saved", {
-          closeButton: false,
-          style: {
-            textAlign: 'center'
-          }
-        })
-      }, 120000); // Auto-save every 1 min
-    }
-
-    return () => {
-      if (autoSaveInterval.current) {
-        clearInterval(autoSaveInterval.current);
-        autoSaveInterval.current = null;
-      }
-    };
-  }, [titleSet]);
 
   const handleSave = () => {
     if (formData.title !== "") {
@@ -142,15 +121,18 @@ const CreatePage = () => {
 
   const saveData = async () => {
     const dataToStore = {
-      usedAbbrCodes,       // your current state values
-      usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
-      formData,
-      userIDs
+      usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+      usedTermCodes: usedTermCodesRef.current,
+      usedPPEOptions: usedPPEOptionsRef.current,
+      usedHandTools: usedHandToolsRef.current,
+      usedEquipment: usedEquipmentRef.current,
+      usedMobileMachine: usedMobileMachineRef.current,
+      usedMaterials: usedMaterialsRef.current,
+      formData: formDataRef.current,
+      userIDs: userIDsRef.current,
+      creator: userIDRef.current,
+      updater: null,
+      dateUpdated: null
     };
 
     try {
@@ -166,6 +148,7 @@ const CreatePage = () => {
 
       if (result.id) {  // Ensure we receive an ID from the backend
         setLoadedID(result.id);  // Update loadedID to track the saved document
+        loadedIDRef.current = result.id;
       }
     } catch (error) {
       console.error('Error saving data:', error);
@@ -174,20 +157,22 @@ const CreatePage = () => {
 
   const updateData = async (selectedUserIDs) => {
     const dataToStore = {
-      usedAbbrCodes,       // your current state values
-      usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
-      formData,
+      usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+      usedTermCodes: usedTermCodesRef.current,
+      usedPPEOptions: usedPPEOptionsRef.current,
+      usedHandTools: usedHandToolsRef.current,
+      usedEquipment: usedEquipmentRef.current,
+      usedMobileMachine: usedMobileMachineRef.current,
+      usedMaterials: usedMaterialsRef.current,
+      formData: formDataRef.current,
       userIDs: selectedUserIDs,
+      updater: userIDRef.current,
+      dateUpdated: new Date().toISOString(),
       userID
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/modifySafe/${loadedID}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/modifySafe/${loadedIDRef.current}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,6 +250,8 @@ const CreatePage = () => {
       setUserIDs(storedData.userIDs || []);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev }));
+      setTitleSet(true);
+      loadedIDRef.current = loadID;
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -317,6 +304,104 @@ const CreatePage = () => {
       { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
     ],
   });
+
+  const formDataRef = useRef(formData);
+  const usedAbbrCodesRef = useRef(usedAbbrCodes);
+  const usedTermCodesRef = useRef(usedTermCodes);
+  const usedPPEOptionsRef = useRef(usedPPEOptions);
+  const usedHandToolsRef = useRef(usedHandTools);
+  const usedEquipmentRef = useRef(usedEquipment);
+  const usedMobileMachineRef = useRef(usedMobileMachine);
+  const usedMaterialsRef = useRef(usedMaterials);
+  const userIDsRef = useRef(userIDs);
+  const userIDRef = useRef(userID);
+
+  useEffect(() => {
+    userIDRef.current = userID;
+  }, [userID]);
+
+  useEffect(() => {
+    userIDsRef.current = userIDs;
+  }, [userIDs]);
+
+  useEffect(() => {
+    usedAbbrCodesRef.current = usedAbbrCodes;
+  }, [usedAbbrCodes]);
+
+  useEffect(() => {
+    usedTermCodesRef.current = usedTermCodes;
+  }, [usedTermCodes]);
+
+  useEffect(() => {
+    usedPPEOptionsRef.current = usedPPEOptions;
+  }, [usedPPEOptions]);
+
+  useEffect(() => {
+    usedHandToolsRef.current = usedHandTools;
+  }, [usedHandTools]);
+
+  useEffect(() => {
+    usedMobileMachineRef.current = usedMobileMachine;
+  }, [usedMobileMachine]);
+
+  useEffect(() => {
+    usedMaterialsRef.current = usedMaterials;
+  }, [usedMaterials]);
+
+  useEffect(() => {
+    usedEquipmentRef.current = usedEquipment;
+  }, [usedEquipment]);
+
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  useEffect(() => {
+    if (!autoSaveInterval.current && formData.title.trim() !== "") {
+      console.log("✅ Auto-save interval set");
+
+      autoSaveInterval.current = setInterval(() => {
+        console.log("⏳ Auto-saving...");
+        autoSaveDraft();
+      }, 120000); // Auto-save every 30 seconds
+    }
+
+    return () => {
+      if (autoSaveInterval.current) {
+        clearInterval(autoSaveInterval.current);
+        autoSaveInterval.current = null;
+        console.log("🧹 Auto-save interval cleared");
+      }
+    };
+  }, [formData.title]);
+
+  const autoSaveDraft = () => {
+    if (formData.title.trim() === "") return; // Don't save without a valid title
+
+    if (loadedIDRef.current === '') {
+      saveData(); // First time save
+      console.log("📝 autoSaveDraft() triggered 1");
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Draft has been auto-saved", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } else {
+      updateData(userIDs); // Update existing draft
+      console.log("📝 autoSaveDraft() triggered 2");
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Draft has been auto-saved", {
+        closeButton: false,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    }
+  };
 
   const addPicRow = () => {
     setFormData((prevData) => {

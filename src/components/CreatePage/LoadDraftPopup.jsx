@@ -30,6 +30,27 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         getDraftDocuments();
     }, [userID]);
 
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Africa/Johannesburg' // Change to your desired timezone
+        };
+
+        const formatter = new Intl.DateTimeFormat(undefined, options);
+        const parts = formatter.formatToParts(date);
+
+        const datePart = `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+        const timePart = `${parts.find(p => p.type === 'hour').value}:${parts.find(p => p.type === 'minute').value} ${parts.find(p => p.type === 'dayPeriod').value}`;
+
+        return `${datePart} ${timePart}`;
+    };
+
     const handleLoad = async (draftId) => {
         await setLoadedID(draftId);
         await loadData(draftId);
@@ -74,13 +95,17 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                     <button className="review-date-close" onClick={onClose}>×</button>
                 </div>
                 <div className="draft-table-group">
-                    <div className="popup-table-wrapper-draft">
+                    <div className="draft-select-header">
                         <div className="draft-select-text">Select draft to load</div>
+                    </div>
+                    <div className="popup-table-wrapper-draft">
                         <table className="popup-table font-fam">
                             <thead className="draft-headers">
                                 <tr>
                                     <th className="draft-nr">Nr</th>
                                     <th className="draft-name">Draft Document</th>
+                                    <th className="draft-created">Created By</th>
+                                    <th className="draft-updated">Modified By</th>
                                     <th className="draft-actions-load">Action</th>
                                 </tr>
                             </thead>
@@ -93,6 +118,18 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                                     {index + 1}
                                                 </td>
                                                 <td onClick={() => handleLoad(item._id)} className="load-draft-td">{`${item.formData.title} ${item.formData.documentType}`}</td>
+                                                <td className="cent-draft-class">
+                                                    <div>{item.creator?.username || "Unknown"}</div>
+                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                        {formatDateTime(item.dateCreated)}
+                                                    </div>
+                                                </td>
+                                                <td className="cent-draft-class">
+                                                    <div>{item.updater?.username || "-"}</div>
+                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                        {item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
+                                                    </div>
+                                                </td>
                                                 <td className="load-draft-delete">
                                                     <button
                                                         className={"action-button-load-draft delete-button-load-draft"}

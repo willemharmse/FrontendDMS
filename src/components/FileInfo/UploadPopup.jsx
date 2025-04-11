@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,8 +7,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const UploadPopup = ({ onClose }) => {
-    const [showDocumentInfo, setShowDocumentInfo] = useState(true);
-    const [isDragging, setIsDragging] = useState(false);
+    const [approver, setApprover] = useState('');
+    const [reviewer, setReviewer] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [discipline, setDiscipline] = useState('');
     const [owner, setOwner] = useState('');
@@ -27,7 +27,7 @@ const UploadPopup = ({ onClose }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [userID, setUserID] = useState('');
     const [errors, setErrors] = useState([]);
-    const fileInputRef = useRef(null);
+    const [usersList, setUsersList] = useState([]);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -59,6 +59,24 @@ const UploadPopup = ({ onClose }) => {
         fetchValues();
     }, []);
 
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+        fetchUsers();
+    }, []);
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -69,6 +87,8 @@ const UploadPopup = ({ onClose }) => {
         if (!departmentHead) newErrors.departmentHead = true;
         if (!reviewDate) newErrors.reviewDate = true;
         if (!status) newErrors.status = true;
+        if (!reviewer) newErrors.reviewer = true;
+        if (!approver) newErrors.approver = true;
 
         return newErrors;
     };
@@ -105,6 +125,8 @@ const UploadPopup = ({ onClose }) => {
         formData.append('status', status);
         formData.append('userID', userID);
         formData.append('reviewDate', reviewDate);
+        formData.append('reviewer', reviewer);
+        formData.append('approver', approver);
 
         try {
             setLoading(true);
@@ -154,33 +176,6 @@ const UploadPopup = ({ onClose }) => {
         }
     };
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        const files = e.dataTransfer.files;
-        if (files && files.length > 0) {
-            handleFileSelect(files[0]);
-        }
-    };
-
-    const handleChooseFile = () => {
-        fileInputRef.current.click();
-    };
-
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             handleFileSelect(e.target.files[0]);
@@ -197,56 +192,9 @@ const UploadPopup = ({ onClose }) => {
     return (
         <div className="upload-file-page-container">
             <div className="upload-file-page-overlay">
-                <div className="upload-file-page-popup-left">
-                    <div className="upload-file-page-popup-header">
-                        <h2>Upload Document</h2>
-                    </div>
-                    <div className="upload-file-page-upload-area">
-                        <div
-                            className={`upload-file-page-dropzone ${isDragging ? 'upload-file-page-dragging' : ''}`}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                        >
-                            <div className="upload-file-page-cloud-icon">
-                                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M30 53V33" stroke="#A0A0A0" stroke-width="2" />
-                                    <path d="M30 33L20 43" stroke="#A0A0A0" stroke-width="2" />
-                                    <path d="M30 33L40 43" stroke="#A0A0A0" stroke-width="2" />
-                                    <path d="M15 40C7.5 40 5 32.5 10 27.5C10 17.5 20 15 25 20C25 15 40 15 40 25C45 25 50 30 45 40" stroke="#A0A0A0" stroke-width="2" />
-                                </svg>
-
-                            </div>
-                            <p className="upload-file-page-dropzone-text">
-                                {selectedFile ? `Selected: ${selectedFile.name}` : 'Drag and drop file here'}
-                            </p>
-                            <p className="upload-file-page-file-size">File shouldn't be password protected.</p>
-                        </div>
-                        <div className="upload-file-page-button-container">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                className="upload-file-page-file-input"
-                                onChange={handleFileChange}
-                            />
-                            <div className="create-user-buttons">
-                                <button
-                                    className="upload-file-page-choose-button"
-                                    onClick={handleChooseFile}
-                                >
-                                    Choose File
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="upload-file-page-divider"></div>
-
-
                 <div className="upload-file-page-popup-right">
                     <div className="upload-file-page-popup-header-right">
-                        <h2>Document Information</h2>
+                        <h2>Upload Document</h2>
                         <button
                             className="upload-file-page-close-button"
                             onClick={onClose}
@@ -254,99 +202,156 @@ const UploadPopup = ({ onClose }) => {
                             ×
                         </button>
                     </div>
-                    <form className="upload-file-page-form" onSubmit={handleSubmit}>
-                        <div className="upload-file-page-form-row">
-                            <div className={`upload-file-page-form-group ${errors.discipline ? "error-upload-required-up" : ""}`}>
-                                <label>Discipline<span className="required-field">*</span></label>
-                                <div className="upload-file-page-select-container">
-                                    <select value={discipline} className="upload-file-page-select" onChange={(e) => setDiscipline(e.target.value)}>
-                                        <option value="">Select Discipline</option>
-                                        {disciplines
-                                            .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
-                                            .map((discipline, index) => (
-                                                <option key={index} value={discipline}>
-                                                    {discipline}
+
+                    <div className="upload-file-page-form-group-container">
+                        <div className="upload-file-name">{selectedFile ? selectedFile.name : "No File Selected"}</div>
+                        <div className="create-user-buttons">
+                            <label className="choose-upload-file-button">
+                                {'Choose Excel File'}
+                                <input
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="upload-file-page-form-group-main-container">
+                        <div className="upload-file-page-popup-header">
+                            <h2>Document Information</h2>
+                        </div>
+
+                        <form className="upload-file-page-form" onSubmit={handleSubmit}>
+                            <div className="upload-file-page-form-row">
+                                <div className={`upload-file-page-form-group ${errors.discipline ? "error-upload-required-up" : ""}`}>
+                                    <label>Discipline <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={discipline} className="upload-file-page-select" onChange={(e) => setDiscipline(e.target.value)}>
+                                            <option value="">Select Discipline</option>
+                                            {disciplines
+                                                .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
+                                                .map((discipline, index) => (
+                                                    <option key={index} value={discipline}>
+                                                        {discipline}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.author ? "error-upload-required-up" : ""}`}>
+                                    <label>Document Owner <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={owner} className="upload-file-page-select" onChange={(e) => setOwner(e.target.value)}>
+                                            <option>Select Owner</option>
+                                            {users
+                                                .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
+                                                .map((user, index) => (
+                                                    <option key={index} value={user}>
+                                                        {user}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
+                                    <label>Department Head <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={departmentHead} className="upload-file-page-select" onChange={(e) => setDepartmentHead(e.target.value)}>
+                                            <option value="">Select Head</option>
+                                            {deptHeads.sort((a, b) => a.localeCompare(b)).map((head, index) => (
+                                                <option key={index} value={head}>
+                                                    {head}
                                                 </option>
                                             ))}
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div className={`upload-file-page-form-group ${errors.author ? "error-upload-required-up" : ""}`}>
-                                <label>Owner<span className="required-field">*</span></label>
-                                <div className="upload-file-page-select-container">
-                                    <select value={owner} className="upload-file-page-select" onChange={(e) => setOwner(e.target.value)}>
-                                        <option>Select Owner</option>
-                                        {users
-                                            .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
-                                            .map((user, index) => (
-                                                <option key={index} value={user}>
-                                                    {user}
+
+                            <div className="upload-file-page-form-row">
+                                <div className={`upload-file-page-form-group ${errors.status ? "error-upload-required-up" : ""}`}>
+                                    <label>Document Status <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={status} className="upload-file-page-select" onChange={(e) => setStatus(e.target.value)}>
+                                            <option value="">Select Status</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="in_approval">In Approval</option>
+                                            <option value="approved">Approved</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
+                                    <label>Document Reviewer <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={reviewer} className="upload-file-page-select" onChange={(e) => setReviewer(e.target.value)}>
+                                            <option value="">Select Reviewer</option>
+                                            {usersList.sort((a, b) => a.username.localeCompare(b.username)).map((reviewer, index) => (
+                                                <option key={index} value={reviewer._id}>
+                                                    {reviewer.username}
                                                 </option>
                                             ))}
-                                    </select>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.approver ? "error-upload-required-up" : ""}`}>
+                                    <label>Document Approver <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={approver} className="upload-file-page-select" onChange={(e) => setApprover(e.target.value)}>
+                                            <option value="">Select Approver</option>
+                                            {usersList.sort((a, b) => a.username.localeCompare(b.username)).map((approver, index) => (
+                                                <option key={index} value={approver._id}>
+                                                    {approver.username}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="upload-file-page-form-row">
-                            <div className={`upload-file-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                <label>Department Head<span className="required-field">*</span></label>
-                                <div className="upload-file-page-select-container">
-                                    <select value={departmentHead} className="upload-file-page-select" onChange={(e) => setDepartmentHead(e.target.value)}>
-                                        <option value="">Select Head</option>
-                                        {deptHeads.sort((a, b) => a.localeCompare(b)).map((head, index) => (
-                                            <option key={index} value={head}>
-                                                {head}
-                                            </option>
-                                        ))}
-                                    </select>
+                            <div className="upload-file-page-form-row">
+
+
+                                <div className={`upload-file-page-form-group ${errors.documentType ? "error-upload-required-up" : ""}`}>
+                                    <label>Document Type <span className="required-field">*</span></label>
+                                    <div className="upload-file-page-select-container">
+                                        <select value={documentType} className="upload-file-page-select" onChange={(e) => setDocumentType(e.target.value)}>
+                                            <option>Select Document Type</option>
+                                            {docTypes.sort((a, b) => a.localeCompare(b)).map((type, index) => (
+                                                <option key={index} value={type}>
+                                                    {type}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
+                                    <label>Review Date <span className="required-field">*</span></label>
+                                    <input type="date" value={reviewDate} className="upload-file-page-date" onChange={(e) => setReviewDate(e.target.value)}></input>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                 </div>
                             </div>
-                            <div className={`upload-file-page-form-group ${errors.status ? "error-upload-required-up" : ""}`}>
-                                <label>Document Status<span className="required-field">*</span></label>
-                                <div className="upload-file-page-select-container">
-                                    <select value={status} className="upload-file-page-select" onChange={(e) => setStatus(e.target.value)}>
-                                        <option value="">Select Status</option>
-                                        <option value="in_review">In Review</option>
-                                        <option value="in_approval">In Approval</option>
-                                        <option value="approved">Approved</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="upload-file-page-form-row">
-                            <div className={`upload-file-page-form-group ${errors.documentType ? "error-upload-required-up" : ""}`}>
-                                <label>Document Type<span className="required-field">*</span></label>
-                                <div className="upload-file-page-select-container">
-                                    <select value={documentType} className="upload-file-page-select" onChange={(e) => setDocumentType(e.target.value)}>
-                                        <option>Select Document Type</option>
-                                        {docTypes.sort((a, b) => a.localeCompare(b)).map((type, index) => (
-                                            <option key={index} value={type}>
-                                                {type}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
-                                <label>Review Date<span className="required-field">*</span></label>
-                                <input type="date" value={reviewDate} className="upload-file-page-date" onChange={(e) => setReviewDate(e.target.value)}></input>
-                            </div>
-                        </div>
+                            <div className="upload-file-page-form-row">
 
-                        <div className="upload-file-page-form-footer">
-
-                            <div className="create-user-buttons">
-                                <button
-                                    className="upload-file-page-upload-button"
-                                    disabled={!selectedFile}
-                                >
-                                    {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}
-                                </button>
                             </div>
+                        </form>
+                    </div>
+
+                    <div className="upload-file-page-form-footer">
+
+                        <div className="create-user-buttons">
+                            <button
+                                className="upload-file-page-upload-button"
+                                disabled={!selectedFile}
+                                onClick={handleSubmit}
+                            >
+                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}
+                            </button>
                         </div>
-                    </form>
+                    </div>
+
                     {showPopup && (
                         <div className="upload-popup-confirmation-classname">
                             <div className="upload-popup-content-classname">
@@ -365,7 +370,7 @@ const UploadPopup = ({ onClose }) => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
