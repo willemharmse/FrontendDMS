@@ -35,7 +35,13 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add term");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Term added successfully!", type: "success" });
@@ -58,7 +64,13 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add term");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Term added successfully!", type: "success" });
@@ -89,10 +101,13 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
     return (
         <div className="term-popup-overlay">
             <div className="term-popup-content">
-                <h3 className="term-popup-title">Add New Term</h3>
+                <div className="term-popup-header">
+                    <h2 className="term-popup-title">Add New Term</h2>
+                    <button className="term-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="term-input-group">
-                        <label>Term:</label>
+                    <div className="term-popup-group">
+                        <label className="term-popup-label">Term</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -100,17 +115,20 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                             onChange={(e) => setTerm(e.target.value)}
                             className="term-popup-input"
                             required
+                            placeholder="Enter term here"
                         />
                     </div>
-                    <div className="term-input-group">
-                        <label>Definition:</label>
-                        <input
+                    <div className="term-popup-group">
+                        <label className="term-popup-label">Description</label>
+                        <textarea
+                            rows="4"
                             spellcheck="true"
                             type="text"
                             value={definition}
                             onChange={(e) => setDefinition(e.target.value)}
-                            className="term-popup-input"
+                            className="term-popup-text-area"
                             required
+                            placeholder="Enter description here"
                         />
                     </div>
 
@@ -121,16 +139,9 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                         </div>
                     )}
 
-                    <div className="term-popup-actions">
-                        <button type="submit" className="term-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Term'}
-                        </button>
-                        <button
-                            type="button"
-                            className="term-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="term-popup-buttons">
+                        <button type="submit" className="term-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

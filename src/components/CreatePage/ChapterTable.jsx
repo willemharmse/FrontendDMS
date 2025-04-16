@@ -66,7 +66,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                         {chapter.subheadings.map((subheading, subheadingIndex) => (
                             <div key={subheadingIndex} className="mct-subheading-card">
                                 <div className="mct-subheading-header">
-                                    <h5>Subheading {subheadingIndex + 1}</h5>
+                                    <h5>Sub-Section {chapterIndex + 1}.{subheadingIndex + 1}</h5>
                                     <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} /></button>
                                 </div>
                                 <input
@@ -86,7 +86,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             </div>
                         ))}
                         <div class="add-chapter-container">
-                            <button className="mct-add-subheading-btn" onClick={() => addSubheading(chapterIndex)}>+ Add Subheading</button>
+                            <button className="mct-add-subheading-btn" onClick={() => addSubheading(chapterIndex)}>+ Add Sub-Section</button>
                         </div>
                     </div>
                 ))}

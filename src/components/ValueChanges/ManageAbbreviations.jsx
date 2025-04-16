@@ -76,37 +76,37 @@ const ManageAbbreviations = ({ closePopup, onClose }) => {
     return (
         <div className="manAbbr-popup-container">
             <div className="manAbbr-popup-box">
-                <h2>Manage Abbreviations</h2>
+                <div className="manAbbr-popup-header">
+                    <h2 className="manAbbr-popup-title">Update Abbreviation</h2>
+                    <button className="manAbbr-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manAbbr-form-group-manage">
-                    <label>Select Abbreviation</label>
+                <div className="manAbbr-popup-group">
+                    <label className="manAbbr-popup-label">Existing Abbreviation</label>
                     <select className="manAbbr-select" value={selectedAbbreviation} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Abbreviation</option>
                         {abbreviations.sort((a, b) => a.abbr.localeCompare(b.abbr)).map((abbr) => (
                             <option key={abbr.abbr} value={abbr.abbr}>{abbr.abbr}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manAbbr-form-group-manage">
-                    <label>Abbreviation</label>
-                    <input spellcheck="true" className="manAbbr-input" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
+                <div className="manAbbr-popup-group">
+                    <label className="manAbbr-popup-label">New Abbreviation</label>
+                    <input spellcheck="true" className="manAbbr-input" placeholder="Enter New Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
                 </div>
 
-                <div className="manAbbr-form-group-manage">
-                    <label>Meaning</label>
-                    <input spellcheck="true" className="manAbbr-input" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                <div className="manAbbr-popup-group">
+                    <label className="manAbbr-popup-label">New Abbreviation Meaning</label>
+                    <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Enter new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manAbbr-message-manage">{message}</div>}
                 {error && <div className="manAbbr-error-message-manage">{error}</div>}
 
-                <div className="manAbbr-buttons-container">
-                    <button className="manAbbr-update-button-manage" onClick={handleUpdate}>
-                        Update Abbreviation
-                    </button>
-                    <button className="manAbbr-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manAbbr-buttons">
+                    <button className="manAbbr-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

@@ -9,6 +9,7 @@ import UploadPopup from "./FileInfo/UploadPopup";
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import BatchUpload from "./FileInfo/BatchUpload";
+import TopBar from "./Notifications/TopBar";
 
 const FileInfoHome = () => {
     const [error, setError] = useState(null);
@@ -67,14 +68,14 @@ const FileInfoHome = () => {
         "All Document": "All.png",
         Audit: "audit.png",
         Guideline: "guide.png",
+        MCOP: "guide.png",
         Policy: "policy.png",
         Procedure: "procedure.png",
         Standard: "standard.png",
-        "Risk Assessment": "risk.png",
     };
 
     const image = (type) => {
-        return imageMap[type]; // Fallback to "default.png" if type is not found
+        return imageMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
     };
 
     const fetchCount = async () => {
@@ -168,24 +169,7 @@ const FileInfoHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faArrowLeft} />
-                            </div>
-                        )}
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faBell} />
-                            </div>
-                        )}
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                            </div>
-                        )}
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={true} />)}
-                    </div>
+                    <TopBar role={role} menu={"Admin"} />
                 </div>
 
                 <div className="scrollable-box-fi-home">

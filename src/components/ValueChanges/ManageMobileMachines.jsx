@@ -71,32 +71,32 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
     return (
         <div className="manMac-popup-container">
             <div className="manMac-popup-box">
-                <h2>Manage Machines</h2>
+                <div className="manMac-popup-header">
+                    <h2 className="manMac-popup-title">Update Machines</h2>
+                    <button className="manMac-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manMac-form-group-manage">
-                    <label>Select Machine</label>
+                <div className="manMac-popup-group">
+                    <label className="manMac-popup-label">Existing Machine Name</label>
                     <select className="manMac-select" value={selectedMachine} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Machine Name</option>
                         {machines.sort((a, b) => a.machine.localeCompare(b.machine)).map((machine) => (
                             <option key={machine.machine} value={machine.machine}>{machine.machine}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manMac-form-group-manage">
-                    <label>Machine</label>
-                    <input spellcheck="true" className="manMac-input" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
+                <div className="manMac-popup-group">
+                    <label className="manMac-popup-label">New Machine Name</label>
+                    <input spellcheck="true" className="manMac-input" placeholder="Insert New Machine Name" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manMac-message-manage">{message}</div>}
                 {error && <div className="manMac-error-message-manage">{error}</div>}
 
-                <div className="manMac-buttons-container">
-                    <button className="manMac-update-button-manage" onClick={handleUpdate}>
-                        Update Machine
-                    </button>
-                    <button className="manMac-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manMac-buttons">
+                    <button className="manMac-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

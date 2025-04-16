@@ -35,7 +35,13 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add abbreviation");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Abbreviation added successfully!", type: "success" });
@@ -58,7 +64,13 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add abbreviation");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Abbreviation added as a suggestion.", type: "success" });
@@ -72,7 +84,7 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
         } catch (error) {
             setLoading(false);
             console.error("Error adding abbreviation:", error);
-            setMessage({ text: "Failed to add abbreviation", type: "error" });
+            setMessage({ text: "Failed awddd abbreviation", type: "error" });
         }
     };
 
@@ -89,10 +101,13 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
     return (
         <div className="abbr-popup-overlay">
             <div className="abbr-popup-content">
-                <h3 className="abbr-popup-title">Add New Abbreviation</h3>
+                <div className="abbr-popup-header">
+                    <h2 className="abbr-popup-title">Add New Abbreviation</h2>
+                    <button className="abbr-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="abbr-input-group">
-                        <label>Abbreviation:</label>
+                    <div className="abbr-popup-group">
+                        <label className="abbr-popup-label">Abbreviation:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -100,17 +115,20 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
                             onChange={(e) => setAbbreviation(e.target.value)}
                             className="abbr-popup-input"
                             required
+                            placeholder="Enter abbreviation code here"
                         />
                     </div>
-                    <div className="abbr-input-group">
-                        <label>Description:</label>
-                        <input
+                    <div className="abbr-popup-group">
+                        <label className="abbr-popup-label">Description:</label>
+                        <textarea
+                            rows="4"
                             spellcheck="true"
                             type="text"
                             value={meaning}
                             onChange={(e) => setMeaning(e.target.value)}
-                            className="abbr-popup-input"
+                            className="abbr-popup-text-area"
                             required
+                            placeholder="Enter description here"
                         />
                     </div>
 
@@ -121,16 +139,9 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
                         </div>
                     )}
 
-                    <div className="abbr-popup-actions">
-                        <button type="submit" className="abbr-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Abbreviation'}
-                        </button>
-                        <button
-                            type="button"
-                            className="abbr-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="abbr-popup-buttons">
+                        <button type="submit" className="abbr-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

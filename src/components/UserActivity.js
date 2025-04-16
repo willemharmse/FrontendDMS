@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import { jwtDecode } from 'jwt-decode';
+import TopBar from "./Notifications/TopBar";
 import "./UserActivity.css";
 
 const UserActivity = () => {
@@ -88,18 +88,7 @@ const UserActivity = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                        </div>
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-                    </div>
+                    <TopBar role={role} />
                 </div>
                 <div className="table-container-user-activity-log">
                     <table className="user-activity-log-table">

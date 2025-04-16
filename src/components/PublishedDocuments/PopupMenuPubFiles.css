@@ -1,12 +1,12 @@
-.popup-menu-container-FI {
+.popup-menu-container-pub-files {
     position: absolute;
-    top: 0px;
-    left: 0px;
+    top: 100%;
+    left: 0;
     z-index: 1000;
 }
 
-.popup-content-FI {
-    position: absolute;
+.popup-content-pub-files {
+    position: relative;
     background: white;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -14,13 +14,13 @@
     text-align: center;
 }
 
-.popup-content-FI ul {
+.popup-content-pub-files ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.popup-content-FI li {
+.popup-content-pub-files li {
     font-family: Arial;
     color: black;
     display: flex;
@@ -36,20 +36,10 @@
     border-bottom: none !important;
 }
 
-.popup-below {
-    top: 50px;
-    /* space below the file name */
-}
-
-.popup-above {
-    bottom: 0px;
-    /* flip up instead */
-}
-
-.popup-content-FI li:last-child {
+.popup-content-pub-files li:last-child {
     border-bottom: none;
 }
 
-.popup-content-FI li:hover {
+.popup-content-pub-files li:hover {
     background: #cfcece;
 }

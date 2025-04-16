@@ -33,7 +33,13 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add equipment");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Equipment added successfully!", type: "success" });
@@ -56,7 +62,13 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add equipment");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Equipment added as a suggestion.", type: "success" });
@@ -86,10 +98,13 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
     return (
         <div className="eqp-popup-overlay">
             <div className="eqp-popup-content">
-                <h3 className="eqp-popup-title">Add New Equipment</h3>
+                <div className="eqp-popup-header">
+                    <h2 className="eqp-popup-title">Add New Equipment</h2>
+                    <button className="eqp-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="eqp-input-group">
-                        <label>Equipment:</label>
+                    <div className="eqp-popup-group">
+                        <label className="eqp-popup-label">Equipment:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -97,6 +112,7 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                             onChange={(e) => setEqp(e.target.value)}
                             className="eqp-popup-input"
                             required
+                            placeholder="Enter equipment name"
                         />
                     </div>
 
@@ -107,16 +123,9 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                         </div>
                     )}
 
-                    <div className="eqp-popup-actions">
-                        <button type="submit" className="eqp-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Equipment'}
-                        </button>
-                        <button
-                            type="button"
-                            className="eqp-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="eqp-popup-buttons">
+                        <button type="submit" className="eqp-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

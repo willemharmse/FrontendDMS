@@ -33,7 +33,13 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add machine");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Machine added successfully!", type: "success" });
@@ -56,7 +62,13 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add machine");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Machine added as a suggestion.", type: "success" });
@@ -86,10 +98,13 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
     return (
         <div className="mac-popup-overlay">
             <div className="mac-popup-content">
-                <h3 className="mac-popup-title">Add New Machine</h3>
+                <div className="mac-popup-header">
+                    <h2 className="mac-popup-title">Add New Machine</h2>
+                    <button className="mac-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="mac-input-group">
-                        <label>Machine:</label>
+                    <div className="mac-popup-group">
+                        <label className="mac-popup-label">Machine:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -97,6 +112,7 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
                             onChange={(e) => setMachine(e.target.value)}
                             className="mac-popup-input"
                             required
+                            placeholder="Enter machine name"
                         />
                     </div>
 
@@ -107,16 +123,9 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
                         </div>
                     )}
 
-                    <div className="mac-popup-actions">
-                        <button type="submit" className="mac-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Machine'}
-                        </button>
-                        <button
-                            type="button"
-                            className="mac-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="mac-popup-buttons">
+                        <button type="submit" className="mac-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

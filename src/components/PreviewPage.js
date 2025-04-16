@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import TopBar from "./Notifications/TopBar";
 
 const PreviewPage = () => {
     const [token, setToken] = useState('');
@@ -16,7 +16,6 @@ const PreviewPage = () => {
     const { fileId } = useParams();
     const [fileUrl, setFileUrl] = useState("");
     const [iframeHeight, setIframeHeight] = useState("100%");
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -78,20 +77,8 @@ const PreviewPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(true)} />
-                        </div>
-                    </div>
+                    <TopBar role={role} />
                 </div>
-
-                {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} role={"None"} />)}
 
                 <div className="file-preview-container">
                     {fileUrl ? (

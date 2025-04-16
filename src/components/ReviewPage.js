@@ -20,7 +20,7 @@ import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser } from '@fortawesome/free-solid-svg-icons';
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import TopBarDD from "./Notifications/TopBarDD";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
@@ -535,9 +535,22 @@ const ReviewPage = () => {
     };
 
     const removeProRow = (indexToRemove) => {
+        if (formData.procedureRows.length <= 1) {
+            toast.warn("At least one procedure step is required.", {
+                autoClose: 800,
+                closeButton: false,
+                style: { textAlign: "center" },
+            });
+            return;
+        }
+
+        const newRows = formData.procedureRows
+            .filter((_, index) => index !== indexToRemove)
+            .map((row, idx) => ({ ...row, nr: idx + 1 })); // Renumber after removal
+
         setFormData({
             ...formData,
-            procedureRows: formData.procedureRows.filter((_, index) => index !== indexToRemove),
+            procedureRows: newRows,
         });
     };
 
@@ -738,18 +751,7 @@ const ReviewPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container-create-page">
-                        <div className="burger-menu-icon-create-page-2">
-                            <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} />
-                        </div>
-                        <div className="burger-menu-icon-create-page-2">
-                            <FontAwesomeIcon icon={faBell} />
-                        </div>
-                        <div className="burger-menu-icon-create-page-3" onClick={() => setIsOpenMenu(!isOpenMenu)}>
-                            <FontAwesomeIcon icon={faCircleUser} />
-                        </div>
-                    </div>
-                    {isOpenMenu && (<BurgerMenuFI role={role} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />)}
+                    <TopBarDD role={role} />
                 </div>
 
                 <div className={`scrollable-box`}>

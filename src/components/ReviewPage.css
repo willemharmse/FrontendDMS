@@ -414,7 +414,7 @@ body {
     padding: 15px;
     margin: 10px 0;
     /* Keeps it aligned */
-    width: 98%;
+    width: 100%;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;

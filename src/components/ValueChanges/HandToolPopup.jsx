@@ -33,7 +33,13 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add tool");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Tool added successfully!", type: "success" });
@@ -56,7 +62,13 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add tool");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Tool added as a suggestion.", type: "success" });
@@ -86,10 +98,13 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
     return (
         <div className="tool-popup-overlay">
             <div className="tool-popup-content">
-                <h3 className="tool-popup-title">Add New Tool</h3>
+                <div className="tool-popup-header">
+                    <h2 className="tool-popup-title">Add New Tool</h2>
+                    <button className="tool-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="tool-input-group">
-                        <label>Tool:</label>
+                    <div className="tool-popup-group">
+                        <label className="tool-popup-label">Tool:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -97,6 +112,7 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                             onChange={(e) => setTool(e.target.value)}
                             className="tool-popup-input"
                             required
+                            placeholder="Enter tool name"
                         />
                     </div>
 
@@ -107,16 +123,9 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                         </div>
                     )}
 
-                    <div className="tool-popup-actions">
-                        <button type="submit" className="tool-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Tool'}
-                        </button>
-                        <button
-                            type="button"
-                            className="tool-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="tool-popup-buttons">
+                        <button type="submit" className="tool-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

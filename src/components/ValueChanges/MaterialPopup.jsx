@@ -32,7 +32,13 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add material");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Material added successfully!", type: "success" });
@@ -55,7 +61,13 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add material");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "Material added as a suggestion.", type: "success" });
@@ -85,10 +97,13 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
     return (
         <div className="mat-popup-overlay">
             <div className="mat-popup-content">
-                <h3 className="mat-popup-title">Add New Material</h3>
+                <div className="mat-popup-header">
+                    <h2 className="mat-popup-title">Add New Material</h2>
+                    <button className="mat-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="mat-input-group">
-                        <label>Material:</label>
+                    <div className="mat-popup-group">
+                        <label className="mat-popup-label">Material:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -96,6 +111,7 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                             onChange={(e) => setMat(e.target.value)}
                             className="mat-popup-input"
                             required
+                            placeholder="Enter material name"
                         />
                     </div>
 
@@ -106,16 +122,9 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                         </div>
                     )}
 
-                    <div className="mat-popup-actions">
-                        <button type="submit" className="mat-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add Material'}
-                        </button>
-                        <button
-                            type="button"
-                            className="mat-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="mat-popup-buttons">
+                        <button type="submit" className="mat-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

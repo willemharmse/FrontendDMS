@@ -33,7 +33,13 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add ppe");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: data.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "PPE added successfully!", type: "success" });
@@ -56,7 +62,13 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to add ppe");
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    setLoading(false);
+                    setMessage({ text: responseData.message, type: "error" });
+                    return;
+                }
 
                 setLoading(false);
                 setMessage({ text: "PPE added as a suggestion.", type: "success" });
@@ -86,10 +98,13 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
     return (
         <div className="ppe-popup-overlay">
             <div className="ppe-popup-content">
-                <h3 className="ppe-popup-title">Add New PPE</h3>
+                <div className="ppe-popup-header">
+                    <h2 className="ppe-popup-title">Add New PPE</h2>
+                    <button className="ppe-popup-close" onClick={handleClose}>×</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="ppe-input-group">
-                        <label>PPE:</label>
+                    <div className="ppe-popup-group">
+                        <label className="ppe-popup-label">PPE:</label>
                         <input
                             spellcheck="true"
                             type="text"
@@ -97,6 +112,7 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
                             onChange={(e) => setPPE(e.target.value)}
                             className="ppe-popup-input"
                             required
+                            placeholder="Enter PPE"
                         />
                     </div>
 
@@ -107,16 +123,9 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
                         </div>
                     )}
 
-                    <div className="ppe-popup-actions">
-                        <button type="submit" className="ppe-popup-btn confirm">
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add PPE'}
-                        </button>
-                        <button
-                            type="button"
-                            className="ppe-popup-btn cancel"
-                            onClick={handleClose}
-                        >
-                            Cancel
+                    <div className="ppe-popup-buttons">
+                        <button type="submit" className="ppe-popup-button">
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}
                         </button>
                     </div>
                 </form>

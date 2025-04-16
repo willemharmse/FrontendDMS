@@ -19,6 +19,7 @@ import SortPopup from "./FileInfo/SortPopup";
 import BatchUpload from "./FileInfo/BatchUpload";
 import DownloadPopup from "./FileInfo/DownloadPopup";
 import PopupMenu from "./FileInfo/PopupMenu";
+import Notifications from "./Notifications/Notifications";
 
 const FileInfo = () => {
   const { type } = useParams();
@@ -53,6 +54,7 @@ const FileInfo = () => {
   const [loading, setLoading] = useState(false);
   const [upload, setUpload] = useState(false);
   const [update, setUpdate] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const [batch, setBatch] = useState(false);
   const [filters, setFilters] = useState({
@@ -62,6 +64,29 @@ const FileInfo = () => {
     startDate: '',
     endDate: ''
   });
+  const [count, setCount] = useState(""); // Placeholder for unread notifications count
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      const route = `/api/notifications/count`;
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch notification count');
+        }
+        const data = await response.json();
+        setCount(data.notifications);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+
+    fetchNotificationCount();
+  }, []);
 
   const openUpload = () => {
     setUpload(true);
@@ -493,12 +518,14 @@ const FileInfo = () => {
             <div className="sort-menu-icon-um">
               <FontAwesomeIcon icon={faSort} onClick={openSortModal} />
             </div>
-            <div className="burger-menu-icon-um">
-              <FontAwesomeIcon icon={faBell} />
+            <div className="burger-menu-icon-um notifications-bell-wrapper">
+              <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} />
+              {count != 0 && <div className="notifications-badge">{count}</div>}
             </div>
             <div className="burger-menu-icon-um">
               <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
             </div>
+            {showNotifications && (<Notifications setClose={setShowNotifications} />)}
             {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} openUpdate={openUpdate} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>

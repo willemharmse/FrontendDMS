@@ -136,7 +136,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                     </td>
                                     <td>
                                         <input
-                                            readOnly
                                             type="text"
                                             className="table-control"
                                             value={row.refDesc}

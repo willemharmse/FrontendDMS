@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const BurgerMenu = ({ role, openLoadPopup, isOpen, setIsOpen }) => {
+const BurgerMenu = ({ role, isOpen, setIsOpen }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -55,14 +55,6 @@ const BurgerMenu = ({ role, openLoadPopup, isOpen, setIsOpen }) => {
             {isOpen && (
                 <div className="menu-content" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        {role === "admin" && (
-                            <li onClick={() => navigate('/FrontendDMS/importValues')}>Import Site Info</li>
-                        )}
-
-                        {role === "abc" && (
-                            <li onClick={handleDownload}>Export Site Info</li>
-                        )}
-
                         {role === "admin" && (
                             <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Suggestions</li>
                         )}

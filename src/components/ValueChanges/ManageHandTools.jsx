@@ -71,32 +71,32 @@ const ManageHandTools = ({ closePopup, onClose }) => {
     return (
         <div className="manTool-popup-container">
             <div className="manTool-popup-box">
-                <h2>Manage Tools</h2>
+                <div className="manTool-popup-header">
+                    <h2 className="manTool-popup-title">Update Tool</h2>
+                    <button className="manTool-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manTool-form-group-manage">
-                    <label>Select Tool</label>
+                <div className="manTool-popup-group">
+                    <label className="manTool-popup-label">Existing Tool Name</label>
                     <select className="manTool-select" value={selectedTool} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Tool Name</option>
                         {handTools.sort((a, b) => a.tool.localeCompare(b.tool)).map((tool) => (
                             <option key={tool.tool} value={tool.tool}>{tool.tool}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manTool-form-group-manage">
-                    <label>Tool</label>
-                    <input spellcheck="true" className="manTool-input" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
+                <div className="manTool-popup-group">
+                    <label className="manTool-popup-label">New Tool Name</label>
+                    <input spellcheck="true" className="manTool-input" placeholder="Insert New Tool Name" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manTool-message-manage">{message}</div>}
                 {error && <div className="manTool-error-message-manage">{error}</div>}
 
-                <div className="manTool-buttons-container">
-                    <button className="manTool-update-button-manage" onClick={handleUpdate}>
-                        Update Tool
-                    </button>
-                    <button className="manTool-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manTool-buttons">
+                    <button className="manTool-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

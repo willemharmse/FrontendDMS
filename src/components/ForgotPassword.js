@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import './LoginPage.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faLock, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
+import './ForgotPassword.css';
 
 function ForgotPassword() {
     const [username, setUsername] = useState('');
@@ -30,11 +34,19 @@ function ForgotPassword() {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Invalid username.');
+                    toast.dismiss();
+                    toast.clearWaitingQueue();
+                    toast.error('Invalid username or email.', {
+                        closeButton: false,
+                        autoClose: 800,
+                        style: {
+                            textAlign: 'center',
+                        },
+                    });
                 }
-
-                // Proceed to the OTP step
-                setStep(2);
+                else {
+                    setStep(2);
+                }
             } catch (err) {
                 setError(err.message);
             }
@@ -51,23 +63,46 @@ function ForgotPassword() {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Invalid OTP.');
+                    toast.dismiss();
+                    toast.clearWaitingQueue();
+                    toast.error('Invalid OTP.', {
+                        closeButton: false,
+                        autoClose: 800,
+                        style: {
+                            textAlign: 'center',
+                        },
+                    });
+                } else {
+                    setStep(3);
                 }
-
-                // Proceed to the password change step
-                setStep(3);
             } catch (err) {
                 setError(err.message);
             }
         } else if (step === 3) {
             // Step 3: New Password and Confirm Password
             if (newPassword.length < 8 || confirmPassword.length < 8) {
-                setError('Password must be at least 8 characters.');
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.error('Password must be at least 8 characters.', {
+                    closeButton: false,
+                    autoClose: 800,
+                    style: {
+                        textAlign: 'center',
+                    },
+                });
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                setError('Passwords do not match.');
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.error('Passwords do not match.', {
+                    closeButton: false,
+                    autoClose: 800,
+                    style: {
+                        textAlign: 'center',
+                    },
+                });
                 return;
             }
 
@@ -82,11 +117,27 @@ function ForgotPassword() {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to reset password.');
+                    toast.dismiss();
+                    toast.clearWaitingQueue();
+                    toast.error('Password could not be reset, contact Admin.', {
+                        closeButton: false,
+                        autoClose: 800,
+                        style: {
+                            textAlign: 'center',
+                        },
+                    });
                 }
-
-                // Redirect to login page or home after successful reset
-                navigate('/FrontendDMS/'); // Redirect to login page
+                else {
+                    toast.dismiss();
+                    toast.clearWaitingQueue();
+                    toast.success("Password has been reset", {
+                        closeButton: false,
+                        autoClose: 800,
+                        style: {
+                            textAlign: 'center',
+                        },
+                    });
+                }
             } catch (err) {
                 setError(err.message);
             }
@@ -94,44 +145,43 @@ function ForgotPassword() {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-header">
-                <header className="landing-header">
-                    <div className="header-content">
-                        <img src="logo.webp" alt="logo" className="responsive-logo" />
-                    </div>
-                </header>
-            </div>
-            <div className="login-page-box">
-                <h2>{step === 1 ? 'Enter Username and Email' : step === 2 ? 'Enter OTP' : 'Set New Password'}</h2>
-                <div className="login-box">
-                    <form onSubmit={handleLogin}>
-                        {step === 1 && (
-                            <>
-                                <div className="input-group">
-                                    <label>Username</label>
+        <div className="forgot-password-container">
+            <div className="forgot-password-card">
+                <img src='CH_Logo.png' className='forgot-password-logo-img' />
+                <div className="forgot-password-title">{"Reset Password"}</div>
+                <form onSubmit={handleLogin}>
+                    {step === 1 && (
+                        <>
+                            <div className="forgot-password-group">
+                                <label className="forgot-password-label">Username</label>
+                                <div className="forgot-password-input-container">
                                     <input
                                         type="text"
+                                        placeholder="Enter your username"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        required
                                     />
                                 </div>
-                                <div className="input-group">
-                                    <label>Email</label>
+                            </div>
+                            <div className="forgot-password-group">
+                                <label>Email</label>
+                                <div className="forgot-password-input-container">
                                     <input
+                                        placeholder='Enter your email'
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                     />
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </>
+                    )}
 
-                        {step === 2 && (
-                            <div className="input-group">
-                                <label>Enter OTP</label>
+                    {step === 2 && (
+                        <div className="forgot-password-group">
+                            <label className="forgot-password-label">Enter OTP</label>
+                            <div className="forgot-password-input-container">
                                 <input
                                     type="text"
                                     value={otp}
@@ -139,12 +189,14 @@ function ForgotPassword() {
                                     required
                                 />
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        {step === 3 && (
-                            <>
-                                <div className="input-group">
-                                    <label>New Password</label>
+                    {step === 3 && (
+                        <>
+                            <div className="forgot-password-group">
+                                <label className="forgot-password-label">New Password</label>
+                                <div className="forgot-password-input-container">
                                     <input
                                         type="password"
                                         value={newPassword}
@@ -152,8 +204,10 @@ function ForgotPassword() {
                                         required
                                     />
                                 </div>
-                                <div className="input-group">
-                                    <label>Confirm Password</label>
+                            </div>
+                            <div className="forgot-password-group">
+                                <label className="forgot-password-label">Confirm Password</label>
+                                <div className="forgot-password-input-container">
                                     <input
                                         type="password"
                                         value={confirmPassword}
@@ -161,15 +215,23 @@ function ForgotPassword() {
                                         required
                                     />
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </>
+                    )}
 
-                        {error && <div className="error-message">{error}</div>}
-                        <button type="submit" className="login-button">{step === 1 ? 'Request OTP' : step === 2 ? 'Verify OTP' : 'Reset Password'}</button>
-                    </form>
+                    <div className="forgot-password-button-container">
+                        <button type="submit" className="forgot-password-button">{step === 1 ? 'Request OTP' : step === 2 ? 'Verify OTP' : 'Reset Password'}</button>
+                        <button className="forgot-password-button" onClick={() => navigate(-1)}>Back</button>
+                    </div>
+                </form>
+
+                <div className="logo-bottom-container">
+                    <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
+                    <p className="logo-bottom-text">A TAU5 PRODUCT</p>
                 </div>
-            </div>
-        </div>
+            </div >
+            <ToastContainer />
+        </div >
     );
 }
 

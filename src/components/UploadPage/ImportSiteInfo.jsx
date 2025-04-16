@@ -115,7 +115,7 @@ const ImportSiteInfo = ({ onClose }) => {
                     <div className="import-si-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="import-si-file-buttons">
                         <label className="import-si-file-button">
-                            {'Choose Excel File'}
+                            {'Choose File'}
                             <input
                                 type="file"
                                 accept=".xlsx, .xls"

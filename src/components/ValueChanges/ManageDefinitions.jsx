@@ -76,37 +76,37 @@ const ManageDefinitions = ({ closePopup, onClose }) => {
     return (
         <div className="manDefs-popup-container">
             <div className="manDefs-popup-box">
-                <h2>Manage Terms</h2>
+                <div className="manDefs-popup-header">
+                    <h2 className="manDefs-popup-title">Update Term</h2>
+                    <button className="manDefs-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manDefs-form-group-manage">
-                    <label>Select Term</label>
+                <div className="manDefs-popup-group">
+                    <label className="manDefs-popup-label">Existing Term</label>
                     <select className="manDefs-select" value={selectedDefinition} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Term</option>
                         {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
                             <option key={term.term} value={term.term}>{term.term}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manDefs-form-group-manage">
-                    <label>Term</label>
-                    <input spellcheck="true" className="manDefs-input" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
+                <div className="manDefs-popup-group">
+                    <label className="manDefs-popup-label">New Term</label>
+                    <input spellcheck="true" className="manDefs-input" placeholder="Enter New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                 </div>
 
-                <div className="manDefs-form-group-manage">
-                    <label>Definition</label>
-                    <input spellcheck="true" className="manDefs-input" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                <div className="manDefs-popup-group">
+                    <label className="manDefs-popup-label">New Term Definition</label>
+                    <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Enter new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manDefs-message-manage">{message}</div>}
                 {error && <div className="manDefs-error-message-manage">{error}</div>}
 
-                <div className="manDefs-buttons-container">
-                    <button className="manDefs-update-button-manage" onClick={handleUpdate}>
-                        Update Term
-                    </button>
-                    <button className="manDefs-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manDefs-buttons">
+                    <button className="manDefs-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

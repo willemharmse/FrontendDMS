@@ -7,12 +7,15 @@ import { faSort, faSpinner, faX, faSearch, faArrowLeft, faBell, faCircleUser } f
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import { jwtDecode } from 'jwt-decode';
 import "./GeneratedFileInfo.css";
+import PopupMenuPubFiles from "./PublishedDocuments/PopupMenuPubFiles";
+import TopBar from "./Notifications/TopBar";
 
 const GeneratedFileInfo = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
     const [role, setRole] = useState('');
+    const [hoveredFileId, setHoveredFileId] = useState(null);
     const adminRoles = ['admin', 'teamleader', 'developer'];
     const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
@@ -162,18 +165,7 @@ const GeneratedFileInfo = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                        </div>
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-                    </div>
+                    <TopBar role={role} />
                 </div>
                 <div className="table-container-gen">
                     <table className="gen-table">
@@ -185,19 +177,33 @@ const GeneratedFileInfo = () => {
                                 <th className="gen-th">Version</th>
                                 <th className="gen-th">Published By</th>
                                 <th className="gen-th">Review Date</th>
-                                <th className="gen-th">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredFiles.map((file, index) => (
                                 <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="gen-nr gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{index + 1}</td>
-                                    <td className="gen-fn  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)} >{removeFileExtension(file.fileName)}</td>
-                                    <td className="gen-stat  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{file.formData.documentType}</td>
-                                    <td className="gen-ver  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{file.formData.version}</td>
+                                    <td className="gen-nr gen-point">{index + 1}</td>
+                                    <td className="gen-fn gen-point">
+                                        <div className="popup-anchor">
+                                            <span onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                                                {removeFileExtension(file.fileName)}
+                                            </span>
+
+                                            {(hoveredFileId === file._id) && (
+                                                <PopupMenuPubFiles
+                                                    file={file}
+                                                    isOpen={hoveredFileId === file._id}
+                                                    openDownloadModal={downloadFile}
+                                                    setHoveredFileId={setHoveredFileId}
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+
+                                    <td className="gen-stat  gen-point">{file.formData.documentType}</td>
+                                    <td className="gen-ver  gen-point">{file.formData.version}</td>
                                     <td className="gen-pub  gen-point">{file.publisher.username}</td>
-                                    <td className="gen-rev  gen-point" onClick={() => navigate(`/FrontendDMS/review/${file._id}`)}>{formatDate(file.reviewDate)}</td>
-                                    <th className="gen-th"><FontAwesomeIcon icon={faDownload} className=" gen-point" onClick={() => downloadFile(file._id, file.fileName)} /></th>
+                                    <td className="gen-rev  gen-point">{formatDate(file.reviewDate)}</td>
                                 </tr>
                             ))}
                         </tbody>

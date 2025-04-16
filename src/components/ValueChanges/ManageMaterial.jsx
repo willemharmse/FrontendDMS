@@ -71,32 +71,32 @@ const ManageMaterial = ({ closePopup, onClose }) => {
     return (
         <div className="manMat-popup-container">
             <div className="manMat-popup-box">
-                <h2>Manage Materials</h2>
+                <div className="manMat-popup-header">
+                    <h2 className="manMat-popup-title">Update Material</h2>
+                    <button className="manMat-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manMat-form-group-manage">
-                    <label>Select Material</label>
+                <div className="manMat-popup-group">
+                    <label className="manMat-popup-label">Existing Material Name</label>
                     <select className="manMat-select" value={selectedMaterial} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Material Name</option>
                         {materials.sort((a, b) => a.mat.localeCompare(b.mat)).map((mat) => (
                             <option key={mat.mat} value={mat.mat}>{mat.mat}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manMat-form-group-manage">
-                    <label>Material</label>
-                    <input spellcheck="true" className="manMat-input" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
+                <div className="manMat-popup-group">
+                    <label className="manMat-popup-label">New Material Name</label>
+                    <input spellcheck="true" className="manMat-input" placeholder="Insert New Material Name" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manMat-message-manage">{message}</div>}
                 {error && <div className="manMat-error-message-manage">{error}</div>}
 
-                <div className="manMat-buttons-container">
-                    <button className="manMat-update-button-manage" onClick={handleUpdate}>
-                        Update Material
-                    </button>
-                    <button className="manMat-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manMat-buttons">
+                    <button className="manMat-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

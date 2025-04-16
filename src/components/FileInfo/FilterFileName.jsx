@@ -20,7 +20,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) 
             </th>
             <th className="col-name-filter col">
                 <div className="fileinfo-container-filter-1">
-                    <span className="fileinfo-title-filter-1">File Name</span>
+                    <span className="fileinfo-title-filter-1">Document Name</span>
                 </div>
             </th>
             <th className="col-type-filter col">
@@ -97,7 +97,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) 
                                 <span>Doc ID</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "5px" }} />
                             </>
                         ) : (
-                            "Doc ID"
+                            "Document ID"
                         )}
                     </span>
                     {openMenu === 'DocID' && (
@@ -107,7 +107,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) 
                         >
                             <input
                                 type="text"
-                                placeholder="Filter by doc ID"
+                                placeholder="Filter by document ID"
                                 className="filter-input-file"
                                 value={filters.docID}
                                 onChange={(e) => onFilterChange('docID', e.target.value)}

@@ -19,10 +19,10 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
 import SharePage from "./CreatePage/SharePage";
-import { use } from "cytoscape";
+import TopBarDD from "./Notifications/TopBarDD";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -440,6 +440,7 @@ const CreatePage = () => {
   const [history, setHistory] = useState([]);
   const timeoutRef = useRef(null);
   const previousFormData = useRef(formData);
+  const [redoHistory, setRedoHistory] = useState([]);
 
   // Function to save to history with a limit
   const saveToHistory = useCallback(() => {
@@ -471,6 +472,8 @@ const CreatePage = () => {
   const undoLastChange = () => {
     if (history.length > 1) {
       const lastState = history[history.length - 2]; // Get the last valid state
+      const currentState = history[history.length - 1];
+
       // Restore the previous state
       setFormData(lastState.formData);
       setUsedAbbrCodes(lastState.usedAbbrCodes);
@@ -482,6 +485,8 @@ const CreatePage = () => {
       setUsedMaterials(lastState.usedMaterials);
 
       setHistory((prev) => prev.slice(0, -1)); // Remove last history entry
+      setRedoHistory((prev) => [...prev, currentState]);
+
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
@@ -500,6 +505,38 @@ const CreatePage = () => {
         style: {
           textAlign: 'center'
         }
+      });
+    }
+  };
+
+  const redoChange = () => {
+    if (redoHistory.length > 0) {
+      const nextState = redoHistory[redoHistory.length - 1];
+
+      // Apply redo state
+      setFormData(nextState.formData);
+      setUsedAbbrCodes(nextState.usedAbbrCodes);
+      setUsedTermCodes(nextState.usedTermCodes);
+      setUsedPPEOptions(nextState.usedPPEOptions);
+      setUsedHandTools(nextState.usedHandTools);
+      setUsedEquipment(nextState.usedEquipment);
+      setUsedMobileMachines(nextState.usedMobileMachine);
+      setUsedMaterials(nextState.usedMaterials);
+
+      // Push back into history
+      setHistory((prev) => [...prev, nextState]);
+      setRedoHistory((prev) => prev.slice(0, -1));
+
+      toast.success("Redo successful!", {
+        closeButton: true,
+        autoClose: 800,
+        style: { textAlign: 'center' }
+      });
+    } else {
+      toast.warn("Nothing to redo.", {
+        closeButton: true,
+        autoClose: 800,
+        style: { textAlign: 'center' }
       });
     }
   };
@@ -653,9 +690,22 @@ const CreatePage = () => {
   };
 
   const removeProRow = (indexToRemove) => {
+    if (formData.procedureRows.length <= 1) {
+      toast.warn("At least one procedure step is required.", {
+        autoClose: 800,
+        closeButton: false,
+        style: { textAlign: "center" },
+      });
+      return;
+    }
+
+    const newRows = formData.procedureRows
+      .filter((_, index) => index !== indexToRemove)
+      .map((row, idx) => ({ ...row, nr: idx + 1 })); // Renumber after removal
+
     setFormData({
       ...formData,
-      procedureRows: formData.procedureRows.filter((_, index) => index !== indexToRemove),
+      procedureRows: newRows,
     });
   };
 
@@ -818,7 +868,7 @@ const CreatePage = () => {
           <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
             <div className="button-content">
               <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-              <span className="button-text">Documents</span>
+              <span className="button-text">Published Documents</span>
             </div>
           </button>
         </div>
@@ -837,6 +887,10 @@ const CreatePage = () => {
             </div>
 
             <div className="burger-menu-icon-create-page-1">
+              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+            </div>
+
+            <div className="burger-menu-icon-create-page-1">
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
@@ -849,18 +903,7 @@ const CreatePage = () => {
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <div className="icons-container-create-page">
-            <div className="burger-menu-icon-create-page-2">
-              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate('/FrontendDMS/home')} />
-            </div>
-            <div className="burger-menu-icon-create-page-2">
-              <FontAwesomeIcon icon={faBell} />
-            </div>
-            <div className="burger-menu-icon-create-page-3" onClick={() => setIsOpenMenu(!isOpenMenu)}>
-              <FontAwesomeIcon icon={faCircleUser} />
-            </div>
-          </div>
-          {isOpenMenu && (<BurgerMenu role={role} openLoadPopup={openLoadPopup} isOpen={isOpenMenu} setIsOpen={setIsOpenMenu} />)}
+          <TopBarDD role={role} menu={"1"} />
         </div>
 
         <div className={`scrollable-box`}>

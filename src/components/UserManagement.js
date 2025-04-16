@@ -8,8 +8,8 @@ import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch } from '@fortawesome/free-solid-svg-icons';
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
+import TopBar from "./Notifications/TopBar";
 
 const UserManagement = () => {
     const [error, setError] = useState(null);
@@ -268,27 +268,7 @@ const UserManagement = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
-                            </div>
-                        )}
-                        <div className="sort-menu-icon-um">
-                            <FontAwesomeIcon icon={faSort} />
-                        </div>
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faBell} />
-                            </div>
-                        )}
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                            </div>
-                        )}
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-                    </div>
+                    <TopBar role={role} />
                 </div>
                 <UserTable
                     filteredUsers={filteredUsers}

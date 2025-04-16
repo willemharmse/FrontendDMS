@@ -71,32 +71,32 @@ const ManagePPE = ({ closePopup, onClose }) => {
     return (
         <div className="manPPE-popup-container">
             <div className="manPPE-popup-box">
-                <h2>Manage PPE</h2>
+                <div className="manPPE-popup-header">
+                    <h2 className="manPPE-popup-title">Update PPE</h2>
+                    <button className="manPPE-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manPPE-form-group-manage">
-                    <label>Select PPE</label>
+                <div className="manPPE-popup-group">
+                    <label className="manPPE-popup-label">Existing PPE Name</label>
                     <select className="manPPE-select" value={selectedPPE} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing PPE Name</option>
                         {ppes.sort((a, b) => a.ppe.localeCompare(b.ppe)).map((ppe) => (
                             <option key={ppe.ppe} value={ppe.ppe}>{ppe.ppe}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manPPE-form-group-manage">
-                    <label>PPE</label>
-                    <input spellcheck="true" className="manPPE-input" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
+                <div className="manPPE-popup-group">
+                    <label className="manPPE-popup-label">New PPE Name</label>
+                    <input spellcheck="true" className="manPPE-input" placeholder="Insert New PPE Name" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manPPE-message-manage">{message}</div>}
                 {error && <div className="manPPE-error-message-manage">{error}</div>}
 
-                <div className="manPPE-buttons-container">
-                    <button className="manPPE-update-button-manage" onClick={handleUpdate}>
-                        Update PPE
-                    </button>
-                    <button className="manPPE-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manPPE-buttons">
+                    <button className="manPPE-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>

@@ -34,6 +34,7 @@ import {
     faServer,
     faUniversity
 } from "@fortawesome/free-solid-svg-icons";
+import TopBar from "./Notifications/TopBar";
 
 const DepartmentHome = () => {
     const [error, setError] = useState(null);
@@ -224,24 +225,7 @@ const DepartmentHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
-                            </div>
-                        )}
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faBell} />
-                            </div>
-                        )}
-                        {adminRoles.includes(role) && (
-                            <div className="burger-menu-icon-um">
-                                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                            </div>
-                        )}
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-                    </div>
+                    <TopBar role={role} />
                 </div>
 
                 <div className="scrollable-box-fi-home">

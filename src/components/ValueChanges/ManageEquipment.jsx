@@ -71,32 +71,32 @@ const ManageEquipment = ({ closePopup, onClose }) => {
     return (
         <div className="manEqp-popup-container">
             <div className="manEqp-popup-box">
-                <h2>Manage Equipment</h2>
+                <div className="manEqp-popup-header">
+                    <h2 className="manEqp-popup-title">Update Equipment</h2>
+                    <button className="manEqp-popup-close" onClick={closeFunction}>×</button>
+                </div>
 
-                <div className="manEqp-form-group-manage">
-                    <label>Select Equipment</label>
+                <div className="manEqp-popup-group">
+                    <label className="manEqp-popup-label">Existing Equipment Name</label>
                     <select className="manEqp-select" value={selectedEquipment} onChange={handleSelectChange}>
-                        <option value="">-- Select --</option>
+                        <option value="">Select Existing Equipment Name</option>
                         {equipment.sort((a, b) => a.eqp.localeCompare(b.eqp)).map((eqp) => (
                             <option key={eqp.eqp} value={eqp.eqp}>{eqp.eqp}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className="manEqp-form-group-manage">
-                    <label>Equipment</label>
-                    <input spellcheck="true" className="manEqp-input" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
+                <div className="manEqp-popup-group">
+                    <label className="manEqp-popup-label">New Equipment Name</label>
+                    <input spellcheck="true" className="manEqp-input" placeholder="Insert New Equipment Name" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
                 </div>
 
                 {message && <div className="manEqp-message-manage">{message}</div>}
                 {error && <div className="manEqp-error-message-manage">{error}</div>}
 
-                <div className="manEqp-buttons-container">
-                    <button className="manEqp-update-button-manage" onClick={handleUpdate}>
-                        Update Equipment
-                    </button>
-                    <button className="manEqp-close-button" onClick={closeFunction}>
-                        Close
+                <div className="manEqp-buttons">
+                    <button className="manEqp-update-button" onClick={handleUpdate}>
+                        Update
                     </button>
                 </div>
             </div>
