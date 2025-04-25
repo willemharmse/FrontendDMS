@@ -115,7 +115,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
             <div className="popup-content-dept">
                 <div className="review-date-header">
                     <h2 className="review-date-title">Add Members</h2>
-                    <button className="review-date-close" onClick={closePopup}>×</button>
+                    <button className="review-date-close" onClick={closePopup} title="Close Popup">×</button>
                 </div>
 
                 <div className="review-date-group">
@@ -127,7 +127,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                        {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                         {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
                 </div>

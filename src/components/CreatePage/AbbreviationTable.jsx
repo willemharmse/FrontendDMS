@@ -28,8 +28,13 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       const data = await response.json();
 
       setAbbrData(data.abbrs);
+      localStorage.setItem('cachedAbbrOptions', JSON.stringify(data.abbrs));
     } catch (error) {
-      console.error("Error fetching abbreviations:", error)
+      console.log(error);
+      const cached = localStorage.getItem('cachedAbbrOptions');
+      if (cached) {
+        setAbbrData(JSON.parse(cached));
+      }
     }
   };
 
@@ -79,9 +84,9 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
         <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
         {role === "admin" && (
-          <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+          <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Abbreviations" /></button>
         )}
-        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Abbreviation" /></button>
         <AbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -97,7 +102,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
             <div className="popup-content-abbr">
               <div className="review-date-header">
                 <h2 className="review-date-title">Select Abbreviations</h2>
-                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
               </div>
 
               <div className="review-date-group">
@@ -109,7 +114,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                   {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                 </div>
               </div>
@@ -195,7 +200,7 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
                         setSelectedAbbrs(newSelectedAbbrs);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                     </button>
                   </td>
                 </tr>
@@ -204,9 +209,17 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
           </table>
         )}
 
-        <button className="add-row-button" onClick={handlePopupToggle}>
-          Select
-        </button>
+        {selectedAbbrs.size === 0 && (
+          <button className="add-row-button-abbrs" onClick={handlePopupToggle}>
+            Select
+          </button>
+        )}
+
+        {selectedAbbrs.size > 0 && (
+          <button className="add-row-button-abbrs-plus" onClick={handlePopupToggle} title="Add Row">
+            <FontAwesomeIcon icon={faPlusCircle} />
+          </button>
+        )}
       </div>
     </div>
   );

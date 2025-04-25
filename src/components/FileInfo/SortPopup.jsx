@@ -9,7 +9,7 @@ const SortPopup = ({ setSortField, setSortOrder, closeSortModal, sortField, sort
             <div className="sort-popup-content">
                 <div className="sort-file-header">
                     <h2 className="sort-file-title">Sort Files</h2>
-                    <button className="sort-file-close" onClick={closeSortModal}>×</button>
+                    <button className="sort-file-close" onClick={closeSortModal} title="Close Popup">×</button>
                 </div>
 
                 <div className="sort-file-group">

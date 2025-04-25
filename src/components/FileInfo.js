@@ -57,6 +57,7 @@ const FileInfo = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const [batch, setBatch] = useState(false);
+  const [updateID, setUpdateID] = useState(null);
   const [filters, setFilters] = useState({
     author: '',
     deptHead: '',
@@ -106,7 +107,8 @@ const FileInfo = () => {
     fetchFiles();
   };
 
-  const openUpdate = () => {
+  const openUpdate = (fileID) => {
+    setUpdateID(fileID);
     setUpdate(true);
   };
 
@@ -357,11 +359,10 @@ const FileInfo = () => {
     Policy: "policy.png",
     Procedure: "procedure.png",
     Standard: "standard.png",
-    "Risk Assessment": "risk.png",
   };
 
   const image = (type) => {
-    return imageMap[type]; // Fallback to "default.png" if type is not found
+    return imageMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
   };
 
   const getStatusClass = (status) => {
@@ -449,7 +450,7 @@ const FileInfo = () => {
   return (
     <div className="file-info-container">
       {upload && (<UploadPopup onClose={closeUpload} />)}
-      {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} />)}
+      {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} fileID={updateID} />)}
 
       <div className="sidebar-um">
         <div className="sidebar-logo-um">
@@ -498,7 +499,7 @@ const FileInfo = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+            {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
@@ -513,20 +514,20 @@ const FileInfo = () => {
           {/* Container for right-aligned icons */}
           <div className="icons-container">
             <div className="burger-menu-icon-um">
-              <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/documentManageHome')} icon={faArrowLeft} />
+              <FontAwesomeIcon onClick={() => navigate('/documentManageHome')} icon={faArrowLeft} title="Back" />
             </div>
             <div className="sort-menu-icon-um">
-              <FontAwesomeIcon icon={faSort} onClick={openSortModal} />
+              <FontAwesomeIcon icon={faSort} onClick={openSortModal} title="Sort" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
-              <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} />
+              <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
               {count != 0 && <div className="notifications-badge">{count}</div>}
             </div>
             <div className="burger-menu-icon-um">
-              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} />)}
-            {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} openUpdate={openUpdate} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
+            {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>
         {batch && (<BatchUpload onClose={closeBatch} />)}
@@ -549,7 +550,7 @@ const FileInfo = () => {
                     {removeFileExtension(file.fileName)}
 
                     {(hoveredFileId === file._id && !isTrashView) && (
-                      <PopupMenu file={file} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} />
+                      <PopupMenu file={file} openUpdate={openUpdate} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} role={role} />
                     )}
 
                   </td>
@@ -583,7 +584,7 @@ const FileInfo = () => {
                         className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
                         onClick={() => openModal(file._id, file.fileName)}
                       >
-                        <FontAwesomeIcon icon={faTrash} />
+                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
                       </button>
 
                       {isTrashView && (
@@ -591,7 +592,7 @@ const FileInfo = () => {
                           className={isTrashView ? "delete-button-fi col-but-res trashed-color" : "delete-button-fi col-but-res"}
                           onClick={() => restoreFile(file._id)}
                         >
-                          <FontAwesomeIcon icon={faRotate} />
+                          <FontAwesomeIcon icon={faRotate} title="Restore Document" />
                         </button>
                       )}
                     </td>

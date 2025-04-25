@@ -79,6 +79,8 @@ const BatchUpload = ({ onClose }) => {
 
             setMessage(response.data.message);
             setErrors([]);
+            setAdditionalFiles([]); // Clear the additional files after upload
+            setFile(null); // Clear the selected file after upload
             setLoading(false); // Reset loading state after response
             toast.success("Files Uploaded", {
                 closeButton: false,
@@ -89,14 +91,31 @@ const BatchUpload = ({ onClose }) => {
             })
         } catch (error) {
             setLoading(false);
+            if (error.response?.data?.details) {
+                setErrors(error.response.data.details); // Set errors from backend
+                createErrorFile(error.response.data.details); // Generate download
+            }
             toast.error("Validation failed!", {
                 closeButton: false,
                 autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
         }
+    };
+
+    const createErrorFile = (errors) => {
+        const errorText = errors.join('\n');
+        const blob = new Blob([errorText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'upload-errors.txt';
+        a.click();
+
+        URL.revokeObjectURL(url);
     };
 
     const handleRemoveFile = (index) => {
@@ -108,7 +127,7 @@ const BatchUpload = ({ onClose }) => {
             <div className="batch-popup-content">
                 <div className="batch-file-header">
                     <h2 className="batch-file-title">Batch Upload Documents</h2>
-                    <button className="batch-file-close" onClick={onClose}>×</button>
+                    <button className="batch-file-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
 
                 <div className="batch-file-group">
@@ -116,7 +135,7 @@ const BatchUpload = ({ onClose }) => {
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">
-                            {'Choose File'}
+                            {'Choose Document'}
                             <input
                                 type="file"
                                 accept=".xlsx, .xls"
@@ -162,7 +181,7 @@ const BatchUpload = ({ onClose }) => {
                                                         className={"action-button-user delete-button-user batch-del-button"}
                                                         onClick={() => handleRemoveFile(index)}
                                                     >
-                                                        <FontAwesomeIcon icon={faTrash} />
+                                                        <FontAwesomeIcon icon={faTrash} title="Remove File" />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -182,7 +201,7 @@ const BatchUpload = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-buttons">
-                    <button className="batch-file-button-sub" onClick={handleClick} disabled={loading}>
+                    <button className="batch-file-button-sub" onClick={() => handleClick()} disabled={loading}>
                         {'Submit'}
                     </button>
                 </div>

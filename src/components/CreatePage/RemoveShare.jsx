@@ -7,7 +7,7 @@ const RemoveShare = ({ handleConfirmRemoval, handleCancelRemoval, user, setRemov
             <div className="delete-popup-content-sr">
                 <div className="delete-file-header-sr">
                     <h2 className="delete-file-title-sr">Remove Share User</h2>
-                    <button className="delete-file-close-sr" onClick={() => setRemove(false)}>×</button>
+                    <button className="delete-file-close-sr" onClick={() => setRemove(false)} title="Close Popup">×</button>
                 </div>
 
                 <div className="delete-file-group-sr">

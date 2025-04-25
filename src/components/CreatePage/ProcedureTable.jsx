@@ -1,28 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import './ProcedureTable.css';
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
 import RewriteButton from "./RewriteButton";
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows }) => {
-    const accountableOptions = [
-        "Engineering Manager", "Section Engineer", "Engineering Superintendent",
-        "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
-        "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
-        "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
-        "Millwright", "Engineering Assistant"
-    ];
+    const [designationOptions, setDesignationOptions] = useState([]);
+    const [showARDropdown, setShowARDropdown] = useState({ index: null, field: "" });
+    const [dropdownOptions, setDropdownOptions] = useState([]);
+    const [activeRewriteIndex, setActiveRewriteIndex] = useState(null);
 
-    const responsibleOptions = [
-        "Engineering Manager", "Section Engineer", "Engineering Superintendent",
-        "Engineering Foreman (Mechanical/Electrical)", "Control and Instrumentation (C&I) Technician",
-        "Mechanical Technician", "Electrical Technician", "Maintenance Planner", "Fitter",
-        "Electrician", "Boilermaker", "Diesel Mechanic", "Instrumentation Mechanic",
-        "Millwright", "Engineering Assistant"
-    ];
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+    const inputRefs = useRef([]);
+
+    useEffect(() => {
+        const fetchDesignations = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/des`);
+                const data = await response.json();
+
+                if (response.ok && data.designations) {
+                    const names = data.designations.map(d => d.designation).sort(); // Assuming each has a `name`
+                    setDesignationOptions(names);
+                } else {
+                    console.error("Failed to load designations");
+                }
+            } catch (error) {
+                console.error("Error fetching designations:", error);
+            }
+        };
+
+        fetchDesignations();
+    }, []);
+
+    const accountableOptions = designationOptions;
+
+    const responsibleOptions = designationOptions;
 
     const [invalidRows, setInvalidRows] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,6 +46,62 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
     useEffect(() => {
         console.log(procedureRows);
     }, [procedureRows]);
+
+    const rewriteAI = async (indexToChange, procedureRows, updateRows, setLoading) => {
+        try {
+            setLoading(true);
+
+            const prompt = JSON.stringify(procedureRows[indexToChange]);
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatSingle`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.response) {
+                const cleaned = {
+                    ...data.response,
+                    SubStep: data.response.SubStep.includes('\\n')
+                        ? data.response.SubStep.replace(/\\n/g, '\n')
+                        : data.response.SubStep
+                };
+
+                // Replace the specific row
+                const updatedRows = [...procedureRows];
+                updatedRows[indexToChange] = cleaned;
+
+                updateRows(updatedRows);
+
+                toast.success(`Step ${indexToChange + 1} rewritten by AI`, {
+                    autoClose: 1000,
+                    closeButton: false,
+                    style: { textAlign: 'center' }
+                });
+            } else {
+                toast.error("Failed to rewrite this step.", {
+                    autoClose: 1000,
+                    closeButton: false,
+                    style: { textAlign: 'center' }
+                });
+            }
+        } catch (err) {
+            console.error("Single row rewrite error:", err);
+            toast.error("An error occurred while rewriting this step.", {
+                autoClose: 1000,
+                closeButton: false,
+                style: { textAlign: 'center' }
+            });
+        } finally {
+            setLoading(false);
+            setActiveRewriteIndex(null);
+        }
+    };
 
     const insertRowAt = (insertIndex) => {
         const newProcedureRows = [...procedureRows];
@@ -57,74 +129,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         updateProcRows(renumbered); // use your passed-in updateProcRows function
     };
 
-    const handleImageGen = async () => {
-        try {
-            // Ensure procedureRows is not empty
-            if (procedureRows.length === 0 || procedureRows.length === 0) {
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.warn("There should be at least two procedure steps or more.", {
-                    closeButton: false,
-                    autoClose: 800,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-                return;
-            }
-
-            // Ensure all mainStep values are filled
-            if (procedureRows.some(row => !row.mainStep.trim())) {
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.warn("All procedure main steps must have a value.", {
-                    closeButton: false,
-                    autoClose: 800,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-                return;
-            }
-
-            setLoading(true);
-
-            //setLoading(false);
-            /*
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ procedureRows }),
-            });
-
-            if (!response.ok) {
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.error("Failed to generate the flowchart.", {
-                    closeButton: false,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-                setLoading(false);
-            } else {
-                console.log(response.data)
-            }
-            */
-        } catch {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.error("Unable to generate flowchart.", {
-                closeButton: false,
-                autoClose: 800,
-                style: {
-                    textAlign: 'center'
-                }
-            })
-            setLoading(false);
-        }
-    };
-
     const add = () => {
         const incompleteIndices = procedureRows
             .map((row, index) => (!row.responsible || !row.accountable ? index : null))
@@ -144,6 +148,15 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         addRow();
     };
 
+    useEffect(() => {
+        // Automatically resize all loaded textareas (mainStep and SubStep)
+        const textareas = document.querySelectorAll(".aim-textarea-pt");
+        textareas.forEach(textarea => {
+            textarea.style.height = 'auto'; // Reset first
+            textarea.style.height = `${textarea.scrollHeight}px`; // Then expand
+        });
+    }, [procedureRows]);
+
     const handleInputChange = (index, field, value) => {
         const updatedRow = { ...procedureRows[index], [field]: value };
 
@@ -156,7 +169,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
         updateRow(index, field, value);
     };
-
 
     return (
         <div className="input-row">
@@ -256,7 +268,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                                 }
                                                             }}
                                                         >
-                                                            <FontAwesomeIcon icon={faTrash} />
+                                                            <FontAwesomeIcon icon={faTrash} title="Remove Predecessor" />
                                                         </button>
                                                     </div>
                                                 ))}
@@ -268,7 +280,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                         updateRow(index, "prevStep", updatedSteps.join(";"));
                                                     }}
                                                 >
-                                                    <FontAwesomeIcon icon={faPlus} />
+                                                    <FontAwesomeIcon icon={faPlus} title="Add Step" />
                                                 </button>
                                             </div>
                                         </td>
@@ -276,49 +288,77 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                             <div className="select-container-proc">
                                                 <div className="select-wrapper">
                                                     <label className={`select-label-proc ${invalidRows.includes(index) && !row.responsible ? "label-error-pt" : ""}`}>R:</label>
-                                                    <select
+                                                    <input
+                                                        type="text"
                                                         className="table-control-proc"
                                                         value={row.responsible}
-                                                        onChange={(e) => handleInputChange(index, "responsible", e.target.value)}
-                                                    >
-                                                        <option value="">Select an option</option>
-                                                        {responsibleOptions
-                                                            .filter((option) => option !== row.accountable) // Exclude selected Accountable value
-                                                            .sort()
-                                                            .map((option, i) => (
-                                                                <option key={i} value={option}>
-                                                                    {option}
-                                                                </option>
-                                                            ))}
-                                                    </select>
+                                                        placeholder="Select Responsible"
+                                                        ref={(el) => (inputRefs.current[`responsible-${index}`] = el)}
+                                                        onChange={(e) => {
+                                                            handleInputChange(index, "responsible", e.target.value);
+                                                            const filtered = designationOptions.filter(opt =>
+                                                                opt.toLowerCase().includes(e.target.value.toLowerCase()) &&
+                                                                opt !== row.accountable
+                                                            );
+                                                            setDropdownOptions(filtered);
+                                                        }}
+                                                        onFocus={() => {
+                                                            const rect = inputRefs.current[`responsible-${index}`].getBoundingClientRect();
+                                                            setDropdownPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+                                                            setDropdownOptions(designationOptions.filter(opt => opt !== row.accountable));
+                                                            setShowARDropdown({ index, field: "responsible" });
+                                                        }}
+                                                        onBlur={() => setTimeout(() => setShowARDropdown({ index: null, field: "" }), 200)}
+                                                    />
                                                 </div>
 
                                                 <div className="select-wrapper">
                                                     <label className={`select-label-proc ${invalidRows.includes(index) && !row.accountable ? "label-error-pt" : ""}`}>A:</label>
-                                                    <select
+                                                    <input
+                                                        type="text"
                                                         className="table-control-proc"
                                                         value={row.accountable}
-                                                        onChange={(e) => handleInputChange(index, "accountable", e.target.value)}
-                                                    >
-                                                        <option value="">Select an option</option>
-                                                        {accountableOptions
-                                                            .filter((option) => option !== row.responsible) // Exclude selected Responsible value
-                                                            .sort()
-                                                            .map((option, i) => (
-                                                                <option key={i} value={option}>
-                                                                    {option}
-                                                                </option>
-                                                            ))}
-                                                    </select>
+                                                        placeholder="Select Accountable"
+                                                        ref={(el) => (inputRefs.current[`accountable-${index}`] = el)}
+                                                        onChange={(e) => {
+                                                            handleInputChange(index, "accountable", e.target.value);
+                                                            const filtered = designationOptions.filter(opt =>
+                                                                opt.toLowerCase().includes(e.target.value.toLowerCase()) &&
+                                                                opt !== row.responsible
+                                                            );
+                                                            setDropdownOptions(filtered);
+                                                        }}
+                                                        onFocus={() => {
+                                                            const rect = inputRefs.current[`accountable-${index}`].getBoundingClientRect();
+                                                            setDropdownPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+                                                            setDropdownOptions(designationOptions.filter(opt => opt !== row.responsible));
+                                                            setShowARDropdown({ index, field: "accountable" });
+                                                        }}
+                                                        onBlur={() => setTimeout(() => setShowARDropdown({ index: null, field: "" }), 200)}
+                                                    />
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="procCent">
                                             <button
+                                                className="ai-rewrite-button"
+                                                onClick={() => {
+                                                    setActiveRewriteIndex(index);
+                                                    rewriteAI(index, procedureRows, updateProcRows, setLoading);
+                                                }}
+                                                title="AI Rewrite Step"
+                                            >
+                                                {activeRewriteIndex === index
+                                                    ? <FontAwesomeIcon icon={faSpinner} spin />
+                                                    : <FontAwesomeIcon icon={faMagicWandSparkles} />
+                                                }
+                                            </button>
+                                            <button
                                                 className="remove-row-button"
                                                 onClick={() => removeRow(index)}
+                                                title="Delete step"
                                             >
-                                                <FontAwesomeIcon icon={faTrash} />
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                             </button>
                                         </td>
                                     </tr>
@@ -329,9 +369,34 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                 )}
 
                 <button className="add-row-button-ds font-fam" onClick={add}>
-                    <FontAwesomeIcon icon={faPlusCircle} />
+                    <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                 </button>
             </div>
+
+            {showARDropdown.index !== null && dropdownOptions.length > 0 && (
+                <ul
+                    className="floating-dropdown-proc"
+                    style={{
+                        position: "fixed",
+                        top: dropdownPos.top,
+                        left: dropdownPos.left,
+                        width: dropdownPos.width,
+                        zIndex: 10,
+                    }}
+                >
+                    {dropdownOptions.map((opt, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => {
+                                handleInputChange(showARDropdown.index, showARDropdown.field, opt);
+                                setShowARDropdown({ index: null, field: "" });
+                            }}
+                        >
+                            {opt}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };

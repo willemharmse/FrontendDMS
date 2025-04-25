@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faTimes, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import Modal from "react-modal";
 
 cytoscape.use(dagre);
 
@@ -16,6 +17,38 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     const [pages, setPages] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const maxNodesPerPage = 14 // Adjust based on your needs
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [previewCy, setPreviewCy] = useState(null);
+
+    const openModal = () => {
+        setIsModalOpen(true);
+        setTimeout(() => {
+            if (previewCy) {
+                previewCy.destroy(); // clean previous instance
+            }
+            if (pages.length > 0) {
+                const newCy = cytoscape({
+                    container: document.getElementById("preview-cy"),
+                    elements: pages[currentPage].elements,
+                    style: cy.style().json(),
+                    layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
+                    styleEnabled: true,
+                    zoom: 5,
+                    pan: { x: 100, y: 100 }
+                });
+                setPreviewCy(newCy);
+            }
+        }, 200); // delay ensures modal has rendered
+    };
+
+    const closeModal = () => {
+        if (previewCy) {
+            previewCy.destroy();
+            setPreviewCy(null);
+        }
+        setIsModalOpen(false);
+    };
 
     const capitalizeWords = (text) =>
         text
@@ -369,6 +402,38 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             .catch(error => console.error("Error fetching flowchart data:", error));
     }, [procedureRows, maxNodesPerPage]);
 
+    useEffect(() => {
+        if (isModalOpen && pages.length > 0) {
+            setTimeout(() => {
+                if (previewCy) {
+                    previewCy.destroy();
+                }
+
+                const container = document.getElementById("preview-cy");
+                if (!container) return;
+
+                const newCy = cytoscape({
+                    container,
+                    elements: pages[currentPage].elements,
+                    style: cy?.style().json() || [],
+                    layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
+                    styleEnabled: true,
+                });
+
+                // Wait for layout to finish before zooming and fitting
+                newCy.ready(() => {
+                    newCy.layout({ name: "dagre", rankDir: "TB", nodeSep: 50 }).run();
+                    newCy.fit(null, 1); // Fit with 50px padding
+                    newCy.zoom(newCy.zoom() * 1.4); // Zoom in 80% more after fitting
+                    newCy.center();
+                    newCy.pan({ y: 20 }); // Adjust pan position
+                });
+
+                setPreviewCy(newCy);
+            }, 200);
+        }
+    }, [currentPage, isModalOpen]);
+
     const renderPage = (pageIndex) => {
         if (!cy || !pages || pages.length === 0 || pageIndex < 0 || pageIndex >= pages.length) {
             return;
@@ -592,10 +657,65 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     return (
         <div className="flowchart-container">
             <div className="flowchart-buttons">
+                <button onClick={openModal} className="top-right-button-proc-3" title="Preview Flowchart">
+                    <FontAwesomeIcon icon={faEye} className="icon-um-search" />
+                </button>
                 <button onClick={exportImage} className="top-right-button-proc" title="Download Flowchart">
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
             </div>
+
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={closeModal}
+                contentLabel="Flowchart Preview"
+                style={{
+                    overlay: {
+                        zIndex: 9999,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    },
+                    content: {
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '70%',
+                        height: '70%',
+                        padding: '10px',
+                        overflow: 'hidden',
+                    }
+                }}
+                ariaHideApp={false}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div className="modal-flowchart-header">
+                        {pages.length > 1 && (
+                            <div className="modal-flowchart-nav">
+                                <button
+                                    className="flowchart-btn-prev"
+                                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                                    disabled={currentPage === 0}
+                                    title="Previous Page"
+                                >
+                                    <FontAwesomeIcon icon={faChevronLeft} />
+                                </button>
+                                <button
+                                    className="flowchart-btn-next"
+                                    onClick={() => setCurrentPage(Math.min(pages.length - 1, currentPage + 1))}
+                                    disabled={currentPage === pages.length - 1}
+                                    title="Next Page"
+                                >
+                                    <FontAwesomeIcon icon={faChevronRight} />
+                                </button>
+                            </div>
+                        )}
+                        <button className="flowchart-btn-close" onClick={closeModal} title="Close Preview">
+                            <FontAwesomeIcon icon={faTimes} />
+                        </button>
+                    </div>
+                    <div id="preview-cy" style={{ flexGrow: 1, backgroundColor: "#fff" }}></div>
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -225,13 +225,13 @@ const AdminApprovalPage = () => {
                     {/* Container for right-aligned icons */}
                     <div className="icons-container">
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
+                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                         </div>
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} />
+                            <FontAwesomeIcon icon={faBell} title="Notifications" />
                         </div>
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
                         </div>
                         {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
@@ -289,10 +289,10 @@ const AdminApprovalPage = () => {
                         />
                         <div className="popup-actions-admin-approve">
                             <button onClick={handleApprove} className="approve-btn-admin-approve">
-                                <FontAwesomeIcon icon={faCheck} /> Approve
+                                <FontAwesomeIcon icon={faCheck} title="Approve" /> Approve
                             </button>
                             <button onClick={handleDecline} className="decline-btn-admin-approve">
-                                <FontAwesomeIcon icon={faTimes} /> Decline
+                                <FontAwesomeIcon icon={faTimes} title="Decline" /> Decline
                             </button>
                             <button onClick={() => { setShowPopup(false); setComment(""); }} className="cancel-btn-admin-approve">
                                 Cancel

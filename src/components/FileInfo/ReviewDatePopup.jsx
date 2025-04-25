@@ -37,7 +37,7 @@ const ReviewDatePopup = ({ isOpen, onClose, onUpdate, currVal }) => {
             <div className="review-popup-content">
                 <div className="review-date-header">
                     <h2 className="review-date-title">Highlight Review Dates</h2>
-                    <button className="review-date-close" onClick={onClose}>×</button>
+                    <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
 
                 <div className="review-date-group">

@@ -73,7 +73,7 @@ const ManagePPE = ({ closePopup, onClose }) => {
             <div className="manPPE-popup-box">
                 <div className="manPPE-popup-header">
                     <h2 className="manPPE-popup-title">Update PPE</h2>
-                    <button className="manPPE-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manPPE-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manPPE-popup-group">

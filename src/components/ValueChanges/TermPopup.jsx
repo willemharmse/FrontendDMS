@@ -102,8 +102,8 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
         <div className="term-popup-overlay">
             <div className="term-popup-content">
                 <div className="term-popup-header">
-                    <h2 className="term-popup-title">Add New Term</h2>
-                    <button className="term-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="term-popup-title">Suggest New Term</h2>
+                    <button className="term-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="term-popup-group">

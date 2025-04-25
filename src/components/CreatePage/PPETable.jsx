@@ -25,8 +25,13 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             const data = await response.json();
 
             setPPEData(data.ppe);
+            localStorage.setItem('cachedPpeOptions', JSON.stringify(data.ppe));
         } catch (error) {
-            console.error("Error fetching equipment:", error)
+            console.error("Error fetching equipment:", error);
+            const cached = localStorage.getItem('cachedPpeOptions');
+            if (cached) {
+                setPPEData(JSON.parse(cached));
+            }
         }
     };
 
@@ -103,9 +108,9 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     <h3 className="font-fam-labels">PPE</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-ppe-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+                    <button className="top-right-button-ppe-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit PPE" /></button>
                 )}
-                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest PPE" /></button>
                 <PPEPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -122,7 +127,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                         <div className="popup-content-ppe">
                             <div className="review-date-header">
                                 <h2 className="review-date-title">Select PPE</h2>
-                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
                             <div className="review-date-group">
@@ -134,7 +139,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                                     {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                                 </div>
                             </div>
@@ -218,7 +223,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                                 setSelectedPPE(newSelectedPPE);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -227,9 +232,17 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select
-                </button>
+                {selectedPPE.size === 0 && (
+                    <button className="add-row-button-ppe" onClick={handlePopupToggle} disabled={!isNA}>
+                        Select
+                    </button>
+                )}
+
+                {selectedPPE.size > 0 && (
+                    <button className="add-row-button-ppe-plus" onClick={handlePopupToggle}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
             </div>
         </div>
     );

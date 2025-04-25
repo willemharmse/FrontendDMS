@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PicturesTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) => {
     const handleInputChange = (index, field, value) => {
@@ -50,7 +50,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                     </td>
                                     <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => removePicRow(index)}>
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -59,9 +59,17 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={addPicRow}>
-                    Add
-                </button>
+                {picturesRows.length === 0 && (
+                    <button className="add-row-button-pic" onClick={addPicRow}>
+                        Add
+                    </button>
+                )}
+
+                {picturesRows.length > 0 && (
+                    <button className="add-row-button-pic-plus" onClick={addPicRow}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
             </div>
         </div>
     );

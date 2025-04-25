@@ -18,7 +18,7 @@ const DeletePopupUM = ({ form, setIsDeleteModalOpen, deleteUser, userToDelete, d
             <div className="delete-popup-content-um">
                 <div className="delete-file-header-um">
                     <h2 className="delete-file-title-um">{form === "user" ? "Delete User" : "Remove User"}</h2>
-                    <button className="delete-file-close-um" onClick={() => setIsDeleteModalOpen(false)}>×</button>
+                    <button className="delete-file-close-um" onClick={() => setIsDeleteModalOpen(false)} title="Close Popup">×</button>
                 </div>
 
                 <div className="delete-file-group-um">

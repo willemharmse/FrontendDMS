@@ -4,9 +4,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./UpdateFileModal.css";
 
-const UpdateFileModal = ({ isModalOpen, closeModal }) => {
+const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     // State for the form fields
-    const [selectedExistingFile, setSelectedExistingFile] = useState("");
     const [newFile, setNewFile] = useState(null);
     const [status, setStatus] = useState("");
     const [reviewDate, setReviewDate] = useState("");
@@ -15,9 +14,14 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
     const [successMsg, setSuccessMsg] = useState("");
     const [userID, setUserID] = useState("");
     const fileInputRef = useRef(null);
+    const [chosenFileName, setChosenFileName] = useState("");
 
     // Allowed roles
     const adminRoles = ["admin", "teamleader", "developer"];
+
+    const removeFileExtension = (fileName) => {
+        return fileName.replace(/\.[^/.]+$/, "");
+    };
 
     // Check for valid token/role on mount
     useEffect(() => {
@@ -38,16 +42,20 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
                 const data = await response.json();
                 // Assuming data.files is an array of file objects with properties "id" and "name"
                 setFiles(data.files || []);
+                const matchedFile = data.files?.find(file => file._id === fileID);
+                if (matchedFile) {
+                    setChosenFileName(removeFileExtension(matchedFile.fileName));
+                }
             } catch (err) {
                 setError(err.message);
             }
         };
         fetchFiles();
-    }, []);
+    }, [fileID]);
 
     // Check if the form is valid
     const isFormValid = () => {
-        return selectedExistingFile && newFile && status && reviewDate;
+        return newFile && status && reviewDate;
     };
 
     const handleFileSelect = (selectedFile) => {
@@ -72,13 +80,13 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
         }
 
         const formData = new FormData();
-        formData.append("existingFile", selectedExistingFile);
+        formData.append("existingFile", fileID);
         formData.append("newFile", newFile);
         formData.append("status", status);
         formData.append("reviewDate", reviewDate);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/version/update/${selectedExistingFile}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/version/update/${fileID}`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -89,7 +97,6 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
                 throw new Error("Upload failed");
             }
             await response.json();
-            setSelectedExistingFile("");
             setNewFile(null);
             setStatus("");
             setReviewDate("");
@@ -120,7 +127,6 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
     };
 
     const closeModalAdd = () => {
-        setSelectedExistingFile("");
         setNewFile("");
         setReviewDate("");
         setStatus("");
@@ -133,31 +139,22 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
         <div className="update-file-overlay">
             <div className="update-file-modal">
                 <div className="update-file-header">
-                    <h2 className="update-file-title">Update File</h2>
-                    <button className="update-file-close" onClick={closeModalAdd}>×</button>
+                    <h2 className="update-file-title">Update Document</h2>
+                    <button className="update-file-close" onClick={closeModalAdd} title="Close Popup">×</button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="update-file-group-top">
-                        <label className="update-file-label">Select Existing File</label>
-                        <select
-                            className={selectedExistingFile ? "update-file-select" : "update-file-select def-colour"}
-                            value={selectedExistingFile}
-                            onChange={(e) => setSelectedExistingFile(e.target.value)}
-                        >
-                            <option value="" className="def-colour">Choose a File</option>
-                            {files.map((file, index) => (
-                                <option key={index} value={file._id}>
-                                    {file.fileName}
-                                </option>
-                            ))}
-                        </select>
+                        <label className="update-file-label">Chosen Document</label>
+                        <p className="update-file-label-file-name-top">
+                            {chosenFileName || "No Document Selected"}
+                        </p>
                     </div>
 
                     <div className="update-file-group">
-                        <label className="update-file-label">Select New File</label>
+                        <label className="update-file-label">Select New Document</label>
                         <p className="update-file-label-file-name">
-                            {newFile ? newFile.name : "No File Selected"}
+                            {newFile ? newFile.name : "No Document Selected"}
                         </p>
                         <input
                             type="file"
@@ -172,7 +169,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal }) => {
                                 className="update-file-button-select-file"
                                 onClick={handleChooseFile}
                             >
-                                Choose File
+                                Choose Document
                             </button>
                         </div>
                     </div>

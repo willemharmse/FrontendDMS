@@ -118,10 +118,92 @@ tr:hover+.insert-row-container .insert-row-button {
     padding: 0px;
 }
 
+.floating-dropdown-proc {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    /* 👈 set a wider min-width */
+    width: auto;
+    transform: translateX(-15%);
+}
+
+.floating-dropdown-proc li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.floating-dropdown-proc li:hover {
+    background-color: #f0f0f0;
+}
+
 .top-right-button-proc-2 {
     position: absolute;
     top: 15px;
-    right: 70px;
+    right: 120px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.modal-flowchart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.modal-flowchart-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.flowchart-btn-prev,
+.flowchart-btn-next,
+.flowchart-btn-close {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.flowchart-btn-prev:hover,
+.flowchart-btn-next:hover,
+.flowchart-btn-close:hover {
+    background-color: #e0e0e0;
+}
+
+.flowchart-btn-prev:disabled,
+.flowchart-btn-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+
+.top-right-button-proc-3 {
+    position: absolute;
+    top: 15px;
+    right: 73px;
     z-index: 1;
     background: transparent;
     color: #002060;
@@ -214,6 +296,19 @@ tr:hover+.insert-row-container .insert-row-button {
     border-radius: 4px;
     background-color: transparent;
 }
+
+.ai-rewrite-button {
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
 
 .remove-step-button-ref:hover {
     color: #CB6F6F;

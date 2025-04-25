@@ -25,8 +25,13 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             const data = await response.json();
 
             setToolsData(data.tools);
+            localStorage.setItem('cachedToolOptions', JSON.stringify(data.tools));
         } catch (error) {
-            console.error("Error fetching tools:", error)
+            console.log(error);
+            const cached = localStorage.getItem('cachedToolOptions');
+            if (cached) {
+                setToolsData(JSON.parse(cached));
+            }
         }
     };
 
@@ -103,9 +108,9 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     <h3 className="font-fam-labels">Hand Tools</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-tool-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+                    <button className="top-right-button-tool-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Tools" /></button>
                 )}
-                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Tool" /></button>
                 <ToolPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -121,7 +126,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                         <div className="popup-content-tool">
                             <div className="review-date-header">
                                 <h2 className="review-date-title">Select Hand Tools</h2>
-                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
                             <div className="review-date-group">
@@ -133,7 +138,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                                     {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                                 </div>
                             </div>
@@ -218,7 +223,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                                 setSelectedTools(newSelectedTools);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -227,9 +232,17 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select
-                </button>
+                {selectedTools.size === 0 && (
+                    <button className="add-row-button-tool" onClick={handlePopupToggle} disabled={!isNA}>
+                        Select
+                    </button>
+                )}
+
+                {selectedTools.size > 0 && (
+                    <button className="add-row-button-tool-plus" onClick={handlePopupToggle}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
             </div>
         </div>
     );

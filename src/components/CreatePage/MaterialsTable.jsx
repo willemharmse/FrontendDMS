@@ -25,8 +25,13 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             const data = await response.json();
 
             setMatsData(data.mats);
+            localStorage.setItem('cachedMatOptions', JSON.stringify(data.mats));
         } catch (error) {
-            console.error("Error fetching equipment:", error)
+            console.log(error);
+            const cached = localStorage.getItem('cachedMatOptions');
+            if (cached) {
+                setMatsData(JSON.parse(cached));
+            }
         }
     };
 
@@ -103,9 +108,9 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     <h3 className="font-fam-labels">Materials</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-mat-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+                    <button className="top-right-button-mat-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Materials" /></button>
                 )}
-                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Material" /></button>
                 <MaterialPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -121,7 +126,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                         <div className="popup-content-mat">
                             <div className="review-date-header">
                                 <h2 className="review-date-title">Select Materials</h2>
-                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
                             <div className="review-date-group">
@@ -133,7 +138,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                                     {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                                 </div>
                             </div>
@@ -218,7 +223,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                                 setSelectedMaterials(newSelectedMaterials);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -227,9 +232,17 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select
-                </button>
+                {selectedMaterials.size === 0 && (
+                    <button className="add-row-button-mat" onClick={handlePopupToggle} disabled={!isNA}>
+                        Select
+                    </button>
+                )}
+
+                {selectedMaterials.size > 0 && (
+                    <button className="add-row-button-mat-plus" onClick={handlePopupToggle}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
             </div>
         </div>
     );

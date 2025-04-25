@@ -152,13 +152,10 @@ const VersionHistory = () => {
                     {/* Container for right-aligned icons */}
                     <div className="icons-container">
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
+                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                         </div>
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} />
-                        </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
                         </div>
                         {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
@@ -180,7 +177,7 @@ const VersionHistory = () => {
                                         <td className="version-history-file-nr">{index + 1}</td>
                                         <td className="version-history-file-fn">{removeFileExtension(act.fileName)}</td>
                                         <td className="version-history-file-stat">{act.version}</td>
-                                        <td className="version-history-file-ver"><button className="verion-download-button" onClick={() => openDownloadModal(act._id, act.fileName)}><FontAwesomeIcon icon={faDownload} /></button></td>
+                                        <td className="version-history-file-ver"><button className="verion-download-button" onClick={() => openDownloadModal(act._id, act.fileName)}><FontAwesomeIcon icon={faDownload} title="Download" /></button></td>
                                     </tr>
                                 ))
                             ) : (

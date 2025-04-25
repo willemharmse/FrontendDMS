@@ -97,6 +97,7 @@ const Notifications = ({ setClose }) => {
                                 </div>
                                 <FontAwesomeIcon
                                     icon={faTrash}
+                                    title="Remove Notification"
                                     className="notifications-trash-icon"
                                     onClick={(e) => {
                                         e.stopPropagation(); // Prevent triggering markAsRead

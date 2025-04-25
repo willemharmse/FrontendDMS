@@ -73,7 +73,7 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
             <div className="manMac-popup-box">
                 <div className="manMac-popup-header">
                     <h2 className="manMac-popup-title">Update Machines</h2>
-                    <button className="manMac-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manMac-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manMac-popup-group">

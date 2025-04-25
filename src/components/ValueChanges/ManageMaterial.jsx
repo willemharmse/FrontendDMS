@@ -73,7 +73,7 @@ const ManageMaterial = ({ closePopup, onClose }) => {
             <div className="manMat-popup-box">
                 <div className="manMat-popup-header">
                     <h2 className="manMat-popup-title">Update Material</h2>
-                    <button className="manMat-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manMat-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manMat-popup-group">

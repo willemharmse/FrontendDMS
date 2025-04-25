@@ -49,13 +49,14 @@ const CreatePage = () => {
   const loadedIDRef = useRef('');
 
   const updateRow = (index, field, value) => {
-    const updatedProcedureRows = [...formData.procedureRows];
-    updatedProcedureRows[index][field] = value;  // Update the specific field in the row
+    const updatedProcedureRows = formData.procedureRows.map((row, i) =>
+      i === index ? { ...row, [field]: value } : row
+    );
 
-    setFormData({
-      ...formData,
-      procedureRows: updatedProcedureRows,  // Update the procedure rows in state
-    });
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      procedureRows: updatedProcedureRows,
+    }));
   };
 
   const openShare = () => {
@@ -119,6 +120,29 @@ const CreatePage = () => {
     }
   };
 
+  const saveDataOffline = async () => {
+    const dataToStore = {
+      usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+      usedTermCodes: usedTermCodesRef.current,
+      usedPPEOptions: usedPPEOptionsRef.current,
+      usedHandTools: usedHandToolsRef.current,
+      usedEquipment: usedEquipmentRef.current,
+      usedMobileMachine: usedMobileMachineRef.current,
+      usedMaterials: usedMaterialsRef.current,
+      formData: formDataRef.current,
+      userIDs: userIDsRef.current,
+      creator: userIDRef.current,
+      updater: null,
+      dateUpdated: null
+    };
+
+    try {
+      localStorage.setItem('draftData', JSON.stringify(dataToStore));
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  };
+
   const saveData = async () => {
     const dataToStore = {
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
@@ -152,6 +176,7 @@ const CreatePage = () => {
       }
     } catch (error) {
       console.error('Error saving data:', error);
+      saveDataOffline(); // Fallback to offline save
     }
   };
 
@@ -716,6 +741,13 @@ const CreatePage = () => {
     }));
   };
 
+  const updateSignatureRows = (newSignatureRows) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      rows: newSignatureRows, // Update procedureRows with new data
+    }));
+  };
+
   const addRefRow = () => {
     const lastNr = formData.references.length > 0 && typeof formData.references[formData.references.length - 1].nr === 'number'
       ? formData.references[formData.references.length - 1].nr
@@ -939,7 +971,7 @@ const CreatePage = () => {
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>

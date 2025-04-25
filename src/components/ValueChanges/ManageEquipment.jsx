@@ -73,7 +73,7 @@ const ManageEquipment = ({ closePopup, onClose }) => {
             <div className="manEqp-popup-box">
                 <div className="manEqp-popup-header">
                     <h2 className="manEqp-popup-title">Update Equipment</h2>
-                    <button className="manEqp-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manEqp-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manEqp-popup-group">

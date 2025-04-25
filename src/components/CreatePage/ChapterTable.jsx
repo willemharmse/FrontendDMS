@@ -8,6 +8,7 @@ const ChapterTable = ({ formData, setFormData }) => {
         const newChapter = {
             chapterNumber: formData.chapters.length + 1,
             chapterTitle: "",
+            chapterBody: "",
             subheadings: [],
         };
         setFormData({ ...formData, chapters: [...formData.chapters, newChapter] });
@@ -23,7 +24,12 @@ const ChapterTable = ({ formData, setFormData }) => {
     };
 
     const removeChapter = (chapterIndex) => {
-        const newChapters = formData.chapters.filter((_, index) => index !== chapterIndex);
+        const newChapters = formData.chapters
+            .filter((_, index) => index !== chapterIndex)
+            .map((chapter, index) => ({
+                ...chapter,
+                chapterNumber: index + 1, // Recalculate chapterNumber
+            }));
         setFormData({ ...formData, chapters: newChapters });
     };
 
@@ -53,7 +59,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                     <div key={chapterIndex} className="mct-chapter-card">
                         <div className="mct-chapter-header">
                             <h4>Section {chapter.chapterNumber}</h4>
-                            <button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}><FontAwesomeIcon icon={faTrash} /></button>
+                            <button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Section" /></button>
                         </div>
                         <label>Section Title:</label>
                         <input
@@ -63,11 +69,21 @@ const ChapterTable = ({ formData, setFormData }) => {
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterTitle")}
                             placeholder="Enter section title..."
                         />
+
+                        <label style={{ marginBottom: "5px", marginTop: "5px" }}>Section Body:</label>
+                        <textarea
+                            className="mct-textarea"
+                            value={chapter.chapterBody}
+                            onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterBody")}
+                            placeholder="Enter content..."
+                            rows="10"
+                        />
+
                         {chapter.subheadings.map((subheading, subheadingIndex) => (
                             <div key={subheadingIndex} className="mct-subheading-card">
                                 <div className="mct-subheading-header">
                                     <h5>Sub-Section {chapterIndex + 1}.{subheadingIndex + 1}</h5>
-                                    <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} /></button>
+                                    <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Sub-Section" /></button>
                                 </div>
                                 <input
                                     className="mct-input"

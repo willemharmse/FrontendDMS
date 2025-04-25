@@ -78,7 +78,7 @@ const ManageDefinitions = ({ closePopup, onClose }) => {
             <div className="manDefs-popup-box">
                 <div className="manDefs-popup-header">
                     <h2 className="manDefs-popup-title">Update Term</h2>
-                    <button className="manDefs-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manDefs-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manDefs-popup-group">

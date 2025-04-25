@@ -50,7 +50,12 @@ const UploadPopup = ({ onClose }) => {
 
                 setDocTypes(data[0].documentType);
                 setDisciplines(data[0].disciplines);
-                setUsers(data[0].owner); // Set users from the fetched data
+                const owners = Array.from(new Set([
+                    ...data[0].owner,
+                    ...data[0].departmentHeads
+                ]));
+
+                setUsers(owners); // This now contains owners + departmentHeads, with duplicates removed
                 setDeptHeads(data[0].departmentHeads);
             } catch (error) {
                 setError(error.message);
@@ -142,7 +147,7 @@ const UploadPopup = ({ onClose }) => {
                 throw new Error(response.error || 'Failed to upload file');
             }
             await response.json();
-            setSuccessMessage("File uploaded successfully!");
+            setSuccessMessage("Document uploaded successfully!");
             setShowPopup(true);
             setSelectedFile(null);
             setDiscipline('');
@@ -151,10 +156,12 @@ const UploadPopup = ({ onClose }) => {
             setDepartmentHead('');
             setStatus('');
             setReviewDate('');
+            setApprover('');
+            setReviewer('');
             setError(null);
 
             setLoading(false); // Reset loading state after response
-            toast.success("File Uploaded Successfully", {
+            toast.success("Document Uploaded Successfully", {
                 closeButton: false,
                 autoClose: 800,
                 style: {
@@ -198,16 +205,17 @@ const UploadPopup = ({ onClose }) => {
                         <button
                             className="upload-file-page-close-button"
                             onClick={onClose}
+                            title="Close Popup"
                         >
                             ×
                         </button>
                     </div>
 
                     <div className="upload-file-page-form-group-container">
-                        <div className="upload-file-name">{selectedFile ? selectedFile.name : "No File Selected"}</div>
+                        <div className="upload-file-name">{selectedFile ? selectedFile.name : "No Document Selected"}</div>
                         <div className="create-user-buttons">
                             <label className="choose-upload-file-button">
-                                {'Choose Excel File'}
+                                {'Choose Document'}
                                 <input
                                     type="file"
                                     onChange={handleFileChange}
@@ -347,21 +355,23 @@ const UploadPopup = ({ onClose }) => {
                                 disabled={!selectedFile}
                                 onClick={handleSubmit}
                             >
-                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}
+                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload Document'}
                             </button>
                         </div>
                     </div>
 
                     {showPopup && (
-                        <div className="upload-popup-confirmation-classname">
-                            <div className="upload-popup-content-classname">
-                                <p className="upload-popup-message-classname">{successMessage}</p>
-                                <p>Would you like to upload another file?</p>
-                                <div className="upload-popup-buttons-classname">
-                                    <button className="upload-popup-yes-button-classname" onClick={() => setShowPopup(false)}>
+                        <div className="download-popup-overlay">
+                            <div className="download-popup-content">
+                                <div className="download-file-group">
+                                    <p className="upload-file-text">{successMessage}</p>
+                                    <p className='upload-file-text'>Would you like to upload another Document?</p>
+                                </div>
+                                <div className="download-file-buttons">
+                                    <button className="download-file-button-download" onClick={() => setShowPopup(false)}>
                                         Yes
                                     </button>
-                                    <button className="upload-popup-no-button-classname" onClick={onClose}>
+                                    <button className="download-file-button-cancel" onClick={onClose}>
                                         No
                                     </button>
                                 </div>

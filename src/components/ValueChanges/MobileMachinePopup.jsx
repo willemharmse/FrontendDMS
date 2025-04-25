@@ -99,8 +99,8 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
         <div className="mac-popup-overlay">
             <div className="mac-popup-content">
                 <div className="mac-popup-header">
-                    <h2 className="mac-popup-title">Add New Machine</h2>
-                    <button className="mac-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="mac-popup-title">Suggest New Machine</h2>
+                    <button className="mac-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="mac-popup-group">

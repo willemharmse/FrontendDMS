@@ -119,7 +119,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
             <div className="create-dept-modal">
                 <div className="create-dept-header">
                     <h2 className="create-dept-title">Create Department</h2>
-                    <button className="create-dept-close" onClick={onClose}>×</button>
+                    <button className="create-dept-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); }}>

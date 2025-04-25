@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }) => {
     const [files, setFiles] = useState([]);
@@ -20,8 +20,13 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                 }
                 const data = await response.json();
                 setFiles(data.files);
+                localStorage.setItem('cachedRefOptions', JSON.stringify(data.files));
             } catch (error) {
                 console.log(error);
+                const cached = localStorage.getItem('cachedRefOptions');
+                if (cached) {
+                    setFiles(JSON.parse(cached));
+                }
             }
         };
         fetchFiles();
@@ -144,7 +149,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                     </td>
                                     <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => removeRefRow(index)}>
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -153,9 +158,17 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={addRefRow}>
-                    Add
-                </button>
+                {referenceRows.length === 0 && (
+                    <button className="add-row-button-ref" onClick={addRefRow}>
+                        Select
+                    </button>
+                )}
+
+                {referenceRows.length > 0 && (
+                    <button className="add-row-button-ref-plus" onClick={addRefRow}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
 
                 {/* Floating Dropdown */}
                 {showDropdown !== null && filteredOptions[showDropdown]?.length > 0 && (

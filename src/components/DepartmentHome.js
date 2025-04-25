@@ -75,7 +75,6 @@ const DepartmentHome = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        localStorage.removeItem('rememberMe');
         navigate('/FrontendDMS/');
     };
 
@@ -215,7 +214,7 @@ const DepartmentHome = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 

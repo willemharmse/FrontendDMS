@@ -9,7 +9,7 @@ const DownloadPopup = ({ closeDownloadModal, confirmDownload, downloadFileName, 
             <div className="download-popup-content">
                 <div className="download-file-header">
                     <h2 className="download-file-title">Download File</h2>
-                    <button className="download-file-close" onClick={closeDownloadModal}>×</button>
+                    <button className="download-file-close" onClick={closeDownloadModal} title="Close Popup">×</button>
                 </div>
 
                 <div className="download-file-group">

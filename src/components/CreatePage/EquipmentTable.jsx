@@ -36,8 +36,13 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
             const data = await response.json();
 
             setEqpData(data.eqps);
+            localStorage.setItem('cachedEqpOptions', JSON.stringify(data.eqps));
         } catch (error) {
-            console.error("Error fetching equipment:", error)
+            console.log(error);
+            const cached = localStorage.getItem('cachedEqpOptions');
+            if (cached) {
+                setEqpData(JSON.parse(cached));
+            }
         }
     };
 
@@ -103,9 +108,9 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                     <h3 className="font-fam-labels">Equipment</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-eqp-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+                    <button className="top-right-button-eqp-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Equipment" /></button>
                 )}
-                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Equipment" /></button>
 
                 <EquipmentPopup
                     isOpen={showNewPopup}
@@ -122,7 +127,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                         <div className="popup-content-eqp">
                             <div className="review-date-header">
                                 <h2 className="review-date-title">Select Equipment</h2>
-                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
                             <div className="review-date-group">
@@ -134,7 +139,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                                     {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                                 </div>
                             </div>
@@ -219,7 +224,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                                                 setSelectedEquipment(newSelectedEquipment);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -228,9 +233,17 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select
-                </button>
+                {selectedEquipment.size === 0 && (
+                    <button className="add-row-button-eqp" onClick={handlePopupToggle} disabled={!isNA}>
+                        Select
+                    </button>
+                )}
+
+                {selectedEquipment.size > 0 && (
+                    <button className="add-row-button-eqp-plus" onClick={handlePopupToggle} title="Add Row">
+                        <FontAwesomeIcon icon={faPlusCircle} />
+                    </button>
+                )}
             </div>
         </div>
     );

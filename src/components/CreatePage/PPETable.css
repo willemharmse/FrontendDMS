@@ -33,6 +33,41 @@
     /* Space between title and checkbox */
 }
 
+.add-row-button-ppe {
+    margin-top: 10px;
+    height: 80%;
+    width: 15%;
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.add-row-button-ppe-plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    height: 30px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(-54%);
+    /* Centers the button */
+}
+
 .top-right-button-ppe {
     position: absolute;
     top: 15px;

@@ -25,8 +25,13 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             const data = await response.json();
 
             setMacData(data.macs);
+            localStorage.setItem('cachedMacOptions', JSON.stringify(data.macs));
         } catch (error) {
-            console.error("Error fetching equipment:", error)
+            console.log(error);
+            const cached = localStorage.getItem('cachedMacOptions');
+            if (cached) {
+                setMacData(JSON.parse(cached));
+            }
         }
     };
 
@@ -103,9 +108,9 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     <h3 className="font-fam-labels">Mobile Machine</h3>
                 </div>
                 {role === "admin" && (
-                    <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+                    <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Mobile Machines" /></button>
                 )}
-                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Mobile Machine" /></button>
                 <MobileMachinePopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -122,7 +127,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                         <div className="popup-content-mac">
                             <div className="review-date-header">
                                 <h2 className="review-date-title">Select Mobile Machines</h2>
-                                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
                             <div className="review-date-group">
@@ -134,7 +139,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                                    {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                                     {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                                 </div>
                             </div>
@@ -219,7 +224,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                                 setSelectedMMachine(newSelectedMachines);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
                                     </td>
                                 </tr>
@@ -228,9 +233,17 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     </table>
                 )}
 
-                <button className="add-row-button" onClick={handlePopupToggle} disabled={!isNA}>
-                    Select
-                </button>
+                {selectedMMachine.size === 0 && (
+                    <button className="add-row-button-mac" onClick={handlePopupToggle} disabled={!isNA}>
+                        Select
+                    </button>
+                )}
+
+                {selectedMMachine.size > 0 && (
+                    <button className="add-row-button-mac-plus" onClick={handlePopupToggle}>
+                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+                    </button>
+                )}
             </div>
         </div>
     );

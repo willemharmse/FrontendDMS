@@ -9,7 +9,7 @@ const DeletePopup = ({ closeModal, deleteFile, deleteFileFromTrash, selectedFile
             <div className="delete-popup-content">
                 <div className="delete-file-header">
                     <h2 className="delete-file-title">Delete File</h2>
-                    <button className="delete-file-close" onClick={closeModal}>×</button>
+                    <button className="delete-file-close" onClick={closeModal} title="Close Popup">×</button>
                 </div>
 
                 <div className="delete-file-group">

@@ -102,8 +102,8 @@ const AbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData }) => {
         <div className="abbr-popup-overlay">
             <div className="abbr-popup-content">
                 <div className="abbr-popup-header">
-                    <h2 className="abbr-popup-title">Add New Abbreviation</h2>
-                    <button className="abbr-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="abbr-popup-title">Suggest New Abbreviation</h2>
+                    <button className="abbr-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="abbr-popup-group">

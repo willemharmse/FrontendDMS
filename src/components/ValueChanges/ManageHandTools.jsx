@@ -73,7 +73,7 @@ const ManageHandTools = ({ closePopup, onClose }) => {
             <div className="manTool-popup-box">
                 <div className="manTool-popup-header">
                     <h2 className="manTool-popup-title">Update Tool</h2>
-                    <button className="manTool-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manTool-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manTool-popup-group">

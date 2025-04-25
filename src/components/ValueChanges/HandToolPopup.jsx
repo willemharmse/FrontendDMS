@@ -99,8 +99,8 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
         <div className="tool-popup-overlay">
             <div className="tool-popup-content">
                 <div className="tool-popup-header">
-                    <h2 className="tool-popup-title">Add New Tool</h2>
-                    <button className="tool-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="tool-popup-title">Suggest New Tool</h2>
+                    <button className="tool-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="tool-popup-group">

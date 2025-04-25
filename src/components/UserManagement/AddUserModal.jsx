@@ -14,7 +14,7 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
             <div className="create-user-modal">
                 <div className="create-user-header">
                     <h2 className="create-user-title">Add New User</h2>
-                    <button className="create-user-close" onClick={closeModalAdd}>×</button>
+                    <button className="create-user-close" onClick={closeModalAdd} title="Close Popup">×</button>
                 </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); createUser(); }}>

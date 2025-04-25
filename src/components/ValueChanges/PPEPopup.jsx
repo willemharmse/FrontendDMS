@@ -99,8 +99,8 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
         <div className="ppe-popup-overlay">
             <div className="ppe-popup-content">
                 <div className="ppe-popup-header">
-                    <h2 className="ppe-popup-title">Add New PPE</h2>
-                    <button className="ppe-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="ppe-popup-title">Suggest New PPE</h2>
+                    <button className="ppe-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="ppe-popup-group">

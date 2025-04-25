@@ -27,8 +27,13 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
       const data = await response.json();
 
       setTermData(data.defs);
+      localStorage.setItem('cachedTermOptions', JSON.stringify(data.defs));
     } catch (error) {
-      console.error("Error fetching abbreviations:", error)
+      console.log(error);
+      const cached = localStorage.getItem('cachedTermOptions');
+      if (cached) {
+        setTermData(JSON.parse(cached));
+      }
     }
   };
 
@@ -78,9 +83,9 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
         <h3 className="font-fam-labels">Terms <span className="required-field">*</span></h3>
         {role === "admin" && (
-          <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" /></button>
+          <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
         )}
-        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" /></button>
+        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Term" /></button>
         <TermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
@@ -96,7 +101,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
             <div className="popup-content-terms">
               <div className="review-date-header">
                 <h2 className="review-date-title">Select Terms</h2>
-                <button className="review-date-close" onClick={handlePopupToggle}>×</button>
+                <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
               </div>
 
               <div className="review-date-group">
@@ -108,7 +113,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                  {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                   {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                 </div>
               </div>
@@ -196,7 +201,7 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
                         setSelectedTerms(newSelectedTerms);
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                     </button>
                   </td>
                 </tr>
@@ -205,9 +210,18 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
           </table>
         )}
 
-        <button className="add-row-button" onClick={handlePopupToggle}>
-          Select
-        </button>
+        {selectedTerms.size === 0 && (
+          <button className="add-row-button-terms" onClick={handlePopupToggle}>
+            Select
+          </button>
+        )}
+
+        {selectedTerms.size > 0 && (
+          <button className="add-row-button-terms-plus" onClick={handlePopupToggle}>
+            <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
+          </button>
+        )}
+
       </div>
     </div>
   );

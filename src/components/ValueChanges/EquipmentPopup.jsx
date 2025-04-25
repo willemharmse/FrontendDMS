@@ -99,8 +99,8 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
         <div className="eqp-popup-overlay">
             <div className="eqp-popup-content">
                 <div className="eqp-popup-header">
-                    <h2 className="eqp-popup-title">Add New Equipment</h2>
-                    <button className="eqp-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="eqp-popup-title">Suggest New Equipment</h2>
+                    <button className="eqp-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="eqp-popup-group">

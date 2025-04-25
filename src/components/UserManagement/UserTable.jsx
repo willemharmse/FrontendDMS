@@ -76,7 +76,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                                         onClick={() => openEditModal(user)}
                                         disabled={!(user._id !== loggedInUserId)}
                                     >
-                                        <FontAwesomeIcon icon={faPenToSquare} />
+                                        <FontAwesomeIcon icon={faPenToSquare} title="Edit User" />
                                     </button>
                                     <button
                                         className={user._id !== loggedInUserId ? "action-button-user delete-button-user" : "action-button-user edit-button-user-hidden"}
@@ -86,7 +86,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                                         }}
                                         disabled={!(user._id !== loggedInUserId)}
                                     >
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <FontAwesomeIcon icon={faTrash} title="Delete User" />
                                     </button>
                                 </div>
                             </td>

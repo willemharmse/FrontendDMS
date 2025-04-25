@@ -5,7 +5,7 @@ import { faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-i
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 
-const TopBar = ({ role, menu }) => {
+const TopBar = ({ role, menu, setReset }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,18 +36,18 @@ const TopBar = ({ role, menu }) => {
     return (
         <div className="icons-container">
             <div className="burger-menu-icon-um">
-                <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} />
+                <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
-                <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} />
+                <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
                 {count != 0 && <div className="notifications-badge">{count}</div>}{/* Replace with unread count from backend later */}
             </div>
             <div className="burger-menu-icon-um">
-                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} />)}
-            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} />)}
-            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} />)}
+            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} />)}
         </div>
     );
 };

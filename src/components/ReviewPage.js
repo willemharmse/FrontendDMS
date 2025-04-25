@@ -66,7 +66,6 @@ const ReviewPage = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        localStorage.removeItem('rememberMe');
         navigate('/FrontendDMS/');
     };
 

@@ -37,14 +37,14 @@ const TopBarDD = ({ role, menu }) => {
     return (
         <div className="icons-container-create-page">
             <div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} />
+                <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
-                <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} />
+                <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
                 {count != 0 && <div className="notifications-badge">{count}</div>} {/* Replace with unread count from backend later */}
             </div>
             <div className="burger-menu-icon-create-page-3" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                <FontAwesomeIcon icon={faCircleUser} />
+                <FontAwesomeIcon icon={faCircleUser} title="Menu" />
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} />)}
             {(isMenuOpen && menu != "1") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}

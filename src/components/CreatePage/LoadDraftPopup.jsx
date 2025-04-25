@@ -92,7 +92,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
             <div className="draftLoad-popup-content">
                 <div className="review-date-header">
                     <h2 className="review-date-title">Load Draft</h2>
-                    <button className="review-date-close" onClick={onClose}>×</button>
+                    <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
                 <div className="draft-table-group">
                     <div className="draft-select-header">
@@ -135,14 +135,14 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                                         className={"action-button-load-draft delete-button-load-draft"}
                                                         onClick={() => confirmDelete(item._id)}
                                                     >
-                                                        <FontAwesomeIcon icon={faTrash} />
+                                                        <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="3">Loading drafts...</td>
+                                        <td colSpan="3">No Drafts Available</td>
                                     </tr>
                                 )}
                             </tbody>

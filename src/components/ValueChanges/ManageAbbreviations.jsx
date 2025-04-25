@@ -78,7 +78,7 @@ const ManageAbbreviations = ({ closePopup, onClose }) => {
             <div className="manAbbr-popup-box">
                 <div className="manAbbr-popup-header">
                     <h2 className="manAbbr-popup-title">Update Abbreviation</h2>
-                    <button className="manAbbr-popup-close" onClick={closeFunction}>×</button>
+                    <button className="manAbbr-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
                 <div className="manAbbr-popup-group">

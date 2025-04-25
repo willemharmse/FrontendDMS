@@ -5,6 +5,7 @@ import './NewLogin.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUser, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import CryptoJS from "crypto-js";
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -15,6 +16,8 @@ const NewLogin = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const secret = process.env.REACT_APP_SECRET;
+
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
     };
@@ -22,6 +25,23 @@ const NewLogin = () => {
     useEffect(() => {
         const storedRememberMe = localStorage.getItem('rememberMe') === 'true';
         const storedToken = storedRememberMe ? localStorage.getItem('token') : sessionStorage.getItem('token');
+
+        if (storedRememberMe) {
+            const encryptedUsername = localStorage.getItem('savedUsername');
+            const encryptedPassword = localStorage.getItem('savedPassword');
+
+            if (encryptedUsername && encryptedPassword && secret) {
+                try {
+                    const decryptedUsername = CryptoJS.AES.decrypt(encryptedUsername, secret).toString(CryptoJS.enc.Utf8);
+                    const decryptedPassword = CryptoJS.AES.decrypt(encryptedPassword, secret).toString(CryptoJS.enc.Utf8);
+                    setUsername(decryptedUsername);
+                    setPassword(decryptedPassword);
+                    setRememberMe(true);
+                } catch (err) {
+                    console.error('Failed to decrypt saved credentials:', err);
+                }
+            }
+        }
 
         if (storedToken) {
             try {
@@ -33,7 +53,7 @@ const NewLogin = () => {
                 console.error('Invalid token:', err);
             }
         }
-    }, [navigate]);
+    }, [navigate, secret]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -53,11 +73,30 @@ const NewLogin = () => {
 
             if (data.token) {
                 if (rememberMe) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('rememberMe', 'true');
+                    if (!data.firstLogin) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('rememberMe', 'true');
+                        localStorage.setItem('savedUsername', CryptoJS.AES.encrypt(username, secret).toString());
+                        localStorage.setItem('savedPassword', CryptoJS.AES.encrypt(password, secret).toString());
+                        localStorage.setItem('firstLogin', 'false');
+                    } else {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('rememberMe', 'true');
+                        localStorage.setItem('savedUsername', CryptoJS.AES.encrypt(username, secret).toString());
+                        localStorage.setItem('savedPassword', CryptoJS.AES.encrypt(password, secret).toString());
+                        localStorage.setItem('firstLogin', 'true');
+                    }
                 } else {
-                    localStorage.setItem('token', data.token);
-                    localStorage.removeItem('rememberMe');
+                    if (!data.firstLogin) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.removeItem('rememberMe');
+                        localStorage.setItem('firstLogin', 'false');
+                    }
+                    else {
+                        localStorage.setItem('token', data.token);
+                        localStorage.removeItem('rememberMe');
+                        localStorage.setItem('firstLogin', 'true');
+                    }
                 }
 
                 const decodedToken = jwtDecode(data.token);
@@ -129,7 +168,7 @@ const NewLogin = () => {
                     </div>
 
                     <div className="nl-login-button-container">
-                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} className="fa-spin" /> : 'Log In'}</button>
+                        <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} className="spin-animation" /> : 'Log In'}</button>
                     </div>
                 </form>
 

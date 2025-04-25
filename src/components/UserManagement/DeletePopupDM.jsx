@@ -9,7 +9,7 @@ const DeletePopupDM = ({ setIsDeleteModalOpen, departmentName, handleDelete }) =
             <div className="delete-popup-content-dm">
                 <div className="delete-file-header-dm">
                     <h2 className="delete-file-title-dm">Delete Department</h2>
-                    <button className="delete-file-close-dm" onClick={() => setIsDeleteModalOpen(false)}>×</button>
+                    <button className="delete-file-close-dm" onClick={() => setIsDeleteModalOpen(false)} title="Close Popup">×</button>
                 </div>
 
                 <div className="delete-file-group-dm">

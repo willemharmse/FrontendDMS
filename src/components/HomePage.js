@@ -3,14 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGraduationCap, faClipboardList, faFileAlt, faFolderOpen, faFileSignature } from "@fortawesome/free-solid-svg-icons";
 import "./HomePage.css";
+import { toast, ToastContainer } from "react-toastify";
+import FirstLoginPopup from "./UserManagement/FirstLoginPopup";
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState(localStorage.getItem("firstLogin") === "true");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-    localStorage.removeItem("rememberMe");
     navigate("/FrontendDMS/");
   };
 
@@ -24,6 +26,7 @@ const HomePage = () => {
 
   return (
     <div className="homepage-container">
+      {showPopup && (<FirstLoginPopup onClose={() => setShowPopup(false)} />)}
       <header className="header">
         <img src="CH_Logo.png" alt="Logo" className="header-logo" />
         <h1>ComplianceHub{"\u2122"}</h1>
@@ -43,6 +46,7 @@ const HomePage = () => {
         <p className="logo-bottom-text">A TAU5 PRODUCT</p>
       </div>
       <button className="logout-button" onClick={handleLogout}>Log Out</button>
+      <ToastContainer />
     </div>
   );
 };

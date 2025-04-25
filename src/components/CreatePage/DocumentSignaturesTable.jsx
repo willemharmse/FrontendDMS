@@ -2,14 +2,29 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./DocumentSignaturesTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faSpinner, faTrash, faTrashCan, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, error }) => {
+const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, error, updateRows }) => {
   const [nameLists, setNameLists] = useState({
     Approver: [],
     Author: [],
     Reviewer: [],
   });
+
+  const insertRowAt = (insertIndex) => {
+    const newSignatures = [...rows];
+
+    const newRow = {
+      auth: "Author",
+      name: "",
+      pos: "",
+      num: 1,
+    };
+
+    newSignatures.splice(insertIndex, 0, newRow);
+
+    updateRows(newSignatures); // use your passed-in updateProcRows function
+  };
 
   const [selectedNames, setSelectedNames] = useState(new Set());
 
@@ -45,6 +60,13 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
           positionMap[name] = position;
         });
 
+        localStorage.setItem('cachedNameLists', JSON.stringify({
+          authors,
+          approvers,
+          reviewers,
+          positionMap
+        }));
+
         setNameLists({
           Approver: approvers.map((a) => a.name),
           Author: authors.map((a) => a.name),
@@ -54,6 +76,19 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
         setNameToPositionMap(positionMap);
       } catch (error) {
         console.error("Error fetching names:", error);
+
+        const cached = localStorage.getItem('cachedNameLists');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+
+          setNameLists({
+            Approver: parsed.approvers.map((a) => a.name),
+            Author: parsed.authors.map((a) => a.name),
+            Reviewer: parsed.reviewers.map((a) => a.name),
+          });
+
+          setNameToPositionMap(parsed.positionMap || {});
+        }
       }
     };
 
@@ -100,64 +135,81 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <select
-                    className="table-control font-fam"
-                    value={row.auth}
-                    onChange={(e) => handleRowChange(e, index, "auth")}
-                  >
-                    <option value="Author">Author</option>
-                    <option value="Approver">Approver</option>
-                    <option value="Reviewer">Reviewer</option>
-                  </select>
-                </td>
-                <td>
-                  <select
-                    className="table-control font-fam"
-                    value={row.name}
-                    onChange={(e) => handleNameChange(e, index)}
-                  >
-                    <option value="">Select Name</option>
-                    {nameLists[row.auth]
-                      .filter((name) => !selectedNames.has(name) || name === row.name)
-                      .sort()
-                      .map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    className="table-control font-fam"
-                    value={row.pos}
-                    readOnly
-                  />
-                </td>
-                <td className="procCent">
-                  <button
-                    className="remove-row-button font-fam"
-                    onClick={() => {
-                      setSelectedNames((prev) => {
-                        const updatedNames = new Set(prev);
-                        updatedNames.delete(row.name);
-                        return updatedNames;
-                      });
-                      removeRow(index);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>
-              </tr>
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <tr className="insert-row-container-sig">
+                    <td colSpan="4" className="insert-row-cell-sig">
+                      <button
+                        className="insert-row-button-sig"
+                        onClick={() => insertRowAt(index)}
+                        title="Insert signature here"
+                      >
+                        <FontAwesomeIcon icon={faPlus} />
+                      </button>
+                    </td>
+                  </tr>
+                )}
+
+
+                <tr key={index}>
+                  <td>
+                    <select
+                      className="table-control font-fam"
+                      value={row.auth}
+                      onChange={(e) => handleRowChange(e, index, "auth")}
+                    >
+                      <option value="Author">Author</option>
+                      <option value="Approver">Approver</option>
+                      <option value="Reviewer">Reviewer</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      className="table-control font-fam"
+                      value={row.name}
+                      onChange={(e) => handleNameChange(e, index)}
+                    >
+                      <option value="">Select Name</option>
+                      {nameLists[row.auth]
+                        .filter((name) => !selectedNames.has(name) || name === row.name)
+                        .sort()
+                        .map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      className="table-control font-fam"
+                      value={row.pos}
+                      readOnly
+                    />
+                  </td>
+                  <td className="procCent">
+                    <button
+                      className="remove-row-button font-fam"
+                      onClick={() => {
+                        setSelectedNames((prev) => {
+                          const updatedNames = new Set(prev);
+                          updatedNames.delete(row.name);
+                          return updatedNames;
+                        });
+                        removeRow(index);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                    </button>
+                  </td>
+                </tr>
+              </React.Fragment>
             ))}
           </tbody>
         </table>
         <button className="add-row-button-ds font-fam" onClick={addRow}>
-          <FontAwesomeIcon icon={faPlusCircle} />
+          <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
         </button>
       </div>
     </div>

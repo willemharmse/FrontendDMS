@@ -83,7 +83,7 @@ const DeparmentList = ({ closePopup }) => {
             <div className="popup-content-dept">
                 <div className="review-date-header">
                     <h2 className="review-date-title">Remove Department</h2>
-                    <button className="review-date-close" onClick={closePopup}>×</button>
+                    <button className="review-date-close" onClick={closePopup} title="Close Popup">×</button>
                 </div>
 
                 <div className="review-date-group">
@@ -95,7 +95,7 @@ const DeparmentList = ({ closePopup }) => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                        {searchTerm !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                         {searchTerm === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
                 </div>
@@ -117,7 +117,7 @@ const DeparmentList = ({ closePopup }) => {
                                         .map(department => (
                                             <tr key={department._id} style={{ cursor: "pointer" }}>
                                                 <td className="">{department.department}</td>
-                                                <td className="dept-Act-icon-delete"><FontAwesomeIcon icon={faTrash} onClick={() => {
+                                                <td className="dept-Act-icon-delete"><FontAwesomeIcon icon={faTrash} title="Remove Department" onClick={() => {
                                                     setDeleteID(department._id);
                                                     setDeleteName(department.department);
                                                     openConfirm(); // Fix: Call function with ()

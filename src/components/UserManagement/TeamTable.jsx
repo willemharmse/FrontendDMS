@@ -60,7 +60,7 @@ const TeamTable = ({ team, setUserToDelete, setIsDeleteModalOpen, formatRole, lo
                                     }}
                                     disabled={!(user._id !== loggedInUserId)}
                                 >
-                                    <FontAwesomeIcon icon={faTrash} />
+                                    <FontAwesomeIcon icon={faTrash} title="Remove User" />
                                 </button>
                             </td>
                         </tr>

@@ -98,8 +98,8 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
         <div className="mat-popup-overlay">
             <div className="mat-popup-content">
                 <div className="mat-popup-header">
-                    <h2 className="mat-popup-title">Add New Material</h2>
-                    <button className="mat-popup-close" onClick={handleClose}>×</button>
+                    <h2 className="mat-popup-title">Suggest New Material</h2>
+                    <button className="mat-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="mat-popup-group">

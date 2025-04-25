@@ -10,6 +10,7 @@ import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, 
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import BatchUpload from "./FileInfo/BatchUpload";
 import TopBar from "./Notifications/TopBar";
+import ChangePassword from "./UserManagement/ChangePassword";
 
 const FileInfoHome = () => {
     const [error, setError] = useState(null);
@@ -23,6 +24,7 @@ const FileInfoHome = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [upload, setUpload] = useState(false);
     const [batch, setBatch] = useState(false);
+    const [reset, setReset] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -49,7 +51,6 @@ const FileInfoHome = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        localStorage.removeItem('rememberMe');
         navigate('/FrontendDMS/');
     };
 
@@ -159,7 +160,7 @@ const FileInfoHome = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i>)}
+                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
@@ -169,7 +170,7 @@ const FileInfoHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} menu={"Admin"} />
+                    <TopBar role={role} menu={"Admin"} reset={"true"} setReset={setReset} />
                 </div>
 
                 <div className="scrollable-box-fi-home">
@@ -187,6 +188,7 @@ const FileInfoHome = () => {
                     ))}
                 </div>
             </div>
+            {reset && <ChangePassword onClose={() => setReset(false)} />}
             <ToastContainer />
         </div>
     );
