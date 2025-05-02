@@ -21,6 +21,16 @@
     color: white;
 }
 
+.nl-login-error {
+    height: 20px;
+    /* Reserve space */
+    color: red;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    /* Or 0 if you don’t want extra space */
+}
+
 .nl-input-container {
     display: flex;
     align-items: center;
@@ -162,7 +172,11 @@
 
     /* Set a max width */
     margin: 0 auto 70px auto;
-    margin-bottom: 50px;
+    margin-bottom: 15px;
+}
+
+.nl-surround {
+    border: 0.5px solid red !important;
 }
 
 .nl-remember-me {

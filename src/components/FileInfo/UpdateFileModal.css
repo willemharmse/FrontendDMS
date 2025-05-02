@@ -22,20 +22,21 @@
     max-width: 500px;
     height: 500px;
     min-height: 500px;
+    max-height: 525px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
 /* Flexbox for title and close button */
 .update-file-header {
-    transform: translateY(+25%);
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    margin-bottom: 15px;
     font-family: Arial;
 }
 
@@ -57,7 +58,6 @@
     font-weight: bold;
     margin: 0;
     flex: 1;
-
     text-align: left;
     font-family: Arial;
 }
@@ -74,17 +74,15 @@
 
 /* Increase size of form fields */
 .update-file-group {
-    margin-bottom: 7px;
+    margin-bottom: 10px;
     padding: 20px 0;
-    transform: translateY(-19%);
     background-color: white;
     border-radius: 5px;
 }
 
 .update-file-group-top {
-    margin-bottom: 7px;
+    margin-bottom: 10px;
     padding: 20px 0;
-    transform: translateY(-32%);
     background-color: white;
     border-radius: 5px;
 }
@@ -93,7 +91,6 @@
     margin-bottom: 15px;
     padding: 20px 0;
     background-color: white;
-    transform: translateY(-18%);
     border-radius: 5px;
     flex: 1;
 }
@@ -186,7 +183,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-family: Arial;
     cursor: pointer;
     border-radius: 5px;
-    transform: translateY(-45%);
 }
 
 .update-file-button-select-file {

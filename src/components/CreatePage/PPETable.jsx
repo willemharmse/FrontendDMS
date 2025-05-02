@@ -232,7 +232,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     </table>
                 )}
 
-                {selectedPPE.size === 0 && (
+                {(selectedPPE.size === 0 && isNA) && (
                     <button className="add-row-button-ppe" onClick={handlePopupToggle} disabled={!isNA}>
                         Select
                     </button>

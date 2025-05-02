@@ -233,7 +233,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                     </table>
                 )}
 
-                {selectedEquipment.size === 0 && (
+                {(selectedEquipment.size === 0 && isNA) && (
                     <button className="add-row-button-eqp" onClick={handlePopupToggle} disabled={!isNA}>
                         Select
                     </button>

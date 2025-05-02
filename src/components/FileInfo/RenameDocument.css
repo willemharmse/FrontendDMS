@@ -1,0 +1,155 @@
+.review-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.review-popup-content {
+    background: #f2f2f2;
+    padding: 25px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+}
+
+.review-date-header {
+    transform: translateY(-30%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-family: Arial;
+}
+
+.review-date-group {
+    margin-bottom: 10px;
+    transform: translateY(-4%);
+    padding: 20px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.review-date-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+
+    text-align: left;
+    font-family: Arial;
+}
+
+.review-date-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 2.1%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.review-popup-title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+.review-popup-input {
+    width: 90%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.review-date-label {
+    display: block;
+    font-size: 19px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.review-date-label-tc {
+    display: block;
+    color: #7F7F7F;
+    font-size: 12px;
+    font-family: Arial;
+    width: 85%;
+    font-weight: 300;
+    margin: 0px auto 10px;
+    /* This centers the span */
+    text-align: center;
+}
+
+.review-popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.review-popup-button {
+    padding: 10px 15px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    margin: 0 5px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.review-popup-button.confirm {
+    background-color: #7EAC89 !important;
+    color: white !important;
+}
+
+.review-popup-button.cancel {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.review-popup-button:hover {
+    transform: scale(1.05) !important;
+}
+
+.review-popup-button:active {
+    transform: scale(0.95) !important;
+}
+
+.review-date-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.review-date-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}

@@ -39,19 +39,15 @@
 }
 
 .insert-row-button-sig {
-    background-color: #A6A6A6;
-    color: white;
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
     border: none;
-    padding: 4px 6px;
-    border-radius: 50%;
-    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 4px;
     cursor: pointer;
-    opacity: 0.25;
-    transition: opacity 0.2s ease-in-out;
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    transform: translate(-50%, -30%);
+    font-size: 18px;
+    transition: background 0.3s ease;
 }
 
 tr:hover+.insert-row-container-sig .insert-row-button-sig {

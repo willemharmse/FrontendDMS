@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
-import RewriteButton from "./RewriteButton";
 
 const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows }) => {
     const [designationOptions, setDesignationOptions] = useState([]);
@@ -174,7 +173,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         <div className="input-row">
             <div className={`proc-box ${error ? "error-proc" : ""}`}>
                 <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
-                <RewriteButton procedureData={procedureRows} updateRows={updateProcRows} />
                 <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
 
                 {procedureRows.length > 0 && (
@@ -193,19 +191,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                             {procedureRows.map((row, index) => (
                                 <React.Fragment key={index}>
                                     {/* Insert button above each row except the first */}
-                                    {index > 0 && (
-                                        <tr className="insert-row-container">
-                                            <td colSpan="6" className="insert-row-cell">
-                                                <button
-                                                    className="insert-row-button"
-                                                    onClick={() => insertRowAt(index)}
-                                                    title="Insert step here"
-                                                >
-                                                    <FontAwesomeIcon icon={faPlus} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    )}
                                     <tr key={index}>
                                         <td className="procCent">
                                             {row.nr}
@@ -238,7 +223,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         </td>
                                         <td>
                                             <div className="prev-step-container-ref">
-                                                {(row.prevStep && row.prevStep.trim() !== "" ? row.prevStep.split(";") : [""]).map((step, stepIndex) => (
+                                                {(row.prevStep && row.prevStep.trim() !== "" ? row.prevStep.split(";") : [""]).map((step, stepIndex, arr) => (
                                                     <div key={stepIndex} className="prev-step-input-ref">
                                                         <input
                                                             type="text"
@@ -270,18 +255,20 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Predecessor" />
                                                         </button>
+                                                        {stepIndex === arr.length - 1 && (
+                                                            <button
+                                                                className="add-row-button-pred"
+                                                                onClick={() => {
+                                                                    const updatedSteps = row.prevStep ? row.prevStep.split(";") : [""];
+                                                                    updatedSteps.push("");
+                                                                    updateRow(index, "prevStep", updatedSteps.join(";"));
+                                                                }}
+                                                            >
+                                                                <FontAwesomeIcon icon={faPlusCircle} title="Add Step" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 ))}
-                                                <button
-                                                    className="add-step-button-ref"
-                                                    onClick={() => {
-                                                        const updatedSteps = row.prevStep ? row.prevStep.split(";") : [""];
-                                                        updatedSteps.push("");
-                                                        updateRow(index, "prevStep", updatedSteps.join(";"));
-                                                    }}
-                                                >
-                                                    <FontAwesomeIcon icon={faPlus} title="Add Step" />
-                                                </button>
                                             </div>
                                         </td>
                                         <td>
@@ -360,6 +347,15 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                             >
                                                 <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                             </button>
+                                            {index < procedureRows.length - 1 && (
+                                                <button
+                                                    className="insert-row-button-sig"
+                                                    onClick={() => insertRowAt(index + 1)} // Insert below
+                                                    title="Insert step"
+                                                >
+                                                    <FontAwesomeIcon icon={faPlusCircle} />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 </React.Fragment>

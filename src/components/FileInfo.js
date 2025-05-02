@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
@@ -20,6 +20,7 @@ import BatchUpload from "./FileInfo/BatchUpload";
 import DownloadPopup from "./FileInfo/DownloadPopup";
 import PopupMenu from "./FileInfo/PopupMenu";
 import Notifications from "./Notifications/Notifications";
+import RenameDocument from "./FileInfo/RenameDocument";
 
 const FileInfo = () => {
   const { type } = useParams();
@@ -58,6 +59,8 @@ const FileInfo = () => {
   const navigate = useNavigate();
   const [batch, setBatch] = useState(false);
   const [updateID, setUpdateID] = useState(null);
+  const [rename, setRename] = useState(false);
+  const [documentRenameName, setDocumentRenameName] = useState("");
   const [filters, setFilters] = useState({
     author: '',
     deptHead: '',
@@ -92,6 +95,17 @@ const FileInfo = () => {
   const openUpload = () => {
     setUpload(true);
   };
+
+  const openRename = (fileName, fileID) => {
+    setDocumentRenameName(fileName);
+    setUpdateID(fileID);
+    setRename(true);
+  }
+
+  const closeRename = () => {
+    setRename(false);
+    fetchFiles();
+  }
 
   const openBatch = () => {
     setBatch(true);
@@ -441,7 +455,15 @@ const FileInfo = () => {
     return matchesSearchQuery && matchesFilters && matchesApproval && matchTextFilters;
   });
 
-  const overdueCount = filteredFiles.filter(doc => new Date(doc.reviewDate) < new Date()).length;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of today
+
+  const overdueCount = filteredFiles.filter(doc => {
+    const reviewDate = new Date(doc.reviewDate);
+    reviewDate.setHours(0, 0, 0, 0); // Normalize to date-only
+    return !isNaN(reviewDate) && reviewDate < today;
+  }).length;
+
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -514,7 +536,10 @@ const FileInfo = () => {
           {/* Container for right-aligned icons */}
           <div className="icons-container">
             <div className="burger-menu-icon-um">
-              <FontAwesomeIcon onClick={() => navigate('/documentManageHome')} icon={faArrowLeft} title="Back" />
+              <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
+            </div>
+            <div className="burger-menu-icon-um">
+              <FontAwesomeIcon onClick={() => isTrashView ? toggleTrashView() : navigate(-1)} icon={faArrowLeft} title="Back" />
             </div>
             <div className="sort-menu-icon-um">
               <FontAwesomeIcon icon={faSort} onClick={openSortModal} title="Sort" />
@@ -550,7 +575,7 @@ const FileInfo = () => {
                     {removeFileExtension(file.fileName)}
 
                     {(hoveredFileId === file._id && !isTrashView) && (
-                      <PopupMenu file={file} openUpdate={openUpdate} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} role={role} />
+                      <PopupMenu file={file} openUpdate={openUpdate} openRenameModal={openRename} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} role={role} />
                     )}
 
                   </td>
@@ -607,7 +632,7 @@ const FileInfo = () => {
       {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isSortModalOpen && (<SortPopup closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
-
+      {rename && (<RenameDocument documentName={documentRenameName} isOpen={rename} onClose={closeRename} fileID={updateID} />)}
       <ToastContainer />
     </div >
   );

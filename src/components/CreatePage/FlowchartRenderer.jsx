@@ -6,8 +6,9 @@ import { toast } from "react-toastify";
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faEye, faTimes, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEye, faTimes, faChevronLeft, faChevronRight, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faAlignCenter, faExpand } from "@fortawesome/free-solid-svg-icons";
 import Modal from "react-modal";
+import "./ProcedureTable.css"
 
 cytoscape.use(dagre);
 
@@ -20,6 +21,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [previewCy, setPreviewCy] = useState(null);
+    const [modalSize, setModalSize] = useState({ width: '70%', height: '70%' });
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -31,13 +33,132 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 const newCy = cytoscape({
                     container: document.getElementById("preview-cy"),
                     elements: pages[currentPage].elements,
-                    style: cy.style().json(),
+                    style: [
+                        // Styling for the Document Title Node
+                        {
+                            selector: "[id='DocumentNode']",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#002060", // Dark blue
+                                "color": "#fff", // White text
+                                "border-width": 2,
+                                "border-color": "#002850",
+                                "font-weight": "bold",
+                                "font-size": "18px",
+                                "width": "300px",
+                                "height": "60px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
+                        // Styling for Regular Nodes (Steps)
+                        {
+                            selector: "node",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9", // Gray background
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#8a8a8a",
+                                "font-size": "14px",
+                                "width": "300px",
+                                "height": "50px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                                "text-max-width": "270px",
+                                "padding": "5px"
+                            }
+                        },
+                        {
+                            selector: "[id='CompletedNode']",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#008000", // Green color
+                                "color": "#fff", // White text
+                                "border-width": 2,
+                                "border-color": "#8a8a8a", // Dark green border
+                                "font-weight": "bold",
+                                "font-size": "16px",
+                                "width": "300px",
+                                "height": "60px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
+                        // Styling for Continuation Nodes (Circles with Labels)
+                        {
+                            selector: "[id^='continuation-']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "data(continuationLabel)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
+                            }
+                        },
+                        // Keep existing circular node styling
+                        {
+                            selector: "[shape='circle']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "data(continuationLabel)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
+                            }
+                        },
+                        // Styling for Edges (Connections)
+                        {
+                            selector: "edge",
+                            style: {
+                                "width": 2,
+                                "line-color": "#555",
+                                "target-arrow-shape": "triangle",
+                                "target-arrow-color": "#555",
+                                "curve-style": "bezier",
+                            }
+                        }
+                    ],
                     layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
                     styleEnabled: true,
-                    zoom: 5,
+                    userZoomingEnabled: true, // Allow user zooming for better interaction
+                    userPanningEnabled: true, // Allow panning for better navigation
+                    zoom: 1,
                     pan: { x: 100, y: 100 }
                 });
                 setPreviewCy(newCy);
+
+                // Run the layout and then fit the graph properly with padding
+                newCy.layout({ name: "dagre", rankDir: "TB", nodeSep: 50 }).run();
+
+                // Add a slight delay to ensure layout completes before fitting
+                setTimeout(() => {
+                    newCy.fit(null, 40); // Increased padding for better visibility
+                    newCy.center();
+                }, 300);
             }
         }, 200); // delay ensures modal has rendered
     };
@@ -415,19 +536,138 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 const newCy = cytoscape({
                     container,
                     elements: pages[currentPage].elements,
-                    style: cy?.style().json() || [],
+                    style: [
+                        // Styling for the Document Title Node
+                        // Styling for Regular Nodes (Steps)
+                        {
+                            selector: "node",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9", // Gray background
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#8a8a8a",
+                                "font-size": "14px",
+                                "width": "300px",
+                                "height": "50px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                                "text-max-width": "270px",
+                                "padding": "5px"
+                            }
+                        },
+                        {
+                            selector: "[id='DocumentNode']",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#002060", // Dark blue
+                                "color": "#fff", // White text
+                                "border-width": 2,
+                                "border-color": "#002850",
+                                "font-weight": "bold",
+                                "font-size": "18px",
+                                "width": "300px",
+                                "height": "60px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
+                        {
+                            selector: "[id='CompletedNode']",
+                            style: {
+                                "shape": "rectangle",
+                                "content": "data(label)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#7EAC89", // Green color
+                                "color": "#fff", // White text
+                                "border-width": 2,
+                                "border-color": "#7EAC89", // Dark green border
+                                "font-weight": "bold",
+                                "font-size": "16px",
+                                "width": "300px",
+                                "height": "60px",
+                                "font-family": "Arial, sans-serif",
+                                "text-wrap": "wrap",
+                            }
+                        },
+                        // Styling for Continuation Nodes (Circles with Labels)
+                        {
+                            selector: "[id^='continuation-']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "data(continuationLabel)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
+                            }
+                        },
+                        // Keep existing circular node styling
+                        {
+                            selector: "[shape='circle']",
+                            style: {
+                                "shape": "ellipse",
+                                "content": "data(continuationLabel)",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "background-color": "#D9D9D9",
+                                "color": "#000",
+                                "border-width": 2,
+                                "border-color": "#7F7F7F",
+                                "font-size": "16px",
+                                "font-weight": "bold",
+                                "width": "40px",
+                                "height": "40px",
+                            }
+                        },
+                        // Styling for Edges (Connections)
+                        {
+                            selector: "edge",
+                            style: {
+                                "width": 2,
+                                "line-color": "#555",
+                                "target-arrow-shape": "triangle",
+                                "target-arrow-color": "#555",
+                                "curve-style": "bezier",
+                            }
+                        }
+                    ],
                     layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
                     styleEnabled: true,
+                    userZoomingEnabled: false, // Enable zooming for better interaction
+                    userPanningEnabled: false, // Enable panning for better interaction
                 });
 
-                // Wait for layout to finish before zooming and fitting
-                newCy.ready(() => {
-                    newCy.layout({ name: "dagre", rankDir: "TB", nodeSep: 50 }).run();
-                    newCy.fit(null, 1); // Fit with 50px padding
-                    newCy.zoom(newCy.zoom() * 1.4); // Zoom in 80% more after fitting
+                // Apply the layout and then fit the graph
+                newCy.layout({ name: "dagre", rankDir: "TB", nodeSep: 50 }).run();
+
+                // Calculate appropriate dimensions based on the graph's size
+                const boundingBox = newCy.elements().boundingBox();
+                const graphWidth = Math.max(boundingBox.w + 100, 500); // Add padding and minimum width
+                const graphHeight = Math.max(boundingBox.h + 100, 500); // Add padding and minimum height
+
+                // Set container dimensions to ensure all content is visible
+                container.style.width = "100%";
+                container.style.height = `${graphHeight}px`;
+
+                // Wait for layout to complete, then fit the graph properly
+                setTimeout(() => {
+                    newCy.fit(null, 50); // Increased padding for better visibility
                     newCy.center();
-                    newCy.pan({ y: 20 }); // Adjust pan position
-                });
+                }, 300);
 
                 setPreviewCy(newCy);
             }, 200);
@@ -679,10 +919,10 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        width: '70%',
-                        height: '70%',
+                        width: modalSize.width,
+                        height: modalSize.height,
                         padding: '10px',
-                        overflow: 'hidden',
+                        overflow: 'hidden', // Important: Don't let the modal itself scroll
                     }
                 }}
                 ariaHideApp={false}
@@ -699,6 +939,9 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                                 >
                                     <FontAwesomeIcon icon={faChevronLeft} />
                                 </button>
+                                <div className="flowchart-page-indicator">
+                                    Page {currentPage + 1} of {pages.length}
+                                </div>
                                 <button
                                     className="flowchart-btn-next"
                                     onClick={() => setCurrentPage(Math.min(pages.length - 1, currentPage + 1))}
@@ -713,7 +956,56 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                             <FontAwesomeIcon icon={faTimes} />
                         </button>
                     </div>
-                    <div id="preview-cy" style={{ flexGrow: 1, backgroundColor: "#fff" }}></div>
+
+                    {/* Outer container with scroll capability */}
+                    <div id="preview-cy-container" style={{
+                        flexGrow: 1,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',// Enable both vertical and horizontal scrolling
+                        backgroundColor: '#f5f5f5', // Light background to distinguish scrollable area
+                        padding: '10px'
+                    }}>
+                        {/* Inner fixed container for the graph */}
+                        <div id="preview-cy" style={{
+                            backgroundColor: "#fff",
+                            minHeight: '500px', // Minimum height to ensure it's visible
+                            border: '1px solid #ddd',
+                            boxShadow: '0 0 5px rgba(0,0,0,0.1)'
+                        }}></div>
+                    </div>
+
+                    <div className="zoom-controls" style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        padding: '10px 0',
+                        borderTop: '1px solid #ddd'
+                    }}>
+                        <button
+                            style={{ padding: '5px 10px', borderRadius: '4px' }}
+                            className="flowchart-btn-prev"
+                            onClick={() => previewCy && previewCy.zoom(previewCy.zoom() * 1.2)} title="Zoom In">
+                            <FontAwesomeIcon icon={faMagnifyingGlassPlus} />
+                        </button>
+                        <button
+                            style={{ padding: '5px 10px', borderRadius: '4px' }}
+                            className="flowchart-btn-prev"
+                            onClick={() => previewCy && previewCy.zoom(previewCy.zoom() / 1.2)} title="Zoom Out">
+                            <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
+                        </button>
+                        <button
+                            style={{ padding: '5px 10px', borderRadius: '4px' }}
+                            className="flowchart-btn-prev"
+                            onClick={() => previewCy && previewCy.center()} title="Center">
+                            <FontAwesomeIcon icon={faAlignCenter} />
+                        </button>
+                        <button
+                            style={{ padding: '5px 10px', borderRadius: '4px' }}
+                            className="flowchart-btn-prev"
+                            onClick={() => previewCy && previewCy.fit()} title="Fit">
+                            <FontAwesomeIcon icon={faExpand} />
+                        </button>
+                    </div>
                 </div>
             </Modal>
         </div>

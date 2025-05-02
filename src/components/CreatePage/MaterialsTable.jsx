@@ -232,7 +232,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     </table>
                 )}
 
-                {selectedMaterials.size === 0 && (
+                {(selectedMaterials.size === 0 && isNA) && (
                     <button className="add-row-button-mat" onClick={handlePopupToggle} disabled={!isNA}>
                         Select
                     </button>

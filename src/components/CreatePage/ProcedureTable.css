@@ -179,6 +179,8 @@ tr:hover+.insert-row-container .insert-row-button {
 .flowchart-btn-next,
 .flowchart-btn-close {
     background-color: #f0f0f0;
+    color: black;
+    width: 10%;
     border: none;
     padding: 8px 12px;
     border-radius: 6px;
@@ -332,4 +334,30 @@ tr:hover+.insert-row-container .insert-row-button {
     justify-content: center;
     align-items: center;
     width: 100%;
+}
+
+.add-row-button-pred {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    /* Adjust size */
+    height: 25px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: black;
+    /* Adjust color */
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: auto;
+    /* Centers the button */
+}
+
+.prev-step-input-ref {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }

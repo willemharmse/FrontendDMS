@@ -11,7 +11,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     padding: 0;
-    width: 350px;
+    width: 400px;
     font-family: Arial;
     max-height: 300px;
     display: flex;
@@ -29,6 +29,13 @@
     position: sticky;
     top: 0;
     z-index: 1;
+}
+
+.notifications-item-time {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
 }
 
 .notifications-unread {
@@ -70,6 +77,12 @@
     font-size: 14px;
     color: #333;
     transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.notifications-item-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .notifications-item-text {

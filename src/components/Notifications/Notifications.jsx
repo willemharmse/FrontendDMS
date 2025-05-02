@@ -13,7 +13,7 @@ const Notifications = ({ setClose }) => {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        "Content-Type": "application/json", // optional but often useful
+                        "Content-Type": "application/json",
                     },
                 });
 
@@ -23,7 +23,6 @@ const Notifications = ({ setClose }) => {
 
                 const data = await response.json();
 
-                console.log(data);
                 setNotifications(data.notifications);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
@@ -66,14 +65,18 @@ const Notifications = ({ setClose }) => {
                 throw new Error("Failed to mark notification as read");
             }
 
-            const data = await response.json();
-
             setNotifications((prev) =>
                 prev.map((n) => (n._id === id ? { ...n, read: true } : n))
             );
         } catch (err) {
             console.error("Error marking notification as read:", err);
         }
+    };
+
+    // Function to format the date and time
+    const formatDateTime = (dateTime) => {
+        const date = new Date(dateTime);
+        return date.toLocaleString(); // You can customize this format as per your preference
     };
 
     return (
@@ -84,16 +87,18 @@ const Notifications = ({ setClose }) => {
                     <div className="notifications-modal-empty">No notifications</div>
                 ) : (
                     <ul className="notifications-modal-list">
-                        {notifications.map((note, index) => (
+                        {notifications.map((note) => (
                             <li
                                 key={note._id}
                                 className={`notifications-modal-item ${note.read ? 'notifications-read' : 'notifications-unread'}`}
                             >
-                                <div
-                                    className="notifications-item-text"
-                                    onClick={() => markAsRead(note._id)}
-                                >
-                                    {note.notification}
+                                <div className="notifications-item-content" onClick={() => markAsRead(note._id)}>
+                                    <div className="notifications-item-text">
+                                        {note.notification}
+                                    </div>
+                                    <div className="notifications-item-time">
+                                        {formatDateTime(note.timestamp)}
+                                    </div>
                                 </div>
                                 <FontAwesomeIcon
                                     icon={faTrash}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faHome } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 
@@ -35,6 +35,9 @@ const TopBar = ({ role, menu, setReset }) => {
 
     return (
         <div className="icons-container">
+            <div className="burger-menu-icon-um-home">
+                <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
+            </div>
             <div className="burger-menu-icon-um">
                 <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
             </div>

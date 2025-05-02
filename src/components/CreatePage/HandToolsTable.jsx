@@ -232,7 +232,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     </table>
                 )}
 
-                {selectedTools.size === 0 && (
+                {(selectedTools.size === 0 && isNA) && (
                     <button className="add-row-button-tool" onClick={handlePopupToggle} disabled={!isNA}>
                         Select
                     </button>

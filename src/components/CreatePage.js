@@ -19,7 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
 import SharePage from "./CreatePage/SharePage";
 import TopBarDD from "./Notifications/TopBarDD";
@@ -47,6 +47,7 @@ const CreatePage = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const loadedIDRef = useRef('');
+  const [offlineDraft, setOfflineDraft] = useState(false);
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = formData.procedureRows.map((row, i) =>
@@ -80,7 +81,7 @@ const CreatePage = () => {
 
   const handleSave = () => {
     if (formData.title !== "") {
-      if (loadedID === '') {
+      if (loadedIDRef.current === '') {
         saveData();
 
         toast.dismiss();
@@ -93,8 +94,8 @@ const CreatePage = () => {
           }
         });
       }
-      else if (loadedID !== '') {
-        updateData(userIDs);
+      else if (loadedIDRef.current !== '') {
+        updateData(userIDsRef.current);
 
         toast.dismiss();
         toast.clearWaitingQueue();
@@ -120,7 +121,34 @@ const CreatePage = () => {
     }
   };
 
-  const saveDataOffline = async () => {
+  const loadOfflineData = async () => {
+    try {
+      const storedString = localStorage.getItem("draftData");
+      if (!storedString) return;
+
+      const storedData = JSON.parse(storedString); // ✅ Parse the JSON string
+
+      console.log(storedData);
+
+      setUsedAbbrCodes(storedData.usedAbbrCodes || []);
+      setUsedTermCodes(storedData.usedTermCodes || []);
+      setUsedPPEOptions(storedData.usedPPEOptions || []);
+      setUsedHandTools(storedData.usedHandTools || []);
+      setUsedEquipment(storedData.usedEquipment || []);
+      setUsedMobileMachines(storedData.usedMobileMachine || []);
+      setUsedMaterials(storedData.usedMaterials || []);
+      setUserIDs(storedData.userIDs || []);
+      setFormData(storedData.formData || {});
+      setFormData(prev => ({ ...prev })); // this line may be redundant
+      setTitleSet(true);
+      setOfflineDraft(true);
+      loadedIDRef.current = storedData.loadedID;
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
+  const saveDataOffline = async (id) => {
     const dataToStore = {
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
@@ -133,8 +161,13 @@ const CreatePage = () => {
       userIDs: userIDsRef.current,
       creator: userIDRef.current,
       updater: null,
-      dateUpdated: null
+      dateUpdated: null,
+      loadedID: id,
+      date: Date.now()
     };
+
+
+    console.log("Attempting to save:", dataToStore);
 
     try {
       localStorage.setItem('draftData', JSON.stringify(dataToStore));
@@ -169,6 +202,8 @@ const CreatePage = () => {
         body: JSON.stringify(dataToStore),
       });
       const result = await response.json();
+      setOfflineDraft(false);
+      localStorage.removeItem("draftData");
 
       if (result.id) {  // Ensure we receive an ID from the backend
         setLoadedID(result.id);  // Update loadedID to track the saved document
@@ -176,7 +211,7 @@ const CreatePage = () => {
       }
     } catch (error) {
       console.error('Error saving data:', error);
-      saveDataOffline(); // Fallback to offline save
+      saveDataOffline(""); // Fallback to offline save
     }
   };
 
@@ -206,9 +241,13 @@ const CreatePage = () => {
         body: JSON.stringify(dataToStore),
       });
       const result = await response.json();
+      setOfflineDraft(false);
+      localStorage.removeItem("draftData");
+
       console.log(result.message);
     } catch (error) {
       console.error('Error saving data:', error);
+      saveDataOffline(loadedIDRef.current);
     }
   };
 
@@ -382,6 +421,8 @@ const CreatePage = () => {
   }, [formData]);
 
   useEffect(() => {
+    if (offlineDraft) return;
+
     if (!autoSaveInterval.current && formData.title.trim() !== "") {
       console.log("✅ Auto-save interval set");
 
@@ -415,7 +456,7 @@ const CreatePage = () => {
         }
       });
     } else {
-      updateData(userIDs); // Update existing draft
+      updateData(userIDsRef.current); // Update existing draft
       console.log("📝 autoSaveDraft() triggered 2");
       toast.dismiss();
       toast.clearWaitingQueue();
@@ -935,7 +976,7 @@ const CreatePage = () => {
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD role={role} menu={"1"} />
+          <TopBarDD role={role} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} />
         </div>
 
         <div className={`scrollable-box`}>

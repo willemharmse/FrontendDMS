@@ -15,6 +15,8 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     const [userID, setUserID] = useState("");
     const fileInputRef = useRef(null);
     const [chosenFileName, setChosenFileName] = useState("");
+    const [modalHeight, setModalHeight] = useState(400); // Initial modal height, adjust if needed
+
 
     // Allowed roles
     const adminRoles = ["admin", "teamleader", "developer"];
@@ -23,6 +25,22 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
         return fileName.replace(/\.[^/.]+$/, "");
     };
 
+    useEffect(() => {
+        if (isModalOpen) {
+            let newHeight = 500; // Start with the default modal height
+
+            // Check the length of the file names and adjust the modal height accordingly
+            if (removeFileExtension(chosenFileName).length > 67) {
+                newHeight += 13; // Add 10px if the file name is too long
+            }
+            if (newFile && removeFileExtension(newFile.name).length > 67) {
+                newHeight += 13; // Add 10px for the new file name as well
+            }
+
+            // Set the new calculated height
+            setModalHeight(newHeight);
+        }
+    }, [isModalOpen, chosenFileName, newFile]);
     // Check for valid token/role on mount
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -109,7 +127,9 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
+
+            closeModalAdd();
         } catch (err) {
             setError(err.message);
             setSuccessMsg("");
@@ -137,7 +157,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
 
     return (
         <div className="update-file-overlay">
-            <div className="update-file-modal">
+            <div className="update-file-modal" style={{ height: `${modalHeight}px`, maxHeight: `${modalHeight}px` }}>
                 <div className="update-file-header">
                     <h2 className="update-file-title">Update Document</h2>
                     <button className="update-file-close" onClick={closeModalAdd} title="Close Popup">×</button>

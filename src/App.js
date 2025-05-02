@@ -33,6 +33,7 @@ import ConstructionTM from './components/ConstructionTM';
 import AdminPage from './components/AdminPage';
 import UserActivity from './components/UserActivity';
 import VersionHistory from './components/FileInfo/VersionHistory';
+import RiskManagementPage from './components/RiskManagementPage';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
         <Route path="FrontendDMS/admin" element={<AdminPage />} />
         <Route path="FrontendDMS/userActivity/:id" element={<UserActivity />} />
         <Route path="FrontendDMS/versionHistory/:id" element={<VersionHistory />} />
+        <Route path="FrontendDMS/risk" element={<RiskManagementPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

@@ -517,6 +517,19 @@ tbody tr:hover {
     justify-content: center;
 }
 
+.burger-menu-icon-um-home {
+    cursor: pointer;
+    font-size: 24px;
+    padding: 10px 10px;
+    text-align: center;
+    color: gray;
+    border-radius: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .burger-menu-um {
     position: absolute;
     top: 40px;

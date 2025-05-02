@@ -1,0 +1,270 @@
+.risk-create-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+}
+
+.risk-button-container-create {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    top: 175px;
+    /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
+.main-box-risk-create {
+    flex: 1;
+    width: 80%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+}
+
+.top-section-risk-create-page {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    height: 40px;
+}
+
+.icons-container-risk-create-page {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+    margin-right: 2px;
+}
+
+.burger-menu-icon-risk-create-page-1 {
+    cursor: pointer;
+    font-size: 24px;
+    padding: 8px 8px;
+    text-align: center;
+    color: #002060;
+    border-radius: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* For Webkit browsers (Chrome, Edge, Safari) */
+.scrollable-box-risk-create::-webkit-scrollbar {
+    width: 8px;
+    /* Width of the scrollbar */
+}
+
+.scrollable-box-risk-create::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Track color */
+    border-radius: 10px;
+}
+
+.scrollable-box-risk-create::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* Scrollbar color */
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+    /* Adds padding effect */
+}
+
+.scrollable-box-risk-create::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker on hover */
+}
+
+.scrollable-box-risk-create {
+    height: calc(100% - 48px);
+    /* Full height minus 20px margin on top & bottom */
+    width: 100%;
+    /* Ensures even spacing on all sides */
+    overflow-y: auto;
+    /* Enables scrolling inside */
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers content */
+}
+
+.input-row-risk-create {
+    display: flex;
+    gap: 15px;
+    width: calc(100% - 10px);
+    /* Adjust the spacing as needed */
+    align-items: flex-start;
+    /* optional, align vertically as needed */
+}
+
+.input-box-type-risk-create {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    /* Keeps it aligned */
+    width: 30%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-row-buttons-risk-create {
+    margin-top: 5px;
+    width: calc(100% - 10px);
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    gap: 10px;
+}
+
+.input-box-aim-risk-create textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+}
+
+.aim-textarea-risk-create {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+}
+
+.input-box-3-risk-create {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-box-annexures-risk-create {
+    background-color: white;
+    padding: 5px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-box-aim-risk-create {
+    background-color: white;
+    padding: 15px;
+    margin: 10px 0;
+    /* Keeps it aligned */
+    width: 100%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-box-type-risk-create select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+}
+
+.input-box-title-risk-create {
+    background-color: white;
+    padding: 15px;
+    /* Keeps it aligned */
+    width: 70%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-group-risk-create {
+    display: flex;
+    /* Use flexbox to align inputs side by side */
+    align-items: center;
+    /* Vertically center the inputs */
+    width: 100%;
+}
+
+.input-group-risk-create input {
+    font-size: 16px;
+    padding: 10px;
+    margin: 0;
+    border: 1px solid #ccc;
+    /* Subtle border */
+    border-radius: 5px;
+    /* Rounded corners */
+    width: 100%;
+    /* Allow the inputs to take full available width */
+}
+
+.input-group-risk-create .title-input {
+    /* Remove border between the two inputs */
+    width: calc(100% - 120px);
+    /* Allow the title input to take most of the space */
+}
+
+.type-risk-create {
+    margin-left: 10px;
+    width: 5%;
+    font-size: 16px;
+}
+
+.input-group-risk-create .document-type-input {
+    width: 120px;
+    text-align: right;
+    /* Light background to make it visually distinct */
+    border-left: none;
+    border-top-left-radius: 0px;
+    color: #000000;
+    background-color: transparent;
+    border-bottom-left-radius: 0px;
+    /* Remove border between the two inputs */
+    padding: 10px;
+    /* Match padding of the first input */
+}

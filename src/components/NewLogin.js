@@ -106,6 +106,7 @@ const NewLogin = () => {
             }
         } catch (err) {
             setError(err.message);
+            setTimeout(() => setError(''), 3000);
         } finally {
             setTimeout(() => {
                 setLoading(false);
@@ -130,6 +131,7 @@ const NewLogin = () => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
+                                className={error.length !== 0 ? `nl-surround` : ""}
                             />
                         </div>
                     </div>
@@ -144,6 +146,7 @@ const NewLogin = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                className={error.length !== 0 ? `nl-surround` : ""}
                             />
                             <button
                                 type="button"
@@ -166,6 +169,8 @@ const NewLogin = () => {
                         </label>
                         <a onClick={() => navigate("/FrontendDMS/forgot")} className="nl-forgot-password">Forgot Password?</a>
                     </div>
+
+                    <div className="nl-login-error">{error}</div>
 
                     <div className="nl-login-button-container">
                         <button type="submit" className="nl-login-button">{loading ? <FontAwesomeIcon icon={faSpinner} className="spin-animation" /> : 'Log In'}</button>

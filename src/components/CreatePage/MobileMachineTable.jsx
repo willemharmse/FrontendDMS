@@ -233,7 +233,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     </table>
                 )}
 
-                {selectedMMachine.size === 0 && (
+                {(selectedMMachine.size === 0 && isNA) && (
                     <button className="add-row-button-mac" onClick={handlePopupToggle} disabled={!isNA}>
                         Select
                     </button>

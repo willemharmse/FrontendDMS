@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PopupMenu.css";
 
-const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal, file, isActionAvailable, role, openUpdate }) => {
+const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal, file, isActionAvailable, role, openUpdate, openRenameModal }) => {
     const navigate = useNavigate();
     const popupRef = useRef(null);
     const [position, setPosition] = useState("below");
@@ -31,13 +31,18 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    {role === "admin" && (<li onClick={() => openUpdate(file._id)}>Update File</li>)}
+                    {role === "admin" && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
                     <ul>
                         <li onClick={() => handlePreview(file._id)}>Preview</li>
                     </ul>
                     {isActionAvailable && (
                         <ul>
                             <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
+                        </ul>
+                    )}
+                    {isActionAvailable && (
+                        <ul>
+                            <li onClick={() => openRenameModal(file.fileName, file._id)}>Rename</li>
                         </ul>
                     )}
                     <ul>

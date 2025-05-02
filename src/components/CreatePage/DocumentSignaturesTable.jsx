@@ -136,22 +136,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
           <tbody>
             {rows.map((row, index) => (
               <React.Fragment key={index}>
-                {index > 0 && (
-                  <tr className="insert-row-container-sig">
-                    <td colSpan="4" className="insert-row-cell-sig">
-                      <button
-                        className="insert-row-button-sig"
-                        onClick={() => insertRowAt(index)}
-                        title="Insert signature here"
-                      >
-                        <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    </td>
-                  </tr>
-                )}
-
-
-                <tr key={index}>
+                <tr>
                   <td>
                     <select
                       className="table-control font-fam"
@@ -188,7 +173,7 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
                       readOnly
                     />
                   </td>
-                  <td className="procCent">
+                  <td className="procCent action-cell">
                     <button
                       className="remove-row-button font-fam"
                       onClick={() => {
@@ -199,14 +184,25 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
                         });
                         removeRow(index);
                       }}
+                      title="Remove Row"
                     >
-                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
+                    {index < rows.length - 1 && (
+                      <button
+                        className="insert-row-button-sig font-fam"
+                        onClick={() => insertRowAt(index + 1)}
+                        title="Add row"
+                      >
+                        <FontAwesomeIcon icon={faPlusCircle} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               </React.Fragment>
             ))}
           </tbody>
+
         </table>
         <button className="add-row-button-ds font-fam" onClick={addRow}>
           <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
