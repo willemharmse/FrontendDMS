@@ -1,0 +1,90 @@
+.col-sig-act-risk {
+    width: 3%;
+}
+
+.error-sign {
+    border: 2px solid #CB6F6F;
+    color: #CB6F6F;
+}
+
+.add-row-button-ds-risk {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    height: 30px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(-54%);
+    /* Centers the button */
+}
+
+.insert-row-container-sig-risk {
+    height: 0;
+}
+
+.input-box-sig-risk {
+    position: relative;
+    background-color: white;
+    padding: 15px;
+    /* Keeps it aligned */
+    width: 100%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-left-button-signature {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.insert-row-cell-sig-risk {
+    padding: 0 !important;
+    text-align: center;
+    position: relative;
+    height: 0;
+}
+
+.insert-row-button-sig-risk {
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.3s ease;
+}
+
+tr:hover+.insert-row-container-sig-risk .insert-row-button-sig-risk {
+    opacity: 1;
+}

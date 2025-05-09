@@ -1,0 +1,200 @@
+.timeout-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.timeout-popup-content {
+    background: #f2f2f2;
+    padding: 25px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+}
+
+.timeout-file-header {
+    transform: translateY(-32%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-family: Arial;
+    margin-bottom: 10px;
+}
+
+.timeout-file-group {
+    transform: translateY(-3%);
+    padding: 20px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.timeout-file-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+
+    text-align: left;
+    font-family: Arial;
+}
+
+.timeout-file-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 2.1%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.timeout-popup-title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+.timeout-popup-input {
+    width: 90%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.timeout-file-label {
+    display: block;
+    font-size: 19px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.timeout-file-label-tc {
+    display: block;
+    color: #7F7F7F;
+    font-size: 12px;
+    font-family: Arial;
+    width: 85%;
+    font-weight: 300;
+    margin: 0px auto 10px;
+    /* This centers the span */
+    text-align: center;
+}
+
+.timeout-popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.timeout-popup-button {
+    padding: 10px 15px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    margin: 0 5px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.timeout-popup-button.confirm {
+    background-color: #7EAC89 !important;
+    color: white !important;
+}
+
+.timeout-popup-button.cancel {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.timeout-popup-button:hover {
+    transform: scale(1.05) !important;
+}
+
+.timeout-popup-button:active {
+    transform: scale(0.95) !important;
+}
+
+.timeout-file-buttons {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+}
+
+.timeout-file-button-download {
+    background: linear-gradient(to bottom,
+            #B8D4C1 0%,
+            /* Lighter shade of 7EAC89 */
+            #91B299 25%,
+            /* Mid shade */
+            #7EAC89 50%,
+            /* Given color */
+            #5C8766 75%,
+            /* Darker shade */
+            #30503A 100%
+            /* Deepest shade */
+        );
+
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: 10px;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.timeout-file-button-cancel {
+    background: linear-gradient(to bottom,
+            #E6A8A8 0%,
+            /* Lighter shade of CB6F6F */
+            #D17D7D 25%,
+            /* Mid shade */
+            #CB6F6F 50%,
+            /* Given color */
+            #963D3D 75%,
+            /* Darker shade */
+            #5A2020 100%
+            /* Deepest shade */
+        );
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: 10px;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.timeout-file-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}

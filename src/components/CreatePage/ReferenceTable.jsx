@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlusCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }) => {
     const [files, setFiles] = useState([]);
@@ -100,14 +100,21 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
     return (
         <div className="input-row">
             <div className="input-box-ref">
+                <button
+                    className="top-left-button-refs"
+                    title="Information"
+                >
+                    <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
+                </button>
+
                 <h3 className="font-fam-labels">References</h3>
                 {referenceRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="refColCen refNum">Nr</th>
-                                <th className="refColCen refRef">Reference</th>
-                                <th className="refColCen refDocID">Document ID</th>
+                                <th className="refColCen refRef">Document Name</th>
+                                <th className="refColCen refDocID">Document Reference</th>
                                 <th className="refColCen refBut">Action</th>
                             </tr>
                         </thead>

@@ -1,0 +1,76 @@
+.account-lock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.account-lock-content {
+    background: #f2f2f2;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 450px;
+    width: 90%;
+    height: 240px;
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+.account-lock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-family: Arial;
+    margin-bottom: 15px;
+}
+
+.account-lock-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+    font-family: Arial;
+    text-align: left;
+    flex: 1;
+}
+
+.account-lock-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.account-lock-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    background-color: white;
+    border-radius: 8px;
+    font-family: Arial;
+}
+
+.account-lock-icon {
+    font-size: 60px;
+    color: #CB6F6F;
+    margin-bottom: 20px;
+}
+
+.account-lock-helper-text {
+    font-size: 14px;
+    color: #7F7F7F;
+    text-align: center;
+    max-width: 85%;
+}

@@ -60,7 +60,7 @@ const ImportSiteInfo = ({ onClose }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/test/upload-excel/`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfo/upload-single-sheet-excel/`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUser, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import CryptoJS from "crypto-js";
+import AccountLockOut from './AccountLockout/AccountLockOut';
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -13,10 +14,15 @@ const NewLogin = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const [locked, setLocked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const secret = process.env.REACT_APP_SECRET;
+
+    const toggleLocked = () => {
+        setLocked(!locked);
+    }
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -46,9 +52,7 @@ const NewLogin = () => {
         if (storedToken) {
             try {
                 const decodedToken = jwtDecode(storedToken);
-                setUsername(decodedToken.username || ''); // Pre-fill username if available
-                setRememberMe(storedRememberMe);
-                navigate('/FrontendDMS/home'); // Redirect if already logged in
+                navigate('/home'); // Redirect if already logged in
             } catch (err) {
                 console.error('Invalid token:', err);
             }
@@ -66,6 +70,11 @@ const NewLogin = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
+
+            if (response.status === 423) {
+                toggleLocked();
+                return;
+            }
 
             if (!response.ok) throw new Error('Login failed. Please check your credentials.');
 
@@ -182,6 +191,8 @@ const NewLogin = () => {
                     <p className="logo-bottom-text">A TAU5 PRODUCT</p>
                 </div>
             </div>
+
+            {locked && (<AccountLockOut toggleLocked={toggleLocked} />)}
         </div>
     );
 };

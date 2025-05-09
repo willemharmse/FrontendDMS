@@ -31,20 +31,21 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    {role === "admin" && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
-                    <ul>
-                        <li onClick={() => handlePreview(file._id)}>Preview</li>
-                    </ul>
                     {isActionAvailable && (
                         <ul>
                             <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
                         </ul>
                     )}
+                    <ul>
+                        <li onClick={() => handlePreview(file._id)}>Preview</li>
+                    </ul>
+
                     {isActionAvailable && (
                         <ul>
                             <li onClick={() => openRenameModal(file.fileName, file._id)}>Rename</li>
                         </ul>
                     )}
+                    {role === "admin" && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
                     <ul>
                         <li onClick={() => navigate(`/FrontendDMS/versionHistory/${file.docID}`)}>Version History</li>
                     </ul>

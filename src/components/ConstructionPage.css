@@ -84,6 +84,13 @@
     height: 100px;
 }
 
+.coming-soon-icon-FA {
+    width: 90px;
+    /* Adjust image size */
+    height: 120px;
+    color: rgba(0, 32, 96, 1);
+}
+
 .coming-soon-icon-TM {
     width: 120px;
     /* Adjust image size */

@@ -17,8 +17,20 @@
     position: absolute;
     top: 175px;
     /* Adjust as needed */
-    left: 50%;
-    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
+.risk-button-container-create-bot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    bottom: 15px;
+    /* Adjust as needed */
     /* Centers horizontally */
     width: 100%;
 }
@@ -47,6 +59,21 @@
     gap: 3px;
     justify-content: flex-end;
     margin-right: 2px;
+}
+
+.input-box-2-risk-create {
+    background-color: white;
+    padding: 15px;
+    margin-top: 10px;
+    /* Keeps it aligned */
+    width: 100%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .burger-menu-icon-risk-create-page-1 {
@@ -115,7 +142,7 @@
     padding: 15px;
     margin-bottom: 10px;
     /* Keeps it aligned */
-    width: 30%;
+    width: 50%;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;
@@ -144,6 +171,8 @@
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
+    min-height: 102px;
+    field-sizing: content;
 }
 
 .aim-textarea-risk-create {
@@ -188,6 +217,7 @@
     background-color: white;
     padding: 15px;
     margin: 10px 0;
+    margin-bottom: 0px;
     /* Keeps it aligned */
     width: 100%;
     /* Makes the boxes shorter */
@@ -197,6 +227,45 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.but-riks-create {
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    border: none;
+    color: #002060;
+    /* White text for contrast */
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    width: 85%;
+    margin: 5px 0;
+    /* Adds spacing between buttons */
+    display: flex;
+    justify-content: center;
+    /* Centers text inside button */
+    align-items: center;
+    /* Centers vertically */
+    font-size: 15px;
+    font-weight: bold;
+    padding-left: 20px;
+    /* Add extra padding on the left to accommodate the icon */
+    padding-right: 20px;
 }
 
 .input-box-type-risk-create select {
@@ -209,11 +278,23 @@
     outline: none;
 }
 
+.date-input-risk-create {
+    height: 41px;
+    /* match select height */
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
 .input-box-title-risk-create {
     background-color: white;
     padding: 15px;
     /* Keeps it aligned */
-    width: 70%;
+    width: 100%;
+    margin-bottom: 10px;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;

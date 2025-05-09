@@ -1,0 +1,321 @@
+.input-row-risk-ibra {
+    display: flex;
+    gap: 15px;
+    width: calc(100% - 10px);
+    /* Adjust the spacing as needed */
+    align-items: flex-start;
+    /* optional, align vertically as needed */
+}
+
+.ibra-box {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+}
+
+.top-left-button-ibra {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.ibra-table-header {
+    background-color: #002060;
+    color: white;
+    font-weight: bold;
+}
+
+.ibraCent {
+    text-align: center;
+}
+
+.ibraNr {
+    max-width: 50px;
+    min-width: 50px;
+}
+
+.ibraMain {
+    min-width: 100px;
+}
+
+.ibraSub {
+    min-width: 100px;
+}
+
+.ibraCon {
+    width: 100px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraCon {
+    min-width: 100px;
+    background-color: white !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+}
+
+.ibraOther {
+    width: 100px;
+}
+
+.ibraAR {
+    min-width: 150px;
+}
+
+.ibraAct {
+    max-width: 50px;
+    min-width: 50px;
+}
+
+.ibraPrev {
+    min-width: 300px;
+}
+
+.ibraStatus {
+    min-width: 200px;
+    width: 300px;
+    background-color: #CB6F6F !important;
+    border-left: solid 2px #CB6F6F !important;
+    border-right: solid 2px #CB6F6F !important;
+    border-top: solid 2px #CB6F6F !important;
+}
+
+td.ibraStatus {
+    min-width: 200px;
+    background-color: white !important;
+    border-left: solid 2px #CB6F6F !important;
+    border-right: solid 2px #CB6F6F !important;
+}
+
+.ibraNotes {
+    min-width: 200px;
+}
+
+.ibraDate {
+    min-width: 350px;
+}
+
+.ibraRisk {
+    min-width: 200px;
+}
+
+.ibraOwner {
+    min-width: 200px;
+}
+
+.ibraDeadline {
+    min-width: 350px;
+}
+
+.ibraBlank {
+    min-width: 200px;
+}
+
+.table-borders-ibra {
+    min-width: 100%;
+    width: max-content;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 2px solid #BFBFBF;
+    /* Outer border */
+}
+
+.table-borders-ibra th,
+.table-borders-ibra td {
+    white-space: nowrap;
+    border: 1px solid #BFBFBF;
+    /* Inner cell borders */
+    padding: 8px;
+}
+
+.table-borders-ibra th {
+    font-weight: bold;
+}
+
+.top-right-button-ibra {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+/* Column Selector Popup Styles */
+.column-selector-popup {
+    position: absolute;
+    top: 65px;
+    right: 25px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 320px;
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.column-selector-header {
+    background-color: #f5f5f5;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.column-selector-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.close-popup-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-popup-btn:hover {
+    color: #333;
+}
+
+.column-selector-content {
+    padding: 16px;
+}
+
+.column-selector-note {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #666;
+}
+
+.column-checkbox-container {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    padding-right: 8px;
+}
+
+.column-checkbox-item {
+    margin-bottom: 10px;
+}
+
+.column-checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.column-checkbox-item input {
+    margin-right: 8px;
+}
+
+.column-checkbox-item input:disabled+span {
+    color: #aaa;
+}
+
+.column-selector-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 12px;
+}
+
+.column-selector-footer p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.apply-columns-btn {
+    background-color: #002060;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.apply-columns-btn:hover {
+    background-color: #001540;
+}
+
+.procFineText {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.table-wrapper-ibra {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+td.ibraAct,
+th.ibraAct {
+    cursor: default !important;
+}
+
+.dummy-scrollbar-ibra {
+    width: 100%;
+    height: 16px;
+    /* Standard scrollbar height */
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    background: #f1f1f1;
+}
+
+.dummy-scrollbar-thumb-ibra {
+    width: 200%;
+    /* Make it wide enough to look like a scroll area */
+    height: 100%;
+    background: #ccc;
+    /* The 'thumb' color */
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
 import "./CreatePage.css";
@@ -67,7 +67,7 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.warn("Please save a draft before sharing.", {
-        closeButton: false,
+        closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
@@ -87,7 +87,7 @@ const CreatePage = () => {
         toast.dismiss();
         toast.clearWaitingQueue();
         toast.success("Draft has been successfully saved", {
-          closeButton: false,
+          closeButton: true,
           autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
@@ -100,7 +100,7 @@ const CreatePage = () => {
         toast.dismiss();
         toast.clearWaitingQueue();
         toast.success("Draft has been successfully updated", {
-          closeButton: false,
+          closeButton: true,
           autoClose: 800, // 1.5 seconds
           style: {
             textAlign: 'center'
@@ -112,7 +112,7 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
-        closeButton: false,
+        closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
@@ -276,7 +276,7 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.warn("Please load a draft before publishing.", {
-        closeButton: false,
+        closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
@@ -340,7 +340,7 @@ const CreatePage = () => {
 
   const [formData, setFormData] = useState({
     title: "",
-    documentType: "Procedure",
+    documentType: useParams().type,
     aim: "The aim of the document is ",
     scope: "",
     date: new Date().toLocaleDateString(),
@@ -450,7 +450,7 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.success("Draft has been auto-saved", {
-        closeButton: false,
+        closeButton: true,
         style: {
           textAlign: 'center'
         }
@@ -461,7 +461,7 @@ const CreatePage = () => {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.success("Draft has been auto-saved", {
-        closeButton: false,
+        closeButton: true,
         style: {
           textAlign: 'center'
         }
@@ -759,7 +759,7 @@ const CreatePage = () => {
     if (formData.procedureRows.length <= 1) {
       toast.warn("At least one procedure step is required.", {
         autoClose: 800,
-        closeButton: false,
+        closeButton: true,
         style: { textAlign: "center" },
       });
       return;
@@ -909,7 +909,7 @@ const CreatePage = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       toast.success(`Document published`, {
-        closeButton: false,
+        closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
@@ -927,7 +927,7 @@ const CreatePage = () => {
     <div className="file-create-container">
       <div className="sidebar-um">
         <div className="sidebar-logo-um">
-          <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
+          <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
           <p className="logo-text-um">Document Development</p>
         </div>
 
@@ -981,20 +981,6 @@ const CreatePage = () => {
 
         <div className={`scrollable-box`}>
           <div className="input-row">
-            <div className="input-box-type">
-              <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
-              <select
-                className="table-control font-fam"
-                name="documentType"
-                value={formData.documentType}
-                onChange={handleInputChange}
-              >
-                <option value="Policy">Policy</option>
-                <option value="Procedure">Procedure</option>
-                <option value="Standard">Standard</option>
-              </select>
-            </div>
-
             <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
               <div className="input-group-cpt">

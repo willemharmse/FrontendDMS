@@ -8,7 +8,6 @@ import { saveAs } from 'file-saver';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faEye, faTimes, faChevronLeft, faChevronRight, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faAlignCenter, faExpand } from "@fortawesome/free-solid-svg-icons";
 import Modal from "react-modal";
-import "./ProcedureTable.css"
 
 cytoscape.use(dagre);
 
@@ -833,7 +832,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
 
                 // Show loading toast
                 const toastId = toast.info("Preparing flowchart download...", {
-                    closeButton: false,
+                    closeButton: true,
                     autoClose: 800,
                     style: { textAlign: 'center' }
                 });
@@ -842,7 +841,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                     // Update toast
                     toast.update(toastId, {
                         render: `Generating page ${i + 1} of ${pages.length}...`,
-                        closeButton: false,
+                        closeButton: true,
                         autoClose: 800
                     });
 
@@ -875,7 +874,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
                 // Generate the zip file
                 toast.update(toastId, {
                     render: "Creating zip file...",
-                    closeButton: false,
+                    closeButton: true,
                     autoClose: 800
                 });
 

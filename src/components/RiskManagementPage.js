@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
+import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
 import "./RiskManagementPage.css";
-import DocumentSignaturesTable from "./CreatePage/DocumentSignaturesTable";
 import TermTable from "./CreatePage/TermTable";
 import AbbreviationTable from "./CreatePage/AbbreviationTable";
-import ChapterTable from "./CreatePage/ChapterTable";
 import ProcedureTable from "./CreatePage/ProcedureTable";
 import ReferenceTable from "./CreatePage/ReferenceTable";
-import PPETable from "./CreatePage/PPETable";
-import HandToolTable from "./CreatePage/HandToolsTable";
-import EquipmentTable from "./CreatePage/EquipmentTable";
-import MaterialsTable from "./CreatePage/MaterialsTable";
-import MobileMachineTable from "./CreatePage/MobileMachineTable";
 import PicturesTable from "./CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import BurgerMenu from "./CreatePage/BurgerMenu";
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import SharePage from "./CreatePage/SharePage";
 import TopBarDD from "./Notifications/TopBarDD";
+import AttendanceTable from "./RiskRelated/AttendanceTable";
+import DocumentSignaturesRiskTable from "./RiskRelated/DocumentSignaturesRiskTable";
+import IBRATable from "./RiskRelated/IBRATable";
+import IBRAPopup from "./RiskRelated/IBRAPopup";
 
 const RiskManagementPage = () => {
     const navigate = useNavigate();
@@ -338,30 +335,63 @@ const RiskManagementPage = () => {
         });
     };
 
+    const updateIbraRows = (nrToUpdate, newValues) => {
+        setFormData(prev => ({
+            ...prev,
+            ibra: prev.ibra.map(item =>
+                item.nr === nrToUpdate
+                    ? { ...item, ...newValues }
+                    : item
+            )
+        }));
+    };
+
+    const addIBRARow = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            ibra: [
+                ...prevFormData.ibra,
+                {
+                    id: uuidv4(), nr: prevFormData.ibra.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
+                    hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
+                    R: "-", source: "", majorRisk: "", priority: "", possible: "", UE: "", additional: "", maxConsequence: ""
+                }
+            ]
+        }));
+    };
+
     const [formData, setFormData] = useState({
         title: "",
-        documentType: "Procedure",
+        documentType: useParams().type,
         aim: "The aim of the document is ",
         scope: "",
         date: new Date().toLocaleDateString(),
         version: "1",
         rows: [
-            { auth: "Author", name: "", pos: "", num: 1 },
+            { auth: "Facilitator", name: "", pos: "", num: 4 },
+            { auth: "Owner", name: "", pos: "", num: 1 },
             { auth: "Reviewer", name: "", pos: "", num: 2 },
-            { auth: "Approver", name: "", pos: "", num: 3 },
+            { auth: "Approver", name: "", pos: "", num: 3 }
+        ],
+        ibra: [
+            {
+                id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
+                hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
+                LR: "-", M: "-", R: "-", source: "", majorRisk: "", priority: "",
+                possible: "", UE: "", additional: "", maxConsequence: ""
+            }
         ],
         procedureRows: [{
             nr: 1, mainStep: "", SubStep: "", accountable: "", responsible: "", prevStep: "-"
         }],
         abbrRows: [],
         termRows: [],
-        chapters: [],
+        attendance: [
+            {
+                name: "", site: "", designation: "Facilitator", num: ""
+            }
+        ],
         references: [],
-        PPEItems: [],
-        HandTools: [],
-        Equipment: [],
-        MobileMachine: [],
-        Materials: [],
         pictures: [],
         reviewDate: 0,
         changeTable: [
@@ -451,6 +481,7 @@ const RiskManagementPage = () => {
             toast.clearWaitingQueue();
             toast.success("Draft has been auto-saved", {
                 closeButton: false,
+                autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
@@ -628,6 +659,17 @@ const RiskManagementPage = () => {
             });
         }
 
+        if (formData.attendance.length === 0) {
+            newErrors.attendance = true;
+        } else {
+            formData.attendance.forEach((row, index) => {
+                if (!row.name) newErrors.attendance = true;
+                if (!row.company) newErrors.attendance = true;
+                if (!row.num) newErrors.attendance = true;
+                if (!row.designation) newErrors.attendance = true;
+            });
+        }
+
         if (formData.rows.length === 0) {
             newErrors.signs = true;
         } else {
@@ -676,18 +718,20 @@ const RiskManagementPage = () => {
         rowToChange[field] = e.target.value;
 
         // Automatically set num based on the auth type
-        if (rowToChange.auth === "Author") {
+        if (rowToChange.auth === "Owner") {
             rowToChange.num = 1;
         } else if (rowToChange.auth === "Reviewer") {
             rowToChange.num = 2;
         } else if (rowToChange.auth === "Approver") {
             rowToChange.num = 3;
+        } else if (rowToChange.auth === "Facilitator") {
+            rowToChange.num = 4;
         }
 
         // Only perform validation if the 'auth' field was modified
         if (field === "auth") {
             // Check if the current 'Author', 'Reviewer', or 'Approved By' is being removed or modified
-            const requiredRoles = ["Author", "Reviewer", "Approver"];
+            const requiredRoles = ["Owner", "Reviewer", "Approver", "Facilitator"];
 
             // Check if there is at least one row with each required auth type
             const isValid = requiredRoles.every(role => {
@@ -728,7 +772,17 @@ const RiskManagementPage = () => {
             ...formData,
             rows: [
                 ...formData.rows,
-                { auth: "Author", name: "", pos: "", num: 1 }
+                { auth: "Owner", name: "", pos: "", num: 1 }
+            ]
+        });
+    };
+
+    const addAttendanceRow = () => {
+        setFormData({
+            ...formData,
+            attendance: [
+                ...formData.attendance,
+                { name: "", site: "", designation: "", num: "" }
             ]
         });
     };
@@ -789,6 +843,13 @@ const RiskManagementPage = () => {
         }));
     };
 
+    const updateAttendanceRows = (newAttendanceRows) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            attendance: newAttendanceRows, // Update procedureRows with new data
+        }));
+    };
+
     const addRefRow = () => {
         const lastNr = formData.references.length > 0 && typeof formData.references[formData.references.length - 1].nr === 'number'
             ? formData.references[formData.references.length - 1].nr
@@ -818,7 +879,7 @@ const RiskManagementPage = () => {
         const rowToRemove = formData.rows[indexToRemove];
 
         // Prevent removal of the initial required rows
-        const initialRequiredRows = ["Author", "Reviewer", "Approver"];
+        const initialRequiredRows = ["Owner", "Reviewer", "Approver", "Facilitator"];
         if (
             initialRequiredRows.includes(rowToRemove.auth) &&
             formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
@@ -837,6 +898,62 @@ const RiskManagementPage = () => {
         setFormData({
             ...formData,
             rows: formData.rows.filter((_, index) => index !== indexToRemove),
+        });
+    };
+
+    const removeIBRARow = (idToRemove) => {
+        if (formData.ibra.length === 1) {
+            toast.error("You must keep at least one row.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        const updatedRows = formData.ibra.filter(row => row.id !== idToRemove);
+
+        if (updatedRows.length === formData.ibra.length) {
+            toast.error("Row not found.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        // Re-number the rows in ascending order starting from 1
+        const reNumberedRows = updatedRows.map((ibra, index) => ({
+            ...ibra,
+            nr: index + 1
+        }));
+
+        console.log('After re-numbering:', reNumberedRows);
+
+        setFormData({
+            ...formData,
+            ibra: reNumberedRows,
+        });
+    };
+
+
+    const removeAttendanceRow = (indexToRemove) => {
+        // Prevent removal if there's only one row left
+        if (formData.attendance.length === 1) {
+            toast.error(`You must have at least one attendance row.`, {
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+
+        // Proceed with removal if conditions are met
+        setFormData({
+            ...formData,
+            attendance: formData.attendance.filter((_, index) => index !== indexToRemove),
         });
     };
 
@@ -927,21 +1044,15 @@ const RiskManagementPage = () => {
         <div className="risk-create-container">
             <div className="sidebar-um">
                 <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                    <p className="logo-text-um">Document Development</p>
+                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                    <p className="logo-text-um">Risk Management</p>
                 </div>
 
-                <div className="risk-button-container-create">
-                    <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
+                <div className="risk-button-container-create-bot">
+                    <button className="but-um" onClick={() => navigate('/FrontendDMS/constructionHelp')}>
                         <div className="button-content">
-                            <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                            <span className="button-text">Drafts</span>
-                        </div>
-                    </button>
-                    <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
-                        <div className="button-content">
-                            <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                            <span className="button-text">Published Documents</span>
+                            <FontAwesomeIcon icon={faQuestionCircle} className="button-icon" />
+                            <span className="button-text">Help</span>
                         </div>
                     </button>
                 </div>
@@ -952,7 +1063,7 @@ const RiskManagementPage = () => {
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
@@ -964,11 +1075,11 @@ const RiskManagementPage = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+                            <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+                            <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
@@ -981,22 +1092,8 @@ const RiskManagementPage = () => {
 
                 <div className={`scrollable-box-risk-create`}>
                     <div className="input-row-risk-create">
-                        <div className="input-box-type-risk-create">
-                            <h3 className="font-fam-labels">Document Type <span className="required-field">*</span></h3>
-                            <select
-                                className="table-control font-fam"
-                                name="documentType"
-                                value={formData.documentType}
-                                onChange={handleInputChange}
-                            >
-                                <option value="Policy">Policy</option>
-                                <option value="Procedure">Procedure</option>
-                                <option value="Standard">Standard</option>
-                            </select>
-                        </div>
-
                         <div className={`input-box-title-risk-create ${errors.title ? "error-create" : ""}`}>
-                            <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
+                            <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
                             <div className="input-group-risk-create">
                                 <input
                                     spellcheck="true"
@@ -1005,68 +1102,89 @@ const RiskManagementPage = () => {
                                     className="font-fam title-input"
                                     value={formData.title}
                                     onChange={handleInputChange}
-                                    placeholder="Title of your document (e.g. Working at Heights)"
+                                    placeholder="Insert Risk Assessment Title (e.g., Working at Heights)"
                                 />
                                 <span className="type-risk-create">{formData.documentType}</span>
                             </div>
                         </div>
                     </div>
 
-                    <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+                    <div className="input-row-risk-create">
+                        <div className="input-box-type-risk-create">
+                            <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
+                            <select
+                                className="table-control font-fam"
+                                name="documentType"
+                            >
+                                <option value="Policy">Site 1</option>
+                                <option value="Procedure">Site 2</option>
+                                <option value="Standard">Site 3</option>
+                            </select>
+                        </div>
+                        <div className="input-box-type-risk-create">
+                            <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
+                            <input
+                                className="table-control font-fam date-input-risk-create"
+                                type="date"
+                                name="documentType"
+                            />
+                        </div>
+                    </div>
+
+                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
 
                     <div className="input-row-risk-create">
                         <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
-                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
+                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
                             <textarea
                                 spellcheck="true"
                                 name="aim"
                                 className="aim-textarea-risk-create font-fam"
-                                value={formData.aim}
                                 onChange={handleInputChange}
                                 rows="5"   // Adjust the number of rows for initial height
-                                placeholder="Enter the aim of the document here..." // Optional placeholder text
                             />
                         </div>
                     </div>
 
-                    <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
-                    <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
-                    <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
-                    <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-                    <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
+
                     <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
-                    <ChapterTable formData={formData} setFormData={setFormData} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} />
+                    <IBRATable rows={formData.ibra} updateRows={updateIbraRows} addRow={addIBRARow} removeRow={removeIBRARow} />
+                    {false && (<ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />)}
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
 
-                    <div className="input-row-risk-create">
-                        <div className={`input-box-3-risk-create ${errors.reviewDate ? "error-create" : ""}`}>
-                            <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-                            <input
-                                type="number"
-                                name="reviewDate"
-                                className="aim-textarea-risk-create cent-create font-fam"
-                                value={formData.reviewDate}
-                                onChange={handleInputChange}
-                                placeholder="Enter the review period in months" // Optional placeholder text
-                            />
-                        </div>
-                    </div>
+                    {false && (
+                        <div>
+                            <div className="input-row-risk-create">
+                                <div className={`input-box-3-risk-create ${errors.reviewDate ? "error-create" : ""}`}>
+                                    <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
+                                    <input
+                                        type="number"
+                                        name="reviewDate"
+                                        className="aim-textarea-risk-create cent-create font-fam"
+                                        value={formData.reviewDate}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter the review period in months" // Optional placeholder text
+                                    />
+                                </div>
+                            </div>
 
-                    <div className="input-row-risk-create" onClick={handlePubClick}>
-                        <div className={`input-box-annexures-risk-create`}>
-                            <h3 className="font-fam-labels">Appendices</h3>
-                        </div>
-                    </div>
+                            <div className="input-row-risk-create" onClick={handlePubClick}>
+                                <div className={`input-box-annexures-risk-create`}>
+                                    <h3 className="font-fam-labels">Appendices</h3>
+                                </div>
+                            </div>
 
-                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+                            <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+                        </div>
+                    )}
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            onClick={handleClick}
-                            title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
+                            style={{ cursor: "not-allowed" }}
+                            disabled
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>

@@ -79,13 +79,13 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
                 toast.success(`Step ${indexToChange + 1} rewritten by AI`, {
                     autoClose: 1000,
-                    closeButton: false,
+                    closeButton: true,
                     style: { textAlign: 'center' }
                 });
             } else {
                 toast.error("Failed to rewrite this step.", {
                     autoClose: 1000,
-                    closeButton: false,
+                    closeButton: true,
                     style: { textAlign: 'center' }
                 });
             }
@@ -93,7 +93,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
             console.error("Single row rewrite error:", err);
             toast.error("An error occurred while rewriting this step.", {
                 autoClose: 1000,
-                closeButton: false,
+                closeButton: true,
                 style: { textAlign: 'center' }
             });
         } finally {
@@ -137,7 +137,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
             setInvalidRows(incompleteIndices); // mark invalid rows to highlight labels
             toast.warn("Please fill in both 'Responsible' and 'Accountable' before adding a new row.", {
                 autoClose: 800,
-                closeButton: false,
+                closeButton: true,
                 style: { textAlign: 'center' }
             });
             return;
@@ -249,7 +249,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                                 if (updatedSteps.length > 1) {
                                                                     updateRow(index, "prevStep", updatedSteps.filter((_, i) => i !== stepIndex).join(";"));
                                                                 } else {
-                                                                    toast.warn("At least one predecessor is required.", { autoClose: 800, closeButton: false });
+                                                                    toast.warn("At least one predecessor is required.", { autoClose: 800, closeButton: true });
                                                                 }
                                                             }}
                                                         >
