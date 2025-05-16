@@ -1,121 +1,157 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./DocumentSignaturesTable.css";
+// bring in floating-dropdown styles
+import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faSpinner, faTrash, faTrashCan, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, error, updateRows }) => {
-  const [nameLists, setNameLists] = useState({
-    Approver: [],
-    Author: [],
-    Reviewer: [],
-  });
-
-  const insertRowAt = (insertIndex) => {
-    const newSignatures = [...rows];
-
-    const newRow = {
-      auth: "Author",
-      name: "",
-      pos: "",
-      num: 1,
-    };
-
-    newSignatures.splice(insertIndex, 0, newRow);
-
-    updateRows(newSignatures); // use your passed-in updateProcRows function
-  };
-
+const DocumentSignaturesTable = ({
+  rows,
+  handleRowChange,
+  addRow,
+  removeRow,
+  error,
+  updateRows
+}) => {
+  const [nameLists, setNameLists] = useState([]);
+  const [posLists, setPosLists] = useState([]);
+  const [nameToPositionMap, setNameToPositionMap] = useState({});
   const [selectedNames, setSelectedNames] = useState(new Set());
 
-  const [nameToPositionMap, setNameToPositionMap] = useState({});
+  // floating dropdown state
+  const [showNameDropdown, setShowNameDropdown] = useState(null);
+  const [filteredNameOptions, setFilteredNameOptions] = useState({});
+  const [showPosDropdown, setShowPosDropdown] = useState(null);
+  const [filteredPosOptions, setFilteredPosOptions] = useState({});
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  // refs for inputs
+  const nameInputRefs = useRef([]);
+  const posInputRefs = useRef([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [authorsRes, approversRes, reviewersRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/auth`),
-          axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/app`),
-          axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/rev`),
-        ]);
-
-        const authors = authorsRes.data.authors.map((author) => ({
-          name: author.author,
-          position: author.pos,
-        }));
-
-        const approvers = approversRes.data.approvers.map((approver) => ({
-          name: approver.approver,
-          position: approver.pos,
-        }));
-
-        const reviewers = reviewersRes.data.reviewers.map((reviewer) => ({
-          name: reviewer.reviewer,
-          position: reviewer.pos,
-        }));
-
-        // Create a mapping of names to positions
+        const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+        const data = res.data.stakeholders;
+        // names list + map
         const positionMap = {};
-        [...authors, ...approvers, ...reviewers].forEach(({ name, position }) => {
-          positionMap[name] = position;
-        });
+        data.forEach(({ name, pos }) => positionMap[name] = pos);
+        // unique positions
+        const positions = Array.from(new Set(data.map(d => d.pos))).sort();
 
-        localStorage.setItem('cachedNameLists', JSON.stringify({
-          authors,
-          approvers,
-          reviewers,
-          positionMap
-        }));
-
-        setNameLists({
-          Approver: approvers.map((a) => a.name),
-          Author: authors.map((a) => a.name),
-          Reviewer: reviewers.map((a) => a.name),
-        });
-
+        localStorage.setItem('cachedNameLists', JSON.stringify({ data, positionMap }));
+        setNameLists(data.map(d => d.name).sort());
+        setPosLists(positions);
         setNameToPositionMap(positionMap);
-      } catch (error) {
-        console.error("Error fetching names:", error);
-
+      } catch {
         const cached = localStorage.getItem('cachedNameLists');
         if (cached) {
-          const parsed = JSON.parse(cached);
-
-          setNameLists({
-            Approver: parsed.approvers.map((a) => a.name),
-            Author: parsed.authors.map((a) => a.name),
-            Reviewer: parsed.reviewers.map((a) => a.name),
-          });
-
-          setNameToPositionMap(parsed.positionMap || {});
+          const { data, positionMap } = JSON.parse(cached);
+          setNameLists(data.map(d => d.name).sort());
+          setPosLists(Array.from(new Set(data.map(d => d.pos))).sort());
+          setNameToPositionMap(positionMap || {});
         }
       }
     };
-
     fetchData();
   }, []);
 
-  const [selectedNamesByAuth, setSelectedNamesByAuth] = useState({
-    Author: [],
-    Approver: [],
-    Reviewer: [],
-  });
+  const insertRowAt = (insertIndex) => {
+    const newSignatures = [...rows];
+    const type = newSignatures[insertIndex - 1].auth;
+    const newRow = { auth: type, name: "", pos: "", num: 1 };
+    newSignatures.splice(insertIndex, 0, newRow);
+    updateRows(newSignatures);
+  };
 
-  const handleNameChange = (e, index) => {
-    const selectedName = e.target.value;
-    const prevName = rows[index].name;
+  // —— Name handlers —— //
 
-    setSelectedNames((prev) => {
-      const updatedNames = new Set(prev);
-      if (prevName) updatedNames.delete(prevName);
-      if (selectedName) updatedNames.add(selectedName);
-      return updatedNames;
+  const openNameDropdown = (index, all = false) => {
+    const base = all
+      ? nameLists
+      : nameLists.filter(n => !selectedNames.has(n) || n === rows[index].name);
+    const opts = base.slice(0, 15);
+    setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
+    positionDropdown(nameInputRefs.current[index]);
+    setShowNameDropdown(index);
+  };
+
+  const handleNameInputChange = (index, value) => {
+    // update row name immediately
+    handleRowChange({ target: { value } }, index, "name");
+    // auto-fill pos
+    handleRowChange(
+      { target: { value: nameToPositionMap[value] || "" } },
+      index,
+      "pos"
+    );
+    // filter dropdown
+    const opts = nameLists
+      .filter(n =>
+        n.toLowerCase().includes(value.toLowerCase()) &&
+        (!selectedNames.has(n) || n === rows[index].name)
+      )
+      .slice(0, 15);
+    setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
+    positionDropdown(nameInputRefs.current[index]);
+    setShowNameDropdown(index);
+  };
+
+  const handleSelectName = (index, name) => {
+    const prev = rows[index].name;
+    setSelectedNames(s => {
+      const copy = new Set(s);
+      if (prev) copy.delete(prev);
+      copy.add(name);
+      return copy;
     });
+    // finalize name and auto-pos
+    handleRowChange({ target: { value: name } }, index, "name");
+    handleRowChange(
+      { target: { value: nameToPositionMap[name] || "" } },
+      index,
+      "pos"
+    );
+    setShowNameDropdown(null);
+  };
 
-    handleRowChange(e, index, "name");
+  // —— Position handlers —— //
 
-    // Update position based on the selected name
-    handleRowChange({ target: { value: nameToPositionMap[selectedName] || "" } }, index, "pos");
+  const openPosDropdown = (index, all = false) => {
+    const base = all ? posLists : posLists;
+    const opts = base.slice(0, 15);
+    setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
+    positionDropdown(posInputRefs.current[index]);
+    setShowPosDropdown(index);
+  };
+
+  const handlePosInputChange = (index, value) => {
+    handleRowChange({ target: { value } }, index, "pos");
+    const opts = posLists
+      .filter(p => p.toLowerCase().includes(value.toLowerCase()))
+      .slice(0, 15);
+    setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
+    positionDropdown(posInputRefs.current[index]);
+    setShowPosDropdown(index);
+  };
+
+  const handleSelectPos = (index, pos) => {
+    handleRowChange({ target: { value: pos } }, index, "pos");
+    setShowPosDropdown(null);
+  };
+
+  // compute dropdown coords
+  const positionDropdown = (inputEl) => {
+    if (inputEl) {
+      const rect = inputEl.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
   };
 
   return (
@@ -135,78 +171,105 @@ const DocumentSignaturesTable = ({ rows, handleRowChange, addRow, removeRow, err
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <React.Fragment key={index}>
-                <tr>
-                  <td>
-                    <select
-                      className="table-control font-fam"
-                      value={row.auth}
-                      onChange={(e) => handleRowChange(e, index, "auth")}
-                    >
-                      <option value="Author">Author</option>
-                      <option value="Approver">Approver</option>
-                      <option value="Reviewer">Reviewer</option>
-                    </select>
-                  </td>
-                  <td>
-                    <select
-                      className="table-control font-fam"
-                      value={row.name}
-                      onChange={(e) => handleNameChange(e, index)}
-                    >
-                      <option value="">Select Name</option>
-                      {nameLists[row.auth]
-                        .filter((name) => !selectedNames.has(name) || name === row.name)
-                        .sort()
-                        .map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="table-control font-fam"
-                      value={row.pos}
-                      readOnly
-                    />
-                  </td>
-                  <td className="procCent action-cell">
-                    <button
-                      className="remove-row-button font-fam"
-                      onClick={() => {
-                        setSelectedNames((prev) => {
-                          const updatedNames = new Set(prev);
-                          updatedNames.delete(row.name);
-                          return updatedNames;
-                        });
-                        removeRow(index);
-                      }}
-                      title="Remove Row"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                    {index < rows.length - 1 && (
-                      <button
-                        className="insert-row-button-sig font-fam"
-                        onClick={() => insertRowAt(index + 1)}
-                        title="Add row"
-                      >
-                        <FontAwesomeIcon icon={faPlusCircle} />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              </React.Fragment>
+              <tr key={index}>
+                <td>
+                  <select
+                    className="table-control font-fam"
+                    value={row.auth}
+                    onChange={e => handleRowChange(e, index, "auth")}
+                  >
+                    <option value="Author">Author</option>
+                    <option value="Approver">Approver</option>
+                    <option value="Reviewer">Reviewer</option>
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    className="table-control font-fam"
+                    value={row.name}
+                    onChange={e => handleNameInputChange(index, e.target.value)}
+                    onFocus={() => openNameDropdown(index, true)}
+                    onBlur={() => setTimeout(() => setShowNameDropdown(null), 200)}
+                    ref={el => (nameInputRefs.current[index] = el)}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    className="table-control font-fam"
+                    value={row.pos}
+                    onChange={e => handlePosInputChange(index, e.target.value)}
+                    onFocus={() => openPosDropdown(index, true)}
+                    onBlur={() => setTimeout(() => setShowPosDropdown(null), 200)}
+                    ref={el => (posInputRefs.current[index] = el)}
+                  />
+                </td>
+                <td className="procCent action-cell">
+                  <button
+                    className="remove-row-button font-fam"
+                    onClick={() => {
+                      setSelectedNames(s => {
+                        const copy = new Set(s);
+                        copy.delete(row.name);
+                        return copy;
+                      });
+                      removeRow(index);
+                    }}
+                    title="Remove Row"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                  <button
+                    className="insert-row-button-sig font-fam"
+                    onClick={() => insertRowAt(index + 1)}
+                    title="Add row"
+                  >
+                    <FontAwesomeIcon icon={faPlusCircle} />
+                  </button>
+                </td>
+              </tr>
             ))}
           </tbody>
-
         </table>
-        <button className="add-row-button-ds font-fam" onClick={addRow}>
-          <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
-        </button>
+
+        {/* Name dropdown */}
+        {showNameDropdown !== null && filteredNameOptions[showNameDropdown]?.length > 0 && (
+          <ul
+            className="floating-dropdown"
+            style={{
+              position: "fixed",
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width
+            }}
+          >
+            {filteredNameOptions[showNameDropdown].map((n, i) => (
+              <li key={i} onMouseDown={() => handleSelectName(showNameDropdown, n)}>
+                {n}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Position dropdown */}
+        {showPosDropdown !== null && filteredPosOptions[showPosDropdown]?.length > 0 && (
+          <ul
+            className="floating-dropdown"
+            style={{
+              position: "fixed",
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width
+            }}
+          >
+            {filteredPosOptions[showPosDropdown].map((p, i) => (
+              <li key={i} onMouseDown={() => handleSelectPos(showPosDropdown, p)}>
+                {p}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

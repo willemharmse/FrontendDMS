@@ -127,7 +127,7 @@
     /* Ensures word breaks for long strings */
     white-space: normal;
     /* Enables text wrapping */
-    width: 175px;
+    width: 90px;
 
     /* Set a width to see the wrapping effect */
     text-align: center;

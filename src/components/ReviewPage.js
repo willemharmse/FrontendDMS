@@ -19,7 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "./Notifications/TopBarDD";
 
 const ReviewPage = () => {
@@ -46,6 +46,7 @@ const ReviewPage = () => {
     const [change, setChange] = useState("");
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
         if (fileID) {
@@ -736,12 +737,23 @@ const ReviewPage = () => {
 
     return (
         <div className="file-create-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">Review Document</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Review Document</p>
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             {/* Main content */}
             <div className="main-box-create">

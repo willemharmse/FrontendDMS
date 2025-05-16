@@ -530,6 +530,7 @@ body {
   background-color: white;
   padding: 15px;
   margin: 10px 0;
+  margin-bottom: 0px;
   /* Keeps it aligned */
   width: 100%;
   /* Makes the boxes shorter */

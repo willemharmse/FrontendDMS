@@ -30,7 +30,7 @@ import {
     faHandsHelping,
     faDollarSign,
     faServer,
-    faUniversity
+    faUniversity, faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "./Notifications/TopBar";
 
@@ -38,6 +38,7 @@ const DepartmentView = () => {
     const { deptId } = useParams();
     const [error, setError] = useState(null);
     const [users, setUsers] = useState([]);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState("");
@@ -219,28 +220,39 @@ const DepartmentView = () => {
 
     return (
         <div className="user-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-dept">Department Management</p>
-                </div>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-dept">Department Management</p>
+                    </div>
 
-                <div className="filter-fih">
-                    <div className="button-container-dept">
-                        <button className="but-um" onClick={showPopup}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
-                                <span className="button-text">Add Members</span>
-                            </div>
-                        </button>
+                    <div className="filter-fih">
+                        <div className="button-container-dept">
+                            <button className="but-um" onClick={showPopup}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
+                                    <span className="button-text">Add Members</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <FontAwesomeIcon icon={iconMap[department.icon]} alt="Logo" className="logo-img-dept-view" />
+                        <p className="logo-text-dm-fi">{department.department}</p>
                     </div>
                 </div>
+            )}
 
-                <div className="sidebar-logo-dm-fi">
-                    <FontAwesomeIcon icon={iconMap[department.icon]} alt="Logo" className="logo-img-dept-view" />
-                    <p className="logo-text-dm-fi">{department.department}</p>
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
                 </div>
-            </div>
+            )}
 
             <div className="main-box-user">
                 <div className="top-section-um">

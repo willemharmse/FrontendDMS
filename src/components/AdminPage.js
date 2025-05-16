@@ -30,13 +30,14 @@ import {
     faHandsHelping,
     faDollarSign,
     faServer,
-    faUniversity
+    faUniversity, faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import ImportSiteInfo from "./UploadPage/ImportSiteInfo";
 import TopBar from "./Notifications/TopBar";
 
 const AdminPage = () => {
     const [error, setError] = useState(null);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
@@ -120,12 +121,23 @@ const AdminPage = () => {
             {upload && (<UploadPopup onClose={closeUpload} />)}
             {batch && (<BatchUpload onClose={closeBatch} />)}
             {importSI && (<ImportSiteInfo onClose={closeImportSI} />)}
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">Admin Page</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Admin Page</p>
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             <div className="main-box-user">
                 <div className="top-section-um">

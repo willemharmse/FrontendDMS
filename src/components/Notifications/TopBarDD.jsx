@@ -36,11 +36,6 @@ const TopBarDD = ({ role, menu, create, loadOfflineDraft }) => {
 
     return (
         <div className="icons-container-create-page">
-            {(localStorage.getItem("draftData") && create) && (
-                <div className="burger-menu-icon-create-page-3" onClick={() => loadOfflineDraft()}>
-                    <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
-                </div>
-            )}
             <div className="burger-menu-icon-create-page-2">
                 <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
             </div>

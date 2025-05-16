@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faDownload, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import DownloadPopup from "../FileInfo/DownloadPopup";
 import { jwtDecode } from 'jwt-decode';
@@ -10,6 +10,7 @@ import "./VersionHistory.css";
 const VersionHistory = () => {
     const [activity, setActivity] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [loading, setLoading] = useState(false);
     const [role, setRole] = useState('');
@@ -137,13 +138,23 @@ const VersionHistory = () => {
 
     return (
         <div className="version-history-file-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">Version History</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Version History</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
             <div className="main-box-version-history-file">
                 <div className="top-section-um">
                     {/* This div creates the space in the middle */}

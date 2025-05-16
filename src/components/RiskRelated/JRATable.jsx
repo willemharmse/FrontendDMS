@@ -1,0 +1,756 @@
+import React, { useEffect, useState, useRef } from "react";
+import './JRATable.css';
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from "react-toastify";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import IBRAPopup from "./IBRAPopup";
+
+const JRATable = ({ formData, setFormData }) => {
+    const ibraBoxRef = useRef(null);
+    const tableWrapperRef = useRef(null);
+    const [ibraPopup, setIbraPopup] = useState(false);
+    const [selectedRowData, setSelectedRowData] = useState(null);
+    const [hoveredBody, setHoveredBody] = useState({ rowId: null, bodyIdx: null });
+
+    const closePopup = () => {
+        setIbraPopup(false);
+    }
+
+    const updateRows = (nrToUpdate, newValues) => {
+        setFormData(prev => ({
+            ...prev,
+            jra: prev.jra.map(item =>
+                item.nr === nrToUpdate
+                    ? { ...item, ...newValues }
+                    : item
+            )
+        }));
+    };
+
+    const insertSubControl = (rowId, bodyId) => {
+        setFormData(prev => ({
+            ...prev,
+            jra: prev.jra.map(item => {
+                if (item.id !== rowId) return item;
+                return {
+                    ...item,
+                    jraBody: item.jraBody.map(body => {
+                        if (body.idBody !== bodyId) return body;
+                        return {
+                            ...body,
+                            sub: [...body.sub, { task: "" }],
+                            taskExecution: [...body.taskExecution, { R: "" }],
+                            controls: [...body.controls, { control: "" }]
+                        };
+                    })
+                };
+            })
+        }));
+    };
+
+    // Remove sub & control at the same index
+    const removeSubControl = (rowId, bodyId, idx) => {
+        setFormData(prev => ({
+            ...prev,
+            jra: prev.jra.map(item => {
+                if (item.id !== rowId) return item;
+                return {
+                    ...item,
+                    jraBody: item.jraBody.map(body => {
+                        if (body.idBody !== bodyId) return body;
+
+                        // Only filter if there's more than one item
+                        const updatedSub = body.sub.length > 1
+                            ? body.sub.filter((_, i) => i !== idx)
+                            : body.sub;
+
+                        const updatedControls = body.controls.length > 1
+                            ? body.controls.filter((_, i) => i !== idx)
+                            : body.controls;
+
+                        const updatedTE = body.taskExecution.length > 1
+                            ? body.taskExecution.filter((_, i) => i !== idx)
+                            : body.taskExecution;
+
+                        return {
+                            ...body,
+                            sub: updatedSub,
+                            taskExecution: updatedTE,
+                            controls: updatedControls
+                        };
+                    })
+                };
+            })
+        }));
+    };
+
+
+    const insertBodyRow = (rowId, insertAtIndex) => {
+        setFormData(prev => {
+            const newJra = prev.jra.map(item => {
+                if (item.id !== rowId) return item;
+
+                const newEntry = {
+                    idBody: uuidv4(),
+                    hazards: [{ hazard: "" }],
+                    UE: [{ ue: "" }],
+                    sub: [{ task: "" }],
+                    taskExecution: [{ A: "", R: "" }],
+                    controls: [{ control: "" }],
+                    notes: ""
+                };
+
+                const bodies = [
+                    ...item.jraBody.slice(0, insertAtIndex),
+                    newEntry,
+                    ...item.jraBody.slice(insertAtIndex)
+                ];
+                return { ...item, jraBody: bodies };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const insertMainRow = (afterIndex) => {
+        setFormData(prev => {
+            // build the new main‐step entry
+            const newEntry = {
+                id: uuidv4(),
+                nr: null,           // we’ll renumber in a moment
+                main: "",
+                jraBody: [{
+                    idBody: uuidv4(),
+                    hazards: [{ hazard: "" }],
+                    UE: [{ ue: "" }],
+                    sub: [{ task: "" }],
+                    taskExecution: [{ A: "", R: "" }],
+                    controls: [{ control: "" }],
+                    notes: ""
+                }]
+            };
+
+            // splice it into the right position
+            const newJra = [
+                ...prev.jra.slice(0, afterIndex + 1),
+                newEntry,
+                ...prev.jra.slice(afterIndex + 1)
+            ];
+
+            // renumber all rows
+            const renumbered = newJra.map((item, idx) => ({
+                ...item,
+                nr: idx + 1
+            }));
+
+            return { ...prev, jra: renumbered };
+        });
+    };
+
+    const removeRow = (idToRemove) => {
+        if (formData.jra.length === 1) {
+            toast.error("You must keep at least one row.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        const updatedRows = formData.jra.filter(row => row.id !== idToRemove);
+
+        if (updatedRows.length === formData.jra.length) {
+            toast.error("Row not found.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        // Re-number the rows in ascending order starting from 1
+        const reNumberedRows = updatedRows.map((jra, index) => ({
+            ...jra,
+            nr: index + 1
+        }));
+
+        console.log('After re-numbering:', reNumberedRows);
+
+        setFormData({
+            ...formData,
+            jra: reNumberedRows,
+        });
+    };
+
+    const availableColumns = [
+        { id: "nr", title: "Nr.", className: "ibraCent ibraNr", icon: null },
+        { id: "main", title: "Main Task Step", className: "ibraCent ibraMainJRA", icon: null },
+        { id: "hazards", title: "Hazard", className: "ibraCent ibraPrevJRA", icon: null },
+        { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
+        { id: "sub", title: "Sub Task Steps\n(Procedure to complete the Main Task Step)", className: "ibraCent ibraSubJRA", icon: null },
+        { id: "taskExecution", title: "Task Execution\n(A&R)", className: "ibraCent ibraRisk", icon: null },
+        { id: "controls", title: "Contol Execution Specification\n(For Work Execution Document [WED])", className: "ibraCent ibraEXEJRA", icon: null },
+        { id: "notes", title: "Notes", className: "ibraCent ibraDeadlineJRA", icon: null },
+        { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
+    ];
+
+    const removeBodyRow = (rowId, bodyId) => {
+        setFormData(prev => {
+            const newJra = prev.jra.flatMap(item => {
+                if (item.id !== rowId) return item;
+
+                // if it’s the only sub-step, delegate back to removeRow
+                if (item.jraBody.length === 1) {
+                    // don’t delete the very last row in the table
+                    if (prev.jra.length === 1) {
+                        toast.clearWaitingQueue();
+                        toast.dismiss();
+
+                        toast.error("You must keep at least one row.", {
+                            closeButton: true,
+                            autoClose: 800,
+                            style: { textAlign: 'center' }
+                        });
+                        return item;
+                    }
+                    return []; // drop the entire JRA entry
+                }
+
+                // otherwise just filter out that one body entry
+                return {
+                    ...item,
+                    jraBody: item.jraBody.filter(b => b.idBody !== bodyId)
+                };
+            });
+
+            // re-number the remaining main rows
+            const renumbered = newJra.map((j, i) => ({ ...j, nr: i + 1 }));
+            return { ...prev, jra: renumbered };
+        });
+    };
+
+    useEffect(() => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        const mouseDownHandler = (e) => {
+            isDown = true;
+            wrapper.classList.add('grabbing');
+            startX = e.pageX - wrapper.offsetLeft;
+            scrollLeft = wrapper.scrollLeft;
+        };
+
+        const mouseLeaveHandler = () => {
+            isDown = false;
+            wrapper.classList.remove('grabbing');
+        };
+
+        const mouseUpHandler = () => {
+            isDown = false;
+            wrapper.classList.remove('grabbing');
+        };
+
+        const mouseMoveHandler = (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - wrapper.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            wrapper.scrollLeft = scrollLeft - walk;
+        };
+
+        wrapper.addEventListener('mousedown', mouseDownHandler);
+        wrapper.addEventListener('mouseleave', mouseLeaveHandler);
+        wrapper.addEventListener('mouseup', mouseUpHandler);
+        wrapper.addEventListener('mousemove', mouseMoveHandler);
+
+        return () => {
+            wrapper.removeEventListener('mousedown', mouseDownHandler);
+            wrapper.removeEventListener('mouseleave', mouseLeaveHandler);
+            wrapper.removeEventListener('mouseup', mouseUpHandler);
+            wrapper.removeEventListener('mousemove', mouseMoveHandler);
+        };
+    }, []);
+
+    useEffect(() => {
+        const adjustTableWrapperWidth = () => {
+            if (ibraBoxRef.current && tableWrapperRef.current) {
+                const boxWidth = ibraBoxRef.current.offsetWidth;
+                const tableWrapperWidth = boxWidth - 30;
+                tableWrapperRef.current.style.width = `${tableWrapperWidth}px`;
+            }
+        };
+
+        adjustTableWrapperWidth();
+        window.addEventListener('resize', adjustTableWrapperWidth);
+
+        return () => {
+            window.removeEventListener('resize', adjustTableWrapperWidth);
+        };
+    }, [tableWrapperRef.current]);
+
+    const [showColumns, setShowColumns] = useState([
+        "nr", "main", "hazards", "sub", "UE", "action",
+    ]);
+
+    const [showColumnSelector, setShowColumnSelector] = useState(false);
+
+    const getDisplayColumns = () => {
+        let result = availableColumns
+            .map(col => col.id)
+            .filter(id => showColumns.includes(id) && id !== 'action');
+        while (result.length < 5) {
+            result.push(`blank-${result.length}`);
+        }
+        result.push('action');
+        return result;
+    };
+
+    const popupRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setShowColumnSelector(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const toggleColumn = (columnId) => {
+        setShowColumns(prev => {
+            if (prev.includes(columnId)) {
+                if (columnId === 'action' || columnId === 'nr') return prev;
+                return prev.filter(id => id !== columnId);
+            } else {
+                const actionIndex = prev.indexOf('action');
+                if (actionIndex !== -1) {
+                    return [...prev.slice(0, actionIndex), columnId, ...prev.slice(actionIndex)];
+                } else {
+                    return [...prev, columnId];
+                }
+            }
+        });
+    };
+
+    // New function to handle "Select All" functionality
+    const toggleAllColumns = (selectAll) => {
+        if (selectAll) {
+            // Select all columns except 'action' (which is added separately)
+            const allColumns = availableColumns
+                .map(col => col.id)
+                .filter(id => id !== 'action');
+            setShowColumns([...allColumns, 'action']);
+        } else {
+            // Keep only required columns
+            setShowColumns(['nr', 'action']);
+        }
+    };
+
+    // Check if all selectable columns are selected
+    const areAllColumnsSelected = () => {
+        const selectableColumns = availableColumns
+            .filter(col => col.id !== 'action')
+            .map(col => col.id);
+
+        return selectableColumns.every(colId =>
+            showColumns.includes(colId) || colId === 'nr'
+        );
+    };
+
+    const displayColumns = getDisplayColumns();
+
+    return (
+        <div className="input-row-risk-ibra">
+            <div className="ibra-box" ref={ibraBoxRef}>
+                <button
+                    className="top-left-button-refs"
+                    title="Information"
+                >
+                    <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
+                </button>
+                <h3 className="font-fam-labels">Job Risk Assesment (JRA) <span className="required-field">*</span></h3>
+                <button
+                    className="top-right-button-ibra"
+                    title="Show / Hide Columns"
+                    onClick={() => setShowColumnSelector(!showColumnSelector)}
+                >
+                    <FontAwesomeIcon icon={faTableColumns} className="icon-um-search" />
+                </button>
+
+                {showColumnSelector && (
+                    <div className="column-selector-popup" ref={popupRef}>
+                        <div className="column-selector-header">
+                            <h4>Select Columns</h4>
+                            <button
+                                className="close-popup-btn"
+                                onClick={() => setShowColumnSelector(false)}
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </div>
+                        <div className="column-selector-content">
+                            <p className="column-selector-note">Select columns to display</p>
+
+                            {/* Select All option */}
+                            <div className="select-all-container">
+                                <label className="select-all-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={areAllColumnsSelected()}
+                                        onChange={(e) => toggleAllColumns(e.target.checked)}
+                                    />
+                                    <span className="select-all-text">Select All</span>
+                                </label>
+                            </div>
+
+                            <div className="column-checkbox-container">
+                                {availableColumns.map(column => (
+                                    <div className="column-checkbox-item" key={column.id}>
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={showColumns.includes(column.id)}
+                                                disabled={column.id === 'action' || column.id === 'nr'}
+                                                onChange={() => toggleColumn(column.id)}
+                                            />
+                                            <span>{column.title}</span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="column-selector-footer">
+                                <p>{showColumns.length - 1} columns selected</p> {/* Subtract 1 to exclude 'action' */}
+                                <button
+                                    className="apply-columns-btn"
+                                    onClick={() => setShowColumnSelector(false)}
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="table-wrapper-jra" ref={tableWrapperRef}>
+                    <table className="table-borders-ibra">
+                        <thead className="ibra-table-header">
+                            <tr>
+                                {displayColumns.map((columnId, index) => {
+                                    const column = availableColumns.find(col => col.id === columnId);
+                                    if (column) {
+                                        return (
+                                            <th key={index} className={column.className}>
+                                                {column.icon ? (
+                                                    <FontAwesomeIcon icon={column.icon} />
+                                                ) : (
+                                                    <>
+                                                        <div>{column.title.split('(')[0].trim()}</div>
+                                                        {column.title.includes('(') && (
+                                                            <div className="column-subtitle">
+                                                                ({column.title.split('(')[1].split(')')[0]})
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </th>
+                                        );
+                                    }
+                                    return <th key={index} className="ibraCent ibraBlank"></th>;
+                                })}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {formData.jra.map((row, rowIndex) => {
+                                const rowCount = row.jraBody.length;
+
+                                return (
+                                    <React.Fragment key={row.id}>
+                                        {row.jraBody.map((body, bodyIdx) => (
+                                            <tr
+                                                key={`${row.id}-${body.idBody}`}
+                                                onMouseEnter={() => setHoveredBody({ rowId: row.id, bodyIdx })}
+                                                onMouseLeave={() => setHoveredBody({ rowId: null, bodyIdx: null })}
+                                                className="jra-body-row"
+                                            >
+                                                {displayColumns.map((colId, colIdx) => {
+                                                    if ((colId === 'nr' || colId === 'main') && bodyIdx > 0) {
+                                                        return null;
+                                                    }
+
+                                                    const meta = availableColumns.find(c => c.id === colId);
+                                                    const cls = meta?.className || "";
+
+                                                    // ─────── GROUP-LEVEL ───────
+                                                    if (colId === "nr" && bodyIdx === 0) {
+                                                        return (
+                                                            <td key={colIdx} rowSpan={rowCount} className={cls}>
+                                                                {row.nr}
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    if (colId === "main") {
+                                                        return (
+                                                            <td
+                                                                key={colIdx}
+                                                                rowSpan={rowCount}
+                                                                className={[cls, 'main-cell'].join(' ')}
+                                                            >
+                                                                <div className="main-cell-content">
+                                                                    <textarea
+                                                                        className="aim-textarea-risk-jra"
+                                                                        rows={1}
+                                                                        value={row.main}
+                                                                        onChange={e => {
+                                                                            const upd = [...formData.jra];
+                                                                            upd[rowIndex].main = e.target.value;
+                                                                            updateRows(upd);
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="insert-mainrow-button"
+                                                                    title="Add Main Step Here"
+                                                                    onClick={() => insertMainRow(rowIndex)}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faPlus} />
+                                                                </button>
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    if (colId === "action") {
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                <button
+                                                                    className="remove-row-button font-fam"
+                                                                    title={
+                                                                        row.jraBody.length > 1
+                                                                            ? "Delete Sub-step"
+                                                                            : "Delete Row"
+                                                                    }
+                                                                    onClick={() =>
+                                                                        removeBodyRow(row.id, body.idBody)
+                                                                    }
+                                                                >
+                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                </button>
+                                                            </td>
+                                                        );
+                                                    }
+
+
+                                                    // ─────── BODY-LEVEL ───────
+
+                                                    // 3. Hazard
+                                                    if (colId === "hazards") {
+                                                        return (
+                                                            <td key={colIdx} className="hazard-cell">
+                                                                {body.hazards.map((hObj, hIdx) => (
+                                                                    <div className="ibra-popup-page-select-container" key={hIdx}>
+                                                                        <select
+                                                                            className="ibra-popup-page-select"
+                                                                            value={hObj.hazard}
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].hazards[hIdx].hazard = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select Hazard</option>
+                                                                            {/* … */}
+                                                                        </select>
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* the floating “+” icon */}
+                                                                <button
+                                                                    type="button"
+                                                                    className="insert-subrow-button"
+                                                                    onClick={() => insertBodyRow(row.id, bodyIdx + 1)}
+                                                                    title="Add sub-step here"
+                                                                >
+                                                                    <FontAwesomeIcon icon={faPlus} />
+                                                                </button>
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // 4. Unwanted Event
+                                                    if (colId === "UE") {
+                                                        return (
+                                                            <td key={colIdx} className={cls} >
+                                                                {body.UE.map((uObj, uIdx) => (
+                                                                    <div className="ibra-popup-page-select-container">
+                                                                        <select
+                                                                            key={uIdx}
+                                                                            className="ibra-popup-page-select"
+                                                                            value={uObj.ue}
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].UE[uIdx].ue = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select Event</option>
+                                                                            <option value="Fire">Fire</option>
+                                                                            <option value="Explosion">Explosion</option>
+                                                                            <option value="Leak">Leak</option>
+                                                                            <option value="Equipment Failure">Equipment Failure</option>
+                                                                        </select>
+                                                                    </div>
+                                                                ))}
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // 6. Sub Task Steps
+                                                    if (colId === "sub") {
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                {body.sub.map((sObj, sIdx) => (
+                                                                    <textarea
+                                                                        key={sIdx}
+                                                                        className="aim-textarea-risk-jra"
+                                                                        rows={1}
+                                                                        value={sObj.task}
+                                                                        style={{
+                                                                            display: "block",       // ← force it onto its own line
+                                                                            width: "100%",        // ← optional: make it fill cell width
+                                                                            marginBottom: "5px"
+                                                                        }}
+                                                                        onChange={e => {
+                                                                            const upd = [...formData.jra];
+                                                                            upd[rowIndex].jraBody[bodyIdx].sub[sIdx].task = e.target.value;
+                                                                            updateRows(upd);
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // 7. Task Execution
+                                                    if (colId === "taskExecution") {
+                                                        const TE = body.taskExecution[0];
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                {body.taskExecution.map((teObj, teIdx) => (
+                                                                    <div className="ibra-popup-page-select-container">
+                                                                        <select
+                                                                            key={teIdx}
+                                                                            value={teObj.R}
+                                                                            style={{ marginBottom: "5px" }}
+                                                                            className="ibra-popup-page-select"
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].taskExecution[0].R = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select R</option>
+                                                                            <option value="PH1">PH 1</option>
+                                                                            {/* …R options… */}
+                                                                        </select>
+                                                                    </div>
+                                                                ))}
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // 8. Controls
+                                                    if (colId === "controls") {
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                {body.controls.map((cObj, cIdx) => (
+                                                                    <div className="control-with-icons" key={cIdx}>
+                                                                        <textarea
+                                                                        key={cIdx}
+                                                                        className="aim-textarea-risk-jra"
+                                                                        rows={1}
+                                                                        value={cObj.control}
+                                                                        style={{
+                                                                            display: "block",       // ← force it onto its own line
+                                                                            width: "100%",        // ← optional: make it fill cell width
+                                                                            marginBottom: "5px"
+                                                                        }}
+                                                                        onChange={e => {
+                                                                            const upd = [...formData.jra];
+                                                                            upd[rowIndex].jraBody[bodyIdx].controls[cIdx].control = e.target.value;
+                                                                            updateRows(upd);
+                                                                        }}
+                                                                        />
+
+                                                                        {/* magic sparkles */}
+                                                                        <FontAwesomeIcon
+                                                                            icon={faMagicWandSparkles}
+                                                                            className="control-icon magic-icon"
+                                                                            title="Do the magic"
+                                                                            onClick={() => {/* your “magic” logic */ }} />
+
+                                                                        {/* remove paired sub/control */}
+                                                                        <FontAwesomeIcon
+                                                                            icon={faTrash}
+                                                                            className="control-icon trash-icon"
+                                                                            title="Remove this control & sub-step"
+                                                                            onClick={() => removeSubControl(row.id, body.idBody, cIdx)}
+                                                                        />
+
+                                                                        {/* add new paired sub/control at end */}
+                                                                        <FontAwesomeIcon
+                                                                            icon={faCirclePlus}
+                                                                            className="control-icon plus-icon"
+                                                                            title="Add sub & control here"
+                                                                            onClick={() => insertSubControl(row.id, body.idBody)}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // 9. Notes
+                                                    if (colId === "notes") {
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                <textarea
+                                                                    className="aim-textarea-risk-jra"
+                                                                    rows={1}
+                                                                    value={body.notes}
+                                                                    onChange={e => {
+                                                                        const upd = [...formData.jra];
+                                                                        upd[rowIndex].jraBody[bodyIdx].notes = e.target.value;
+                                                                        updateRows(upd);
+                                                                    }}
+                                                                />
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    // else empty
+                                                    return <td key={colIdx} />;
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default JRATable;

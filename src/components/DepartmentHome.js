@@ -32,13 +32,14 @@ import {
     faHandsHelping,
     faDollarSign,
     faServer,
-    faUniversity
+    faUniversity, faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "./Notifications/TopBar";
 
 const DepartmentHome = () => {
     const [error, setError] = useState(null);
     const [deletePopup, setDeletePopup] = useState(false);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [departments, setDepartments] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
@@ -178,31 +179,42 @@ const DepartmentHome = () => {
     return (
         <div className="user-info-container">
             {deletePopup && (<DeparmentList closePopup={closeDelete} />)}
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-dept">Department Management</p>
-                </div>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-dept">Department Management</p>
+                    </div>
 
-                <div className="filter-fih">
-                    <div className="button-container-dept">
-                        <button className="but-um" onClick={openAdd}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
-                                <span className="button-text">Create Department</span>
-                            </div>
-                        </button>
-                    </div>
-                    <div className="button-container-dept-2">
-                        <button className="but-um" onClick={openDelete}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faTrash} className="button-icon" />
-                                <span className="button-text">Delete Department</span>
-                            </div>
-                        </button>
+                    <div className="filter-fih">
+                        <div className="button-container-dept">
+                            <button className="but-um" onClick={openAdd}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
+                                    <span className="button-text">Create Department</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div className="button-container-dept-2">
+                            <button className="but-um" onClick={openDelete}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faTrash} className="button-icon" />
+                                    <span className="button-text">Delete Department</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             <div className="main-box-user">
                 <div className="top-section-um">

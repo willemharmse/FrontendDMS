@@ -5,7 +5,7 @@ import "./PreviewPage.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "./Notifications/TopBar";
 
 const PreviewPage = () => {
@@ -16,6 +16,7 @@ const PreviewPage = () => {
     const { fileId } = useParams();
     const [fileUrl, setFileUrl] = useState("");
     const [iframeHeight, setIframeHeight] = useState("100%");
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     const navigate = useNavigate();
 
@@ -63,12 +64,23 @@ const PreviewPage = () => {
 
     return (
         <div className="pdf-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">Document Preview</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Document Preview</p>
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             <div className="main-box-preview-pdf">
                 <div className="top-section-um">

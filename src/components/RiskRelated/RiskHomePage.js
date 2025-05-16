@@ -4,14 +4,14 @@ import { jwtDecode } from "jwt-decode";
 import "./RiskHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHardHat, faListCheck, faNetworkWired } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "../Notifications/TopBar";
 
 const RiskHomePage = () => {
     const [role, setRole] = useState('');
     const navigate = useNavigate();
-
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -22,12 +22,23 @@ const RiskHomePage = () => {
 
     return (
         <div className="risk-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                    <p className="logo-text-um">Risk Management</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <p className="logo-text-um">Risk Management</p>
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             <div className="main-box-risk">
                 <div className="top-section-um">
@@ -39,30 +50,39 @@ const RiskHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-risk-home">
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/constructionRMS/Bowtie")}>
+                    <div className={`document-card-riks-all`} onClick={() => navigate("/FrontendDMS/constructionRMS/ControlManagement")}>
+                        <>
+                            <div className="icon-risk-all">
+                                <FontAwesomeIcon icon={faArrowsRotate} className={"icon-risk-all"} />
+                            </div>
+                            <h3 className="document-title-risk-home">Control Management</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/risk/JRA")}>
                         <>
                             <div className="icon-risk">
-                                <FontAwesomeIcon icon={faNetworkWired} className={"icon-risk"} />
+                                <FontAwesomeIcon icon={faHardHat} className={"icon-risk"} />
                             </div>
-                            <h3 className="document-title-risk-home">Bowtie</h3>
+                            <h3 className="document-title-risk-home">Create New Job Risk Assessment (JRA)</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("")}>
+                        <>
+                            <div className="icon-risk">
+                                <FontAwesomeIcon icon={faUserTie} className={"icon-risk"} />
+                            </div>
+                            <h3 className="document-title-risk-home">Create New Bowtie Risk Assessment (BTA)</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/risk/IBRA")}>
                         <>
                             <div className="icon-risk">
-                                <FontAwesomeIcon icon={faListCheck} className={"icon-risk"} />
+                                <FontAwesomeIcon icon={faExclamationTriangle} className={"icon-risk"} />
                             </div>
-                            <h3 className="document-title-risk-home">IBRA</h3>
+                            <h3 className="document-title-risk-home">Create New Issue Based Risk Assessment (IBRA)</h3>
                         </>
                     </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/constructionRMS/JRA")}>
-                        <>
-                            <div className="icon-risk">
-                                <FontAwesomeIcon icon={faHardHat} className={"icon-risk"} />
-                            </div>
-                            <h3 className="document-title-risk-home">JRA</h3>
-                        </>
-                    </div>
+
                 </div>
             </div>
             <ToastContainer />

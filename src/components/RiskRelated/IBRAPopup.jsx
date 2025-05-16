@@ -5,6 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrashAlt, faPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FunctionalOwnership from './RiskInfo/FunctionalOwnership';
+import RiskSource from './RiskInfo/RiskSource';
+import Hazard from './RiskInfo/Hazard';
 
 const IBRAPopup = ({ onClose, onSave, data }) => {
     // State for dropdown options
@@ -17,9 +20,37 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         'MA5': ['MA5-SUB1', 'MA5-SUB2', 'MA5-SUB3']
     });
     const [functionalOwners] = useState(['Owner1', 'Owner2', 'Owner3', 'Owner4', 'Owner5']);
-    const [likelihoodOptions] = useState(['Very Likely', 'Likely', 'Possible', 'Unlikely', 'Rare']);
+    const [likelihoodOptions] = useState(['1: Rare', '2. Unlikely', '3. Possible', '4. Likely', '5. Almost Certain']);
     const [maxRiskRankOptions] = useState(['1-3: Low', '4-6: Medium', '7-9: High']);
     const [riskSources] = useState(['Objects', 'Environment', 'PH1', 'PH2', 'PH3']);
+    const [helpFO, setHelpFO] = useState(false);
+    const [helpRS, setHelpRS] = useState(false);
+    const [helpHaz, setHelpHaz] = useState(false);
+    const [classNameRiskRank, setClassNameRiskRank] = useState('');
+
+    const openHelpFO = () => {
+        setHelpFO(true);
+    };
+
+    const closeHelpFO = () => {
+        setHelpFO(false);
+    };
+
+    const openHelpRS = () => {
+        setHelpRS(true);
+    }
+
+    const closeHelpRS = () => {
+        setHelpRS(false);
+    }
+
+    const openHelpHaz = () => {
+        setHelpHaz(true);
+    }
+
+    const closeHelpHaz = () => {
+        setHelpHaz(false);
+    }
 
     // State for selected values
     const [majorRisk, setMajorRisk] = useState('');
@@ -31,6 +62,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     const [selectedSubArea, setSelectedSubArea] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     const [selectedLikelihood, setSelectedLikelihood] = useState('');
+    const [selectedUE, setSelectedUE] = useState('');
     const [selectedMaxRiskRank, setSelectedMaxRiskRank] = useState('');
     const [riskSource, setRiskSource] = useState('');
     const [availableSubAreas, setAvailableSubAreas] = useState([]);
@@ -65,7 +97,13 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         { id: 7, label: 'R', value: '-' },
     ]);
 
-    const riskRankOptions = ['-', '1: Minor', '2: Low', '3: Moderate', '4: Major', '5: Severe'];
+    const riskRankOptions = ['-', '1: Ins', '2: Min', '3: Mod', '4: High', '5: Maj'];
+
+    const valid = () => {
+
+        return true;
+    };
+
 
     useEffect(() => {
         if (data) {
@@ -81,7 +119,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             setAdditionalComments(data.additional || '');
             setMaxConsequence(data.maxConsequence || '');
             setRiskSource(data.source || '');
-
+            setSelectedUE(data.UE || '');
             // Set hazard rows
             if (data.hazards && Array.isArray(data.hazards) && data.hazards.length) {
                 setHazardRows(
@@ -103,14 +141,15 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             }
 
             // Set risk rank rows
-            const riskRankFields = ['S', 'H', 'E', 'C', 'LR', 'M', 'R'];
-
-            const updatedRiskRanks = riskRankRows.map((row) => ({
-                ...row,
-                value: data[row.label.replace('&', '')] || '-',  // to handle 'L&R' as 'LR'
-            }));
-
-            setRiskRankRows(updatedRiskRanks);
+            setRiskRankRows([
+                { id: 1, label: 'S', value: data['S'] || '-' },
+                { id: 2, label: 'H', value: data['H'] || '-' },
+                { id: 3, label: 'E', value: data['E'] || '-' },
+                { id: 4, label: 'C', value: data['C'] || '-' },
+                { id: 5, label: 'L&R', value: data['LR'] || '-' }, // This is the fix!
+                { id: 6, label: 'M', value: data['M'] || '-' },
+                { id: 7, label: 'R', value: data['R'] || '-' },
+            ]);
 
             // Update available sub areas immediately if mainArea exists
             if (data.main) {
@@ -118,6 +157,61 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             }
         }
     }, [data]);
+
+    useEffect(() => {
+        if (selectedLikelihood && riskRankRows.length > 0) {
+            const maxRiskRank = riskRankRows.reduce((max, row) => {
+                const value = parseInt(row.value.split(':')[0]);
+                return isNaN(value) ? max : Math.max(max, value);
+            }, 0);
+
+            const maxLikelihood = parseInt(selectedLikelihood.split(':')[0]);
+
+            const riskMatrix = [
+                ['1 (L)', '3 (L)', '6 (M)', '10 (M)', '15 (S)'],
+                ['2 (L)', '5 (L)', '9 (M)', '14 (S)', '19 (S)'],
+                ['4 (L)', '8 (M)', '13 (S)', '18 (S)', '22 (H)'],
+                ['7 (M)', '12 (M)', '17 (S)', '21 (H)', '24 (H)'],
+                ['11 (M)', '16 (S)', '20 (S)', '23 (H)', '25 (H)'],
+            ];
+
+            // Adjust indices because matrix is 0-indexed
+            const rowIdx = maxLikelihood - 1;
+            const colIdx = maxRiskRank - 1;
+
+            let matrixValue = null;
+            if (
+                rowIdx >= 0 && rowIdx < riskMatrix.length &&
+                colIdx >= 0 && colIdx < riskMatrix[0].length
+            ) {
+                matrixValue = riskMatrix[rowIdx][colIdx];
+            }
+
+            setSelectedMaxRiskRank(matrixValue);
+
+            const numericPart = matrixValue ? parseInt(matrixValue.split(' ')[0]) : null;
+
+            if (numericPart >= 1 && numericPart <= 5) {
+                setClassNameRiskRank('ibra-popup-page-input-green');
+            }
+            else if (numericPart >= 6 && numericPart <= 12) {
+                setClassNameRiskRank('ibra-popup-page-input-yellow');
+            }
+            else if (numericPart >= 13 && numericPart <= 20) {
+                setClassNameRiskRank('ibra-popup-page-input-orange');
+            }
+            else if (numericPart >= 21) {
+                setClassNameRiskRank('ibra-popup-page-input-red');
+            }
+
+            if (maxRiskRank >= 3) {
+                setPriorityEvent('Yes');
+            }
+            else if (maxRiskRank < 3 && maxRiskRank > 0) {
+                setPriorityEvent('No');
+            }
+        }
+    }, [selectedLikelihood, riskRankRows]);
 
 
     // Update available sub areas when main area changes
@@ -228,6 +322,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             odds: selectedLikelihood,
             riskRank: selectedMaxRiskRank,
             majorRisk,
+            UE: selectedUE,
             priority: priorityEvent,
             maxConsequence: maxConsequence,
             additional: additionalComments,
@@ -236,7 +331,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             hazards: hazardRows.map(row => row.value),  // Collecting all hazard row values
             controls: controlRows.map(row => row.value), // Collecting all control row values
             ...riskRankRows.reduce((acc, row) => {
-                acc[row.label] = row.value;  // Adding risk rank values dynamically
+                acc[row.label.replace('&', '')] = row.value;  // Adding risk rank values dynamically
                 return acc;
             }, {}),
         };
@@ -315,7 +410,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-half">
                                         <div className="ibra-popup-page-component-wrapper">
                                             <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                                <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Functional Ownership <span className="ibra-popup-page-required">*</span></label>
+                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpFO} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Functional Ownership <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
                                                         className="ibra-popup-page-select"
@@ -336,7 +431,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-half">
                                         <div className="ibra-popup-page-component-wrapper">
                                             <div className={`ibra-popup-page-form-group ${errors.riskSource ? "error-upload-required-up" : ""}`}>
-                                                <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Risk Source <span className="ibra-popup-page-required">*</span></label>
+                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Risk Source <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
                                                         value={riskSource}
@@ -360,7 +455,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                         <div className="ibra-popup-page-column-half">
                                             <div className="ibra-popup-page-component-wrapper">
                                                 <div className={`ibra-popup-page-form-group ${errors.hazards ? "error-upload-required-up" : ""}`}>
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Hazard <span className="ibra-popup-page-required">*</span></label>
+                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpHaz} style={{ cursor: 'pointer' }} />Hazard <span className="ibra-popup-page-required">*</span></label>
                                                     <div className="ibra-popup-hazard-table-container">
                                                         <table className="ibra-popup-page-table">
                                                             <tbody>
@@ -404,7 +499,24 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                             <div className="ibra-popup-page-component-wrapper-circle">
                                                 <div className="ibra-popup-hazard-circle-container">
                                                     <div className="ibra-popup-hazard-circle">
-                                                        Unwanted Event<br /> <br />{data.UE}
+                                                        {/* 1) The heading */}
+                                                        <h3 className="ibra-popup-hazard-title">Unwanted Event</h3>
+
+                                                        {/* 2) The dropdown immediately after */}
+                                                        <select
+                                                            className="ibra-popup-dropdown"
+                                                            value={selectedUE}
+                                                            onChange={e => setSelectedUE(e.target.value)}
+                                                        >
+                                                            <option value="">Select Unwanted Event</option>
+                                                            <option value="Spill">Spill</option>
+                                                            <option value="Leak">Leak</option>
+                                                            <option value="Overload">Overload</option>
+                                                            <option value="test">PH 1</option>
+                                                            <option value="testw">PH 2</option>
+                                                            <option value="teste">PH 3</option>
+                                                            {/* …your real list here… */}
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>
@@ -542,20 +654,12 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                     <div className="ibra-popup-page-component-wrapper">
                                                         <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
                                                             <label>  <FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Max Risk Rank <span className="ibra-popup-page-required">*</span></label>
-                                                            <div className="ibra-popup-page-select-container">
-                                                                <select
-                                                                    className="ibra-popup-page-select"
-                                                                    value={selectedMaxRiskRank}
-                                                                    onChange={(e) => setSelectedMaxRiskRank(e.target.value)}
-                                                                >
-                                                                    <option value="">Select Max Risk Rank</option>
-                                                                    {maxRiskRankOptions.map((option, index) => (
-                                                                        <option key={index} value={option}>
-                                                                            {option}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
+                                                            <input
+                                                                className={`ibra-popup-page-input ${classNameRiskRank}`}
+                                                                value={selectedMaxRiskRank}
+                                                                type='text'
+                                                                readOnly
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -563,17 +667,12 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                             <div className="ibra-popup-page-component-wrapper">
                                                 <div className="ibra-popup-page-form-group">
                                                     <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Priority Unwanted Event <span className="ibra-popup-page-required">*</span></label>
-                                                    <div className="ibra-popup-page-select-container">
-                                                        <select
-                                                            className="ibra-popup-page-select"
-                                                            value={priorityEvent}
-                                                            onChange={(e) => setPriorityEvent(e.target.value)}
-                                                        >
-                                                            <option value="">Select Option</option>
-                                                            <option value="Yes">Yes</option>
-                                                            <option value="No">No</option>
-                                                        </select>
-                                                    </div>
+                                                    <input
+                                                        className={`ibra-popup-page-input`}
+                                                        value={priorityEvent}
+                                                        type='text'
+                                                        readOnly
+                                                    />
                                                 </div>
                                             </div>
 
@@ -626,6 +725,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                             <button
                                 className="ibra-popup-page-upload-button"
                                 onClick={handleSubmit}
+                                disabled={!valid()}
                             >
                                 {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Submit'}
                             </button>
@@ -633,6 +733,9 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                     </div>
                 </div>
             </div>
+            {helpFO && (<FunctionalOwnership setClose={closeHelpFO} />)}
+            {helpRS && (<RiskSource setClose={closeHelpRS} />)}
+            {helpHaz && (<Hazard setClose={closeHelpHaz} />)}
             <ToastContainer />
         </div>
     );

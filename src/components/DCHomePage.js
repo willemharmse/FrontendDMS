@@ -4,13 +4,14 @@ import { jwtDecode } from "jwt-decode";
 import "./DCHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faScaleBalanced, faCertificate, faListOl } from '@fortawesome/free-solid-svg-icons';
+import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "./Notifications/TopBar";
 
 const DCHomePage = () => {
     const [role, setRole] = useState('');
     const navigate = useNavigate();
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -22,13 +23,23 @@ const DCHomePage = () => {
 
     return (
         <div className="dc-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                    <p className="logo-text-um">Document Development</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Document Development</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
             <div className="main-box-dc">
                 <div className="top-section-um">
                     {/* This div creates the space in the middle */}

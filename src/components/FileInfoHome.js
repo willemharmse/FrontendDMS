@@ -6,7 +6,7 @@ import "./FileInfoHome.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faChevronLeft, faChevronRight, faArrowCircleRight, faArrowsRotate, faClipboardCheck, faBookOpen, faBook, faFileAlt, faHardHat, faScaleBalanced, faDiagramProject, faListCheck, faListOl, faTriangleExclamation, faFileSignature, faCertificate, faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import BatchUpload from "./FileInfo/BatchUpload";
 import TopBar from "./Notifications/TopBar";
@@ -26,6 +26,7 @@ const FileInfoHome = () => {
     const [batch, setBatch] = useState(false);
     const [reset, setReset] = useState(false);
     const navigate = useNavigate();
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     const clearSearch = () => {
         setSearchQuery("");
@@ -65,18 +66,23 @@ const FileInfoHome = () => {
         }
     }, [navigate]);
 
-    const imageMap = {
-        "All Document": "All.png",
-        Audit: "audit.png",
-        Guideline: "guide.png",
-        MCOP: "guide.png",
-        Policy: "policy.png",
-        Procedure: "procedure.png",
-        Standard: "standard.png",
-    };
+    const iconMap = {
+        "All Document": faArrowsRotate,
+        Audit: faClipboardCheck,
+        Guideline: faBookOpen,
+        "DMRE MCOP Guideline": faBook,
+        "Industry Document": faFileAlt,
+        MCOP: faHardHat,
+        Policy: faScaleBalanced,
+        Procedure: faListOl,
+        "Risk Assessment": faTriangleExclamation,
+        "Special Instruction": faFileSignature,
+        Standard: faCertificate,
+        Training: faChalkboardTeacher,
+    }
 
-    const image = (type) => {
-        return imageMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
+    const icon = (type) => {
+        return iconMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
     };
 
     const fetchCount = async () => {
@@ -131,24 +137,35 @@ const FileInfoHome = () => {
         <div className="user-info-container">
             {upload && (<UploadPopup onClose={closeUpload} />)}
             {batch && (<BatchUpload onClose={closeBatch} />)}
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">Document Management</p>
-                </div>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">Document Management</p>
+                    </div>
 
-                <div className="filter-fih">
-                    <p className="filter-text-um">Upload</p>
-                    <div className="button-container-fih">
-                        <button className="but-um" onClick={openUpload}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                                <span className="button-text">Single Document</span>
-                            </div>
-                        </button>
+                    <div className="filter-fih">
+                        <p className="filter-text-um">Upload</p>
+                        <div className="button-container-fih">
+                            <button className="but-um" onClick={openUpload}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                    <span className="button-text">Single Document</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
 
             <div className="main-box-user">
                 <div className="top-section-um">
@@ -178,7 +195,9 @@ const FileInfoHome = () => {
                         <div key={index} className={`${doc._id === "All Document" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/documentManage/${doc._id}`)}>
                             {doc && (
                                 <>
-                                    <div className="document-icon-fi-home"><img src={image(doc._id)} className={`${doc._id === "All Document" ? "icon-fi-home-all" : "icon-fi-home"}`} /></div>
+                                    <div className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`}>
+                                        <FontAwesomeIcon icon={iconMap[doc._id]} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
+                                    </div>
                                     <h3 className="document-title-fi-home">{doc._id === "Policy" ? "Policie" : doc._id}s</h3>
                                     <p className="document-info-fi-home">Documents: {doc.totalCount}</p>
                                     <p className="document-info-fi-home">Reviews Overdue: {doc.overdueCount}</p>

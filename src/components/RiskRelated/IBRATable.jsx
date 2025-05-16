@@ -2,21 +2,32 @@ import React, { useEffect, useState, useRef } from "react";
 import './IBRATable.css';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
+import UnwantedEvent from "./RiskInfo/UnwantedEvent";
+import { v4 as uuidv4 } from 'uuid';
 
-const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
+const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow }) => {
     const ibraBoxRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
     const [selectedRowData, setSelectedRowData] = useState(null);
+    const [helpUE, setHelpUE] = useState(false);
+
+    const openHelpUE = () => {
+        setHelpUE(true);
+    }
+
+    const closeHelpUE = () => {
+        setHelpUE(false);
+    }
 
     const closePopup = () => {
         setIbraPopup(false);
     }
 
     const availableColumns = [
-        { id: "nr", title: "Ref Nr.", className: "ibraCent ibraNr", icon: null },
+        { id: "nr", title: "Nr.", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Area", className: "ibraCent ibraMain", icon: null },
         { id: "sub", title: "Sub Area", className: "ibraCent ibraSub", icon: null },
         { id: "hazards", title: "Hazard", className: "ibraCent ibraPrev", icon: null },
@@ -40,6 +51,53 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
         { id: "additional", title: "Additional Comments", className: "ibraCent ibraDeadline", icon: null },
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
     ];
+
+    useEffect(() => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        const mouseDownHandler = (e) => {
+            isDown = true;
+            wrapper.classList.add('grabbing');
+            startX = e.pageX - wrapper.offsetLeft;
+            scrollLeft = wrapper.scrollLeft;
+        };
+
+        const mouseLeaveHandler = () => {
+            isDown = false;
+            wrapper.classList.remove('grabbing');
+        };
+
+        const mouseUpHandler = () => {
+            isDown = false;
+            wrapper.classList.remove('grabbing');
+        };
+
+        const mouseMoveHandler = (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - wrapper.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            wrapper.scrollLeft = scrollLeft - walk;
+        };
+
+        wrapper.addEventListener('mousedown', mouseDownHandler);
+        wrapper.addEventListener('mouseleave', mouseLeaveHandler);
+        wrapper.addEventListener('mouseup', mouseUpHandler);
+        wrapper.addEventListener('mousemove', mouseMoveHandler);
+
+        return () => {
+            wrapper.removeEventListener('mousedown', mouseDownHandler);
+            wrapper.removeEventListener('mouseleave', mouseLeaveHandler);
+            wrapper.removeEventListener('mouseup', mouseUpHandler);
+            wrapper.removeEventListener('mousemove', mouseMoveHandler);
+        };
+    }, []);
+
 
     const handleRowClick = (row, rowIndex) => {
         if (!row.UE || row.UE === "") {
@@ -107,10 +165,28 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
         };
     }, []);
 
+    // inside your IBRATable component, alongside removeRow/addRow/etc
+    const insertRowAt = (insertIndex) => {
+        // make a shallow copy
+        const newRows = [...rows];
+
+        // build a brand-new “blank” row with the same keys as an existing rows
+        const newRow = {
+            id: uuidv4(), nr: rows.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
+            hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
+            R: "-", source: "", majorRisk: "", priority: "", possible: "", UE: "", additional: "", maxConsequence: ""
+        }
+
+        // splice in at the desired index
+        newRows.splice(insertIndex, 0, newRow);
+        updateRow(newRows);
+    };
+
+
     const toggleColumn = (columnId) => {
         setShowColumns(prev => {
             if (prev.includes(columnId)) {
-                if (columnId === 'action') return prev;
+                if (columnId === 'action' || columnId === 'nr') return prev;
                 return prev.filter(id => id !== columnId);
             } else {
                 const actionIndex = prev.indexOf('action');
@@ -123,6 +199,31 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
         });
     };
 
+    // New function to handle "Select All" functionality
+    const toggleAllColumns = (selectAll) => {
+        if (selectAll) {
+            // Select all columns except 'action' (which is added separately)
+            const allColumns = availableColumns
+                .map(col => col.id)
+                .filter(id => id !== 'action');
+            setShowColumns([...allColumns, 'action']);
+        } else {
+            // Keep only required columns
+            setShowColumns(['nr', 'action']);
+        }
+    };
+
+    // Check if all selectable columns are selected
+    const areAllColumnsSelected = () => {
+        const selectableColumns = availableColumns
+            .filter(col => col.id !== 'action')
+            .map(col => col.id);
+
+        return selectableColumns.every(colId =>
+            showColumns.includes(colId) || colId === 'nr'
+        );
+    };
+
     const displayColumns = getDisplayColumns();
 
     return (
@@ -132,15 +233,23 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                     className="top-left-button-refs"
                     title="Information"
                 >
-                    <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
+                    <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpUE} style={{ cursor: 'pointer' }} className="icon-um-search" />
                 </button>
                 <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA) <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"
-                    title="Configure Columns"
+                    title="Show / Hide Columns"
                     onClick={() => setShowColumnSelector(!showColumnSelector)}
                 >
                     <FontAwesomeIcon icon={faTableColumns} className="icon-um-search" />
+                </button>
+
+                <button
+                    className="top-right-button-ibra2"
+                    title="Generate IBRA"
+                    onClick={generate}
+                >
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
 
                 {showColumnSelector && (
@@ -156,6 +265,19 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                         </div>
                         <div className="column-selector-content">
                             <p className="column-selector-note">Select columns to display</p>
+
+                            {/* Select All option */}
+                            <div className="select-all-container">
+                                <label className="select-all-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={areAllColumnsSelected()}
+                                        onChange={(e) => toggleAllColumns(e.target.checked)}
+                                    />
+                                    <span className="select-all-text">Select All</span>
+                                </label>
+                            </div>
+
                             <div className="column-checkbox-container">
                                 {availableColumns.map(column => (
                                     <div className="column-checkbox-item" key={column.id}>
@@ -172,7 +294,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                                 ))}
                             </div>
                             <div className="column-selector-footer">
-                                <p>{showColumns.length} columns selected</p>
+                                <p>{showColumns.length - 1} columns selected</p> {/* Subtract 1 to exclude 'action' */}
                                 <button
                                     className="apply-columns-btn"
                                     onClick={() => setShowColumnSelector(false)}
@@ -212,43 +334,50 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                                         const colClass = columnMeta?.className || '';
                                         const cellData = row[colId];
 
-                                        if (colId === 'action') {
+                                        if (colId === 'nr') {
                                             return (
-                                                <td key={idx} className={colClass}>
-                                                    <button
-                                                        className="remove-row-button font-fam"
-                                                        title="Delete Row"
-                                                        onClick={(e) => {
-                                                            console.log('Deleting row:', row.id);
-                                                            removeRow(row.id);
+                                                <td
+                                                    key={idx}
+                                                    className={colClass}
+                                                    style={{ alignItems: 'center', gap: '4px' }}
+                                                >
+                                                    {/* the existing row number */}
+                                                    <span>{cellData}</span>
+
+                                                    {/* your “More info” arrow */}
+                                                    <FontAwesomeIcon
+                                                        icon={faArrowUpRightFromSquare}
+                                                        className="ue-popup-icon"
+                                                        title="Evaluate Unwanted Event"
+                                                        onClick={() => {
+                                                            setSelectedRowData(row);
+                                                            setIbraPopup(true);
                                                         }}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                    </button>
+                                                    />
                                                 </td>
                                             );
                                         }
 
-                                        // Handle UE column: render dropdown
-                                        if (colId === 'UE') {
+                                        if (colId === 'action') {
                                             return (
                                                 <td key={idx} className={colClass}>
-                                                    <select
-                                                        className="table-control font-fam"
-                                                        value={cellData}
-                                                        onClick={(e) => e.stopPropagation()} // prevent popup open
-                                                        onChange={(e) => {
-                                                            const updatedRows = [...rows];
-                                                            updatedRows[rowIndex][colId] = e.target.value;
-                                                            updateRows(updatedRows);
-                                                        }}
-                                                    >
-                                                        <option value="">Select Event</option>
-                                                        <option value="Fire">Fire</option>
-                                                        <option value="Explosion">Explosion</option>
-                                                        <option value="Leak">Leak</option>
-                                                        <option value="Equipment Failure">Equipment Failure</option>
-                                                    </select>
+                                                    <div className="ibra-action-buttons">
+                                                        <button
+                                                            className="ibra-remove-row-button"
+                                                            title="Delete row"
+                                                            onClick={() => removeRow(row.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+
+                                                        <button
+                                                            className="ibra-add-row-button"
+                                                            title="Insert row below"
+                                                            onClick={() => insertRowAt(rowIndex + 1)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlusCircle} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             );
                                         }
@@ -258,7 +387,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                                             <td
                                                 key={idx}
                                                 className={colClass}
-                                                onClick={() => handleRowClick(row, rowIndex)}
                                             >
                                                 {Array.isArray(cellData)
                                                     ? (
@@ -283,6 +411,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow }) => {
                     <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                 </button>
             </div>
+            {helpUE && (<UnwantedEvent setClose={closeHelpUE} />)}
             {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={updateRows} />)}
         </div>
     );

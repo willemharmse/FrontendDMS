@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsRotate, faBook, faBookOpen, faCertificate, faChalkboardTeacher, faClipboardCheck, faFileAlt, faFileSignature, faHardHat, faHome, faListOl, faScaleBalanced, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import FilterFileName from "./FileInfo/FilterFileName";
 import "./FileInfo.css";
@@ -26,6 +26,7 @@ const FileInfo = () => {
   const { type } = useParams();
   const [files, setFiles] = useState([]); // State to hold the file data
   const [disciplines, setDisciplines] = useState([]);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [docTypes, setDocTypes] = useState([]);
   const [docStatus, setDocStatus] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -366,18 +367,20 @@ const FileInfo = () => {
 
   };
 
-  const imageMap = {
-    "All Document": "All.png",
-    Audit: "audit.png",
-    Guideline: "guide.png",
-    Policy: "policy.png",
-    Procedure: "procedure.png",
-    Standard: "standard.png",
-  };
-
-  const image = (type) => {
-    return imageMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
-  };
+  const iconMap = {
+    "All Document": faArrowsRotate,
+    Audit: faClipboardCheck,
+    Guideline: faBookOpen,
+    "DMRE MCOP Guideline": faBook,
+    "Industry Document": faFileAlt,
+    MCOP: faHardHat,
+    Policy: faScaleBalanced,
+    Procedure: faListOl,
+    "Risk Assessment": faTriangleExclamation,
+    "Special Instruction": faFileSignature,
+    Standard: faCertificate,
+    Training: faChalkboardTeacher,
+  }
 
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
@@ -474,42 +477,53 @@ const FileInfo = () => {
       {upload && (<UploadPopup onClose={closeUpload} />)}
       {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} fileID={updateID} />)}
 
-      <div className="sidebar-um">
-        <div className="sidebar-logo-um">
-          <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-          <p className="logo-text-um">Document Management</p>
-        </div>
-
-        <div className="filter-dm-fi">
-          <p className="filter-text-dm-fi">Filter</p>
-          <div className="button-container-dm-fi">
-            {(type === "All Document" || isTrashView) && (
-              <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
-            )}
-            <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
-            {adminRoles.includes(role) && (
-              <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
-            )}
+      {isSidebarVisible && (
+        <div className="sidebar-um">
+          <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+            <FontAwesomeIcon icon={faChevronLeft} />
           </div>
-        </div>
-        {!isTrashView && (
-          <div className="filter-dm-fi-2">
-            <p className="filter-text-dm-fi">Upload</p>
+          <div className="sidebar-logo-um">
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <p className="logo-text-um">Document Management</p>
+          </div>
+
+          <div className="filter-dm-fi">
+            <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
-              <button className="but-dm-fi" onClick={openUpload}>
-                <div className="button-content">
-                  <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                  <span className="button-text">Single Document</span>
-                </div>
-              </button>
+              {(type === "All Document" || isTrashView) && (
+                <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
+              )}
+              <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
+              {adminRoles.includes(role) && (
+                <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
+              )}
             </div>
           </div>
-        )}
-        <div className="sidebar-logo-dm-fi">
-          <img src={isTrashView ? `${process.env.PUBLIC_URL}/trash.png` : `${process.env.PUBLIC_URL}/${image(type)}`} alt="Logo" className="logo-img-dm-fi" />
-          <p className="logo-text-dm-fi">{isTrashView ? `Trashed Files` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
+          {!isTrashView && (
+            <div className="filter-dm-fi-2">
+              <p className="filter-text-dm-fi">Upload</p>
+              <div className="button-container-dm-fi">
+                <button className="but-dm-fi" onClick={openUpload}>
+                  <div className="button-content">
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <span className="button-text">Single Document</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="sidebar-logo-dm-fi">
+            <FontAwesomeIcon icon={isTrashView ? faTrash : iconMap[type]} alt="Logo" className="logo-img-dept-view" />
+            <p className="logo-text-dm-fi">{isTrashView ? `Trashed Files` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {!isSidebarVisible && (
+        <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+          <FontAwesomeIcon icon={faChevronRight} />
+        </div>
+      )}
 
       <div className="main-box-file-info">
         <div className="top-section-um">

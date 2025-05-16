@@ -111,6 +111,27 @@
     box-shadow: 0 2px 4px rgba(180, 161, 161, 0.1);
 }
 
+.all-icon-fi-home {
+    width: 160px;
+    height: 160px;
+    background-color: white !important;
+    border-radius: 50%;
+    /* Ensures a perfect circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #002060 !important;
+    overflow: hidden;
+    /* Prevents overflow */
+}
+
+.all-icon-fi-home svg {
+    width: 60%;
+    /* Adjust icon size relative to the circle */
+    height: 60%;
+}
+
+
 .document-card-fi-home-all {
     background: linear-gradient(90deg, #001339 0%, #002060 100%);
     color: white;

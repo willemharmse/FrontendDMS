@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'; // Import useLocation for gettin
 import { jwtDecode } from 'jwt-decode'; // You'll need to install jwt-decode: npm install jwt-decode
 import './NewLogin.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock, faUser, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faUser, faEye, faEyeSlash, faWifi } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import CryptoJS from "crypto-js";
 import AccountLockOut from './AccountLockout/AccountLockOut';
+import { ToastContainer, toast } from 'react-toastify';
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -59,9 +60,75 @@ const NewLogin = () => {
         }
     }, [navigate, secret]);
 
+    useEffect(() => {
+        const showOfflineToast = () => {
+            toast.dismiss('network-error');
+            toast.info("No Internet Connection", {
+                toastId: 'network-error',
+                autoClose: false,
+                closeButton: false,
+                position: "top-right",
+                hideProgressBar: true,
+                closeOnClick: false,
+                pauseOnHover: false,
+                className: 'toast-network-wrapper',      // 🟡 outer wrapper (Toast)
+                bodyClassName: 'toast-network-body',
+                icon: <FontAwesomeIcon icon={faWifi} size="lg" />,
+            });
+        };
+
+        const hideOfflineToast = () => {
+            toast.dismiss('network-error');
+        };
+
+        if (!navigator.onLine) {
+            showOfflineToast();
+        }
+
+        window.addEventListener('offline', showOfflineToast);
+        window.addEventListener('online', hideOfflineToast);
+
+        return () => {
+            window.removeEventListener('offline', showOfflineToast);
+            window.removeEventListener('online', hideOfflineToast);
+        };
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (!navigator.onLine) {
+            const toastContainer = document.querySelector('.Toastify__toast-container');
+            if (toastContainer) {
+                toastContainer.classList.add('toast-offline-alert');
+                toastContainer.classList.add('margin-remover-login');
+
+                // Remove the effect after animation finishes
+                setTimeout(() => {
+                    toastContainer.classList.remove('toast-offline-alert');
+                    toastContainer.classList.remove('margin-remover-login');
+                }, 1000);
+            }
+
+            toast.info("No Internet Connection", {
+                toastId: 'network-error',
+                autoClose: false,
+                closeButton: false,
+                position: "top-right",
+                hideProgressBar: true,
+                closeOnClick: false,
+                pauseOnHover: false,
+                className: 'toast-network-wrapper',      // 🟡 outer wrapper (Toast)
+                bodyClassName: 'toast-network-body',
+                icon:
+                    <FontAwesomeIcon icon={faWifi} size="lg" />
+
+            });
+
+            return; // Prevent further execution
+        }
+
         setLoading(true);
 
         try {
@@ -114,8 +181,12 @@ const NewLogin = () => {
                 throw new Error('Invalid login attempt.');
             }
         } catch (err) {
-            setError(err.message);
-            setTimeout(() => setError(''), 3000);
+            if (err.name === 'TypeError' && err.message.includes('fetch')) {
+
+            } else {
+                setError(err.message);
+                setTimeout(() => setError(''), 3000);
+            }
         } finally {
             setTimeout(() => {
                 setLoading(false);
@@ -176,7 +247,7 @@ const NewLogin = () => {
                             />
                             Remember Me
                         </label>
-                        <a onClick={() => navigate("/FrontendDMS/forgot")} className="nl-forgot-password">Forgot Password?</a>
+                        <a onClick={() => navigate("/forgot")} className="nl-forgot-password">Forgot Password?</a>
                     </div>
 
                     <div className="nl-login-error">{error}</div>
@@ -193,6 +264,7 @@ const NewLogin = () => {
             </div>
 
             {locked && (<AccountLockOut toggleLocked={toggleLocked} />)}
+            <ToastContainer />
         </div>
     );
 };

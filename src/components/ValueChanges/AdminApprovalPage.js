@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import "./AdminApprovalPage.css";
 
 const AdminApprovalPage = () => {
     const [drafts, setDrafts] = useState([]);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
     const [role, setRole] = useState('');
@@ -209,13 +210,23 @@ const AdminApprovalPage = () => {
 
     return (
         <div className="admin-draft-info-container">
-            <div className="sidebar-um">
-                <div className="sidebar-logo-um">
-                    <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-                    <p className="logo-text-um">User Suggestions</p>
+            {isSidebarVisible && (
+                <div className="sidebar-um">
+                    <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                    </div>
+                    <div className="sidebar-logo-um">
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <p className="logo-text-um">User Suggestions</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
+            {!isSidebarVisible && (
+                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+            )}
             <div className="main-box-gen-info">
                 <div className="top-section-um">
 

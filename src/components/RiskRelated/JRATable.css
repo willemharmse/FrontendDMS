@@ -1,0 +1,535 @@
+.input-row-risk-ibra {
+    display: flex;
+    gap: 15px;
+    width: calc(100% - 10px);
+    /* Adjust the spacing as needed */
+    align-items: flex-start;
+    /* optional, align vertically as needed */
+}
+
+.ibra-box {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+}
+
+.column-subtitle {
+    font-size: 0.6em;
+    color: white;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+.top-left-button-ibra {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.table-borders-ibra th {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 5;
+}
+
+.ibra-table-header {
+    background-color: #002060;
+    color: white;
+    font-weight: bold;
+}
+
+.ibraCent {
+    text-align: center;
+}
+
+.ibraNr {
+    max-width: 50px;
+    min-width: 50px;
+}
+
+.ibraMainJRA {
+    min-width: 300px;
+    max-width: 300px;
+}
+
+.ibraSubJRA {
+    min-width: 300px;
+    max-width: 300px;
+}
+
+.aim-textarea-risk-jra {
+    max-width: calc(100% - 20px);
+    width: calc(100% - 20px);
+    min-height: 23px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+}
+
+.ibraEXE {
+    width: 300px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraEXE {
+    min-width: 200px;
+    background-color: white !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+}
+
+.ibraEXEJRA {
+    width: 300px;
+    max-width: 300px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraEXEJRA {
+    min-width: 200px;
+    max-width: 300px;
+    background-color: white !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+}
+
+.ibraCon {
+    width: 100px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraCon {
+    min-width: 100px;
+    background-color: white !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+}
+
+.ibraOther {
+    width: 100px;
+}
+
+.ibraAR {
+    min-width: 150px;
+}
+
+.ibraAct {
+    max-width: 50px;
+    min-width: 50px;
+}
+
+.ibraPrevJRA {
+    min-width: 200px;
+}
+
+.ibraStatus {
+    min-width: 200px;
+    width: 300px;
+    background-color: #CB6F6F !important;
+    border-left: solid 2px #CB6F6F !important;
+    border-right: solid 2px #CB6F6F !important;
+    border-top: solid 2px #CB6F6F !important;
+}
+
+td.ibraStatus {
+    min-width: 200px;
+    background-color: white !important;
+    border-left: solid 2px #CB6F6F !important;
+    border-right: solid 2px #CB6F6F !important;
+}
+
+.ibraNotes {
+    min-width: 200px;
+}
+
+.ibraDate {
+    min-width: 350px;
+}
+
+.ibraRisk {
+    min-width: 200px;
+}
+
+.ibraOwner {
+    min-width: 200px;
+}
+
+.ibraDeadlineJRA {
+    min-width: 200px;
+    max-width: 200px;
+}
+
+.hazard-cell {
+    position: relative;
+}
+
+/* 2) absolutely position the “+” so it sits over the bottom border,
+        but hide it by default */
+.insert-subrow-button {
+    position: absolute;
+    bottom: -11px;
+    /* adjust so it overlaps the border */
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    /* don’t take up any space */
+    padding: 2px 3px 2px 3px;
+    background: white;
+    /* hide whatever’s behind if needed */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.main-cell {
+    position: relative;
+}
+
+
+/* floating “+” button */
+.insert-mainrow-button {
+    position: absolute;
+    right: 160px;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.control-with-icons {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ibra-popup-page-select-container-controls {
+    position: relative;
+    width: 100%;
+}
+
+.ibra-popup-page-select-container-controls::after {
+    content: '';
+    position: absolute;
+    right: 85px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.control-with-icons .ibra-popup-page-select {
+    flex: 1;
+}
+
+.control-icon {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.control-icon:hover {
+    color: #002060;
+}
+
+.insert-mainrow-button:hover {
+    background: #f8f8f8;
+}
+
+.main-cell:hover .insert-mainrow-button {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+/* 3) show it only when the row is hovered */
+.jra-body-row:hover .insert-subrow-button {
+    display: block;
+}
+
+.ibraBlank {
+    min-width: 200px;
+}
+
+.table-borders-ibra {
+    min-width: 100%;
+    width: max-content;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 2px solid #BFBFBF;
+    /* Outer border */
+}
+
+.table-borders-ibra th,
+.table-borders-ibra td {
+    white-space: nowrap;
+    border: 1px solid #BFBFBF;
+    /* Inner cell borders */
+    padding: 8px;
+}
+
+.table-borders-ibra th {
+    font-weight: bold;
+}
+
+.top-right-button-ibra {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.column-checkbox-item input:disabled+span {
+    color: #aaa;
+}
+
+.procFineText {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.table-wrapper-jra {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+    /* Firefox */
+}
+
+.table-wrapper-jra::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari */
+}
+
+/* Add these styles to your existing IBRATable.css file */
+
+/* Select All option styling */
+.select-all-container {
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.select-all-checkbox {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.select-all-text {
+    margin-left: 8px;
+    color: #333;
+}
+
+/* Improve column selector styling */
+.column-selector-popup {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.column-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.column-selector-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.close-popup-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.close-popup-btn:hover {
+    color: #333;
+}
+
+.column-selector-content {
+    padding: 8px 0;
+}
+
+.column-selector-note {
+    margin: 0;
+    padding: 0 16px 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.column-checkbox-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0 8px;
+}
+
+.column-checkbox-item {
+    padding: 6px 8px;
+    transition: background-color 0.2s;
+}
+
+.column-checkbox-item:hover {
+    background-color: #f5f5f5;
+}
+
+.column-checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+}
+
+.column-checkbox-item input {
+    margin-right: 8px;
+}
+
+.column-selector-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-top: 1px solid #eaeaea;
+}
+
+.column-selector-footer p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.apply-columns-btn {
+    background-color: #002060;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.apply-columns-btn:hover {
+    background-color: #002060;
+}
+
+.table-wrapper-jra.grabbing {
+    cursor: grabbing;
+    user-select: none;
+}
+
+td.ibraAct,
+th.ibraAct {
+    cursor: default !important;
+}
+
+.dummy-scrollbar-ibra {
+    width: 100%;
+    height: 16px;
+    /* Standard scrollbar height */
+    overflow-x: auto;
+    position: relative;
+    background: #f1f1f1;
+}
+
+.ue-popup-icon {
+    cursor: pointer;
+    color: #002060;
+    font-size: 16px;
+    padding: 4px;
+}
+
+.ue-popup-icon:hover {
+    color: #001540;
+}
+
+.dummy-scrollbar-thumb-ibra {
+    width: 200%;
+    /* Make it wide enough to look like a scroll area */
+    height: 100%;
+    background: #ccc;
+    /* The 'thumb' color */
+}

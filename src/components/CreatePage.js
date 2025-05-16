@@ -19,7 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "./CreatePage/BurgerMenu";
 import SharePage from "./CreatePage/SharePage";
 import TopBarDD from "./Notifications/TopBarDD";
@@ -27,6 +27,7 @@ import TopBarDD from "./Notifications/TopBarDD";
 const CreatePage = () => {
   const navigate = useNavigate();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
@@ -925,27 +926,38 @@ const CreatePage = () => {
 
   return (
     <div className="file-create-container">
-      <div className="sidebar-um">
-        <div className="sidebar-logo-um">
-          <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} />
-          <p className="logo-text-um">Document Development</p>
-        </div>
+      {isSidebarVisible && (
+        <div className="sidebar-um">
+          <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </div>
+          <div className="sidebar-logo-um">
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <p className="logo-text-um">Document Development</p>
+          </div>
 
-        <div className="button-container-create">
-          <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
-            <div className="button-content">
-              <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-              <span className="button-text">Drafts</span>
-            </div>
-          </button>
-          <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
-            <div className="button-content">
-              <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-              <span className="button-text">Published Documents</span>
-            </div>
-          </button>
+          <div className="button-container-create">
+            <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
+              <div className="button-content">
+                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                <span className="button-text">Drafts</span>
+              </div>
+            </button>
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
+              <div className="button-content">
+                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                <span className="button-text">Published Documents</span>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {!isSidebarVisible && (
+        <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+          <FontAwesomeIcon icon={faChevronRight} />
+        </div>
+      )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
       {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
       <div className="main-box-create">
@@ -970,6 +982,12 @@ const CreatePage = () => {
             <div className="burger-menu-icon-create-page-1">
               <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>
+
+            {(localStorage.getItem("draftData")) && (
+              <div className="burger-menu-icon-create-page-1" onClick={() => loadOfflineData()}>
+                <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
+              </div>
+            )}
           </div>
 
           {/* This div creates the space in the middle */}

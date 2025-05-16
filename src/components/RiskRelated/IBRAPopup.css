@@ -443,10 +443,30 @@
     margin-bottom: 10px;
 }
 
+.ibra-popup-hazard-title {
+    margin: 0 0 12px;
+    /* 12px gap below title */
+    font-size: 18px;
+    color: #222;
+}
+
+.ibra-popup-dropdown {
+    width: 60%;
+    max-width: 180px;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    text-align: center;
+    cursor: pointer;
+}
+
 .ibra-popup-hazard-circle-container {
     height: 291px;
     /* match the table height exactly */
     display: flex;
+
     justify-content: center;
     align-items: center;
 }
@@ -457,6 +477,7 @@
     border-radius: 50%;
     background-color: #ec9090;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     color: black;
@@ -466,6 +487,37 @@
     padding: 10px;
     box-sizing: border-box;
     border: 3px solid #CB6F6F;
+}
+
+.ibra-popup-page-input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    height: 23px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+}
+
+.ibra-popup-page-input-green {
+    background-color: #7EAC87 !important;
+    color: white !important;
+}
+
+.ibra-popup-page-input-yellow {
+    background-color: #FFFF89 !important;
+    color: black !important;
+}
+
+.ibra-popup-page-input-red {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.ibra-popup-page-input-orange {
+    background-color: #FFC000 !important;
+    color: black !important;
 }
 
 .ibra-popup-page-component-wrapper-circle {

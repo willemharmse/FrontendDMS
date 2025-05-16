@@ -18,6 +18,30 @@
     flex-direction: column;
 }
 
+.notifications-bell-wrapper {
+    position: relative;
+}
+
+.notifications-badge {
+    position: absolute;
+    top: 5px;
+    right: -9px;
+    background: #e53935;
+    color: #fff;
+    font-size: 12px;
+    /* smaller text */
+    font-weight: bold;
+    line-height: 1;
+    border-radius: 999px;
+    /* pill shape */
+    padding: 1px 4px;
+    /* slimmer vertically and less wide */
+    white-space: nowrap;
+    text-align: center;
+    display: inline-block;
+    z-index: 10;
+}
+
 .notifications-modal-title {
     font-size: 16px;
     font-weight: bold;

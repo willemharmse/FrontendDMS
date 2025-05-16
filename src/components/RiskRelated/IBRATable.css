@@ -42,6 +42,14 @@
     padding: 0px;
 }
 
+.table-borders-ibra th {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 5;
+}
+
 .ibra-table-header {
     background-color: #002060;
     color: white;
@@ -158,6 +166,47 @@ td.ibraStatus {
     font-weight: bold;
 }
 
+.ibra-add-row-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    color: black;
+    /* dark green for the plus */
+    transition: color 0.2s;
+}
+
+.ibra-add-row-button:hover {
+    color: #4CAF50;
+    /* a nice green on hover */
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.ibra-action-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    /* space between trash & plus */
+}
+
+.ibra-remove-row-button {
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.ibra-remove-row-button:hover {
+    color: #CB6F6F;
+}
+
 .top-right-button-ibra {
     position: absolute;
     top: 15px;
@@ -178,112 +227,28 @@ td.ibraStatus {
     padding: 0px;
 }
 
-/* Column Selector Popup Styles */
-.column-selector-popup {
+.top-right-button-ibra2 {
     position: absolute;
-    top: 65px;
-    right: 25px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: 320px;
-    z-index: 1000;
-    overflow: hidden;
-    border: 1px solid #e0e0e0;
-}
-
-.column-selector-header {
-    background-color: #f5f5f5;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.column-selector-header h4 {
-    margin: 0;
-    color: #333;
-    font-size: 16px;
-}
-
-.close-popup-btn {
+    top: 15px;
+    right: 75px;
+    z-index: 1;
     background: transparent;
+    color: #002060;
+    font-size: 30px;
     border: none;
-    color: #666;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    padding: 4px;
-    display: flex;
-    align-items: center;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
     justify-content: center;
-}
-
-.close-popup-btn:hover {
-    color: #333;
-}
-
-.column-selector-content {
-    padding: 16px;
-}
-
-.column-selector-note {
-    margin: 0 0 12px;
-    font-size: 14px;
-    color: #666;
-}
-
-.column-checkbox-container {
-    max-height: 250px;
-    overflow-y: auto;
-    margin-bottom: 16px;
-    padding-right: 8px;
-}
-
-.column-checkbox-item {
-    margin-bottom: 10px;
-}
-
-.column-checkbox-item label {
-    display: flex;
     align-items: center;
-    cursor: pointer;
-}
-
-.column-checkbox-item input {
-    margin-right: 8px;
+    padding: 0px;
 }
 
 .column-checkbox-item input:disabled+span {
     color: #aaa;
-}
-
-.column-selector-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #e0e0e0;
-    padding-top: 12px;
-}
-
-.column-selector-footer p {
-    margin: 0;
-    color: #666;
-    font-size: 14px;
-}
-
-.apply-columns-btn {
-    background-color: #002060;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.apply-columns-btn:hover {
-    background-color: #001540;
 }
 
 .procFineText {
@@ -295,6 +260,161 @@ td.ibraStatus {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    cursor: grab;
+    scrollbar-width: auto !important;
+    /* Firefox */
+}
+
+.table-wrapper-ibra::-webkit-scrollbar {
+    /* show it in Chrome/Safari */
+    display: block !important;
+    height: 12px;
+    /* adjust thickness if you like */
+}
+
+/* Optional: style the WebKit scrollbar thumb/track */
+.table-wrapper-ibra::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-wrapper-ibra::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 6px;
+}
+
+/* Add these styles to your existing IBRATable.css file */
+
+/* Select All option styling */
+.select-all-container {
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.select-all-checkbox {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.select-all-text {
+    margin-left: 8px;
+    color: #333;
+}
+
+/* Improve column selector styling */
+.column-selector-popup {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.column-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.column-selector-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.close-popup-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.close-popup-btn:hover {
+    color: #333;
+}
+
+.column-selector-content {
+    padding: 8px 0;
+}
+
+.column-selector-note {
+    margin: 0;
+    padding: 0 16px 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.column-checkbox-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0 8px;
+}
+
+.column-checkbox-item {
+    padding: 6px 8px;
+    transition: background-color 0.2s;
+}
+
+.column-checkbox-item:hover {
+    background-color: #f5f5f5;
+}
+
+.column-checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+}
+
+.column-checkbox-item input {
+    margin-right: 8px;
+}
+
+.column-selector-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-top: 1px solid #eaeaea;
+}
+
+.column-selector-footer p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.apply-columns-btn {
+    background-color: #002060;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.apply-columns-btn:hover {
+    background-color: #002060;
+}
+
+.table-wrapper-ibra.grabbing {
+    cursor: grabbing;
+    user-select: none;
 }
 
 td.ibraAct,
@@ -307,9 +427,21 @@ th.ibraAct {
     height: 16px;
     /* Standard scrollbar height */
     overflow-x: auto;
-    overflow-y: hidden;
     position: relative;
     background: #f1f1f1;
+}
+
+.ue-popup-icon {
+    cursor: pointer;
+    color: #002060;
+    font-size: 16px;
+    margin-left: 5px;
+    transform: translateY(+3.5px);
+    padding: 4px;
+}
+
+.ue-popup-icon:hover {
+    color: #001540;
 }
 
 .dummy-scrollbar-thumb-ibra {

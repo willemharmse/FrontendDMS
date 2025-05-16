@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import "./AttendanceTable.css";
 import "../CreatePage/ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faInfoCircle, faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
 
-const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) => {
+const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR }) => {
     const [designations, setDesignations] = useState([]);
     const [authors, setAuthors] = useState([]);
     const [companies, setCompanies] = useState(["Company A", "Company B", "Company C"]);
@@ -19,12 +19,12 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
 
     const fetchAuthors = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/auth`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
             if (!response.ok) {
                 throw new Error("Failed to fetch values");
             }
             const data = await response.json();
-            setAuthors(data.authors);
+            setAuthors(data.stakeholders);
         } catch (error) {
             console.error("Error fetching authors:", error);
         }
@@ -76,7 +76,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
         // Update filtered options and show dropdown
         if (field === "name") {
             const filtered = authors.filter(author =>
-                author.author.toLowerCase().includes(value.toLowerCase())
+                author.name.toLowerCase().includes(value.toLowerCase())
             ).slice(0, 15);
 
             setFilteredAuthorOptions(prev => ({ ...prev, [index]: filtered }));
@@ -139,7 +139,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
             // Show all authors or filtered options on focus
             const value = rows[index].name || "";
             const filtered = authors.filter(author =>
-                author.author.toLowerCase().includes(value.toLowerCase())
+                author.name.toLowerCase().includes(value.toLowerCase())
             ).slice(0, 15);
 
             setFilteredAuthorOptions(prev => ({ ...prev, [index]: filtered }));
@@ -227,6 +227,14 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
                 <h3 className="font-fam-labels">
                     Attendance Register <span className="required-field">*</span>
                 </h3>
+                <button
+                    className="top-right-button-ar"
+                    title="Generate Attendance Register"
+                    onClick={generateAR}
+                >
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                </button>
+
                 <table className="vcr-table-2 font-fam table-borders">
                     <thead className="cp-table-header">
                         <tr>
@@ -321,9 +329,6 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
                         ))}
                     </tbody>
                 </table>
-                <button className="add-row-button-atten font-fam" onClick={addRow} type="button">
-                    <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
-                </button>
             </div>
 
             {/* Floating Dropdown - Rendered outside the table structure */}
@@ -339,8 +344,8 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows }) =>
                     }}
                 >
                     {filteredAuthorOptions[showDropdown].map((author, i) => (
-                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, "name", author.author)}>
-                            {author.author}
+                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, "name", author.name)}>
+                            {author.name}
                         </li>
                     ))}
                 </ul>

@@ -53,6 +53,32 @@ body {
     align-items: center;
 }
 
+.sidebar-toggle-icon {
+    position: absolute;
+    top: 10px;
+    right: 4px;
+    /* overlap outside sidebar */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    padding: 3px 7px 3px 7px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.sidebar-floating-toggle {
+    position: absolute;
+    top: 25px;
+    left: 4px;
+    /* Place at the same level sidebar was */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    padding: 3px 7px 3px 7px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
 .doc-num-user {
     word-wrap: break-word;
     word-break: break-word;
