@@ -11,7 +11,7 @@ const BurgerMenu = ({ role, isOpen, setIsOpen }) => {
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/");
+        navigate("/FrontendDMS/");
     };
 
     const handleDownload = async () => {

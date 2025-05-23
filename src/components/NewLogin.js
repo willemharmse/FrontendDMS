@@ -53,7 +53,7 @@ const NewLogin = () => {
         if (storedToken) {
             try {
                 const decodedToken = jwtDecode(storedToken);
-                navigate('/home'); // Redirect if already logged in
+                navigate('/FrontendDMS/home'); // Redirect if already logged in
             } catch (err) {
                 console.error('Invalid token:', err);
             }
