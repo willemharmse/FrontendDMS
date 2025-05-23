@@ -22,6 +22,14 @@
     align-items: center;
 }
 
+.evenTRColour {
+    background-color: #e6e3e3;
+}
+
+.evenTRColour:hover {
+    background-color: #e6e3e3;
+}
+
 .top-left-button-ibra {
     position: absolute;
     top: 20px;
@@ -40,6 +48,16 @@
     justify-content: center;
     align-items: center;
     padding: 0px;
+}
+
+.ibra-input-date {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
 }
 
 .table-borders-ibra th {
@@ -123,6 +141,121 @@ td.ibraStatus {
 
 .ibraNotes {
     min-width: 200px;
+}
+
+.ibraPUE {
+    min-width: 150px;
+    max-width: 150px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
+}
+
+.ibraRM {
+    min-width: 1000px;
+    width: 1000px;
+}
+
+.ibraAdditional {
+    min-width: 150px;
+    max-width: 150px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
+}
+
+.ibra-view-additional-button {
+    width: calc(100% - 20px);
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.ibraPI {
+    min-width: 500px;
+    max-width: 500px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraPI {
+    min-width: 500px;
+    max-width: 500px;
+    background-color: white !important;
+    border: 2px solid #BFBFBF !important;
+}
+
+.ibraRA {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+.ibra-textarea-PI {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+    field-sizing: content;
+    min-height: 19px;
+}
+
+.control-with-icons-ibra {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.control-with-icons-ibra .ibra-textarea-PI {
+    flex: 1;
+}
+
+.control-icon-add-ibra {
+    margin-bottom: 4px;
+    padding-left: 6px;
+    z-index: 1;
+    cursor: pointer;
+}
+
+td.ibraRA {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: white !important;
+    border: 2px solid #BFBFBF !important;
+}
+
+.ibraDD {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: #BBBBBB !important;
+    border-left: solid 2px #BBBBBB !important;
+    border-right: solid 2px #BBBBBB !important;
+    border-top: solid 2px #BBBBBB !important;
+}
+
+td.ibraDD {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: white !important;
+    border: 2px solid #BFBFBF !important;
 }
 
 .ibraDate {

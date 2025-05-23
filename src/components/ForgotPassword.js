@@ -157,7 +157,7 @@ function ForgotPassword() {
                                 <div className="forgot-password-input-container">
                                     <input
                                         type="text"
-                                        placeholder="Enter your username"
+                                        placeholder="Insert Username"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                     />
@@ -167,7 +167,7 @@ function ForgotPassword() {
                                 <label>Email</label>
                                 <div className="forgot-password-input-container">
                                     <input
-                                        placeholder='Enter your email'
+                                        placeholder='Insert Email'
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}

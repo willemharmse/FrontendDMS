@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR }) => {
     const [designations, setDesignations] = useState([]);
     const [authors, setAuthors] = useState([]);
-    const [companies, setCompanies] = useState(["Company A", "Company B", "Company C"]);
+    const [companies, setCompanies] = useState([]);
     const [filteredAuthorOptions, setFilteredAuthorOptions] = useState({});
     const [filteredDesignationOptions, setFilteredDesignationOptions] = useState({});
     const [filteredCompanyOptions, setFilteredCompanyOptions] = useState({});
@@ -43,9 +43,23 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
         }
     };
 
+    const fetchSites = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+            const data = await response.json();
+            setCompanies(data.sites.map(s => s.site));
+        } catch (error) {
+            console.error("Error fetching designations:", error);
+        }
+    };
+
     useEffect(() => {
         fetchAuthors();
         fetchDesignations();
+        fetchSites();
     }, []);
 
     // Handle clicks outside the dropdown to close it

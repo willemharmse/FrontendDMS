@@ -25,6 +25,7 @@ import MaterialsTable from "./CreatePage/MaterialsTable";
 import MobileMachineTable from "./CreatePage/MobileMachineTable";
 import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
 import JRATable from "./RiskRelated/JRATable";
+import ControlAnalysisTable from "./RiskRelated/ControlAnalysisTable";
 
 const RiskManagementPage = () => {
     const navigate = useNavigate();
@@ -270,26 +271,9 @@ const RiskManagementPage = () => {
         }
     };
 
-    const handlePubClick = () => {
-        const newErrors = validateForm();
-        setErrors(newErrors);
-
-        if (loadedID === '') {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.warn("Please load a draft before publishing.", {
-                closeButton: false,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-
-            return;
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            toast.error("Please fill in all required fields marked by a *", {
+    const handleClick3 = () => {
+        if (formData.title === "") {
+            toast.error("Please fill in the title field", {
                 closeButton: true,
                 autoClose: 800, // 1.5 seconds
                 style: {
@@ -297,7 +281,7 @@ const RiskManagementPage = () => {
                 }
             });
         } else {
-            handlePublish();  // Call your function when the form is valid
+            handleGenerateIBRADocument();  // Call your function when the form is valid
         }
     };
 
@@ -351,6 +335,17 @@ const RiskManagementPage = () => {
         }));
     };
 
+    const updateCEARows = (nrToUpdate, newValues) => {
+        setFormData(prev => ({
+            ...prev,
+            cea: prev.cea.map(item =>
+                item.nr === nrToUpdate
+                    ? { ...item, ...newValues }
+                    : item
+            )
+        }));
+    };
+
     const addIBRARow = () => {
         setFormData(prevFormData => ({
             ...prevFormData,
@@ -359,7 +354,19 @@ const RiskManagementPage = () => {
                 {
                     id: uuidv4(), nr: prevFormData.ibra.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                     hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
-                    R: "-", source: "", majorRisk: "", priority: "", possible: "", UE: "", additional: "", maxConsequence: ""
+                    R: "-", source: "", material: "", priority: "", possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                }
+            ]
+        }));
+    };
+
+    const addCEARow = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            cea: [
+                ...prevFormData.cea,
+                {
+                    id: uuidv4(), nr: prevFormData.cea.length + 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: ""
                 }
             ]
         }));
@@ -369,21 +376,29 @@ const RiskManagementPage = () => {
         title: "",
         documentType: useParams().type,
         aim: "The aim of the document is ",
+        scopeExclusions: "",
+        execSummary: "",
+        scopeInclusions: "",
         scope: "",
         date: new Date().toLocaleDateString(),
         version: "1",
         rows: [
-            { auth: "Facilitator", name: "", pos: "", num: 4 },
-            { auth: "Owner", name: "", pos: "", num: 1 },
-            { auth: "Reviewer", name: "", pos: "", num: 2 },
-            { auth: "Approver", name: "", pos: "", num: 3 }
+            { auth: "Facilitator", name: "", pos: "", num: 1 },
+            { auth: "Owner", name: "", pos: "", num: 2 },
+            { auth: "Reviewer", name: "", pos: "", num: 3 },
+            { auth: "Approver", name: "", pos: "", num: 4 }
         ],
         ibra: [
             {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
-                LR: "-", M: "-", R: "-", source: "", majorRisk: "", priority: "",
-                possible: "", UE: "", additional: "", maxConsequence: ""
+                LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
+                possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+            }
+        ],
+        cea: [
+            {
+                id: uuidv4(), nr: 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: ""
             }
         ],
         jra: [
@@ -402,7 +417,6 @@ const RiskManagementPage = () => {
                         }],
                         controls: [{ control: "" }],         // array of control strings
                         notes: ""
-
                     }     // single textarea for notes
                 ]
             }
@@ -666,7 +680,7 @@ const RiskManagementPage = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -697,13 +711,13 @@ const RiskManagementPage = () => {
         rowToChange[field] = e.target.value;
 
         // Automatically set num based on the auth type
-        if (rowToChange.auth === "Owner") {
+        if (rowToChange.auth === "Facilitator") {
             rowToChange.num = 1;
-        } else if (rowToChange.auth === "Reviewer") {
+        } else if (rowToChange.auth === "Owner") {
             rowToChange.num = 2;
-        } else if (rowToChange.auth === "Approver") {
+        } else if (rowToChange.auth === "Reviewer") {
             rowToChange.num = 3;
-        } else if (rowToChange.auth === "Facilitator") {
+        } else if (rowToChange.auth === "Approver") {
             rowToChange.num = 4;
         }
 
@@ -784,6 +798,13 @@ const RiskManagementPage = () => {
         setFormData((prevFormData) => ({
             ...prevFormData,
             ibra: newIbra, // Update procedureRows with new data
+        }));
+    };
+
+    const updateCeaRows = (newCEA) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            cea: newCEA, // Update procedureRows with new data
         }));
     };
 
@@ -873,6 +894,41 @@ const RiskManagementPage = () => {
         });
     };
 
+    const removeCEARow = (idToRemove) => {
+        if (formData.cea.length === 1) {
+            toast.error("You must keep at least one row.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        const updatedRows = formData.cea.filter(row => row.id !== idToRemove);
+
+        if (updatedRows.length === formData.cea.length) {
+            toast.error("Row not found.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+            return;
+        }
+
+        // Re-number the rows in ascending order starting from 1
+        const reNumberedRows = updatedRows.map((cea, index) => ({
+            ...cea,
+            nr: index + 1
+        }));
+
+        console.log('After re-numbering:', reNumberedRows);
+
+        setFormData({
+            ...formData,
+            cea: reNumberedRows,
+        });
+    };
+
 
     const removeAttendanceRow = (indexToRemove) => {
         // Prevent removal if there's only one row left
@@ -895,25 +951,16 @@ const RiskManagementPage = () => {
     };
 
     // Send data to backend to generate a Word document
-    const handleGeneratePDF = async () => {
+    const handleGenerateIBRADocument = async () => {
         const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            usedPPEOptions,
-            usedHandTools,
-            usedEquipment,
-            usedMobileMachine,
-            usedMaterials,
             formData,
-            userID,
-            azureFN: ""
         };
 
         const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-ibra`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -925,7 +972,7 @@ const RiskManagementPage = () => {
             if (!response.ok) throw new Error("Failed to generate document");
 
             const blob = await response.blob();
-            saveAs(blob, `${documentName}.docm`);
+            saveAs(blob, `${documentName}.docx`);
             setLoading(false);
             //saveAs(blob, `${documentName}.pdf`);
         } catch (error) {
@@ -1055,49 +1102,6 @@ const RiskManagementPage = () => {
         }
     };
 
-    const handlePublish = async () => {
-        const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            usedPPEOptions,
-            usedHandTools,
-            usedEquipment,
-            usedMobileMachine,
-            usedMaterials,
-            formData,
-            userID,
-            azureFN: ""
-        };
-
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-document`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify(dataToStore),
-            });
-
-            if (!response.ok) throw new Error("Failed to generate document");
-
-            toast.success(`Document published`, {
-                closeButton: false,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-
-            setLoading(false);
-        } catch (error) {
-            console.error("Error generating document:", error);
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="risk-create-container">
             {isSidebarVisible && (
@@ -1121,15 +1125,6 @@ const RiskManagementPage = () => {
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                                 <span className="button-text">Risk Documents</span>
-                            </div>
-                        </button>
-                    </div>
-
-                    <div className="risk-button-container-create-bot">
-                        <button className="but-um" onClick={() => navigate('/constructionHelp')}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faQuestionCircle} className="button-icon" />
-                                <span className="button-text">Help</span>
                             </div>
                         </button>
                     </div>
@@ -1161,10 +1156,6 @@ const RiskManagementPage = () => {
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
@@ -1234,16 +1225,53 @@ const RiskManagementPage = () => {
                     </div>
 
                     <div className="input-row-risk-create">
-                        <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
+                        <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
-                            <textarea
-                                spellcheck="true"
-                                name="scope"
-                                className="aim-textarea-risk-create font-fam"
-                                value={formData.scope}
-                                onChange={handleInputChange}
-                                rows="5"   // Adjust the number of rows for initial height
-                            />
+                            <div className="risk-scope-group" style={{ marginBottom: "-10px" }}>
+                                <div className="risk-execSummary-popup-page-additional-row ">
+                                    <div className="risk-popup-page-column-half-scope">
+                                        <label className="scope-risk-label">Introduction</label>
+                                        <textarea
+                                            spellcheck="true"
+                                            name="scope"
+                                            className="aim-textarea-risk-scope-2 font-fam"
+                                            onChange={handleInputChange}
+                                            value={formData.scope}
+                                            rows="5"   // Adjust the number of rows for initial height
+                                            placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="risk-scope-group">
+                                <div className="risk-scope-popup-page-additional-row ">
+                                    <div className="risk-popup-page-column-half-scope">
+                                        <label className="scope-risk-label">Scope Inclusions</label>
+                                        <textarea
+                                            spellcheck="true"
+                                            name="scopeInclusions"
+                                            className="aim-textarea-risk-scope font-fam"
+                                            value={formData.scopeInclusions}
+                                            onChange={handleInputChange}
+                                            rows="5"   // Adjust the number of rows for initial height
+                                            placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
+                                        />
+                                    </div>
+
+                                    <div className="risk-popup-page-column-half-scope">
+                                        <label className="scope-risk-label">Scope Exclusions</label>
+                                        <textarea
+                                            spellcheck="true"
+                                            name="scopeExclusions"
+                                            className="aim-textarea-risk-scope font-fam"
+                                            value={formData.scopeExclusions}
+                                            onChange={handleInputChange}
+                                            rows="5"   // Adjust the number of rows for initial height
+                                            placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1255,42 +1283,41 @@ const RiskManagementPage = () => {
                     {formData.documentType === "JRA" && (<EquipmnetTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />)}
                     {formData.documentType === "JRA" && (<MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />)}
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} />)}
-                    {formData.documentType === "JRA" && (<JRATable formData={formData} setFormData={setFormData} />)}
+                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
+                    {formData.documentType === "IBRA" && (<ControlAnalysisTable rows={formData.cea} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
+                    {formData.documentType === "JRA" && (<JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />)}
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
+
+                    <div className="input-row-risk-create">
+                        <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
+                            <h3 className="font-fam-labels">Executive Summary <span className="required-field">*</span></h3>
+                            <div className="risk-scope-group">
+                                <div className="risk-execSummary-popup-page-additional-row ">
+                                    <div className="risk-popup-page-column-half-scope">
+                                        <label className="scope-risk-label">Additional Notes</label>
+                                        <textarea
+                                            spellcheck="true"
+                                            name="execSummary"
+                                            className="aim-textarea-risk-scope font-fam"
+                                            onChange={handleInputChange}
+                                            value={formData.execSummary}
+                                            rows="5"   // Adjust the number of rows for initial height
+                                            placeholder="Insert additional notes to the executive summary." // Optional placeholder text
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
 
-                    {false && (
-                        <div>
-                            <div className="input-row-risk-create">
-                                <div className={`input-box-3-risk-create ${errors.reviewDate ? "error-create" : ""}`}>
-                                    <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-                                    <input
-                                        type="number"
-                                        name="reviewDate"
-                                        className="aim-textarea-risk-create cent-create font-fam"
-                                        value={formData.reviewDate}
-                                        onChange={handleInputChange}
-                                        placeholder="Enter the review period in months" // Optional placeholder text
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="input-row-risk-create" onClick={handlePubClick}>
-                                <div className={`input-box-annexures-risk-create`}>
-                                    <h3 className="font-fam-labels">Appendices</h3>
-                                </div>
-                            </div>
-
-                            <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
-                        </div>
-                    )}
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            style={{ cursor: "not-allowed" }}
-                            disabled
+                            disabled={useParams().type !== "IBRA"}
+                            onClick={handleClick3}
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>

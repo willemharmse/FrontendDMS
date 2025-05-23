@@ -257,9 +257,13 @@ const NewLogin = () => {
                     </div>
                 </form>
 
-                <div className="logo-bottom-container">
-                    <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
-                    <p className="logo-bottom-text">A TAU5 PRODUCT</p>
+                <div className="nl-logo-bottom-container">
+                    <img className="nl-logo-bottom" src="logo.webp" alt="Bottom Logo" />
+                    <p className="nl-logo-bottom-text">A TAU5 PRODUCT</p>
+                </div>
+
+                <div className="nl-logo-bottom-container-right">
+                    <p className="nl-logo-bottom-text-right">Version: {`${process.env.REACT_APP_VERSION}`}</p>
                 </div>
             </div>
 

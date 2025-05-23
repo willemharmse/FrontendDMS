@@ -28,7 +28,7 @@ const RiskHomePage = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
                 </div>
@@ -50,12 +50,37 @@ const RiskHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-risk-home">
-                    <div className={`document-card-riks-all`} onClick={() => navigate("/FrontendDMS/constructionRMS/ControlManagement")}>
+                    <div className={`document-card-riks-all`} onClick={() => navigate("/FrontendDMS/controls")}>
                         <>
                             <div className="icon-risk-all">
                                 <FontAwesomeIcon icon={faArrowsRotate} className={"icon-risk-all"} />
                             </div>
                             <h3 className="document-title-risk-home">Control Management</h3>
+                        </>
+                    </div>
+                    <div
+                        className="document-card-risk-home"
+                        onClick={() => navigate("/FrontendDMS/risk/IBRA")}
+                    >
+                        <>
+                            <div className="icon-risk">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="icon-risk" />
+                            </div>
+
+                            <h3 className="document-title-risk-home" style={{ marginBottom: "5px" }}>
+                                Create New Issue Based Risk Assessment (IBRA)
+                                <span
+                                    style={{
+                                        display: 'block',
+                                        marginTop: '4px',
+                                        fontSize: '0.85rem',
+                                        opacity: 0.8,
+                                        fontWeight: 'normal'
+                                    }}
+                                >
+                                    Using the Workplace Risk Assessment and Control (WRAC) Tool
+                                </span>
+                            </h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/risk/JRA")}>
@@ -66,7 +91,7 @@ const RiskHomePage = () => {
                             <h3 className="document-title-risk-home">Create New Job Risk Assessment (JRA)</h3>
                         </>
                     </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("")}>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/constructionRMS/Bowtie")}>
                         <>
                             <div className="icon-risk">
                                 <FontAwesomeIcon icon={faUserTie} className={"icon-risk"} />
@@ -74,14 +99,7 @@ const RiskHomePage = () => {
                             <h3 className="document-title-risk-home">Create New Bowtie Risk Assessment (BTA)</h3>
                         </>
                     </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/risk/IBRA")}>
-                        <>
-                            <div className="icon-risk">
-                                <FontAwesomeIcon icon={faExclamationTriangle} className={"icon-risk"} />
-                            </div>
-                            <h3 className="document-title-risk-home">Create New Issue Based Risk Assessment (IBRA)</h3>
-                        </>
-                    </div>
+
 
                 </div>
             </div>

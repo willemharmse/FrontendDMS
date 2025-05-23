@@ -100,13 +100,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
     return (
         <div className="input-row">
             <div className="input-box-ref">
-                <button
-                    className="top-left-button-refs"
-                    title="Information"
-                >
-                    <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
-                </button>
-
                 <h3 className="font-fam-labels">References</h3>
                 {referenceRows.length > 0 && (
                     <table className="vcr-table table-borders">

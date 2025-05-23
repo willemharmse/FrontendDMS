@@ -20,6 +20,7 @@
     flex-direction: column;
     position: relative;
     align-items: center;
+    font-family: Arial;
 }
 
 .column-subtitle {
@@ -78,13 +79,80 @@
 }
 
 .ibraSubJRA {
-    min-width: 300px;
-    max-width: 300px;
+    min-width: 400px;
+    max-width: 400px;
+}
+
+/* ── Control-icon popup ── */
+.jra-control-popup {
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    gap: 8px;
+    font-family: Arial, sans-serif;
+}
+
+.jra-control-popup-btn {
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: opacity 0.2s;
+}
+
+.jra-control-popup-option1 {
+    background: #002060;
+    color: #fff;
+}
+
+.jra-control-popup-option2 {
+    background: #555;
+    color: #fff;
+}
+
+.jra-control-popup-btn:hover {
+    opacity: 0.85;
+}
+
+/* Ensure the trigger icon stands out */
+.popup-trigger-icon {
+    margin-left: 8px;
+    cursor: pointer;
 }
 
 .aim-textarea-risk-jra {
     max-width: calc(100% - 20px);
     width: calc(100% - 20px);
+    min-height: 23px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+}
+
+.aim-textarea-sub-jra {
+    max-width: calc(100% - 67px);
+    width: calc(100% - 50px);
+    min-height: 23px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+}
+
+.aim-textarea-WED-jra {
+    max-width: calc(100% - 20px);
+    width: calc(100% - 45px);
     min-height: 23px;
     padding: 10px;
     border: 1px solid #ccc;
@@ -274,7 +342,15 @@ td.ibraStatus {
 }
 
 .control-icon {
-    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.control-icon-ai {
+    margin-left: -30px;
+    margin-bottom: 5px;
+    z-index: 999;
     cursor: pointer;
 }
 
@@ -298,6 +374,63 @@ td.ibraStatus {
 
 .ibraBlank {
     min-width: 200px;
+}
+
+/* make headers clickable */
+.jra-header-cell {
+    cursor: pointer;
+    position: relative;
+}
+
+/* highlight when a filter is active */
+.jra-filter-active {
+    background-color: #004080 !important;
+    color: #fff !important;
+}
+
+/* the little popup that appears under the header */
+.jra-filter-popup {
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* filter input */
+.jra-filter-input {
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* buttons container */
+.jra-filter-buttons {
+    text-align: right;
+}
+
+/* apply & clear buttons */
+.jra-filter-apply,
+.jra-filter-clear {
+    background: #002060;
+    color: #fff;
+    border: none;
+    padding: 4px 8px;
+    margin-left: 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.jra-filter-clear {
+    background: #aaa;
+}
+
+.jra-filter-apply:hover,
+.jra-filter-clear:hover {
+    opacity: 0.85;
 }
 
 .table-borders-ibra {

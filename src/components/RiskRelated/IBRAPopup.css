@@ -30,8 +30,31 @@
     color: #495057;
 }
 
+.inline-field {
+    display: flex;
+    align-items: center;
+}
+
+.inline-field label {
+    /* override the default block/center styling */
+    display: block;
+    margin: 0px 10px 0px 0px;
+    margin-bottom: 0px !important;
+    /* right-gap to the select */
+    text-align: left;
+    font-weight: 500;
+    /* match existing weight */
+}
+
+.inline-field .ibra-popup-page-select-container {
+    flex: 1;
+    /* let the select fill remaining space */
+    margin: 0;
+    /* reset any unintended margins */
+}
+
 .ibra-popup-page-label-cell {
-    width: 60px;
+    width: 300px;
     padding-right: 8px;
 }
 
@@ -42,12 +65,12 @@
 .ibra-popup-page-label-box {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
+    justify-content: left;
     border-radius: 4px;
     height: 28px;
-    font-weight: 500;
+    padding-left: 10px;
+
+    font-weight: bold;
 }
 
 .ibra-popup-page-row-actions {
@@ -77,17 +100,22 @@
 }
 
 .ibra-popup-page-add-row-button {
-    background: #f8f9fa;
-    border: 1px dashed #ced4da;
-    border-radius: 4px;
-    width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    cursor: pointer;
     display: flex;
-    align-items: center;
     justify-content: center;
-    color: #6c757d;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    height: 30px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(+20%);
 }
 
 .ibra-popup-page-add-row-button:hover {
@@ -243,7 +271,6 @@
 .ibra-popup-page-additional-row {
     display: flex;
     gap: 15px;
-    margin-bottom: 10px;
     width: 100%;
 }
 
@@ -274,7 +301,11 @@
 
 .ibra-popup-page-textarea-2 {
     width: calc(100% - 20px);
-    height: 140px;
+    min-width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -359,7 +390,7 @@
 }
 
 .ibra-popup-page-input-table {
-    width: 100%;
+    width: calc(100% - 25px);
     padding: 10px;
     height: 19px;
     border: 1px solid #ccc;
@@ -476,7 +507,7 @@
     height: 300px;
     border-radius: 50%;
     background-color: #ec9090;
-    display: flex;
+    display: block;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -486,7 +517,27 @@
     text-align: center;
     padding: 10px;
     box-sizing: border-box;
+    position: relative;
     border: 3px solid #CB6F6F;
+}
+
+.ibra-popup-hazard-circle .ibra-popup-hazard-title {
+    position: absolute;
+    top: 100px;
+    /* distance from top edge */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    /* kill any default margins */
+    z-index: 1;
+}
+
+.ibra-popup-hazard-circle .ibra-popup-dropdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
 }
 
 .ibra-popup-page-input {
@@ -498,6 +549,36 @@
     background-color: white;
     color: #555;
     font-size: 14px;
+}
+
+.ibra-popup-page-additional-row-3 {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    flex-wrap: nowrap;
+    /* prevent wrapping */
+}
+
+/* A “third-width” column — exactly one-third of the container */
+.ibra-popup-page-column-third {
+    flex: 0 0 32.5%;
+    /* fixed one-third width */
+    max-width: 32.5%;
+    min-width: 0;
+    /* allow proper flex shrinking */
+}
+
+.ibra-popup-page-label-output {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    box-sizing: border-box;
+    /* ensures padding doesn’t break the width */
 }
 
 .ibra-popup-page-input-green {
@@ -531,7 +612,7 @@
     background-color: #ffffff;
     border-radius: 6px;
     padding: 15px;
-    height: 188px;
+    margin-top: 0px;
     margin-bottom: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e8e8e8;

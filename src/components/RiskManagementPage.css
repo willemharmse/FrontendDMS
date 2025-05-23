@@ -4,6 +4,7 @@
     padding: 20px;
     padding-right: 10px;
     box-sizing: border-box;
+    font-family: Arial;
     background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
 }
 
@@ -19,6 +20,36 @@
     /* Adjust as needed */
     /* Centers horizontally */
     width: 100%;
+}
+
+.risk-scope-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    width: calc(100% - 20px);
+    height: 100%;
+    padding: 15px 15px;
+    background-color: #F2F2F2;
+    border-radius: 5px;
+}
+
+.risk-execSummary-popup-page-additional-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.risk-scope-popup-page-additional-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.risk-popup-page-column-half-scope {
+    flex: 1;
+    width: 50%;
 }
 
 .risk-button-container-create-bot {
@@ -185,11 +216,69 @@
     outline: none;
 }
 
+.scope-risk-label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: Arial;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.risk-exec-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    width: calc(100% - 20px);
+    height: 100%;
+    padding: 15px 15px;
+    background-color: #F2F2F2;
+    border-radius: 5px;
+}
+
+.aim-textarea-risk-scope {
+    width: calc(100% - 20px);
+    min-height: 200px;
+    resize: vertical;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* modern name */
+    word-break: break-word;
+}
+
+.aim-textarea-risk-scope-2 {
+    width: calc(100% - 20px);
+    min-height: 100px;
+    resize: vertical;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* modern name */
+    word-break: break-word;
+}
+
 .input-box-3-risk-create {
     background-color: white;
     padding: 15px;
     width: 100%;
     margin-top: 10px;
+    max-width: 100%;
     /* Makes the boxes shorter */
     /* Prevents overly long input fields */
     border-radius: 8px;
@@ -214,6 +303,22 @@
 }
 
 .input-box-aim-risk-create {
+    background-color: white;
+    padding: 15px;
+    margin: 10px 0;
+    margin-bottom: 0px;
+    /* Keeps it aligned */
+    width: 100%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-box-aim-risk-scope {
     background-color: white;
     padding: 15px;
     margin: 10px 0;

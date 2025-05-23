@@ -1,0 +1,206 @@
+.risk-control-attributes-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
+}
+
+.main-box-risk-control-attributes {
+    flex: 1;
+    width: 100%;
+    margin-left: 10px;
+    border-radius: 3px;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* For modern browsers */
+.table-container-risk-control-attributes::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.table-container-risk-control-attributes::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.table-container-risk-control-attributes::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.table-container-risk-control-attributes::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.table-container-risk-control-attributes {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.table-container-risk-control-attributes {
+    display: flex;
+    flex-direction: column;
+
+    height: calc(100% - 50px);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: white;
+    padding: 5px;
+    padding-top: 15px;
+    border-radius: 10px;
+}
+
+.table-scroll-wrapper {
+    flex: 1;
+    /* fill remaining height */
+    overflow-y: auto;
+}
+
+.risk-control-attributes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.risk-control-attributes-head {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+.risk-control-attributes-tr {
+    padding: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.risk-control-attributes-split {
+    padding: 5px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    border-right: 2px solid white;
+}
+
+.risk-control-attributes-th {
+    padding: 5px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.risk-control-attributes-nr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    background-color: #D9D9D9;
+    border-bottom: 1px solid #ddd;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-control {
+    width: 30%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-critcal {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    border-right: 2px solid white !important;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-hiearchy {
+    width: 17%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-act {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-activation {
+    width: 17%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-cons {
+    width: 16%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-point {
+    cursor: pointer;
+}
+
+.risk-control-label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 5px);
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+
+.risk-control-label {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+}
+
+.risk-control-label-icon {
+    font-size: 18px;
+    color: gray;
+    margin-left: 10px;
+    cursor: pointer;
+}

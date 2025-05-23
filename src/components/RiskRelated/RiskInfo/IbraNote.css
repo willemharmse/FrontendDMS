@@ -1,0 +1,32 @@
+.note-table-group {
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 150px;
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.note-header {
+    display: block;
+    font-size: 19px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.note-text {
+    display: block;
+    font-size: 16px;
+    font-family: Arial;
+    font-weight: 500;
+    margin: auto;
+    margin-top: 10px;
+    margin-left: 15px;
+    margin-bottom: 10px;
+    text-align: left;
+}

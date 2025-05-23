@@ -35,6 +35,7 @@ import TimeoutPopup from './components/AccountLockout/TimeoutPopup';
 import ConstructionDDS from './components/Construction/ConstructionDDS';
 import ConstructionRMS from './components/Construction/ConstructionRMS';
 import ConstructionHelp from './components/Construction/ConstructionHelp';
+import ControlAttributes from './components/RiskRelated/ControlAttributes';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -123,6 +124,7 @@ function App() {
         <Route path="FrontendDMS/versionHistory/:id" element={<VersionHistory />} />
         <Route path='FrontendDMS/riskHome' element={<RiskHomePage />} />
         <Route path="FrontendDMS/risk/:type" element={<RiskManagementPage />} />
+        <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

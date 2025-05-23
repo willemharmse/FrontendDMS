@@ -12,6 +12,20 @@ const UnwantedEvent = ({ setClose }) => {
                     <button className="review-date-close" onClick={setClose} title="Close Popup">×</button>
                 </div>
 
+                <div className="ue-table-group-2">
+                    <div className="popup-table-wrapper-ue-2">
+                        <p>
+                            As far as reasonably practicable the unwanted event must be written in such a way as not to pre-empt the consequences or impact of the unwanted event.
+                        </p>
+                        <p>
+                            <strong>Example of incorrect unwanted event:</strong> Loss of life due to vehicle collision. This approach will limit the thinking of the workshop team to focus on a specific outcome or consequence such as Safety only. All consequence types should be considered in the formulation of the unwanted event.
+                        </p>
+                        <p>
+                            <strong>Example of correct unwanted event:</strong> Vehicle collision. As far as reasonably practicable the unwanted events must not be written to include a specific cause related to the unwanted event.
+                        </p>
+                    </div>
+                </div>
+
                 <div className="ue-table-group">
                     <div className="popup-table-wrapper-ue">
                         <table className="popup-table haznt-fam">

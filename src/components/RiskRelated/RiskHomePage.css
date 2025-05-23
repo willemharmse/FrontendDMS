@@ -57,7 +57,7 @@
 
 .icon-risk {
     width: 160px;
-    height: 160px;
+    min-height: 160px;
     background-color: #002060;
     border-radius: 50%;
     /* Ensures a perfect circle */

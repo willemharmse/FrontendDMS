@@ -1,32 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './IBRAPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrashAlt, faPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FunctionalOwnership from './RiskInfo/FunctionalOwnership';
 import RiskSource from './RiskInfo/RiskSource';
 import Hazard from './RiskInfo/Hazard';
+import CurrentControls from './RiskInfo/CurrentControls';
+import LikelihoodHelp from './RiskInfo/LikelihoodHelp';
+import MaxConsequence from './RiskInfo/MaxConsequence';
+import MaxRiskRank from './RiskInfo/MaxRiskRank';
+import PriorityUE from './RiskInfo/PriorityUE';
+import RiskTreatment from './RiskInfo/RiskTreatment';
+import ConsequenceRating from './RiskInfo/ConsequenceRating';
 
 const IBRAPopup = ({ onClose, onSave, data }) => {
-    // State for dropdown options
-    const [mainAreas] = useState(['MA1', 'MA2', 'MA3', 'MA4', 'MA5']);
-    const [subAreas] = useState({
-        'MA1': ['MA1-SUB1', 'MA1-SUB2', 'MA1-SUB3'],
-        'MA2': ['MA2-SUB1', 'MA2-SUB2', 'MA2-SUB3'],
-        'MA3': ['MA3-SUB1', 'MA3-SUB2', 'MA3-SUB3'],
-        'MA4': ['MA4-SUB1', 'MA4-SUB2', 'MA4-SUB3'],
-        'MA5': ['MA5-SUB1', 'MA5-SUB2', 'MA5-SUB3']
-    });
+    const [groupedAreas, setGroupedAreas] = useState({});     // { MA1: [...], MA2: [...] }
+    const [mainAreas, setMainAreas] = useState([]);     // [ 'MA1', 'MA2', … ]
+    const [availableSubAreas, setAvailableSubAreas] = useState([]);
+    const [riskSources, setRiskSources] = useState([]);
+    const inputRefs = useRef({});
+    const [filteredControls, setFilteredControls] = useState({});
+    const [showDropdown, setShowDropdown] = useState(null);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [controls, setControls] = useState([]);
+    const [helpControl, setHelpControl] = useState(false);
+    const [helpOdds, setHelpOdds] = useState(false);
+    const [helpMaxCons, setHelpMaxCons] = useState(false);
+    const [helpRR, setHelpRR] = useState(false);
+    const [helpPUE, setHelpPUE] = useState(false);
+    const [filteredUE, setFilteredUE] = useState([]);
+    const [showUEDropdown, setShowUEDropdown] = useState(false);
+    const ueInputRef = useRef(null);
+    const [filteredRiskSource, setFilteredRiskSource] = useState([]);
+    const [showRiskSourceDropdown, setShowRiskSourceDropdown] = useState(false);
+    const riskSourceInputRef = useRef(null);
     const [functionalOwners] = useState(['Owner1', 'Owner2', 'Owner3', 'Owner4', 'Owner5']);
     const [likelihoodOptions] = useState(['1: Rare', '2. Unlikely', '3. Possible', '4. Likely', '5. Almost Certain']);
     const [maxRiskRankOptions] = useState(['1-3: Low', '4-6: Medium', '7-9: High']);
-    const [riskSources] = useState(['Objects', 'Environment', 'PH1', 'PH2', 'PH3']);
     const [helpFO, setHelpFO] = useState(false);
     const [helpRS, setHelpRS] = useState(false);
     const [helpHaz, setHelpHaz] = useState(false);
+    const [helpRating, setHelpRating] = useState(false);
     const [classNameRiskRank, setClassNameRiskRank] = useState('');
+    const [classNamePUE, setClassNamePUE] = useState('');
+    const [classNameMUE, setClassNameMUE] = useState('');
+
+    const openHelpControl = () => {
+        setHelpControl(true);
+    }
+
+    const closeHelpControl = () => {
+        setHelpControl(false);
+    }
+
+    const openHelpRating = () => {
+        setHelpRating(true);
+    }
+
+    const closeHelpRating = () => {
+        setHelpRating(false);
+    }
+
+    const openHelpPUE = () => {
+        setHelpPUE(true);
+    }
+
+    const closeHelpPUE = () => {
+        setHelpPUE(false);
+    }
+
+    const openHelpRR = () => {
+        setHelpRR(true);
+    }
+
+    const closeHelpRR = () => {
+        setHelpRR(false);
+    }
+
+    const openHelpMaxCons = () => {
+        setHelpMaxCons(true);
+    }
+
+    const closeHelpMaxCons = () => {
+        setHelpMaxCons(false);
+    }
+
+    const openHelpOdds = () => {
+        setHelpOdds(true);
+    }
+
+    const closeHelpOdds = () => {
+        setHelpOdds(false);
+    }
 
     const openHelpFO = () => {
         setHelpFO(true);
@@ -53,10 +121,9 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     }
 
     // State for selected values
-    const [majorRisk, setMajorRisk] = useState('');
+    const [materialEvent, setMaterialEvent] = useState('');
     const [priorityEvent, setPriorityEvent] = useState('');
     const [maxConsequence, setMaxConsequence] = useState('');
-    const [possibleImprovements, setPossibleImprovements] = useState('');
     const [additionalComments, setAdditionalComments] = useState('');
     const [selectedMainArea, setSelectedMainArea] = useState('');
     const [selectedSubArea, setSelectedSubArea] = useState('');
@@ -65,8 +132,6 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     const [selectedUE, setSelectedUE] = useState('');
     const [selectedMaxRiskRank, setSelectedMaxRiskRank] = useState('');
     const [riskSource, setRiskSource] = useState('');
-    const [availableSubAreas, setAvailableSubAreas] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({
         author: false,
@@ -97,6 +162,27 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         { id: 7, label: 'R', value: '-' },
     ]);
 
+    const [ueOptions] = useState([
+        'Spill',
+        'Leak',
+        'Overload',
+        'Fire',
+        'Explosion',
+        'Decay',
+    ]);
+
+    const showFullWord = (type) => {
+        switch (type) {
+            case "S": return "(S) Safety:";
+            case "H": return "(H) Occupational Health: ";
+            case "E": return "(E) Environmental Impact: ";
+            case "C": return "(C) Community / Social: ";
+            case "L&R": return "(L&R) Legal & Regulatory: ";
+            case "M": return "(M) Material / Financial Losses: ";
+            case "R": return "(R) Impact on Reputation: "
+        }
+    };
+
     const riskRankOptions = ['-', '1: Ins', '2: Min', '3: Mod', '4: High', '5: Maj'];
 
     const valid = () => {
@@ -104,6 +190,44 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         return true;
     };
 
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest('.floating-dropdown') &&
+                !e.target.closest('input');
+            if (outside) {
+                setShowDropdown(null);
+                setShowUEDropdown(false);
+                setShowRiskSourceDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showDropdown, showUEDropdown, showRiskSourceDropdown]);
+
+    useEffect(() => {
+        async function fetchValues() {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/getValues`);
+                if (!res.ok) throw new Error('Failed to fetch lookup data');
+                // parse once, pull out both
+                const { areas, risks, controls } = await res.json();
+                // build a lookup
+                const lookup = {};
+                areas.forEach(({ mainArea, subAreas }) => {
+                    lookup[mainArea] = subAreas;
+                });
+
+                setGroupedAreas(lookup);
+                setMainAreas(Object.keys(lookup));
+                setRiskSources(risks);
+                setControls(controls);
+            } catch (err) {
+                console.error("Error fetching areas:", err);
+            }
+        }
+        fetchValues();
+    }, []);
 
     useEffect(() => {
         if (data) {
@@ -113,9 +237,8 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             setSelectedOwner(data.owner || '');
             setSelectedLikelihood(data.odds || '');
             setSelectedMaxRiskRank(data.riskRank || '');
-            setMajorRisk(data.majorRisk || '');
+            setMaterialEvent(data.material || '');
             setPriorityEvent(data.priority || '');
-            setPossibleImprovements(data.possible || '');
             setAdditionalComments(data.additional || '');
             setMaxConsequence(data.maxConsequence || '');
             setRiskSource(data.source || '');
@@ -153,7 +276,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
             // Update available sub areas immediately if mainArea exists
             if (data.main) {
-                setAvailableSubAreas(subAreas[data.main] || []);
+                setAvailableSubAreas(groupedAreas[selectedMainArea] || []);
             }
         }
     }, [data]);
@@ -206,27 +329,46 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
             if (maxRiskRank >= 3) {
                 setPriorityEvent('Yes');
+                setClassNamePUE("ibra-popup-page-input-orange");
             }
             else if (maxRiskRank < 3 && maxRiskRank > 0) {
                 setPriorityEvent('No');
+                setClassNamePUE("");
+            }
+
+            if (maxRiskRank >= 5) {
+                setMaterialEvent('Yes');
+                setClassNameMUE("ibra-popup-page-input-red");
+            }
+            else if (maxRiskRank < 5 && maxRiskRank > 0) {
+                setMaterialEvent('No');
+                setClassNameMUE("");
             }
         }
     }, [selectedLikelihood, riskRankRows]);
 
-
     // Update available sub areas when main area changes
     useEffect(() => {
-        if (selectedMainArea) {
-            setAvailableSubAreas(subAreas[selectedMainArea] || []);
-
-            // Only clear selectedSubArea if the previously selected value is no longer available in the new subAreas list
-            if (!subAreas[selectedMainArea].includes(selectedSubArea)) {
-                setSelectedSubArea(''); // Clear sub-area only if the selected value is invalid
-            }
-        } else {
+        // 1) If no main area chosen, just clear the list
+        if (!selectedMainArea) {
             setAvailableSubAreas([]);
+            return;
         }
-    }, [selectedMainArea, subAreas]);
+
+        // 2) Grab the sub–area list for this main area (might be undefined while loading)
+        const subs = groupedAreas[selectedMainArea];
+
+        // 3) If it's not loaded yet, do nothing––we don't want to clear your existing sub–area
+        if (!subs) return;
+
+        // 4) Now we know we have a real array:
+        setAvailableSubAreas(subs);
+
+        // 5) Only clear the current sub–area if it’s non-empty AND *not* in the new list
+        if (selectedSubArea && !subs.includes(selectedSubArea)) {
+            setSelectedSubArea('');
+        }
+    }, [selectedMainArea, groupedAreas]);
 
     // Functions to handle hazard rows
     const handleHazardChange = (id, value) => {
@@ -321,12 +463,11 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             owner: selectedOwner,
             odds: selectedLikelihood,
             riskRank: selectedMaxRiskRank,
-            majorRisk,
+            material: materialEvent,
             UE: selectedUE,
             priority: priorityEvent,
             maxConsequence: maxConsequence,
             additional: additionalComments,
-            possible: possibleImprovements,
             source: riskSource,
             hazards: hazardRows.map(row => row.value),  // Collecting all hazard row values
             controls: controlRows.map(row => row.value), // Collecting all control row values
@@ -339,6 +480,135 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         // Call the onSave function with updated data
         onSave(data.nr, updatedData);
         onClose();
+    };
+
+    const handleUEInput = (value) => {
+        setSelectedUE(value);
+        const matches = ueOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredUE(matches);
+        setShowUEDropdown(true);
+
+        const el = ueInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleUEFocus = () => {
+        const matches = ueOptions.slice(0, 15);
+        setFilteredUE(matches);
+        setShowUEDropdown(true);
+
+        const el = ueInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectUESuggestion = (value) => {
+        setSelectedUE(value);
+        setShowUEDropdown(false);
+    };
+
+    const handleRiskSourceInput = (value) => {
+        setRiskSource(value);
+        const matches = riskSources
+            .filter(term => term.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredRiskSource(matches);
+        setShowRiskSourceDropdown(true);
+
+        const el = riskSourceInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleRiskSourceFocus = () => {
+        const matches = riskSources.slice(0, 15);
+        setFilteredRiskSource(matches);
+        setShowRiskSourceDropdown(true);
+
+        const el = riskSourceInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectRiskSourceSuggestion = (value) => {
+        setRiskSource(value);
+        setShowRiskSourceDropdown(false);
+    };
+
+    const handleControlInput = (id, value) => {
+        handleControlChange(id, value);
+
+        const matches = controls
+            .filter(c => c.control.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredControls(prev => ({ ...prev, [id]: matches }));
+
+
+        setShowDropdown(id);
+        const el = inputRefs.current[`control-${id}`];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const handleControlFocus = (id) => {
+        const current = controlRows.find(r => r.id === id)?.value || '';
+        const matches = controls
+            .filter(c => c.control.toLowerCase().includes(current.toLowerCase()))
+            .slice(0, 15);
+        setFilteredControls(prev => ({ ...prev, [id]: matches }));
+        setShowDropdown(id);
+
+        const el = inputRefs.current[`control-${id}`];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const selectControlSuggestion = (id, controlText) => {
+        handleControlChange(id, controlText);
+        setShowDropdown(null);
     };
 
     return (
@@ -362,7 +632,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                 <div className="ibra-popup-page-additional-row">
                                     <div className="ibra-popup-page-column-half">
                                         <div className="ibra-popup-page-component-wrapper">
-                                            <div className={`ibra-popup-page-form-group ${errors.author ? "error-upload-required-up" : ""}`}>
+                                            <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
                                                 <label>Main Area <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
@@ -370,11 +640,9 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                         value={selectedMainArea}
                                                         onChange={(e) => setSelectedMainArea(e.target.value)}
                                                     >
-                                                        <option value="">Select Main Area</option>
-                                                        {mainAreas.map((area, index) => (
-                                                            <option key={index} value={area}>
-                                                                {area}
-                                                            </option>
+                                                        <option value="">Choose Main Area</option>
+                                                        {mainAreas.sort().map(ma => (
+                                                            <option key={ma} value={ma}>{ma}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -383,7 +651,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     </div>
                                     <div className="ibra-popup-page-column-half">
                                         <div className="ibra-popup-page-component-wrapper">
-                                            <div className={`ibra-popup-page-form-group ${errors.author ? "error-upload-required-up" : ""}`}>
+                                            <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
                                                 <label>Sub Area <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
@@ -392,11 +660,9 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                         onChange={(e) => setSelectedSubArea(e.target.value)}
                                                         disabled={!selectedMainArea}
                                                     >
-                                                        <option value="">Select Sub Area</option>
-                                                        {availableSubAreas.map((area, index) => (
-                                                            <option key={index} value={area}>
-                                                                {area}
-                                                            </option>
+                                                        <option value="">Choose Sub Area</option>
+                                                        {availableSubAreas.sort().map(sa => (
+                                                            <option key={sa} value={sa}>{sa}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -433,18 +699,16 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                             <div className={`ibra-popup-page-form-group ${errors.riskSource ? "error-upload-required-up" : ""}`}>
                                                 <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Risk Source <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
-                                                    <select
+                                                    <input
+                                                        type="text"
+                                                        style={{ color: "black", cursor: "text" }}
+                                                        ref={riskSourceInputRef}
+                                                        className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                        placeholder="Choose Risk Source"
                                                         value={riskSource}
-                                                        className="ibra-popup-page-select"
-                                                        onChange={(e) => setRiskSource(e.target.value)}
-                                                    >
-                                                        <option value="">Select Risk Source</option>
-                                                        {riskSources.sort((a, b) => a.localeCompare(b)).map((type, index) => (
-                                                            <option key={index} value={type}>
-                                                                {type}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                        onChange={e => handleRiskSourceInput(e.target.value)}
+                                                        onFocus={handleRiskSourceFocus}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -489,7 +753,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                         className="ibra-popup-page-add-row-button"
                                                         onClick={addHazardRow}
                                                     >
-                                                        <FontAwesomeIcon icon={faPlus} style={{ marginRight: '5px' }} /> Add Hazard
+                                                        <FontAwesomeIcon icon={faCirclePlus} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -503,41 +767,51 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                         <h3 className="ibra-popup-hazard-title">Unwanted Event</h3>
 
                                                         {/* 2) The dropdown immediately after */}
-                                                        <select
-                                                            className="ibra-popup-dropdown"
+                                                        <input
+                                                            type="text"
+                                                            style={{ color: "black", cursor: "text" }}
+                                                            ref={ueInputRef}
+                                                            className="ibra-popup-dropdown ibra-popup-page-input-table"
+                                                            placeholder="Choose Unwanted Event"
                                                             value={selectedUE}
-                                                            onChange={e => setSelectedUE(e.target.value)}
-                                                        >
-                                                            <option value="">Select Unwanted Event</option>
-                                                            <option value="Spill">Spill</option>
-                                                            <option value="Leak">Leak</option>
-                                                            <option value="Overload">Overload</option>
-                                                            <option value="test">PH 1</option>
-                                                            <option value="testw">PH 2</option>
-                                                            <option value="teste">PH 3</option>
-                                                            {/* …your real list here… */}
-                                                        </select>
+                                                            onChange={e => handleUEInput(e.target.value)}
+                                                            onFocus={handleUEFocus}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div className="ibra-popup-page-component-wrapper-special">
+                                        <div className="ibra-popup-page-form-group">
+                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description <span className="ibra-popup-page-required">*</span></label>
+                                            <textarea
+                                                className="ibra-popup-page-textarea-2"
+                                                value={maxConsequence}
+                                                onChange={(e) => setMaxConsequence(e.target.value)}
+                                                placeholder="Enter max reasonable consequence details"
+                                            ></textarea>
+                                        </div>
+                                    </div>
                                     <div className="ibra-popup-page-component-wrapper">
                                         <div className={`ibra-popup-page-form-group ${errors.controls ? "error-upload-required-up" : ""}`}>
-                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Current Controls <span className="ibra-popup-page-required">*</span></label>
+                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpControl} />Current Controls <span className="ibra-popup-page-required">*</span></label>
                                             <table className="ibra-popup-page-table">
                                                 <tbody>
                                                     {controlRows.map(row => (
                                                         <tr key={row.id}>
                                                             <td>
                                                                 <div className="ibra-popup-page-row-actions">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={row.value}
-                                                                        className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                                        onChange={(e) => handleControlChange(row.id, e.target.value)}
-                                                                        placeholder="Enter control measure"
-                                                                    />
+                                                                    <div className="ibra-popup-page-select-container">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={row.value}
+                                                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                            onFocus={() => handleControlFocus(row.id)}
+                                                                            onChange={e => handleControlInput(row.id, e.target.value)}
+                                                                            ref={el => inputRefs.current[`control-${row.id}`] = el}
+                                                                        />
+                                                                    </div>
                                                                     <button
                                                                         type="button"
                                                                         className="ibra-popup-page-action-button"
@@ -556,7 +830,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                 className="ibra-popup-page-add-row-button"
                                                 onClick={addControlRow}
                                             >
-                                                <FontAwesomeIcon icon={faPlus} style={{ marginRight: '5px' }} /> Add Control
+                                                <FontAwesomeIcon icon={faCirclePlus} />
                                             </button>
                                         </div>
                                     </div>
@@ -565,8 +839,8 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
                             <div className="ibra-popup-page-form-group-main-container-2">
                                 <div className="ibra-popup-page-component-wrapper">
-                                    <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                        <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Likelihood of the Event <span className="ibra-popup-page-required">*</span></label>
+                                    <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
+                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px" }} onClick={openHelpOdds} />Likelihood of the Event <span className="ibra-popup-page-required">*</span></label>
                                         <div className="ibra-popup-page-select-container">
                                             <select
                                                 className="ibra-popup-page-select"
@@ -585,138 +859,97 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                 </div>
 
                                 <div className="ibra-popup-page-form-row-2">
-                                    <div className="ibra-popup-page-additional-row">
-                                        <div className="ibra-popup-page-column-half">
-                                            <div className="ibra-popup-page-component-wrapper">
-                                                <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Consequence Rating <span className="ibra-popup-page-required">*</span></label>
-                                                    <table className="ibra-popup-page-consequence-table">
-                                                        <tbody>
-                                                            {riskRankRows.map(row => (
-                                                                <tr key={row.id}>
-                                                                    <td className="ibra-popup-page-label-cell">
-                                                                        <div className="ibra-popup-page-label-box">
-                                                                            {row.label}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="ibra-popup-page-select-cell">
-                                                                        <select
-                                                                            value={row.value}
-                                                                            className="ibra-popup-page-select-c"
-                                                                            onChange={(e) => handleRiskRankChange(row.id, e.target.value)}
-                                                                        >
-                                                                            {riskRankOptions.map((option, index) => (
-                                                                                <option key={index} value={option}>
-                                                                                    {option}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                    <div className="ibra-popup-page-component-wrapper">
+                                        <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
+                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpRating} />Consequence Rating <span className="ibra-popup-page-required">*</span></label>
+                                            <table className="ibra-popup-page-consequence-table">
+                                                <tbody>
+                                                    {riskRankRows.map(row => (
+                                                        <tr key={row.id}>
+                                                            <td className="ibra-popup-page-label-cell">
+                                                                <div className="ibra-popup-page-label-box">
+                                                                    {showFullWord(row.label)}
+                                                                </div>
+                                                            </td>
+                                                            <td className="ibra-popup-page-select-cell">
+                                                                <div className="ibra-popup-page-select-container">
+                                                                    <select
+                                                                        value={row.value}
+                                                                        className="ibra-popup-page-select-c"
+                                                                        onChange={(e) => handleRiskRankChange(row.id, e.target.value)}
+                                                                    >
+                                                                        {riskRankOptions.map((option, index) => (
+                                                                            <option key={index} value={option}>
+                                                                                {option}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="ibra-popup-page-form-group-main-container-2">
+                                <div className="ibra-popup-page-additional-row-3">
+                                    <div className="ibra-popup-page-column-third">
+                                        <div className={`ibra-popup-page-component-wrapper ${classNameRiskRank}`}>
+                                            <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
+                                                <label className={`${classNameRiskRank}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpRR} />Max Risk Rank <span className="ibra-popup-page-required">*</span></label>
+                                                <label
+                                                    className={`ibra-popup-page-label-output ${classNameRiskRank}`}
+                                                >
+                                                    {selectedMaxRiskRank || '-'}
+                                                </label>
                                             </div>
                                         </div>
-                                        <div className="ibra-popup-page-column-half">
-                                            <div className="ibra-popup-page-component-wrapper-special">
-                                                <div className="ibra-popup-page-form-group">
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Max Reasonable Consequence <span className="ibra-popup-page-required">*</span></label>
-                                                    <textarea
-                                                        className="ibra-popup-page-textarea-2"
-                                                        value={maxConsequence}
-                                                        onChange={(e) => setMaxConsequence(e.target.value)}
-                                                        placeholder="Enter max reasonable consequence details"
-                                                    ></textarea>
-                                                </div>
-                                            </div>
-                                            <div className="ibra-popup-page-additional-row-2">
-                                                <div className="ibra-popup-page-column-half">
-                                                    <div className="ibra-popup-page-component-wrapper">
-                                                        <div className="ibra-popup-page-form-group">
-                                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Major Risk <span className="ibra-popup-page-required">*</span></label>
-                                                            <div className="ibra-popup-page-select-container">
-                                                                <select
-                                                                    className="ibra-popup-page-select"
-                                                                    value={majorRisk}
-                                                                    onChange={(e) => setMajorRisk(e.target.value)}
-                                                                >
-                                                                    <option value="">Select Option</option>
-                                                                    <option value="Yes">Yes</option>
-                                                                    <option value="No">No</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="ibra-popup-page-column-half">
-                                                    <div className="ibra-popup-page-component-wrapper">
-                                                        <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
-                                                            <label>  <FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Max Risk Rank <span className="ibra-popup-page-required">*</span></label>
-                                                            <input
-                                                                className={`ibra-popup-page-input ${classNameRiskRank}`}
-                                                                value={selectedMaxRiskRank}
-                                                                type='text'
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="ibra-popup-page-component-wrapper">
-                                                <div className="ibra-popup-page-form-group">
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Priority Unwanted Event <span className="ibra-popup-page-required">*</span></label>
-                                                    <input
-                                                        className={`ibra-popup-page-input`}
-                                                        value={priorityEvent}
-                                                        type='text'
-                                                        readOnly
-                                                    />
-                                                </div>
-                                            </div>
+                                    </div>
 
+                                    <div className="ibra-popup-page-column-third">
+                                        <div className={`ibra-popup-page-component-wrapper ${classNamePUE}`}>
+                                            <div className="ibra-popup-page-form-group">
+                                                <label className={`${classNamePUE}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpPUE} />Priority Unwanted Event (PUE)<span className="ibra-popup-page-required">*</span></label>
+                                                <label
+                                                    className={`ibra-popup-page-label-output ${classNamePUE}`}
+                                                >
+                                                    {priorityEvent || '-'}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="ibra-popup-page-column-third">
+                                        <div className={`ibra-popup-page-component-wrapper ${classNameMUE}`}>
+                                            <div className={`ibra-popup-page-form-group`}>
+                                                <label className={`${classNameMUE}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Material Unwanted Event (MUE)<span className="ibra-popup-page-required">*</span></label>
+                                                <label
+                                                    className={`ibra-popup-page-label-output ${classNameMUE}`}
+                                                >
+                                                    {materialEvent || '-'}
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="ibra-popup-page-form-group-main-container-2">
-                                <div className="ibra-popup-page-additional-row">
-                                    <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-additional-row">
-                                            <div className="ibra-popup-page-component-wrapper-special2" style={{ width: '100%' }}>
-                                                <div className="ibra-popup-page-form-group">
-                                                    <label>Additional Comments</label>
-                                                    <textarea
-                                                        className="ibra-popup-page-textarea-full"
-                                                        value={additionalComments}
-                                                        onChange={(e) => setAdditionalComments(e.target.value)}
-                                                        placeholder="Enter any additional comments or notes"
-                                                    ></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-component-wrapper-special2">
-                                            <div className="ibra-popup-page-form-group">
-                                                <label>Possible Improvements <span className="ibra-popup-page-required">*</span></label>
-                                                <textarea
-                                                    className="ibra-popup-page-textarea"
-                                                    value={possibleImprovements}
-                                                    onChange={(e) => setPossibleImprovements(e.target.value)}
-                                                    placeholder="Enter possible improvements"
-                                                ></textarea>
-                                            </div>
-                                        </div>
+                                <div className="ibra-popup-page-component-wrapper">
+                                    <div className="ibra-popup-page-form-group">
+                                        <label>Additional Notes</label>
+                                        <textarea
+                                            className="ibra-popup-page-textarea-full"
+                                            value={additionalComments}
+                                            onChange={(e) => setAdditionalComments(e.target.value)}
+                                            placeholder="Enter additional notes"
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>
-                            {/* Second additional row with two textareas */}
-
-
-
                         </div>
                     </div>
 
@@ -733,9 +966,78 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                     </div>
                 </div>
             </div>
+            {showDropdown !== null && filteredControls[showDropdown]?.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: "fixed",
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredControls[showDropdown].map(ctrl => (
+                        <li key={ctrl.id}
+                            onMouseDown={() => selectControlSuggestion(showDropdown, ctrl.control)}>
+                            {ctrl.control}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showUEDropdown && filteredUE.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredUE.map((opt, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectUESuggestion(opt)}
+                        >
+                            {opt}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showRiskSourceDropdown && filteredRiskSource.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredRiskSource.map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectRiskSourceSuggestion(term.term)}
+                        >
+                            {term.term}
+                        </li>
+                    ))}
+                </ul>
+            )}
             {helpFO && (<FunctionalOwnership setClose={closeHelpFO} />)}
             {helpRS && (<RiskSource setClose={closeHelpRS} />)}
             {helpHaz && (<Hazard setClose={closeHelpHaz} />)}
+            {helpControl && (<CurrentControls setClose={closeHelpControl} />)}
+            {helpOdds && (<LikelihoodHelp setClose={closeHelpOdds} />)}
+            {helpMaxCons && (<MaxConsequence setClose={closeHelpMaxCons} />)}
+            {helpRR && (<MaxRiskRank setClose={closeHelpRR} />)}
+            {helpPUE && (<PriorityUE setClose={closeHelpPUE} />)}
+            {helpRating && (<ConsequenceRating setClose={closeHelpRating} />)}
             <ToastContainer />
         </div>
     );

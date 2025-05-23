@@ -1,4 +1,4 @@
-.popup-overlay-ue {
+.popup-overlay-rt {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,13 +11,13 @@
     z-index: 9999;
 }
 
-.popup-content-ue {
+.popup-content-rt {
     background: #f2f2f2;
     padding: 20px;
     width: 1000px;
     /* Wider popup */
     max-height: 100%;
-    min-height: 500px;
+    min-height: 100px;
     /* Ensure the popup does not stretch vertically */
     overflow: hidden;
     /* Prevent the popup content from scrolling */
@@ -26,7 +26,7 @@
     border-radius: 10px;
 }
 
-.ue-table-group {
+.rt-table-group {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -38,7 +38,7 @@
     border-radius: 5px;
 }
 
-.ue-table-group-2 {
+.rt-table-group-2 {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -53,10 +53,10 @@
     margin-bottom: 10px !important;
 }
 
-.popup-table-wrapper-ue {
+.popup-table-wrapper-rt {
     overflow-y: auto;
-    max-height: 207px;
-    min-height: 207px;
+    max-height: 150px;
+    min-height: 150px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
@@ -74,10 +74,10 @@
     display: block;
 }
 
-.popup-table-wrapper-ue-2 {
+.popup-table-wrapper-rt-2 {
     overflow-y: auto;
-    max-height: 190px;
-    min-height: 190px;
+    max-height: 140px;
+    min-height: 140px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
@@ -95,7 +95,7 @@
     white-space: pre-line;
 }
 
-.ue-headers {
+.rt-headers {
     position: sticky;
     top: 0;
     background-color: #002060;
@@ -103,12 +103,12 @@
     z-index: 1;
 }
 
-.inp-size-ue {
+.inp-size-rt {
     width: 30%;
     text-align: center;
 }
 
-.desc-size-ue {
+.desc-size-rt {
     width: 70%;
     text-align: center;
 }

@@ -6,12 +6,157 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 
-const JRATable = ({ formData, setFormData }) => {
+const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const ibraBoxRef = useRef(null);
+    const [filters, setFilters] = useState({});
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
     const [selectedRowData, setSelectedRowData] = useState(null);
     const [hoveredBody, setHoveredBody] = useState({ rowId: null, bodyIdx: null });
+    const savedWidthRef = useRef(null);
+
+    const [filterPopup, setFilterPopup] = useState({
+        visible: false,
+        column: null,
+        pos: { top: 0, left: 0, width: 0 }
+    });
+
+    const [controlPopup, setControlPopup] = useState({
+        visible: false,
+        rowId: null,
+        bodyIdx: null,
+        controlIdx: null,
+        pos: { top: 0, left: 0 }
+    });
+
+    function openControlPopup(rowId, bodyIdx, controlIdx, e) {
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        setControlPopup({
+            visible: true,
+            rowId,
+            bodyIdx,
+            controlIdx,
+            pos: {
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX
+            }
+        });
+    }
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (
+                controlPopup.visible &&
+                !e.target.closest('.jra-control-popup') &&
+                !e.target.closest('.popup-trigger-icon')
+            ) {
+                setControlPopup(cp => ({ ...cp, visible: false }));
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [controlPopup.visible]);
+
+    function extractColumnValues(row, colId) {
+        if (colId === "nr") return [String(row.nr)];
+        if (colId === "main") return [row.main];
+        return row.jraBody.flatMap(body => {
+            switch (colId) {
+                case "hazards": return body.hazards.map(h => h.hazard);
+                case "UE": return body.UE.map(u => u.ue);
+                case "sub": return body.sub.map(s => s.task);
+                case "taskExecution": return body.taskExecution.map(te => te.R);
+                case "controls": return body.controls.map(c => c.control);
+                case "notes": return [body.notes];
+                default: return [];
+            }
+        });
+    }
+
+    function extractBodyValues(body, colId) {
+        switch (colId) {
+            case "hazards": return body.hazards.map(h => h.hazard);
+            case "UE": return body.UE.map(u => u.ue);
+            case "sub": return body.sub.map(s => s.task);
+            case "taskExecution": return body.taskExecution.map(te => te.R);
+            case "controls": return body.controls.map(c => c.control);
+            case "notes": return [body.notes];
+            default: return [];
+        }
+    }
+
+    function applyFilter(value) {
+        setFilters(prev => ({
+            ...prev,
+            [filterPopup.column]: value
+        }));
+        setFilterPopup(prev => ({ ...prev, visible: false }));
+    }
+
+    // clear the filter & close popup
+    function clearFilter() {
+        setFilters(prev => {
+            const next = { ...prev };
+            delete next[filterPopup.column];
+            return next;
+        });
+        setFilterPopup(prev => ({ ...prev, visible: false }));
+    }
+
+    function openFilterPopup(colId, e) {
+        const rect = e.target.getBoundingClientRect();
+        setFilterPopup({
+            visible: true,
+            column: colId,
+            pos: {
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            }
+        });
+    }
+
+    const filteredRows = formData.jra.reduce((acc, row) => {
+        let keepRow = true;
+        let survivingBodies = row.jraBody;
+
+        for (const [colId, text] of Object.entries(filters)) {
+            const lcText = text.toLowerCase();
+
+            // 1) group-level filters:
+            if (colId === "nr") {
+                if (!String(row.nr).toLowerCase().includes(lcText)) {
+                    keepRow = false;
+                    break;
+                }
+            } else if (colId === "main") {
+                if (!row.main.toLowerCase().includes(lcText)) {
+                    keepRow = false;
+                    break;
+                }
+
+                // 2) body-level filters: prune jraBody array
+            } else {
+                survivingBodies = survivingBodies.filter(body =>
+                    extractBodyValues(body, colId)
+                        .some(val => val.toLowerCase().includes(lcText))
+                );
+                // if no bodies remain, we must drop the whole row
+                if (survivingBodies.length === 0) {
+                    keepRow = false;
+                    break;
+                }
+            }
+        }
+
+        if (keepRow) {
+            // push a copy of the row with its pruned jraBody
+            acc.push({ ...row, jraBody: survivingBodies });
+        }
+        return acc;
+
+    }, []);
 
     const closePopup = () => {
         setIbraPopup(false);
@@ -238,6 +383,9 @@ const JRATable = ({ formData, setFormData }) => {
         let scrollLeft;
 
         const mouseDownHandler = (e) => {
+            if (e.target.closest('input, textarea, select, button')) {
+                return;
+            }
             isDown = true;
             wrapper.classList.add('grabbing');
             startX = e.pageX - wrapper.offsetLeft;
@@ -276,21 +424,33 @@ const JRATable = ({ formData, setFormData }) => {
     }, []);
 
     useEffect(() => {
-        const adjustTableWrapperWidth = () => {
-            if (ibraBoxRef.current && tableWrapperRef.current) {
-                const boxWidth = ibraBoxRef.current.offsetWidth;
-                const tableWrapperWidth = boxWidth - 30;
-                tableWrapperRef.current.style.width = `${tableWrapperWidth}px`;
-            }
+        const adjust = () => {
+            if (!ibraBoxRef.current || !tableWrapperRef.current) return;
+            const boxW = ibraBoxRef.current.offsetWidth;
+            tableWrapperRef.current.style.width = `${boxW - 30}px`;
         };
+        window.addEventListener('resize', adjust);
+        adjust();
+        return () => window.removeEventListener('resize', adjust);
+    }, []);
 
-        adjustTableWrapperWidth();
-        window.addEventListener('resize', adjustTableWrapperWidth);
+    useEffect(() => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
 
-        return () => {
-            window.removeEventListener('resize', adjustTableWrapperWidth);
-        };
-    }, [tableWrapperRef.current]);
+        if (!isSidebarVisible) {
+            // Sidebar just hid: remember current width
+            savedWidthRef.current = wrapper.offsetWidth;
+        } else if (savedWidthRef.current != null) {
+            // Sidebar just shown again: re-apply the old width
+            wrapper.style.width = `${savedWidthRef.current}px`;
+            // skip the "live" recalc this one time
+            return;
+        }
+        // otherwise (e.g. initial mount or no saved width) do a normal recalc
+        const boxW = ibraBoxRef.current.offsetWidth;
+        wrapper.style.width = `${boxW - 30}px`;
+    }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
         "nr", "main", "hazards", "sub", "UE", "action",
@@ -447,7 +607,7 @@ const JRATable = ({ formData, setFormData }) => {
                                     const column = availableColumns.find(col => col.id === columnId);
                                     if (column) {
                                         return (
-                                            <th key={index} className={column.className}>
+                                            <th key={index} className={`${column.className} jra-header-cell ${filters[columnId] ? 'jra-filter-active' : ''}`} onClick={e => openFilterPopup(columnId, e)}>
                                                 {column.icon ? (
                                                     <FontAwesomeIcon icon={column.icon} />
                                                 ) : (
@@ -468,7 +628,7 @@ const JRATable = ({ formData, setFormData }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {formData.jra.map((row, rowIndex) => {
+                            {filteredRows.map((row, rowIndex) => {
                                 const rowCount = row.jraBody.length;
 
                                 return (
@@ -589,6 +749,9 @@ const JRATable = ({ formData, setFormData }) => {
                                                     if (colId === "UE") {
                                                         return (
                                                             <td key={colIdx} className={cls} >
+                                                                {/* remove paired sub/control */}
+
+
                                                                 {body.UE.map((uObj, uIdx) => (
                                                                     <div className="ibra-popup-page-select-container">
                                                                         <select
@@ -618,23 +781,45 @@ const JRATable = ({ formData, setFormData }) => {
                                                         return (
                                                             <td key={colIdx} className={cls}>
                                                                 {body.sub.map((sObj, sIdx) => (
-                                                                    <textarea
-                                                                        key={sIdx}
-                                                                        className="aim-textarea-risk-jra"
-                                                                        rows={1}
-                                                                        value={sObj.task}
-                                                                        style={{
-                                                                            display: "block",       // ← force it onto its own line
-                                                                            width: "100%",        // ← optional: make it fill cell width
-                                                                            marginBottom: "5px"
-                                                                        }}
-                                                                        onChange={e => {
-                                                                            const upd = [...formData.jra];
-                                                                            upd[rowIndex].jraBody[bodyIdx].sub[sIdx].task = e.target.value;
-                                                                            updateRows(upd);
-                                                                        }}
-                                                                    />
+                                                                    <div className="control-with-icons" key={colIdx}>
+                                                                        <FontAwesomeIcon
+                                                                            icon={faTrash}
+                                                                            className="control-icon trash-icon"
+                                                                            title="Remove this control & sub-step"
+                                                                            onClick={() => removeSubControl(row.id, body.idBody, sIdx)}
+                                                                        />
+
+                                                                        {/* add new paired sub/control at end */}
+                                                                        <FontAwesomeIcon
+                                                                            icon={faCirclePlus}
+                                                                            className="control-icon plus-icon"
+                                                                            title="Add sub & control here"
+                                                                            onClick={() => insertSubControl(row.id, body.idBody)}
+                                                                        />
+                                                                        <textarea
+                                                                            key={sIdx}
+                                                                            className="aim-textarea-sub-jra"
+                                                                            rows={1}
+                                                                            value={sObj.task}
+                                                                            style={{
+                                                                                display: "block",       // ← force it onto its own line
+                                                                                width: "100%",        // ← optional: make it fill cell width
+                                                                                marginBottom: "5px"
+                                                                            }}
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].sub[sIdx].task = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
+                                                                        />
+                                                                        <FontAwesomeIcon
+                                                                            icon={faMagicWandSparkles}
+                                                                            className="control-icon-ai magic-icon"
+                                                                            title="Do the magic"
+                                                                            onClick={() => {/* your “magic” logic */ }} />
+                                                                    </div>
                                                                 ))}
+
                                                             </td>
                                                         );
                                                     }
@@ -674,44 +859,28 @@ const JRATable = ({ formData, setFormData }) => {
                                                                 {body.controls.map((cObj, cIdx) => (
                                                                     <div className="control-with-icons" key={cIdx}>
                                                                         <textarea
-                                                                        key={cIdx}
-                                                                        className="aim-textarea-risk-jra"
-                                                                        rows={1}
-                                                                        value={cObj.control}
-                                                                        style={{
-                                                                            display: "block",       // ← force it onto its own line
-                                                                            width: "100%",        // ← optional: make it fill cell width
-                                                                            marginBottom: "5px"
-                                                                        }}
-                                                                        onChange={e => {
-                                                                            const upd = [...formData.jra];
-                                                                            upd[rowIndex].jraBody[bodyIdx].controls[cIdx].control = e.target.value;
-                                                                            updateRows(upd);
-                                                                        }}
+                                                                            key={cIdx}
+                                                                            className="aim-textarea-WED-jra"
+                                                                            rows={1}
+                                                                            value={cObj.control}
+                                                                            style={{
+                                                                                display: "block",      // ← optional: make it fill cell width
+                                                                                marginBottom: "5px",
+                                                                                paddingRight: "35px",
+                                                                            }}
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].controls[cIdx].control = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
                                                                         />
 
                                                                         {/* magic sparkles */}
                                                                         <FontAwesomeIcon
                                                                             icon={faMagicWandSparkles}
-                                                                            className="control-icon magic-icon"
+                                                                            className="control-icon-ai magic-icon"
                                                                             title="Do the magic"
-                                                                            onClick={() => {/* your “magic” logic */ }} />
-
-                                                                        {/* remove paired sub/control */}
-                                                                        <FontAwesomeIcon
-                                                                            icon={faTrash}
-                                                                            className="control-icon trash-icon"
-                                                                            title="Remove this control & sub-step"
-                                                                            onClick={() => removeSubControl(row.id, body.idBody, cIdx)}
-                                                                        />
-
-                                                                        {/* add new paired sub/control at end */}
-                                                                        <FontAwesomeIcon
-                                                                            icon={faCirclePlus}
-                                                                            className="control-icon plus-icon"
-                                                                            title="Add sub & control here"
-                                                                            onClick={() => insertSubControl(row.id, body.idBody)}
-                                                                        />
+                                                                            onClick={e => openControlPopup(row.id, bodyIdx, cIdx, e)} />
                                                                     </div>
                                                                 ))}
                                                             </td>
@@ -749,6 +918,81 @@ const JRATable = ({ formData, setFormData }) => {
 
                 </div>
             </div>
+
+            {controlPopup.visible && (
+                <div
+                    className="jra-control-popup"
+                    style={{
+                        position: 'fixed',
+                        top: controlPopup.pos.top,
+                        left: controlPopup.pos.left,
+                        zIndex: 10000
+                    }}
+                >
+                    <button
+                        className="jra-control-popup-btn jra-control-popup-option1"
+                        onClick={() => {
+                            // Option 1 logic here…
+                            setControlPopup(cp => ({ ...cp, visible: false }));
+                        }}
+                    >
+                        Option 1
+                    </button>
+                    <button
+                        className="jra-control-popup-btn jra-control-popup-option2"
+                        onClick={() => {
+                            // Option 2 logic here…
+                            setControlPopup(cp => ({ ...cp, visible: false }));
+                        }}
+                    >
+                        Option 2
+                    </button>
+                </div>
+            )}
+
+            {filterPopup.visible && (
+                <div
+                    className="jra-filter-popup"
+                    style={{
+                        position: 'fixed',
+                        top: filterPopup.pos.top,
+                        left: filterPopup.pos.left - 10,
+                        width: filterPopup.pos.width,
+                        zIndex: 10000
+                    }}
+                >
+                    <input
+                        className="jra-filter-input"
+                        type="text"
+                        placeholder="Filter..."
+                        defaultValue={filters[filterPopup.column] || ''}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') applyFilter(e.target.value);
+                        }}
+                    />
+                    <div className="jra-filter-buttons">
+                        <button
+                            type="button"
+                            className="jra-filter-apply"
+                            onClick={() => {
+                                const val = document
+                                    .querySelector('.jra-filter-input')
+                                    .value;
+                                applyFilter(val);
+                            }}
+                        >
+                            Apply
+                        </button>
+                        <button
+                            type="button"
+                            className="jra-filter-clear"
+                            onClick={clearFilter}
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
