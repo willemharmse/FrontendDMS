@@ -1,4 +1,4 @@
-.popup-overlay-control-activation {
+.popup-overlay-scope {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,13 +11,13 @@
     z-index: 9999;
 }
 
-.popup-content-control-activation {
+.popup-content-scope {
     background: #f2f2f2;
     padding: 20px;
     width: 1000px;
     /* Wider popup */
     max-height: 100%;
-    min-height: 175px;
+    min-height: 350px;
     /* Ensure the popup does not stretch vertically */
     overflow: hidden;
     /* Prevent the popup content from scrolling */
@@ -26,7 +26,7 @@
     border-radius: 10px;
 }
 
-.control-activation-table-group {
+.scope-table-group {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -38,20 +38,26 @@
     border-radius: 5px;
 }
 
-.control-activation-label-help {
-    font-size: 16px;
-    padding: 10px;
-    padding-bottom: 0px;
-    margin-top: 5px;
-    display: block;
-    font-family: Arial;
-    font-style: italic;
+.scope-table-group-2 {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 10px !important;
 }
 
-.popup-table-wrapper-control-activation {
+.popup-table-wrapper-scope {
     overflow-y: auto;
-    max-height: 210px;
-    min-height: 210px;
+    max-height: 207px;
+    min-height: 250px;
+    height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
     margin-bottom: 5px;
@@ -60,7 +66,7 @@
     position: relative;
     /* Ensures the table is positioned correctly */
     display: flex;
-    /* Enable flexbox control-activationr centering the table inside */
+    /* Enable flexbox rsr centering the table inside */
     justify-content: center;
     /* Centers the table horizontally */
     align-items: center;
@@ -68,7 +74,28 @@
     display: block;
 }
 
-.control-activation-headers {
+.popup-table-wrapper-scope-2 {
+    overflow-y: auto;
+    max-height: 290px;
+    min-height: 290px;
+    height: 100%;
+    width: 97%;
+    /* You can adjust the width as needed */
+    background-color: transparent;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox rsr centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table vertically */
+    display: block;
+    white-space: pre-line;
+}
+
+.scope-headers {
     position: sticky;
     top: 0;
     background-color: #002060;
@@ -76,12 +103,12 @@
     z-index: 1;
 }
 
-.inp-size-control-activation {
+.inp-size-scope {
     width: 30%;
     text-align: center;
 }
 
-.desc-size-control-activation {
+.desc-size-scope {
     width: 70%;
     text-align: center;
 }

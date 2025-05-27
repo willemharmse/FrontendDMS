@@ -27,7 +27,7 @@ const CurrentControls = ({ setClose }) => {
                                     </td>
                                     <td>
                                         A control is defined as an act, object (engineered) or system (combination of act and object) intended to prevent or mitigate an unwanted event.
-                                        <br />Source: International Council on Mining and Metals (ICMM) Critical Control Management (CCM) Implementation Guide.
+                                        <br /><span className="itals-help-info">Source: International Council on Mining and Metals (ICMM) Critical Control Management (CCM) Implementation Guide.</span>
                                     </td>
                                 </tr>
                             </tbody>

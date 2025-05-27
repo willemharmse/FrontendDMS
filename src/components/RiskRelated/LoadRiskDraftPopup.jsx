@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
-import "./LoadDraftPopup.css";
+import "./LoadRiskDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 
-const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
+const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType, loadDataIBRA }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
 
     useEffect(() => {
         const getDraftDocuments = async () => {
+            const route = (riskType === "IBRA") ? `riskDraft/ibra/drafts/${userID}` : ``;
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/drafts/${userID}`, {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
                     method: "GET",
                 });
 
@@ -53,7 +54,9 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
 
     const handleLoad = async (draftId) => {
         await setLoadedID(draftId);
-        await loadData(draftId);
+        if (riskType === "IBRA") {
+            await loadDataIBRA(draftId);
+        }
         onClose();
     };
 
@@ -64,9 +67,9 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     const handleDelete = async () => {
         const { draftId } = deleteConfirm;
         if (!draftId) return;
-
+        const route = riskType === "IBRA" ? `riskDraft/ibra/delete/${draftId}` : ``;
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/delete/${draftId}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -166,4 +169,4 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     );
 };
 
-export default LoadDraftPopup;
+export default LoadRiskDraftPopup;

@@ -2,6 +2,18 @@
     width: 3%;
 }
 
+.col-sig-pos-risk {
+    width: 40%;
+}
+
+.col-sig-name-risk {
+    width: 40%;
+}
+
+.col-sig-auth-risk {
+    width: 17%;
+}
+
 .error-sign {
     border: 2px solid #CB6F6F;
     color: #CB6F6F;

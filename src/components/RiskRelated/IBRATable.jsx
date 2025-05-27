@@ -14,16 +14,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const [selectedRowData, setSelectedRowData] = useState(null);
     const [noteText, setNoteText] = useState("");
     const [showNote, setShowNote] = useState(false);
-    const [helpUE, setHelpUE] = useState(false);
     const savedWidthRef = useRef(null);
-
-    const openHelpUE = () => {
-        setHelpUE(true);
-    }
-
-    const closeHelpUE = () => {
-        setHelpUE(false);
-    }
 
     const openNote = (text) => {
         setShowNote(true);
@@ -71,6 +62,29 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         { id: "additional", title: "Notes Regarding the UE", className: "ibraCent ibraAdditional", icon: null },
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
     ];
+
+    const handleRemovePossible = (rowIndex, possIndex) => {
+        const newRows = [...rows];
+        const possibilities = newRows[rowIndex].possible;
+        if (possibilities.length > 1) {
+            possibilities.splice(possIndex, 1);
+            updateRow(newRows);
+        }
+    };
+
+    // Remove one action & its matching dueDate, but leave at least one
+    const handleRemoveAction = (rowIndex, possIndex, actionIndex) => {
+        const newRows = [...rows];
+        const block = newRows[rowIndex].possible[possIndex];
+        if (block.actions.length > 1) {
+            block.actions.splice(actionIndex, 1);
+            // also remove the corresponding dueDate
+            if (Array.isArray(block.dueDate) && block.dueDate.length > actionIndex) {
+                block.dueDate.splice(actionIndex, 1);
+            }
+            updateRow(newRows);
+        }
+    };
 
     const handleAddPossible = (rowIndex, possIndex) => {
         const newRows = [...rows];
@@ -241,15 +255,29 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     }, []);
 
     const insertRowAt = (insertIndex) => {
+        // copy existing rows
         const newRows = [...rows];
 
+        // create a fresh new row (nr doesn’t really matter here)
         const newRow = {
-            id: uuidv4(), nr: rows.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
-            hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
-            R: "-", source: "", material: "", priority: "", possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
-        }
+            id: uuidv4(),
+            nr: 0,
+            main: "", sub: "", owner: "", odds: "", riskRank: "",
+            hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
+            R: "-", source: "", material: "", priority: "",
+            possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }],
+            UE: "", additional: "", maxConsequence: ""
+        };
 
+        // insert it at the desired index
         newRows.splice(insertIndex, 0, newRow);
+
+        // now renumber *all* rows
+        newRows.forEach((row, idx) => {
+            row.nr = idx + 1;
+        });
+
+        // push it back up to your parent
         updateRow(newRows);
     };
 
@@ -295,12 +323,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     return (
         <div className="input-row-risk-ibra">
             <div className="ibra-box" ref={ibraBoxRef}>
-                <button
-                    className="top-left-button-refs"
-                    title="Information"
-                >
-                    <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpUE} style={{ cursor: 'pointer' }} className="icon-um-search" />
-                </button>
                 <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA) <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"
@@ -467,7 +489,15 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     icon={faPlusCircle}
                                                                     className="control-icon-add-ibra magic-icon"
                                                                     onClick={() => handleAddPossible(rowIndex, pi)}
-                                                                    title="Do the magic" />
+                                                                    title="Add Possible Improvement" />
+                                                                {possibilities.length > 1 && (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faTrash}
+                                                                        className="control-icon-remove-ibra magic-icon"
+                                                                        onClick={() => handleRemovePossible(rowIndex, pi)}
+                                                                        title="Remove this possible improvement"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         </td>
                                                     );
@@ -489,7 +519,15 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                             icon={faPlusCircle}
                                                                             onClick={() => handleAddAction(rowIndex, pi)}
                                                                             className="control-icon-add-ibra magic-icon"
-                                                                            title="Do the magic" />
+                                                                            title="Add action required" />
+                                                                        {p.actions.length > 1 && (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faTrash}
+                                                                                className="control-icon-remove-ibra magic-icon"
+                                                                                onClick={() => handleRemoveAction(rowIndex, pi, ai)}
+                                                                                title="Remove this action"
+                                                                            />
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -654,7 +692,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 </button>
             </div>
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
-            {helpUE && (<UnwantedEvent setClose={closeHelpUE} />)}
             {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={updateRows} />)}
         </div>
     );

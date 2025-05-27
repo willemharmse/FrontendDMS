@@ -5,7 +5,7 @@ import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
+const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
@@ -19,8 +19,9 @@ const AbbreviationTable = ({ formData, setFormData, usedAbbrCodes, setUsedAbbrCo
   }, [usedAbbrCodes]);
 
   const fetchValues = async () => {
+    const route = risk ? `/api/riskInfo/abbr/` : "/api/docCreateVals/abbr";
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/abbr`);
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`);
       if (!response.ok) {
         throw new Error("Failed to fetch values");
       }

@@ -105,69 +105,17 @@ const ControlAttributes = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td className="procCent">1</td>
-                                    <td>Control 1</td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}>Yes</td>
-                                    <td className="procCent">Act</td>
-                                    <td>Prevention Control</td>
-                                    <td>1. Elimination</td>
-                                    <td>Safety</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">2</td>
-                                    <td>Control 2</td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}>No</td>
-                                    <td className="procCent">Object</td>
-                                    <td>Consequence Minimizing Control</td>
-                                    <td>2. Substitution</td>
-                                    <td>Health</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">3</td>
-                                    <td>Control 3</td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}></td>
-                                    <td className="procCent"></td>
-                                    <td>Both</td>
-                                    <td>3. Engineering</td>
-                                    <td>Enviroment</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">4</td>
-                                    <td></td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}></td>
-                                    <td className="procCent"></td>
-                                    <td></td>
-                                    <td>4. Separation</td>
-                                    <td>Community</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">5</td>
-                                    <td></td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}></td>
-                                    <td className="procCent"></td>
-                                    <td></td>
-                                    <td>5. Administration</td>
-                                    <td>Legal & Regulatory</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">6</td>
-                                    <td></td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}></td>
-                                    <td className="procCent"></td>
-                                    <td></td>
-                                    <td>6. PPE</td>
-                                    <td>Material Losses</td>
-                                </tr>
-                                <tr>
-                                    <td className="procCent">7</td>
-                                    <td></td>
-                                    <td className="procCent" style={{ borderRight: '1px solid white' }}></td>
-                                    <td className="procCent"></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>Reputation</td>
-                                </tr>
+                                {controls.map((row, index) => (
+                                    <tr key={index}>
+                                        <td className="procCent">{index + 1}</td>
+                                        <td>{row.control}</td>
+                                        <td className="procCent">{row.critical}</td>
+                                        <td className="procCent">{row.act}</td>
+                                        <td className="procCent">{row.activation}</td>
+                                        <td className="procCent">{row.hierarchy}</td>
+                                        <td className="procCent">{"-"}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

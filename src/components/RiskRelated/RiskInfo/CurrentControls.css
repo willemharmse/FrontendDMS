@@ -38,6 +38,10 @@
     border-radius: 5px;
 }
 
+.itals-help-info {
+    font-style: italic;
+}
+
 .popup-table-wrapper-controlCurrent {
     overflow-y: auto;
     max-height: 132px;

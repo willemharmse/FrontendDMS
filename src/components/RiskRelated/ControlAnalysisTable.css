@@ -66,6 +66,34 @@
     font-size: 14px;
 }
 
+.cea-table-page-critical {
+    background-color: #D6E3FF !important;
+    color: black !important;
+    text-align: center !important;
+}
+
+.control-analysis-labels {
+    /* make it a full-width block and reset any inherited centering */
+    width: calc(100% - 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* ← this forces children to the left */
+    text-align: left;
+    /* ← extra insurance */
+    margin: 0 0 8px;
+    /* optional spacing below */
+}
+
+.control-analysis-label {
+    /* each label stacks naturally in the flex column */
+    font-size: 14px;
+    color: #6b6b6b;
+    line-height: 1.4;
+    /* you can also add a left margin if you want it indented under the header */
+    /* margin-left: 4px; */
+}
+
 .cea-table-page-input-green {
     background-color: #7EAC87 !important;
     color: white !important;
@@ -149,4 +177,10 @@
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
+}
+
+.vcr-table-cea tbody td {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
 }

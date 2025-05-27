@@ -174,10 +174,10 @@ const DocumentSignaturesRiskTable = ({
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
             <tr>
-              <th className="font-fam cent">Authorizations</th>
-              <th className="font-fam cent">Name</th>
-              <th className="font-fam cent">Position</th>
-              <th className="font-fam cent col-sig-act">Action</th>
+              <th className="font-fam cent col-sig-auth-risk">Authorizations</th>
+              <th className="font-fam cent col-sig-name-risk">Name</th>
+              <th className="font-fam cent col-sig-pos-risk">Position</th>
+              <th className="font-fam cent col-sig-act-risk">Action</th>
             </tr>
           </thead>
           <tbody>

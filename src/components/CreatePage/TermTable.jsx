@@ -5,7 +5,7 @@ import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
+const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
@@ -18,8 +18,9 @@ const TermTable = ({ formData, setFormData, usedTermCodes, setUsedTermCodes, rol
   }, [usedTermCodes]);
 
   const fetchValues = async () => {
+    const route = risk ? `/api/riskInfo/def` : "/api/docCreateVals/def";
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/def`);
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`);
       if (!response.ok) {
         throw new Error("Failed to fetch values");
       }

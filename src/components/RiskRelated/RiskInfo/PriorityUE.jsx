@@ -27,7 +27,7 @@ const PriorityUE = ({ setClose }) => {
                                     </td>
                                     <td>
                                         A priority unwanted event is an unwanted event that, due to its potential to cause multiple fatalities, major injuries, or significant operational or environmental impact, is prioritized for detailed analysis and control.
-                                        <br />Source: MHSC Guideline for the Compilation of a Mandatory COP for Risk-Based Assessments
+                                        <br /><span className="itals-help-info">Source: MHSC Guideline for the Compilation of a Mandatory COP for Risk-Based Assessments</span>
                                         <br />
                                         <br />A PUE is any event with a maximum consequence rating of either 4 or 5 (high and major) on the Anglo-American Operational Risk Management risk matrix.
                                     </td>

@@ -20,53 +20,53 @@ const MaxRiskRank = ({ setClose }) => (
                 <div className="popup-table-wrapper-MaxRiskRank">
                     <table className="matrix-table-MaxRiskRank">
                         <thead>
-                            <th colSpan={7} style={{ textAlign: "center" }}>Consequence</th>
+                            <th colSpan={7} style={{ textAlign: "center", backgroundColor: "#002060", color: "white" }}>Consequence</th>
                             <tr>
-                                <th className="corner-cell-MaxRiskRank" style={{ border: "0px" }}></th>
+                                <th className="corner-cell-MaxRiskRank" style={{ border: "0px", backgroundColor: "#002060", color: "white", borderTop: "solid 2px #002060" }}></th>
                                 <th className="corner-cell-MaxRiskRank"></th>
-                                <th>1: Insignificant</th>
-                                <th>2: Minor</th>
-                                <th>3: Moderate</th>
-                                <th>4: High</th>
-                                <th>5: Major</th>
+                                <th style={{ textAlign: "center" }}>1: Insignificant</th>
+                                <th style={{ textAlign: "center" }}>2: Minor</th>
+                                <th style={{ textAlign: "center" }}>3: Moderate</th>
+                                <th style={{ textAlign: "center" }}>4: High</th>
+                                <th style={{ textAlign: "center" }}>5: Major</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td rowSpan={5} className="vertical-header-MaxRiskRank" style={{ backgroundColor: "#002060", color: "white", borderTop: "1px #002060 solid" }}>Likelihood</td>
-                                <th>5: Almost certain</th>
+                                <th style={{ textAlign: "center", borderTop: "none", backgroundColor: "#BFBFBF" }}>5: Almost certain</th>
                                 <td className="medium">Medium (11)</td>
                                 <td className="significant">Significant (16)</td>
                                 <td className="significant">Significant (20)</td>
                                 <td className="high">High (23)</td>
                                 <td className="high">High (25)</td>
                             </tr>
-                            <tr>
-                                <th>4: Likely</th>
+                            <tr style={{ borderTop: "solid 2px #BFBFBF" }}>
+                                <th style={{ textAlign: "center", borderTop: "none", backgroundColor: "#BFBFBF" }}>4: Likely</th>
                                 <td className="medium">Medium (7)</td>
                                 <td className="medium">Medium (12)</td>
                                 <td className="significant">Significant (17)</td>
                                 <td className="high">High (21)</td>
                                 <td className="high">High (24)</td>
                             </tr>
-                            <tr>
-                                <th>3: Possible</th>
+                            <tr style={{ borderTop: "solid 2px #BFBFBF" }}>
+                                <th style={{ textAlign: "center", borderTop: "none", backgroundColor: "#BFBFBF" }}>3: Possible</th>
                                 <td className="low">Low (4)</td>
                                 <td className="medium">Medium (8)</td>
                                 <td className="significant">Significant (13)</td>
                                 <td className="significant">Significant (18)</td>
                                 <td className="high">High (22)</td>
                             </tr>
-                            <tr>
-                                <th>2: Unlikely</th>
+                            <tr style={{ borderTop: "solid 2px #BFBFBF" }}>
+                                <th style={{ textAlign: "center", backgroundColor: "#BFBFBF" }}>2: Unlikely</th>
                                 <td className="low">Low (2)</td>
                                 <td className="low">Low (5)</td>
                                 <td className="medium">Medium (9)</td>
                                 <td className="significant">Significant (14)</td>
                                 <td className="significant">Significant (19)</td>
                             </tr>
-                            <tr>
-                                <th>1: Rare</th>
+                            <tr style={{ borderTop: "solid 2px #BFBFBF" }}>
+                                <th style={{ textAlign: "center", borderTop: "none", backgroundColor: "#BFBFBF" }}>1: Rare</th>
                                 <td className="low">Low (1)</td>
                                 <td className="low">Low (3)</td>
                                 <td className="medium">Medium (6)</td>

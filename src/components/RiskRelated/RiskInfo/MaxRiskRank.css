@@ -92,14 +92,13 @@
 
 .matrix-table-MaxRiskRank th,
 .matrix-table-MaxRiskRank td {
-    border: 1px solid #ccc;
     padding: 8px;
 }
 
 /* top header */
 .matrix-table-MaxRiskRank thead th {
-    background: #002060;
-    color: white;
+    background: #BFBFBF;
+    color: black;
     position: sticky;
     top: 0;
     z-index: 2;

@@ -27,7 +27,7 @@ const Hazard = ({ setClose }) => {
                                     </td>
                                     <td>
                                         A hazard is any condition, event, or circumstance that could lead to or contribute to an unplanned or undesirable event in a mining environment.
-                                        <br />Source: Mine Health and Safety Council (MHSC), South Africa
+                                        <br /><span className="itals-help-info">Source: Mine Health and Safety Council (MHSC), South Africa</span>
                                     </td>
                                 </tr>
                             </tbody>

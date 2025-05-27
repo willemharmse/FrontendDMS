@@ -232,12 +232,6 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     return (
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-sign" : ""}`}>
-                <button
-                    className="top-left-button-attendance"
-                    title="Information"
-                >
-                    <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
-                </button>
                 <h3 className="font-fam-labels">
                     Attendance Register <span className="required-field">*</span>
                 </h3>

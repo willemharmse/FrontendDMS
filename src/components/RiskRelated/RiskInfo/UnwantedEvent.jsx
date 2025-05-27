@@ -42,7 +42,7 @@ const UnwantedEvent = ({ setClose }) => {
                                     </td>
                                     <td>
                                         Refers to any occurrence at a mine that could have caused serious harm or damage, even if it did not.
-                                        <br />Source: MHSA Guideline for Mandatory Codes of Practice on Risk-Based Assessments (Issued by the Chief Inspector of Mines).
+                                        <br /><span className="itals-help-info">Source: MHSA Guideline for Mandatory Codes of Practice on Risk-Based Assessments (Issued by the Chief Inspector of Mines).</span>
 
                                     </td>
                                 </tr>
@@ -52,7 +52,7 @@ const UnwantedEvent = ({ setClose }) => {
                                     </td>
                                     <td>
                                         A key point in a scenario at which a hazard is realized, often resulting in injury, damage, or loss.
-                                        <br />Source: MHSC Risk Assessment Frameworks (e.g. FOGRA or MOSH).
+                                        <br /><span className="itals-help-info">Source: MHSC Risk Assessment Frameworks (e.g. FOGRA or MOSH).</span>
                                     </td>
                                 </tr>
                             </tbody>

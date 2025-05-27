@@ -477,8 +477,8 @@
 .ibra-popup-hazard-title {
     margin: 0 0 12px;
     /* 12px gap below title */
-    font-size: 18px;
-    color: #222;
+    font-size: 17px;
+    color: white;
 }
 
 .ibra-popup-dropdown {
@@ -491,6 +491,18 @@
     appearance: none;
     text-align: center;
     cursor: pointer;
+}
+
+.ibra-popup-hazard-info-icon {
+    position: absolute;
+    top: 70px;
+    /* just above the h3 at 100px */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    z-index: 2;
 }
 
 .ibra-popup-hazard-circle-container {
@@ -506,7 +518,7 @@
     width: 300px;
     height: 300px;
     border-radius: 50%;
-    background-color: #ec9090;
+    background-color: #CB6F6F;
     display: block;
     flex-direction: column;
     justify-content: center;
@@ -518,7 +530,6 @@
     padding: 10px;
     box-sizing: border-box;
     position: relative;
-    border: 3px solid #CB6F6F;
 }
 
 .ibra-popup-hazard-circle .ibra-popup-hazard-title {

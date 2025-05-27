@@ -16,7 +16,7 @@ const RiskTreatment = ({ setClose }) => {
                     <div className="popup-table-wrapper-rt-2">
                         <p>
                             “A risk is considered adequately dealt with when appropriate controls are in place and maintained to reduce the risk to a level that is as low as reasonably practicable (ALARP)."
-                            <br />Source: MHSC – Guideline for the Compilation of a Mandatory Code of Practice on Risk-Based Assessments
+                            <br /><span className="itals-help-info">Source: MHSC – Guideline for the Compilation of a Mandatory Code of Practice on Risk-Based Assessments</span>
                         </p>
                         <p>
                             MHSA Section 11(2) states that employers must ensure that "every significant risk is either eliminated, controlled, or minimized to the extent reasonably practicable.”

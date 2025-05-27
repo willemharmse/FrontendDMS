@@ -3,7 +3,6 @@ import './ControlEAPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
-import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ControlType from './RiskInfo/ControlType';
 import ControlActivation from './RiskInfo/ControlActivation';
@@ -347,7 +346,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                                                 <div className={`ibra-popup-page-form-group`}>
                                                     <label className={`${formattingColour}`}><FontAwesomeIcon icon={faInfoCircle} className={`ibra-popup-label-icon`} />Control Effectiveness Rating</label>
                                                     <label
-                                                        style={{ marginBottom: "18px" }}
+                                                        style={{ marginBottom: "18px", fontWeight: "bold" }}
                                                         className={`ibra-popup-page-label-output ${formattingColour}`}
                                                     >
                                                         {cer || "-"}
@@ -392,7 +391,6 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             {helpHier && (<ControlHierarchy setClose={closeHelpHier} />)}
             {helpCritical && (<CriticalControl setClose={closeHelpCritical} />)}
             {helpQuality && (<ControlQuality setClose={closeHelpQuality} />)}
-            <ToastContainer />
         </div>
     );
 };

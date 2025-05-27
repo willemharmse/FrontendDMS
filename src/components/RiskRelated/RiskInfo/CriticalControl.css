@@ -139,6 +139,7 @@
     margin: 18px;
     font-size: 0.95rem;
     align-self: flex-start;
+    font-style: italic;
 }
 
 .crit-table-group {

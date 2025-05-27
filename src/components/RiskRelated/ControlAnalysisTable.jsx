@@ -5,7 +5,7 @@ import "./ControlAnalysisTable.css";
 import { v4 as uuidv4 } from "uuid";
 import ControlEAPopup from "./ControlEAPopup";
 
-const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }) => {
+const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow }) => {
     const [insertPopup, setInsertPopup] = useState();
     const [selectedRowData, setSelectedRowData] = useState();
 
@@ -13,10 +13,14 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
         const newRows = [...rows];
 
         const newRow = {
-            id: uuidv4(), nr: insertIndex + 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: ""
+            id: uuidv4(), nr: 0, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: ""
         }
 
         newRows.splice(insertIndex, 0, newRow);
+        newRows.forEach((r, i) => {
+            r.nr = i + 1;
+        });
+
         updateRow(newRows);
     };
 
@@ -43,6 +47,13 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
                 <h3 className="font-fam-labels">
                     Control Effectiveness Analysis (CEA)<span className="required-field">*</span>
                 </h3>
+
+                <div className="control-analysis-labels">
+                    <label className="control-analysis-label">Only the controls identified in the Risk Assessment are included in the table below.</label>
+                    <label className="control-analysis-label">Open the popup  {<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}  to edit or view more information regarding a control and its attributes.
+                    </label>
+                </div>
+
                 <button
                     className="top-right-button-ar"
                     title="Search"
@@ -50,7 +61,7 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
                     <FontAwesomeIcon icon={faSearch} className="icon-um-search" />
                 </button>
 
-                <table className="vcr-table-2 font-fam table-borders">
+                <table className="vcr-table-cea font-fam table-borders">
                     <thead className="control-analysis-head">
                         <tr>
                             <th colSpan={3} className="control-analysis-split">Control Identification</th>
@@ -73,7 +84,7 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
                     </thead>
                     <tbody>
                         {rows.map((row, index) => (
-                            <tr key={index}>
+                            <tr key={index} className={row.nr % 2 === 0 ? `evenTRColour` : ``}>
                                 <td className="cent" style={{ alignItems: 'center', gap: '4px' }}>
                                     <span>{row.nr}</span>
                                     <FontAwesomeIcon
@@ -88,7 +99,7 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
                                 <td>
                                     {row.control || ""}
                                 </td>
-                                <td>
+                                <td className={`${row.critical === "Yes" ? 'cea-table-page-critical' : ''}`} style={{ textAlign: 'center' }}>
                                     {row.critical || ""}
                                 </td>
                                 <td>
@@ -121,13 +132,6 @@ const ControlAnalysisTable = ({ rows, updateRows, addRow, removeRow, updateRow }
                                             onClick={() => removeRow(row.id)}
                                         >
                                             <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                        <button
-                                            className="ibra-add-row-button"
-                                            title="Insert row below"
-                                            onClick={() => insertRowAt(index + 1)}
-                                        >
-                                            <FontAwesomeIcon icon={faPlusCircle} />
                                         </button>
                                     </div>
 

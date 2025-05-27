@@ -1,15 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlusCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }) => {
     const [files, setFiles] = useState([]);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-
     const inputRefs = useRef([]);
+
+    // 1. Renumber automatically whenever rows change
+    useEffect(() => {
+        referenceRows.forEach((row, idx) => {
+            const correctNr = idx + 1;
+            if (row.nr !== correctNr) {
+                updateRefRow(idx, "nr", correctNr);
+            }
+        });
+    }, [referenceRows, updateRefRow]);
 
     useEffect(() => {
         const fetchFiles = async () => {
@@ -97,10 +106,20 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
         setShowDropdown(null);
     };
 
+    const handleInsertAt = (insertIndex) => {
+        // tell parent to insert a blank row at `insertIndex`
+        addRefRow(insertIndex);
+    };
+
+    const handleRemove = (index) => {
+        removeRefRow(index);
+    };
+
     return (
         <div className="input-row">
             <div className="input-box-ref">
                 <h3 className="font-fam-labels">References</h3>
+
                 {referenceRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
@@ -124,8 +143,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                             onFocus={() => {
                                                 setShowDropdown(index);
                                                 setFilteredOptions(prev => ({ ...prev, [index]: files.slice(0, 15) }));
-
-                                                // Ensure dropdown is positioned correctly on focus
                                                 if (inputRefs.current[index]) {
                                                     const rect = inputRefs.current[index].getBoundingClientRect();
                                                     setDropdownPosition({
@@ -148,9 +165,22 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                                         />
                                     </td>
                                     <td className="ref-but-row procCent">
-                                        <button className="remove-row-button" onClick={() => removeRefRow(index)}>
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                        <div className="ibra-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                onClick={() => handleRemove(index)}
+                                                title="Remove Row"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                            <button
+                                                className="ibra-add-row-button"
+                                                title="Insert row below"
+                                                onClick={() => handleInsertAt(index + 1)}
+                                            >
+                                                <FontAwesomeIcon icon={faPlusCircle} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -158,19 +188,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                     </table>
                 )}
 
-                {referenceRows.length === 0 && (
-                    <button className="add-row-button-ref" onClick={addRefRow}>
-                        Select
-                    </button>
-                )}
-
-                {referenceRows.length > 0 && (
-                    <button className="add-row-button-ref-plus" onClick={addRefRow}>
-                        <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
-                    </button>
-                )}
-
-                {/* Floating Dropdown */}
                 {showDropdown !== null && filteredOptions[showDropdown]?.length > 0 && (
                     <ul
                         className="floating-dropdown"
