@@ -41,6 +41,9 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     const [filteredSubAreas, setFilteredSubAreas] = useState([]);
     const [showSubAreasDropdown, setShowSubAreasDropdown] = useState(false);
     const subAreasInputRef = useRef(null);
+    const [filteredOwners, setFilteredOwners] = useState([]);
+    const [showOwnersDropdown, setShowOwnersDropdown] = useState(false);
+    const ownersInputRef = useRef(null);
 
     const [functionalOwners] = useState(['Owner1', 'Owner2', 'Owner3', 'Owner4', 'Owner5']);
     const [likelihoodOptions] = useState(['1: Rare', '2. Unlikely', '3. Possible', '4. Likely', '5. Almost Certain']);
@@ -246,11 +249,12 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                 setShowDropdown(null);
                 setShowUEDropdown(false);
                 setShowMainAreasDropdown(false);
+                setShowOwnersDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showDropdown, showUEDropdown, showMainAreasDropdown]);
+    }, [showDropdown, showUEDropdown, showMainAreasDropdown, showOwnersDropdown]);
 
     useEffect(() => {
         async function fetchValues() {
@@ -655,6 +659,48 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         setShowMainAreasDropdown(false);
     };
 
+    const handleOwnerInput = (value) => {
+        setSelectedOwner(value);
+        const matches = functionalOwners
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredOwners(matches);
+        setShowOwnersDropdown(true);
+
+        const el = ownersInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleOwnerFocus = () => {
+        const matches = functionalOwners.slice(0, 15);
+        setFilteredOwners(matches);
+        setShowOwnersDropdown(true);
+
+        const el = ownersInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectOwnerSuggestion = (value) => {
+        setSelectedOwner(value);
+        setShowOwnersDropdown(false);
+    };
+
     const handleControlInput = (id, value) => {
         handleControlChange(id, value);
 
@@ -766,18 +812,18 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                             <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
                                                 <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpFO} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Functional Ownership <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
-                                                    <select
-                                                        className="ibra-popup-page-select"
-                                                        value={selectedOwner}
-                                                        onChange={(e) => setSelectedOwner(e.target.value)}
-                                                    >
-                                                        <option value="">Select Functional Owner</option>
-                                                        {functionalOwners.map((owner, index) => (
-                                                            <option key={index} value={owner}>
-                                                                {owner}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="ibra-popup-page-select-container">
+                                                        <input
+                                                            type="text"
+                                                            style={{ color: "black", cursor: "text" }}
+                                                            ref={ownersInputRef}
+                                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                            placeholder="Select Functional Owner"
+                                                            value={selectedOwner}
+                                                            onChange={e => handleOwnerInput(e.target.value)}
+                                                            onFocus={handleOwnerFocus}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1142,6 +1188,28 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                         <li
                             key={i}
                             onMouseDown={() => selectSubAreaSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showOwnersDropdown && filteredOwners.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredOwners.map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectOwnerSuggestion(term)}
                         >
                             {term}
                         </li>

@@ -102,7 +102,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                 <td className={`${row.critical === "Yes" ? 'cea-table-page-critical' : ''}`} style={{ textAlign: 'center' }}>
                                     {row.critical || ""}
                                 </td>
-                                <td>
+                                <td style={{ textAlign: 'center' }}>
                                     {row.act || ""}
                                 </td>
                                 <td>
@@ -114,10 +114,10 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                 <td>
                                     {row.cons || ""}
                                 </td>
-                                <td>
+                                <td style={{ textAlign: 'center' }}>
                                     {row.quality || ""}
                                 </td>
-                                <td className={getClass(row.cer)}>
+                                <td className={getClass(row.cer)} style={{ textAlign: 'center' }}>
                                     {row.cer || ""}
                                 </td>
                                 <td>
