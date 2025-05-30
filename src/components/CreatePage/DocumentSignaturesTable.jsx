@@ -163,7 +163,7 @@ const DocumentSignaturesTable = ({
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
             <tr>
-              <th className="font-fam cent">Authorizations</th>
+              <th className="font-fam cent">Authorisation</th>
               <th className="font-fam cent">Name</th>
               <th className="font-fam cent">Position</th>
               <th className="font-fam cent col-sig-act">Action</th>

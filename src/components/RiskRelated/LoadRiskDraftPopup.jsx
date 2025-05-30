@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./LoadRiskDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, } from '@fortawesome/free-solid-svg-icons';
 
-const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType, loadDataIBRA }) => {
+const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
 
     useEffect(() => {
         const getDraftDocuments = async () => {
-            const route = (riskType === "IBRA") ? `riskDraft/ibra/drafts/${userID}` : ``;
+            const route = `riskDraft/${riskType.toLowerCase()}/drafts/${userID}`;
             try {
                 const response = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
                     method: "GET",
@@ -54,9 +54,8 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
 
     const handleLoad = async (draftId) => {
         await setLoadedID(draftId);
-        if (riskType === "IBRA") {
-            await loadDataIBRA(draftId);
-        }
+        await loadData(draftId);
+
         onClose();
     };
 

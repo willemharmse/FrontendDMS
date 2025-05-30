@@ -5,7 +5,7 @@ import Forbidden from './components/Forbidden';
 import NotFound from './components/NotFound';
 import FileInfo from './components/FileInfo';
 import HomePage from './components/HomePage';
-import CreatePage from './components/CreatePage';
+import CreatePage from './components/DocumentCreationPages/CreatePage';
 import UserManagement from './components/UserManagement';
 import PreviewPage from './components/PreviewPage';
 import DeveloperPage from './components/DeveloperPage';
@@ -28,7 +28,8 @@ import ConstructionTM from './components/ConstructionTM';
 import AdminPage from './components/AdminPage';
 import UserActivity from './components/UserActivity';
 import VersionHistory from './components/FileInfo/VersionHistory';
-import RiskManagementPage from './components/RiskManagementPage';
+import RiskManagementPageIBRA from './components/RiskAssessmentPages/RiskManagementPageIBRA';
+import RiskManagementPageJRA from './components/RiskAssessmentPages/RiskManagementPageJRA';
 import RiskHomePage from './components/RiskRelated/RiskHomePage';
 import DCHomePage from './components/DCHomePage';
 import TimeoutPopup from './components/AccountLockout/TimeoutPopup';
@@ -37,6 +38,8 @@ import ConstructionRMS from './components/Construction/ConstructionRMS';
 import ConstructionHelp from './components/Construction/ConstructionHelp';
 import ControlAttributes from './components/RiskRelated/ControlAttributes';
 import RiskDocumentsIBRA from './components/RiskRelated/RiskDocuments/RiskDocumentsIBRA';
+import RiskManagementPageBTA from './components/RiskAssessmentPages/RiskManagementPageBTA';
+import CreatePageStandards from './components/DocumentCreationPages/CreatePageStandards';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -100,7 +103,8 @@ function App() {
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
-        <Route path="FrontendDMS/documentCreate/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
+        <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
+        <Route path="FrontendDMS/documentCreateStand/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageStandards />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
         <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />
@@ -124,7 +128,9 @@ function App() {
         <Route path="FrontendDMS/userActivity/:id" element={<UserActivity />} />
         <Route path="FrontendDMS/versionHistory/:id" element={<VersionHistory />} />
         <Route path='FrontendDMS/riskHome' element={<RiskHomePage />} />
-        <Route path="FrontendDMS/risk/:type" element={<RiskManagementPage />} />
+        <Route path="FrontendDMS/riskIBRA/:type" element={<RiskManagementPageIBRA />} />
+        <Route path="FrontendDMS/riskJRA/:type" element={<RiskManagementPageJRA />} />
+        <Route path="FrontendDMS/riskBTA/:type" element={<RiskManagementPageBTA />} />
         <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
         <Route path='FrontendDMS/generatedIBRADocs' element={<RiskDocumentsIBRA />} />
 

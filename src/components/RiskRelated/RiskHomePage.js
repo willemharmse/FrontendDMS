@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import "./RiskHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "../Notifications/TopBar";
 
@@ -55,52 +55,52 @@ const RiskHomePage = () => {
                             <div className="icon-risk-all">
                                 <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-all" />
                             </div>
-                            <h3 className="document-title-risk-home">Control Management</h3>
+                            <h3 className="document-title-risk-home">Control Management<br /></h3>
                         </>
                     </div>
                     <div
                         className="document-card-risk-home"
-                        onClick={() => navigate("/FrontendDMS/risk/IBRA")}
+                    >
+                        <>
+                            <div className="icon-risk">
+                                <FontAwesomeIcon icon={faTriangleExclamation} alt="Control Attributes" className="icon-risk" />
+                            </div>
+
+                            <h3 className="document-title-risk-home">
+                                Create New BLRA,<br />using the WRAC Tool
+                            </h3>
+                        </>
+                    </div>
+                    <div
+                        className="document-card-risk-home"
+                        onClick={() => navigate("/FrontendDMS/riskIBRA/IBRA")}
                     >
                         <>
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/ibra.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
 
-                            <h3 className="document-title-risk-home" style={{ marginBottom: "5px" }}>
-                                Create New Issue Based Risk Assessment (IBRA)
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        marginTop: '4px',
-                                        fontSize: '0.85rem',
-                                        opacity: 0.8,
-                                        fontWeight: 'normal'
-                                    }}
-                                >
-                                    Using the Workplace Risk Assessment and Control (WRAC) Tool
-                                </span>
+                            <h3 className="document-title-risk-home">
+                                Create New IBRA,<br />using the WRAC Tool
                             </h3>
                         </>
                     </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/risk/JRA")}>
-                        <>
-                            <div className="icon-risk">
-                                <img src={`${process.env.PUBLIC_URL}/jra.svg`} alt="Control Attributes" className="icon-risk" />
-                            </div>
-                            <h3 className="document-title-risk-home">Create New Job Risk Assessment (JRA)</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/constructionRMS/Bowtie")}>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskBTA/BTA")}>
                         <>
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/bta.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Create New Bowtie Risk Assessment (BTA)</h3>
+                            <h3 className="document-title-risk-home">Create New IBRA,<br />using the BTA tool</h3>
                         </>
                     </div>
-
-
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskJRA/JRA")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/jra.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Create New JRA<br /></h3>
+                        </>
+                    </div>
                 </div>
             </div>
             <ToastContainer />

@@ -58,7 +58,7 @@ const DCHomePage = () => {
                             <h3 className="document-title-dc-home">Policy</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreate/Procedure")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateProc/Procedure")}>
                         <>
                             <div className="icon-dc">
                                 <FontAwesomeIcon icon={faListOl} className={"icon-dc"} />
@@ -66,7 +66,7 @@ const DCHomePage = () => {
                             <h3 className="document-title-dc-home">Procedure</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/constructionDDS/Standard")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateStand/Standard")}>
                         <>
                             <div className="icon-dc">
                                 <FontAwesomeIcon icon={faCertificate} className={"icon-dc"} />

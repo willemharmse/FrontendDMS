@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import "./ImportSiteInfo.css";
+import "./ImportRiskSiteInfo.css";
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from "axios";
 
-const ImportSiteInfo = ({ onClose }) => {
+const ImportRiskSiteInfo = ({ onClose }) => {
     const [file, setFile] = useState(null);
     const [additionalFiles, setAdditionalFiles] = useState([]); // State for multiple files
     const [message, setMessage] = useState("");
@@ -60,7 +60,7 @@ const ImportSiteInfo = ({ onClose }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/test/upload-excel/`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfo/upload-single-sheet-excel/`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -106,12 +106,12 @@ const ImportSiteInfo = ({ onClose }) => {
         <div className="import-si-popup-overlay">
             <div className="import-si-popup-content">
                 <div className="import-si-file-header">
-                    <h2 className="import-si-file-title">Import Site Information</h2>
+                    <h2 className="import-si-file-title">Import Risk Management Site Information</h2>
                     <button className="import-si-file-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
 
                 <div className="import-si-file-group">
-                    <div className="import-si-file-text">Upload Site Import Information File</div>
+                    <div className="import-si-file-text">Upload Site Information File</div>
                     <div className="import-si-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="import-si-file-buttons">
                         <label className="import-si-file-button">
@@ -136,4 +136,4 @@ const ImportSiteInfo = ({ onClose }) => {
     );
 };
 
-export default ImportSiteInfo;
+export default ImportRiskSiteInfo;

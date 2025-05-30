@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import ExecutiveSummaryInfo from './RiskInfo/ExecutiveSummaryInfo';
 
 const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) => {
     const [priorityEvents, setPriorityEvents] = useState([]);
     const [materialEvents, setMaterialEvents] = useState([]);
+    const [helpES, setHelpES] = useState(false);
+
+    const openHelpES = () => {
+        setHelpES(true);
+    }
+
+    const closeHelpES = () => {
+        setHelpES(false);
+    }
 
     useEffect(() => {
         if (formData.execSummaryGen === "") return;
@@ -36,9 +48,15 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
 
     return (
         <>
-            {(["IBRA"].includes(formData.documentType)) && (
+            {(["IBRA", "JRA"].includes(formData.documentType)) && (
                 <div className="input-row-risk-create">
                     <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
+                        <button
+                            className="top-left-button-refs"
+                            title="Information"
+                        >
+                            <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpES} style={{ cursor: 'pointer' }} className="icon-um-search" />
+                        </button>
                         <h3 className="font-fam-labels">Executive Summary <span className="required-field">*</span></h3>
                         {formData.execSummaryGen !== "" ? (
                             <div className="risk-scope-group">
@@ -52,11 +70,11 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
                                             onChange={handleInputChange}
                                             value={formData.execSummary}
                                             rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Insert additional notes to the executive summary." // Optional placeholder text
+                                            placeholder="The automatically generated summary below serves as a starting point to help you draft the introduction of the executive summary. Please insert any other important information or additional notes here." // Optional placeholder text
                                         />
-                                        <p><strong>The following notes will be displyed in the report:</strong><br /></p>
-                                        <p>The <strong>Priority Unwanted Events (PUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
-                                        <p>
+                                        <p style={{ fontSize: "14px" }}><strong>The following notes will be displyed in the report:</strong><br /></p>
+                                        <p style={{ fontSize: "14px" }}>The <strong>Priority Unwanted Events (PUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
+                                        <p style={{ fontSize: "14px" }}>
                                             <ul style={{ listStyleType: "disc", paddingLeft: "30px", marginTop: "-5px" }}>
                                                 {priorityEvents.length > 0 ? (
                                                     priorityEvents.map((event, index) => (
@@ -67,8 +85,8 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
                                                 )}
                                             </ul>
                                         </p>
-                                        <p>The <strong>Material Unwanted Events (MUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
-                                        <p>
+                                        <p style={{ fontSize: "14px" }}>The <strong>Material Unwanted Events (MUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
+                                        <p style={{ fontSize: "14px" }}>
                                             <ul style={{ listStyleType: "disc", paddingLeft: "30px", marginTop: "-5px" }}>
                                                 {materialEvents.length > 0 ? (
                                                     materialEvents.map((event, index) => (
@@ -90,6 +108,7 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
                     </div>
                 </div >
             )}
+            {helpES && (<ExecutiveSummaryInfo setClose={closeHelpES} />)}
         </>
     );
 };

@@ -14,6 +14,22 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const [selectedRowData, setSelectedRowData] = useState(null);
     const [hoveredBody, setHoveredBody] = useState({ rowId: null, bodyIdx: null });
     const savedWidthRef = useRef(null);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [filteredHazards, setFilteredHazards] = useState([]);
+    const [showHazardsDropdown, setShowHazardsDropdown] = useState(false);
+
+    const hazardsInputRefs = useRef({});
+    const unwantedEventRefs = useRef({});
+    const responsibleInputRefs = useRef({});
+
+    const [activeHazardCell, setActiveHazardCell] = useState({ row: null, body: null, idx: null });
+    const [filteredUnwantedEvents, setFilteredUnwantedEvents] = useState([]);
+    const [showUnwantedEventsDropdown, setShowUnwantedEventsDropdown] = useState(false);
+    const [filteredExe, setFilteredExe] = useState([]);
+    const [showExeDropdown, setShowExeDropdown] = useState(false);
+    const hazardsOptions = ["Hazard1", "Hazard2", "Hazard3"];
+    const unwantedOptions = ["Unwanted1", "Unwanted2", "Unwanted3"];
+    const responsibleOptions = ["Responsible1", "Responsible2", "Responsible3"];
 
     const [filterPopup, setFilterPopup] = useState({
         visible: false,
@@ -157,6 +173,225 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         return acc;
 
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest('.floating-dropdown') &&
+                !e.target.closest('input');
+            if (outside) {
+                setShowExeDropdown(null);
+                setShowHazardsDropdown(false);
+                setShowUnwantedEventsDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showUnwantedEventsDropdown, showExeDropdown, showHazardsDropdown]);
+
+    const updateHazard = (rowIndex, bodyIdx, hIdx, newValue) => {
+        setFormData(prev => {
+            const newJra = prev.jra.map((row, r) => {
+                if (r !== rowIndex) return row;
+                return {
+                    ...row,
+                    jraBody: row.jraBody.map((body, b) => {
+                        if (b !== bodyIdx) return body;
+                        return {
+                            ...body,
+                            hazards: body.hazards.map((hObj, h) => {
+                                if (h !== hIdx) return hObj;
+                                return { ...hObj, hazard: newValue };
+                            })
+                        };
+                    })
+                };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const handleHazardsInput = (rowIndex, bodyIdx, hIdx, value) => {
+        updateHazard(rowIndex, bodyIdx, hIdx, value);
+        const matches = hazardsOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredHazards(matches);
+        setShowHazardsDropdown(true);
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = hazardsInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleHazardsFocus = (rowIndex, bodyIdx, hIdx) => {
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+        setFilteredHazards(hazardsOptions.slice(0, 15));
+        setShowHazardsDropdown(true);
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = hazardsInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectHazardsSuggestion = (suggestion) => {
+        const { row, body, idx } = activeHazardCell;
+        updateHazard(row, body, idx, suggestion);
+        setShowHazardsDropdown(false);
+    };
+
+    const updateUnwantedEvent = (rowIndex, bodyIdx, hIdx, newValue) => {
+        setFormData(prev => {
+            const newJra = prev.jra.map((row, r) => {
+                if (r !== rowIndex) return row;
+                return {
+                    ...row,
+                    jraBody: row.jraBody.map((body, b) => {
+                        if (b !== bodyIdx) return body;
+                        return {
+                            ...body,
+                            UE: body.UE.map((hObj, h) => {
+                                if (h !== hIdx) return hObj;
+                                return { ...hObj, ue: newValue };
+                            })
+                        };
+                    })
+                };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const handleUnwantedEventInput = (rowIndex, bodyIdx, hIdx, value) => {
+        updateUnwantedEvent(rowIndex, bodyIdx, hIdx, value);
+        const matches = unwantedOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredUnwantedEvents(matches);
+        setShowUnwantedEventsDropdown(true);
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = unwantedEventRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleUnwantedEventFocus = (rowIndex, bodyIdx, hIdx) => {
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+        setFilteredUnwantedEvents(unwantedOptions.slice(0, 15));
+        setShowUnwantedEventsDropdown(true);
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = unwantedEventRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectUnwantedEventSuggestion = (suggestion) => {
+        const { row, body, idx } = activeHazardCell;
+        updateUnwantedEvent(row, body, idx, suggestion);
+        setShowUnwantedEventsDropdown(false);
+    };
+
+    const updateResponsible = (rowIndex, bodyIdx, hIdx, newValue) => {
+        setFormData(prev => {
+            const newJra = prev.jra.map((row, r) => {
+                if (r !== rowIndex) return row;
+                return {
+                    ...row,
+                    jraBody: row.jraBody.map((body, b) => {
+                        if (b !== bodyIdx) return body;
+                        return {
+                            ...body,
+                            taskExecution: body.taskExecution.map((hObj, h) => {
+                                if (h !== hIdx) return hObj;
+                                return { ...hObj, R: newValue };
+                            })
+                        };
+                    })
+                };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const handleResponsibleInput = (rowIndex, bodyIdx, hIdx, value) => {
+        updateResponsible(rowIndex, bodyIdx, hIdx, value);
+        const matches = responsibleOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            .slice(0, 15);
+        setFilteredExe(matches);
+        setShowExeDropdown(true);
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = responsibleInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleResponsibleFocus = (rowIndex, bodyIdx, hIdx) => {
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+        setFilteredExe(responsibleOptions.slice(0, 15));
+        setShowExeDropdown(true);
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = responsibleInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectResponsibleSuggestion = (suggestion) => {
+        const { row, body, idx } = activeHazardCell;
+        updateResponsible(row, body, idx, suggestion);
+        setShowExeDropdown(false);
+    };
 
     const closePopup = () => {
         setIbraPopup(false);
@@ -328,7 +563,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     };
 
     const availableColumns = [
-        { id: "nr", title: "Nr.", className: "ibraCent ibraNr", icon: null },
+        { id: "nr", title: "Nr", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Task Step", className: "ibraCent ibraMainJRA", icon: null },
         { id: "hazards", title: "Hazard", className: "ibraCent ibraPrevJRA", icon: null },
         { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
@@ -717,18 +952,25 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                             <td key={colIdx} className="hazard-cell">
                                                                 {body.hazards.map((hObj, hIdx) => (
                                                                     <div className="ibra-popup-page-select-container" key={hIdx}>
-                                                                        <select
-                                                                            className="ibra-popup-page-select"
-                                                                            value={hObj.hazard}
-                                                                            onChange={e => {
-                                                                                const upd = [...formData.jra];
-                                                                                upd[rowIndex].jraBody[bodyIdx].hazards[hIdx].hazard = e.target.value;
-                                                                                updateRows(upd);
-                                                                            }}
-                                                                        >
-                                                                            <option value="">Select Hazard</option>
-                                                                            {/* … */}
-                                                                        </select>
+                                                                        <div className="ibra-popup-page-select-container">
+                                                                            <input
+                                                                                type="text"
+                                                                                style={{ color: "black", cursor: "text" }}
+                                                                                ref={el => {
+                                                                                    const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+                                                                                    if (el) {
+                                                                                        hazardsInputRefs.current[key] = el;
+                                                                                    } else {
+                                                                                        delete hazardsInputRefs.current[key];
+                                                                                    }
+                                                                                }}
+                                                                                className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                                placeholder="Choose Hazard"
+                                                                                value={hObj.hazard}
+                                                                                onChange={e => handleHazardsInput(rowIndex, bodyIdx, hIdx, e.target.value)}
+                                                                                onFocus={() => handleHazardsFocus(rowIndex, bodyIdx, hIdx)}
+                                                                            />
+                                                                        </div>
                                                                     </div>
                                                                 ))}
 
@@ -753,23 +995,26 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
 
                                                                 {body.UE.map((uObj, uIdx) => (
-                                                                    <div className="ibra-popup-page-select-container">
-                                                                        <select
-                                                                            key={uIdx}
-                                                                            className="ibra-popup-page-select"
-                                                                            value={uObj.ue}
-                                                                            onChange={e => {
-                                                                                const upd = [...formData.jra];
-                                                                                upd[rowIndex].jraBody[bodyIdx].UE[uIdx].ue = e.target.value;
-                                                                                updateRows(upd);
-                                                                            }}
-                                                                        >
-                                                                            <option value="">Select Event</option>
-                                                                            <option value="Fire">Fire</option>
-                                                                            <option value="Explosion">Explosion</option>
-                                                                            <option value="Leak">Leak</option>
-                                                                            <option value="Equipment Failure">Equipment Failure</option>
-                                                                        </select>
+                                                                    <div className="ibra-popup-page-select-container" key={uIdx}>
+                                                                        <div className="ibra-popup-page-select-container">
+                                                                            <input
+                                                                                type="text"
+                                                                                style={{ color: "black", cursor: "text" }}
+                                                                                ref={el => {
+                                                                                    const key = `${rowIndex}-${bodyIdx}-${uIdx}`;
+                                                                                    if (el) {
+                                                                                        unwantedEventRefs.current[key] = el;
+                                                                                    } else {
+                                                                                        delete unwantedEventRefs.current[key];
+                                                                                    }
+                                                                                }}
+                                                                                className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                                placeholder="Choose Unwanted Event"
+                                                                                value={uObj.ue}
+                                                                                onChange={e => handleUnwantedEventInput(rowIndex, bodyIdx, uIdx, e.target.value)}
+                                                                                onFocus={() => handleUnwantedEventFocus(rowIndex, bodyIdx, uIdx)}
+                                                                            />
+                                                                        </div>
                                                                     </div>
                                                                 ))}
                                                             </td>
@@ -831,21 +1076,23 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                             <td key={colIdx} className={cls}>
                                                                 {body.taskExecution.map((teObj, teIdx) => (
                                                                     <div className="ibra-popup-page-select-container">
-                                                                        <select
-                                                                            key={teIdx}
-                                                                            value={teObj.R}
-                                                                            style={{ marginBottom: "5px" }}
-                                                                            className="ibra-popup-page-select"
-                                                                            onChange={e => {
-                                                                                const upd = [...formData.jra];
-                                                                                upd[rowIndex].jraBody[bodyIdx].taskExecution[0].R = e.target.value;
-                                                                                updateRows(upd);
+                                                                        <input
+                                                                            type="text"
+                                                                            style={{ color: "black", cursor: "text" }}
+                                                                            ref={el => {
+                                                                                const key = `${rowIndex}-${bodyIdx}-${teIdx}`;
+                                                                                if (el) {
+                                                                                    responsibleInputRefs.current[key] = el;
+                                                                                } else {
+                                                                                    delete responsibleInputRefs.current[key];
+                                                                                }
                                                                             }}
-                                                                        >
-                                                                            <option value="">Select R</option>
-                                                                            <option value="PH1">PH 1</option>
-                                                                            {/* …R options… */}
-                                                                        </select>
+                                                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                            placeholder="Choose Responsible"
+                                                                            value={teObj.R}
+                                                                            onChange={e => handleResponsibleInput(rowIndex, bodyIdx, teIdx, e.target.value)}
+                                                                            onFocus={() => handleResponsibleFocus(rowIndex, bodyIdx, teIdx)}
+                                                                        />
                                                                     </div>
                                                                 ))}
                                                             </td>
@@ -992,6 +1239,72 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         </button>
                     </div>
                 </div>
+            )}
+
+            {showUnwantedEventsDropdown && filteredUnwantedEvents.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredUnwantedEvents.map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectUnwantedEventSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showHazardsDropdown && filteredHazards.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredHazards.map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectHazardsSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showExeDropdown && filteredExe.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredExe.map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectResponsibleSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
             )}
         </div>
     );

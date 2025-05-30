@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import "./TermTable.css"; // Add styling here
-import TermPopup from "../ValueChanges/TermPopup";
-import ManageDefinitions from "../ValueChanges/ManageDefinitions";
+import "./TermTableRisk.css"; // Add styling here
+import TermPopup from "../../ValueChanges/TermPopup";
+import ManageDefinitions from "../../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
+const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
@@ -18,7 +18,7 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   }, [usedTermCodes]);
 
   const fetchValues = async () => {
-    const route = risk ? `/api/riskInfo/def` : "/api/docCreateVals/def";
+    const route = `/api/riskInfo/def`;
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`);
       if (!response.ok) {
@@ -228,4 +228,4 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   );
 };
 
-export default TermTable;
+export default TermTableRisk;

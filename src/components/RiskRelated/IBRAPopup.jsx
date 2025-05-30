@@ -88,6 +88,14 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         'Other': ['Unanticipated Hazard', 'Unexpected Reaction', 'Unknown Failure', 'Other Event'],
     };
 
+    const closeAllDropdowns = () => {
+        setShowDropdown(null);
+        setShowUEDropdown(false);
+        setShowMainAreasDropdown(false);
+        setShowSubAreasDropdown(false);
+        setShowOwnersDropdown(false);
+    };
+
     const [ueOptions, setUEOptions] = useState([]);
 
     const openHelpControl = () => {
@@ -249,12 +257,13 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                 setShowDropdown(null);
                 setShowUEDropdown(false);
                 setShowMainAreasDropdown(false);
+                setShowSubAreasDropdown(false);
                 setShowOwnersDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showDropdown, showUEDropdown, showMainAreasDropdown, showOwnersDropdown]);
+    }, [showDropdown, showUEDropdown, showMainAreasDropdown, showOwnersDropdown, showSubAreasDropdown]);
 
     useEffect(() => {
         async function fetchValues() {
@@ -333,68 +342,66 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     }, [data]);
 
     useEffect(() => {
-        if (selectedLikelihood && riskRankRows.length > 0) {
-            const maxRiskRank = riskRankRows.reduce((max, row) => {
-                const value = parseInt(row.value.split(':')[0]);
-                return isNaN(value) ? max : Math.max(max, value);
-            }, 0);
+        const maxRiskRank = riskRankRows.reduce((max, row) => {
+            const value = parseInt(row.value.split(':')[0]);
+            return isNaN(value) ? max : Math.max(max, value);
+        }, 0);
 
-            const maxLikelihood = parseInt(selectedLikelihood.split(':')[0]);
+        const maxLikelihood = parseInt(selectedLikelihood.split(':')[0]);
 
-            const riskMatrix = [
-                ['1 (L)', '3 (L)', '6 (M)', '10 (M)', '15 (S)'],
-                ['2 (L)', '5 (L)', '9 (M)', '14 (S)', '19 (S)'],
-                ['4 (L)', '8 (M)', '13 (S)', '18 (S)', '22 (H)'],
-                ['7 (M)', '12 (M)', '17 (S)', '21 (H)', '24 (H)'],
-                ['11 (M)', '16 (S)', '20 (S)', '23 (H)', '25 (H)'],
-            ];
+        const riskMatrix = [
+            ['1 (L)', '3 (L)', '6 (M)', '10 (M)', '15 (S)'],
+            ['2 (L)', '5 (L)', '9 (M)', '14 (S)', '19 (S)'],
+            ['4 (L)', '8 (M)', '13 (S)', '18 (S)', '22 (H)'],
+            ['7 (M)', '12 (M)', '17 (S)', '21 (H)', '24 (H)'],
+            ['11 (M)', '16 (S)', '20 (S)', '23 (H)', '25 (H)'],
+        ];
 
-            // Adjust indices because matrix is 0-indexed
-            const rowIdx = maxLikelihood - 1;
-            const colIdx = maxRiskRank - 1;
+        // Adjust indices because matrix is 0-indexed
+        const rowIdx = maxLikelihood - 1;
+        const colIdx = maxRiskRank - 1;
 
-            let matrixValue = null;
-            if (
-                rowIdx >= 0 && rowIdx < riskMatrix.length &&
-                colIdx >= 0 && colIdx < riskMatrix[0].length
-            ) {
-                matrixValue = riskMatrix[rowIdx][colIdx];
-            }
+        let matrixValue = null;
+        if (
+            rowIdx >= 0 && rowIdx < riskMatrix.length &&
+            colIdx >= 0 && colIdx < riskMatrix[0].length
+        ) {
+            matrixValue = riskMatrix[rowIdx][colIdx];
+        }
 
-            setSelectedMaxRiskRank(matrixValue);
+        setSelectedMaxRiskRank(matrixValue);
 
-            const numericPart = matrixValue ? parseInt(matrixValue.split(' ')[0]) : null;
+        const numericPart = matrixValue ? parseInt(matrixValue.split(' ')[0]) : null;
 
-            if (numericPart >= 1 && numericPart <= 5) {
-                setClassNameRiskRank('ibra-popup-page-input-green');
-            }
-            else if (numericPart >= 6 && numericPart <= 12) {
-                setClassNameRiskRank('ibra-popup-page-input-yellow');
-            }
-            else if (numericPart >= 13 && numericPart <= 20) {
-                setClassNameRiskRank('ibra-popup-page-input-orange');
-            }
-            else if (numericPart >= 21) {
-                setClassNameRiskRank('ibra-popup-page-input-red');
-            }
+        if (numericPart >= 1 && numericPart <= 5) {
+            setClassNameRiskRank('ibra-popup-page-input-green');
+        }
+        else if (numericPart >= 6 && numericPart <= 12) {
+            setClassNameRiskRank('ibra-popup-page-input-yellow');
+        }
+        else if (numericPart >= 13 && numericPart <= 20) {
+            setClassNameRiskRank('ibra-popup-page-input-orange');
+        }
+        else if (numericPart >= 21) {
+            setClassNameRiskRank('ibra-popup-page-input-red');
+        }
 
-            if (maxRiskRank >= 3) {
-                setPriorityEvent('Yes');
-                setClassNamePUE("ibra-popup-page-input-orange");
-            }
-            else if (maxRiskRank < 3 && maxRiskRank > 0) {
-                setPriorityEvent('No');
-                setClassNamePUE("");
-            }
+        if (maxRiskRank >= 4) {
+            setPriorityEvent('Yes');
+            setClassNamePUE("ibra-popup-page-input-orange");
+        }
+        else if (maxRiskRank < 4 && maxRiskRank > 0) {
+            setPriorityEvent('No');
+            setClassNamePUE("");
+        }
 
-            if (maxRiskRank >= 5) {
-                setMaterialEvent('Yes');
-                setClassNameMUE("ibra-popup-page-input-red");
-            }
-            else if (maxRiskRank < 5 && maxRiskRank > 0) {
-                setMaterialEvent('No');
-                setClassNameMUE("");
-            }
+        if (maxRiskRank >= 5) {
+            setMaterialEvent('Yes');
+            setClassNameMUE("ibra-popup-page-input-red");
+        }
+        else if (maxRiskRank < 5 && maxRiskRank > 0) {
+            setMaterialEvent('No');
+            setClassNameMUE("");
         }
     }, [selectedLikelihood, riskRankRows]);
 
@@ -534,6 +541,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleUEInput = (value) => {
+        closeAllDropdowns();
         setSelectedUE(value);
         const matches = ueOptions
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -554,6 +562,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
     // On focus, show all options
     const handleUEFocus = () => {
+        closeAllDropdowns();
         const matches = ueOptions.slice(0, 15);
         setFilteredUE(matches);
         setShowUEDropdown(true);
@@ -576,6 +585,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleSubAreaInput = (value) => {
+        closeAllDropdowns();
         setSelectedSubArea(value);
         const matches = availableSubAreas
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -596,6 +606,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
     // On focus, show all options
     const handleSubAreasFocus = () => {
+        closeAllDropdowns();
         const matches = availableSubAreas.slice(0, 15);
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
@@ -618,6 +629,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleMainAreaInput = (value) => {
+        closeAllDropdowns();
         setSelectedMainArea(value);
         const matches = mainAreas
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -638,6 +650,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
     // On focus, show all options
     const handleMainAreasFocus = () => {
+        closeAllDropdowns();
         const matches = mainAreas.slice(0, 15);
         setFilteredMainAreas(matches);
         setShowMainAreasDropdown(true);
@@ -660,6 +673,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleOwnerInput = (value) => {
+        closeAllDropdowns();
         setSelectedOwner(value);
         const matches = functionalOwners
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -680,6 +694,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
     // On focus, show all options
     const handleOwnerFocus = () => {
+        closeAllDropdowns();
         const matches = functionalOwners.slice(0, 15);
         setFilteredOwners(matches);
         setShowOwnersDropdown(true);
@@ -702,6 +717,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleControlInput = (id, value) => {
+        closeAllDropdowns();
         handleControlChange(id, value);
 
         const matches = controls
@@ -723,6 +739,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     };
 
     const handleControlFocus = (id) => {
+        closeAllDropdowns();
         const current = controlRows.find(r => r.id === id)?.value || '';
         const matches = controls
             .filter(c => c.control.toLowerCase().includes(current.toLowerCase()))
@@ -927,7 +944,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     </div>
                                     <div className="ibra-popup-page-component-wrapper-special">
                                         <div className="ibra-popup-page-form-group">
-                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description</label>
+                                            <label style={{ fontSize: "16px" }}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description</label>
                                             <textarea
                                                 className="ibra-popup-page-textarea-2"
                                                 value={maxConsequence}
@@ -1162,7 +1179,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredMainAreas.map((term, i) => (
+                    {filteredMainAreas.sort().map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectMainAreaSuggestion(term)}
@@ -1184,7 +1201,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredSubAreas.map((term, i) => (
+                    {filteredSubAreas.sort().map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectSubAreaSuggestion(term)}

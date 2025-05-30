@@ -249,7 +249,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                             <th className="font-fam cent">Nr</th>
                             <th className="font-fam cent">Name & Surname</th>
                             <th className="font-fam cent">Company/Site</th>
-                            <th className="font-fam cent">Company Number</th>
+                            <th className="font-fam cent">Company Number / ID</th>
                             <th className="font-fam cent">Designation</th>
                             <th className="font-fam cent col-sig-act">Action</th>
                         </tr>
@@ -389,7 +389,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                         zIndex: 1000
                     }}
                 >
-                    {filteredCompanyOptions[showDropdown].map((company, i) => (
+                    {filteredCompanyOptions[showDropdown].sort().map((company, i) => (
                         <li key={i} onMouseDown={() => handleSelectOption(showDropdown, "site", company)}>
                             {company}
                         </li>

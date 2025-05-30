@@ -28,7 +28,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
     const [helpCritical, setHelpCritical] = useState(false);
     const [controlTypeOptions] = useState(['Act', 'Object', 'System']);
     const [activationOptions] = useState(['Prevention Control', 'Consequence Minimizing Control', 'Both']);
-    const [hierarchyOptions] = useState(['1. Elimintation', '2. Substitution', '3. Engineering', '4. Seperation', '5. Administration', '6. PPE']);
+    const [hierarchyOptions] = useState(['1. Elimination', '2. Substitution', '3. Engineering', '4. Separation', '5. Administration', '6. PPE']);
     const [aimOptions] = useState(['Safety', 'Health', 'Environment', 'Community', 'Legal & Regulatory', 'Material Losses', 'Reputation']);
     const [qualityOptions] = useState(['<29%', '30-59%', '60-90%', '>90%']);
 
@@ -360,7 +360,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
 
                             <div className="ibra-popup-page-component-wrapper">
                                 <div className="ibra-popup-page-form-group">
-                                    <label>Notes Regarding the Control
+                                    <label style={{ fontSize: "15px" }}>Notes Regarding the Control
                                     </label>
                                     <textarea
                                         value={notes}

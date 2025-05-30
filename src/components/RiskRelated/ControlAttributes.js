@@ -63,7 +63,7 @@ const ControlAttributes = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Risk Management</p>
+                        <p className="logo-text-um">Control Management</p>
                     </div>
                 </div>
             )}
@@ -84,7 +84,7 @@ const ControlAttributes = () => {
                 </div>
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper">
-                        <label className="risk-control-label">Control Attributes</label>
+                        <label className="risk-control-label">Control Management</label>
                         <FontAwesomeIcon icon={faSearch} title="Search" className="risk-control-label-icon" />
                     </div>
                     <div className="table-scroll-wrapper">
@@ -109,11 +109,11 @@ const ControlAttributes = () => {
                                     <tr key={index}>
                                         <td className="procCent">{index + 1}</td>
                                         <td>{row.control}</td>
-                                        <td className="procCent">{row.critical}</td>
+                                        <td className={`${row.critical === "Yes" ? 'procCent cea-table-page-critical' : 'procCent'}`}>{row.critical}</td>
                                         <td className="procCent">{row.act}</td>
-                                        <td className="procCent">{row.activation}</td>
-                                        <td className="procCent">{row.hierarchy}</td>
-                                        <td className="procCent">{"-"}</td>
+                                        <td className="">{row.activation}</td>
+                                        <td className="">{row.hierarchy}</td>
+                                        <td className="">{row.cons}</td>
                                     </tr>
                                 ))}
                             </tbody>

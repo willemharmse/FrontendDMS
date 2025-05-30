@@ -16,7 +16,8 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
         const newFiles = selected.map((file, index) => ({
             nr: formData.supportingDocuments.length + index + 1,
             name: file.name,
-            file: file
+            file: file,
+            note: ""
         }));
 
         const updatedFiles = [...formData.supportingDocuments, ...newFiles];
@@ -38,6 +39,19 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
         setSelectedFiles(reIndexed);
     };
 
+    const handleNoteChange = (index, newNote) => {
+        const updated = formData.supportingDocuments.map((doc, i) =>
+            i === index
+                ? { ...doc, note: newNote }
+                : doc
+        );
+        setFormData({
+            ...formData,
+            supportingDocuments: updated
+        });
+        setSelectedFiles(updated);
+    };
+
     return (
         <div className="input-row">
             <div className="input-box-ref">
@@ -53,6 +67,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                             <tr>
                                 <th className="refColCen refNum">Nr</th>
                                 <th className="refColCen refRef">Document Name</th>
+                                <th className="refColCen refRef">Notes</th>
                                 <th className="refColCen refBut">Action</th>
                             </tr>
                         </thead>
@@ -61,6 +76,16 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                                 <tr key={index}>
                                     <td className="refCent">{row.nr}</td>
                                     <td className="refCent">{removeFileExtension(row.name)}</td>
+                                    <td className="refCent">
+                                        <input
+                                            type="text"
+                                            style={{ color: "black", cursor: "text" }}
+                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                            placeholder="Enter Additional Notes"
+                                            value={row.note}
+                                            onChange={e => handleNoteChange(index, e.target.value)}
+                                        />
+                                    </td>
                                     <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => handleRemoveFile(index)}>
                                             <FontAwesomeIcon icon={faTrash} title="Remove File" />

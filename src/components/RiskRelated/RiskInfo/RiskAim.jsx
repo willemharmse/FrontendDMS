@@ -15,13 +15,8 @@ const RiskAim = ({ setClose }) => {
                 <div className="aim-table-group-2">
                     <div className="popup-table-wrapper-aim-2">
                         <p>
-                            <strong>Purpose:</strong> To define the overall intent and desired outcome of the RA.
-                            <br />
-                        </p>
-                        <p>
-                            <strong>Aim </strong>= Why we are doing this RA? <br />
-                            This helps teams align their thinking before they start identifying hazards or rating risks.
-                            <br />
+                            <strong>Purpose:</strong>
+                            <br />To define the overall intent and desired outcome of the RA. It confirms why the RA is being conducted. This assists the team to align their thinking before identifying hazards or rating the risks.
                         </p>
                         <p>
                             <strong>Guiding Questions:</strong>
@@ -31,7 +26,8 @@ const RiskAim = ({ setClose }) => {
                             </ul>
                         </p>
                         <p>
-                            <strong>Example Text: </strong>The aim of this risk assessment is to identify and evaluate potential Priority Unwanted Events (PUEs) and Material Unwanted Events (MUEs) related to underground drilling operations, and to ensure appropriate controls are in place to reduce the risk of injury, equipment damage, or production delays.
+                            <strong>Example Text: </strong><br />
+                            The aim of this risk assessment is to identify and evaluate risks associated with <strong><span className="underline">routine maintenance of conveyor belt systems in the crushing plant</span></strong>. This is to ensure that energy isolation, guarding, and entrapment risks are adequately controlled.
                         </p>
                     </div>
                 </div>

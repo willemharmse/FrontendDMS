@@ -30,7 +30,7 @@
     padding: 10px;
     text-align: center;
     background-color: #D9D9D9;
-    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     color: black;
     font-size: 14px;
 }
@@ -41,6 +41,7 @@
     text-align: center;
     border-bottom: 1px solid #ddd;
     background-color: #D9D9D9;
+    border-right: 1px solid #D9D9D9 !important;
     color: black;
     font-size: 14px;
 }
@@ -61,6 +62,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -68,6 +70,7 @@
 
 .cea-table-page-critical {
     background-color: #D6E3FF !important;
+    border-right: 1px solid #D9D9D9 !important;
     color: black !important;
     text-align: center !important;
 }
@@ -114,6 +117,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -124,6 +128,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -134,6 +139,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -144,6 +150,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -154,6 +161,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;
@@ -164,6 +172,7 @@
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
     font-size: 14px;

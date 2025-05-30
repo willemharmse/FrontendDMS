@@ -66,7 +66,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                         <tr>
                             <th colSpan={3} className="control-analysis-split">Control Identification</th>
                             <th colSpan={7} className="control-analysis-split">Control Effectiveness Rating (CER)</th>
-                            <th colSpan={1} className="control-analysis-th">Action</th>
+                            <th colSpan={1} className="control-analysis-th" rowSpan={2}>Action</th>
                         </tr>
                         <tr>
                             <th className="control-analysis-nr">Nr</th>
@@ -79,7 +79,6 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                             <th className="control-analysis-quality">Quality (%)</th>
                             <th className="control-analysis-cer">Control Effectiveness Rating (CER)</th>
                             <th className="control-analysis-notes">Notes Regarding the Control</th>
-                            <th className="control-analysis-del"></th>
                         </tr>
                     </thead>
                     <tbody>

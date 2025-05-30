@@ -1,4 +1,4 @@
-.popup-overlay-scope {
+.popup-overlay-exec {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,13 +11,13 @@
     z-index: 9999;
 }
 
-.popup-content-scope {
+.popup-content-exec {
     background: #f2f2f2;
     padding: 20px;
     width: 1000px;
     /* Wider popup */
     max-height: 100%;
-    min-height: 380px;
+    min-height: 270px;
     /* Ensure the popup does not stretch vertically */
     overflow: hidden;
     /* Prevent the popup content from scrolling */
@@ -26,7 +26,11 @@
     border-radius: 10px;
 }
 
-.scope-table-group {
+.underline {
+    text-decoration: underline;
+}
+
+.exec-table-group {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -38,7 +42,7 @@
     border-radius: 5px;
 }
 
-.scope-table-group-2 {
+.exec-table-group-2 {
     display: flex;
     justify-content: center;
     /* Centers horizontally */
@@ -53,9 +57,9 @@
     margin-bottom: 10px !important;
 }
 
-.popup-table-wrapper-scope {
+.popup-table-wrapper-exec {
     overflow-y: auto;
-    max-height: 207px;
+    max-height: 200px;
     min-height: 250px;
     height: 100%;
     width: 97%;
@@ -74,10 +78,10 @@
     display: block;
 }
 
-.popup-table-wrapper-scope-2 {
+.popup-table-wrapper-exec-2 {
     overflow-y: auto;
-    max-height: 325px;
-    min-height: 325px;
+    max-height: 200px;
+    min-height: 263px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
@@ -95,7 +99,7 @@
     white-space: pre-line;
 }
 
-.scope-headers {
+.exec-headers {
     position: sticky;
     top: 0;
     background-color: #002060;
@@ -103,12 +107,12 @@
     z-index: 1;
 }
 
-.inp-size-scope {
+.inp-size-exec {
     width: 30%;
     text-align: center;
 }
 
-.desc-size-scope {
+.desc-size-exec {
     width: 70%;
     text-align: center;
 }

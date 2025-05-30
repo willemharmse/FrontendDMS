@@ -16,7 +16,6 @@ const DocumentSignaturesRiskTable = ({
   const [nameLists, setNameLists] = useState([]);
   const [posLists, setPosLists] = useState([]);
   const [nameToPositionMap, setNameToPositionMap] = useState({});
-  const [selectedNames, setSelectedNames] = useState(new Set());
 
   // floating dropdown state
   const [showNameDropdown, setShowNameDropdown] = useState(null);
@@ -94,9 +93,7 @@ const DocumentSignaturesRiskTable = ({
 
   const openNameDropdown = (index) => {
     // show all except other selected
-    const opts = nameLists
-      .filter(n => !selectedNames.has(n) || n === rows[index].name)
-      .slice(0, 15);
+    const opts = nameLists.slice(0, 15);
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
@@ -113,10 +110,7 @@ const DocumentSignaturesRiskTable = ({
     );
 
     const opts = nameLists
-      .filter(n =>
-        n.toLowerCase().includes(value.toLowerCase()) &&
-        (!selectedNames.has(n) || n === rows[index].name)
-      )
+      .filter(n => n.toLowerCase().includes(value.toLowerCase()))
       .slice(0, 15);
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
@@ -124,13 +118,6 @@ const DocumentSignaturesRiskTable = ({
   };
 
   const handleSelectName = (index, name) => {
-    // update selectedNames set
-    setSelectedNames(prev => {
-      const copy = new Set(prev);
-      if (rows[index].name) copy.delete(rows[index].name);
-      copy.add(name);
-      return copy;
-    });
     // finalize name & auto-fill pos
     handleRowChange({ target: { value: name } }, index, "name");
     handleRowChange(
@@ -169,12 +156,12 @@ const DocumentSignaturesRiskTable = ({
     <div className="input-row">
       <div className={`input-box-sig-risk ${error ? "error-sign" : ""}`}>
         <h3 className="font-fam-labels">
-          Document Signatures <span className="required-field">*</span>
+          Authorisations <span className="required-field">*</span>
         </h3>
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
             <tr>
-              <th className="font-fam cent col-sig-auth-risk">Authorizations</th>
+              <th className="font-fam cent col-sig-auth-risk">Authorisation</th>
               <th className="font-fam cent col-sig-name-risk">Name</th>
               <th className="font-fam cent col-sig-pos-risk">Position</th>
               <th className="font-fam cent col-sig-act-risk">Action</th>
@@ -221,11 +208,6 @@ const DocumentSignaturesRiskTable = ({
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {
-                      setSelectedNames(prev => {
-                        const c = new Set(prev);
-                        c.delete(row.name);
-                        return c;
-                      });
                       removeRow(idx);
                     }}
                     title="Remove Row"

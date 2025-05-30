@@ -30,7 +30,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     }
 
     const availableColumns = [
-        { id: "nr", title: "Nr.", className: "ibraCent ibraNr", icon: null },
+        { id: "nr", title: "Nr", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Area", className: "ibraCent ibraMain", icon: null },
         { id: "sub", title: "Sub Area", className: "ibraCent ibraSub", icon: null },
         { id: "hazards", title: "Hazard", className: "ibraCent ibraPrev", icon: null },

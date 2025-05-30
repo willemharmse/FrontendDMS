@@ -3,7 +3,7 @@ import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }) => {
+const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows }) => {
     const [files, setFiles] = useState([]);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
@@ -107,8 +107,26 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
     };
 
     const handleInsertAt = (insertIndex) => {
-        // tell parent to insert a blank row at `insertIndex`
-        addRefRow(insertIndex);
+        // copy existing rows
+        const newRows = [...referenceRows];
+
+        // create a fresh new row (nr doesn’t really matter here)
+        const newRow = {
+            nr: 0,
+            ref: "",
+            refDesc: ""
+        };
+
+        // insert it at the desired index
+        newRows.splice(insertIndex, 0, newRow);
+
+        // now renumber *all* rows
+        newRows.forEach((row, idx) => {
+            row.nr = idx + 1;
+        });
+
+        // push it back up to your parent
+        updateRefRows(newRows);
     };
 
     const handleRemove = (index) => {
@@ -186,6 +204,12 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow }
                             ))}
                         </tbody>
                     </table>
+                )}
+
+                {referenceRows.length === 0 && (
+                    <button className="add-row-button-ref" onClick={addRefRow}>
+                        Add
+                    </button>
                 )}
 
                 {showDropdown !== null && filteredOptions[showDropdown]?.length > 0 && (

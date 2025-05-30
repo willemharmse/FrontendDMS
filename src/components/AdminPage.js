@@ -33,6 +33,7 @@ import {
     faUniversity, faChevronLeft, faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 import ImportSiteInfo from "./UploadPage/ImportSiteInfo";
+import ImportRiskSiteInfo from "./RiskRelated/ImportRiskSiteInfo";
 import TopBar from "./Notifications/TopBar";
 
 const AdminPage = () => {
@@ -49,6 +50,7 @@ const AdminPage = () => {
     const [upload, setUpload] = useState(false);
     const [batch, setBatch] = useState(false);
     const [importSI, setImportSI] = useState(false);
+    const [importRSI, setImportRSI] = useState(false);
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -65,6 +67,14 @@ const AdminPage = () => {
 
     const closeImportSI = () => {
         setImportSI(false);
+    };
+
+    const openImportRSI = () => {
+        setImportRSI(true);
+    };
+
+    const closeImportRSI = () => {
+        setImportRSI(false);
     };
 
     const closeUpload = () => {
@@ -121,6 +131,7 @@ const AdminPage = () => {
             {upload && (<UploadPopup onClose={closeUpload} />)}
             {batch && (<BatchUpload onClose={closeBatch} />)}
             {importSI && (<ImportSiteInfo onClose={closeImportSI} />)}
+            {importRSI && (<ImportRiskSiteInfo onClose={closeImportRSI} />)}
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
@@ -163,6 +174,14 @@ const AdminPage = () => {
                                 <FontAwesomeIcon icon={faCloudUploadAlt} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Import Site Info</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={openImportRSI}>
+                        <>
+                            <div className="icon-dept">
+                                <FontAwesomeIcon icon={faCloudUploadAlt} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Import Risk Site Info</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>

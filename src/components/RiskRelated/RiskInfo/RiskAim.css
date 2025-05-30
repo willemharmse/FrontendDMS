@@ -17,13 +17,17 @@
     width: 1000px;
     /* Wider popup */
     max-height: 100%;
-    min-height: 300px;
+    min-height: 280px;
     /* Ensure the popup does not stretch vertically */
     overflow: hidden;
     /* Prevent the popup content from scrolling */
     display: flex;
     flex-direction: column;
     border-radius: 10px;
+}
+
+.underline {
+    text-decoration: underline;
 }
 
 .aim-table-group {
@@ -55,7 +59,7 @@
 
 .popup-table-wrapper-aim {
     overflow-y: auto;
-    max-height: 207px;
+    max-height: 200px;
     min-height: 250px;
     height: 100%;
     width: 97%;
@@ -76,8 +80,8 @@
 
 .popup-table-wrapper-aim-2 {
     overflow-y: auto;
-    max-height: 250px;
-    min-height: 250px;
+    max-height: 200px;
+    min-height: 230px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
