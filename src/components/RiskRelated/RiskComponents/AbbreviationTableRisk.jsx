@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./AbbreviationTableRisk.css"; // Add styling here
-import AbbreviationPopup from "../../ValueChanges/AbbreviationPopup";
-import ManageAbbreviations from "../../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import RiskAbbreviationPopup from "../RiskValueChanges/RiskAbbreviationPopup";
+import ManageRiskAbbreviations from "../RiskValueChanges/ManageRiskAbbreviations";
 
 const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
   const [abbrData, setAbbrData] = useState([]);
@@ -17,6 +17,17 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
   useEffect(() => {
     setSelectedAbbrs(new Set(usedAbbrCodes));
   }, [usedAbbrCodes]);
+
+  const handleNewAbbreviation = (newAbbr) => {
+    const code = newAbbr.abbr;
+    // add to the “used” codes array
+    setUsedAbbrCodes((prev) => [...prev, code]);
+    setSelectedAbbrs((prev) => new Set(prev).add(code));
+    setFormData((prev) => ({
+      ...prev,
+      abbrRows: [...prev.abbrRows, newAbbr],
+    }));
+  };
 
   const fetchValues = async () => {
     const route = `/api/riskInfo/abbr/`;
@@ -88,15 +99,16 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
           <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Abbreviations" /></button>
         )}
         <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Abbreviation" /></button>
-        <AbbreviationPopup
+        <RiskAbbreviationPopup
           isOpen={showNewPopup}
-          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          onClose={() => { setShowNewPopup(false); }}
           role={role}
           userID={userID}
           setAbbrData={setAbbrData}
+          onAdd={handleNewAbbreviation}
         />
 
-        {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageRiskAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
         {/* Popup */}
         {popupVisible && (
           <div className="popup-overlay-abbr">

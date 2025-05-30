@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./TermTableRisk.css"; // Add styling here
-import TermPopup from "../../ValueChanges/TermPopup";
-import ManageDefinitions from "../../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import RiskTermPopup from "../RiskValueChanges/RiskTermPopup";
+import ManageRiskDefinitions from "../RiskValueChanges/ManageRiskDefinitions";
 
 const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
@@ -16,6 +16,17 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
   useEffect(() => {
     setSelectedTerms(new Set(usedTermCodes));
   }, [usedTermCodes]);
+
+  const handleNewTerm = (newTerm) => {
+    const code = newTerm.term;
+    // add to the “used” codes array
+    setUsedTermCodes((prev) => [...prev, code]);
+    setSearchTerm((prev) => new Set(prev).add(code));
+    setFormData((prev) => ({
+      ...prev,
+      termRows: [...prev.abbrRows, newTerm],
+    }));
+  };
 
   const fetchValues = async () => {
     const route = `/api/riskInfo/def`;
@@ -82,20 +93,21 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
   return (
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
-        <h3 className="font-fam-labels">Terms and Definitions <span className="required-field">*</span></h3>
+        <h3 className="font-fam-labels">Terms & Definitions <span className="required-field">*</span></h3>
         {role === "admin" && (
           <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
         )}
         <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Term" /></button>
-        <TermPopup
+        <RiskTermPopup
           isOpen={showNewPopup}
-          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          onClose={() => { setShowNewPopup(false); }}
           role={role}
           userID={userID}
           setTermData={setTermData}
+          onAdd={handleNewTerm}
         />
 
-        {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageRiskDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
 
         {popupVisible && (
           <div className="popup-overlay-terms">

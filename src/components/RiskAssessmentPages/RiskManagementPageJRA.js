@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -339,7 +339,8 @@ const RiskManagementPageJRA = () => {
                             R: ""
                         }],
                         controls: [{ control: "" }],         // array of control strings
-                        notes: ""
+                        notes: "",
+                        go: ""
                     }     // single textarea for notes
                 ]
             }
@@ -675,6 +676,102 @@ const RiskManagementPageJRA = () => {
             rows: newRows,
         }));
     };
+
+    const AiRewriteAim = async () => {
+        try {
+            const prompt = formData.aim;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/jra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                aim: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScope = async () => {
+        try {
+            const prompt = formData.scope;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/jra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scope: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScopeInclusions = async () => {
+        try {
+            const prompt = formData.scopeInclusions;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeI/jra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scopeInclusions: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScopeExlusions = async () => {
+        try {
+            const prompt = formData.scopeExclusions;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeE/jra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scopeExclusions: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
 
     // Add a new row to the table
     const addRow = () => {
@@ -1071,6 +1168,12 @@ const RiskManagementPageJRA = () => {
                                 rows="5"   // Adjust the number of rows for initial height
                                 placeholder="The aim of this risk assessment is " // Optional placeholder text
                             />
+                            <FontAwesomeIcon
+                                icon={faMagicWandSparkles}
+                                className="aim-textarea-icon-ibra"
+                                title="AI Rewrite"
+                                onClick={() => AiRewriteAim()}
+                            />
                         </div>
                     </div>
 
@@ -1096,6 +1199,7 @@ const RiskManagementPageJRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
+                                        <FontAwesomeIcon icon={faMagicWandSparkles} title="AI Rewrite" className="scope-textarea-icon" onClick={() => AiRewriteScope()} />
                                     </div>
                                 </div>
                             </div>
@@ -1112,6 +1216,12 @@ const RiskManagementPageJRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
                                         />
+                                        <FontAwesomeIcon
+                                            icon={faMagicWandSparkles}
+                                            className="scope-textarea-icon"
+                                            title="AI Rewrite"
+                                            onClick={() => AiRewriteScopeInclusions()}
+                                        />
                                     </div>
 
                                     <div className="risk-popup-page-column-half-scope">
@@ -1124,6 +1234,12 @@ const RiskManagementPageJRA = () => {
                                             onChange={handleInputChange}
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faMagicWandSparkles}
+                                            className="scope-textarea-icon"
+                                            title="AI Rewrite"
+                                            onClick={() => AiRewriteScopeExlusions()}
                                         />
                                     </div>
                                 </div>
@@ -1140,7 +1256,6 @@ const RiskManagementPageJRA = () => {
                     <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />
-                    <ExecutiveSummaryJRA formData={formData} setFormData={setFormData} errors={errors} handleInputChange={handleInputChange} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
 

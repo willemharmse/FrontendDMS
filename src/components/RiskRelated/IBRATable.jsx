@@ -541,6 +541,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                 <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
                                                                     <input
                                                                         type="date"
+                                                                        style={{ fontFamily: "Arial" }}
                                                                         value={d.date}
                                                                         onChange={e => handleDueDateChange(rowIndex, pi, di, e.target.value)}
                                                                         className="ibra-input-date"
@@ -610,6 +611,19 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             rowSpan={possibilities.length}
                                                         >
                                                             {row.material}
+                                                        </td>
+                                                    )
+                                                }
+
+                                                if (colId === "maxConsequence") {
+                                                    if (!isFirst) return null;
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            style={{ textAlign: "left" }}
+                                                        >
+                                                            {row.maxConsequence}
                                                         </td>
                                                     )
                                                 }

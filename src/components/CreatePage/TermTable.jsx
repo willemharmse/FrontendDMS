@@ -82,7 +82,7 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   return (
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
-        <h3 className="font-fam-labels">Terms and Definitions <span className="required-field">*</span></h3>
+        <h3 className="font-fam-labels">Terms & Definitions <span className="required-field">*</span></h3>
         {role === "admin" && (
           <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
         )}

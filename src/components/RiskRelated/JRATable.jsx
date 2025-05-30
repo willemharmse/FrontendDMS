@@ -3,7 +3,7 @@ import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus, faDownload } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 
 const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
@@ -570,6 +570,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         { id: "sub", title: "Sub Task Steps\n(Procedure to complete the Main Task Step)", className: "ibraCent ibraSubJRA", icon: null },
         { id: "taskExecution", title: "Task Execution\n(A&R)", className: "ibraCent ibraRisk", icon: null },
         { id: "controls", title: "Contol Execution Specification\n(For Work Execution Document [WED])", className: "ibraCent ibraEXEJRA", icon: null },
+        { id: "go", title: "Go/ No-Go", className: "ibraCent ibraDeadlineJRA", icon: null },
         { id: "notes", title: "Notes", className: "ibraCent ibraDeadlineJRA", icon: null },
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
     ];
@@ -778,6 +779,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     onClick={() => setShowColumnSelector(!showColumnSelector)}
                 >
                     <FontAwesomeIcon icon={faTableColumns} className="icon-um-search" />
+                </button>
+                <button
+                    className="top-right-button-ibra2"
+                    title="Generate JRA"
+                >
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
 
                 {showColumnSelector && (
@@ -1148,6 +1155,28 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                         updateRows(upd);
                                                                     }}
                                                                 />
+                                                            </td>
+                                                        );
+                                                    }
+
+                                                    if (colId === "go") {
+                                                        return (
+                                                            <td key={colIdx} className={cls}>
+                                                                <div className="ibra-popup-page-select-container">
+                                                                    <select
+                                                                        className="ibra-popup-page-select"
+                                                                        value={body.go}
+                                                                        onChange={e => {
+                                                                            const upd = [...formData.jra];
+                                                                            upd[rowIndex].jraBody[bodyIdx].go = e.target.value;
+                                                                            updateRows(upd);
+                                                                        }}
+                                                                    >
+                                                                        <option value="">Select Option</option>
+                                                                        <option value="go">Go</option>
+                                                                        <option value="nogo">No-Go</option>
+                                                                    </select>
+                                                                </div>
                                                             </td>
                                                         );
                                                     }

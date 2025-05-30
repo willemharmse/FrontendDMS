@@ -263,8 +263,7 @@ const RiskManagementPageIBRA = () => {
 
     const AiRewriteAim = async () => {
         try {
-            const prompt = JSON.stringify(formData.aim);
-            console.log(prompt);
+            const prompt = formData.aim;
 
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/ibra`, {
                 method: 'POST',
@@ -280,6 +279,78 @@ const RiskManagementPageIBRA = () => {
             setFormData({
                 ...formData,
                 aim: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScope = async () => {
+        try {
+            const prompt = formData.scope;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/ibra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scope: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScopeInclusions = async () => {
+        try {
+            const prompt = formData.scopeInclusions;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeI/ibra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scopeInclusions: data.response,
+            });
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
+
+    const AiRewriteScopeExlusions = async () => {
+        try {
+            const prompt = formData.scopeExclusions;
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeE/ibra`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const data = await response.json();
+
+            setFormData({
+                ...formData,
+                scopeExclusions: data.response,
             });
         } catch (error) {
             console.error('Error saving data:', error);
@@ -1332,7 +1403,7 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
-                                        <FontAwesomeIcon icon={faMagicWandSparkles} title="AI Rewrite" className="scope-textarea-icon" />
+                                        <FontAwesomeIcon icon={faMagicWandSparkles} title="AI Rewrite" className="scope-textarea-icon" onClick={() => AiRewriteScope()} />
                                     </div>
                                 </div>
                             </div>
@@ -1353,6 +1424,7 @@ const RiskManagementPageIBRA = () => {
                                             icon={faMagicWandSparkles}
                                             className="scope-textarea-icon"
                                             title="AI Rewrite"
+                                            onClick={() => AiRewriteScopeInclusions()}
                                         />
                                     </div>
 
@@ -1371,6 +1443,7 @@ const RiskManagementPageIBRA = () => {
                                             icon={faMagicWandSparkles}
                                             className="scope-textarea-icon"
                                             title="AI Rewrite"
+                                            onClick={() => AiRewriteScopeExlusions()}
                                         />
                                     </div>
                                 </div>
