@@ -628,6 +628,32 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     )
                                                 }
 
+                                                if (colId === "UE") {
+                                                    if (!isFirst) return null;
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            style={{ textAlign: "left" }}
+                                                        >
+                                                            {row.UE}
+                                                        </td>
+                                                    )
+                                                }
+
+                                                if (colId === "source") {
+                                                    if (!isFirst) return null;
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            style={{ textAlign: "left" }}
+                                                        >
+                                                            {row.source}
+                                                        </td>
+                                                    )
+                                                }
+
                                                 // Nr column (with your arrow-icon logic)
                                                 if (colId === "nr") {
                                                     return (
