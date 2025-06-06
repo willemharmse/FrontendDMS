@@ -23,11 +23,11 @@
 }
 
 .evenTRColour {
-    background-color: #e6e3e3;
+    background-color: #f0f0f0;
 }
 
 .evenTRColour:hover {
-    background-color: #e6e3e3;
+    background-color: #f0f0f0;
 }
 
 .top-left-button-ibra {
@@ -316,23 +316,18 @@ td.ibraDD {
 
 .table-borders-ibra td {
     border-bottom: 1px solid #BFBFBF !important;
+    font-size: 14px;
 }
 
 .ibra-add-row-button {
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 15px;
     padding: 4px;
     color: black;
     /* dark green for the plus */
     transition: color 0.2s;
-}
-
-.ibra-add-row-button:hover {
-    color: #4CAF50;
-    /* a nice green on hover */
-    background-color: rgba(76, 175, 80, 0.1);
 }
 
 .ibra-action-buttons {
@@ -341,6 +336,11 @@ td.ibraDD {
     align-items: center;
     gap: 4px;
     /* space between trash & plus */
+}
+
+.unwanted-event-borders {
+    border-left: 2px solid #CB6F6F !important;
+    border-right: 2px solid #CB6F6F !important;
 }
 
 .ibra-remove-row-button {

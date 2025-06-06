@@ -57,7 +57,7 @@
 .table-container-risk-control-attributes {
     display: flex;
     flex-direction: column;
-
+    position: relative;
     height: calc(100% - 50px);
     /* Full height minus padding */
     overflow-y: auto;
@@ -67,6 +67,88 @@
     padding: 5px;
     padding-top: 15px;
     border-radius: 10px;
+}
+
+.top-right-button-control-att {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    z-index: 1;
+    background: transparent;
+    color: #333;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.top-right-button-control-att-2 {
+    position: absolute;
+    top: 20px;
+    right: 70px;
+    z-index: 1;
+    background: transparent;
+    color: #333;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.search-popup-rca {
+    position: absolute;
+    top: 55px;
+    right: 30px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-popup-input-rca {
+    padding: 6px 10px;
+    font-size: 14px;
+    width: 200px;
+    border: 1px solid #999;
+    border-radius: 4px;
+}
+
+.search-popup-clear-rca {
+    background-color: #f0f0f0;
+    border: 1px solid #aaa;
+    padding: 6px 8px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-popup-clear-rca:hover {
+    background-color: #e0e0e0;
+}
+
+.search-popup-close-rca {
+    color: #333;
+    cursor: pointer;
+    font-size: 18px;
 }
 
 .table-scroll-wrapper {
@@ -108,7 +190,7 @@
 }
 
 .risk-control-attributes-nr {
-    width: 5%;
+    width: 3%;
     padding: 10px;
     text-align: center;
     background-color: #D9D9D9;
@@ -118,7 +200,37 @@
 }
 
 .risk-control-attributes-control {
-    width: 30%;
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-description {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-quality {
+    width: 9%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
+.risk-control-attributes-perf {
+    width: 9%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -128,7 +240,7 @@
 }
 
 .risk-control-attributes-critcal {
-    width: 5%;
+    width: 3%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -139,16 +251,6 @@
 }
 
 .risk-control-attributes-hiearchy {
-    width: 17%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    background-color: #D9D9D9;
-    color: black;
-    font-size: 14px;
-}
-
-.risk-control-attributes-act {
     width: 10%;
     padding: 10px;
     text-align: center;
@@ -158,8 +260,18 @@
     font-size: 14px;
 }
 
+.risk-control-attributes-act {
+    width: 6%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    color: black;
+    font-size: 14px;
+}
+
 .risk-control-attributes-activation {
-    width: 17%;
+    width: 10%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -169,7 +281,7 @@
 }
 
 .risk-control-attributes-cons {
-    width: 16%;
+    width: 10%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;

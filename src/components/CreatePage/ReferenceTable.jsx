@@ -151,10 +151,11 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                         <tbody>
                             {referenceRows.map((row, index) => (
                                 <tr key={index}>
-                                    <td className="refCent">{row.nr}</td>
+                                    <td className="refCent" style={{ fontSize: "14px" }}>{row.nr}</td>
                                     <td>
                                         <input
                                             type="text"
+                                            style={{ fontSize: "14px" }}
                                             className="table-control"
                                             value={removeFileExtension(row.ref)}
                                             onChange={(e) => handleDescChange(index, "ref", e.target.value)}
@@ -177,6 +178,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                     <td>
                                         <input
                                             type="text"
+                                            style={{ fontSize: "14px" }}
                                             className="table-control"
                                             value={row.refDesc}
                                             onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}

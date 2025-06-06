@@ -203,7 +203,7 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                         <tbody>
                             {formData.Materials?.map((row, index) => (
                                 <tr key={index}>
-                                    <td>{row.mat}</td>
+                                    <td style={{ fontSize: "14px" }}>{row.mat}</td>
                                     <td className="procCent">
                                         <button
                                             className="remove-row-button"

@@ -249,7 +249,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                             <th className="font-fam cent">Nr</th>
                             <th className="font-fam cent">Name & Surname</th>
                             <th className="font-fam cent">Company/Site</th>
-                            <th className="font-fam cent">Company Number / ID</th>
+                            <th className="font-fam cent">Company / ID Number</th>
                             <th className="font-fam cent">Designation</th>
                             <th className="font-fam cent col-sig-act">Action</th>
                         </tr>
@@ -257,12 +257,13 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                     <tbody>
                         {rows.map((row, index) => (
                             <tr key={index}>
-                                <td className="cent">{index + 1}</td>
+                                <td className="cent" >{index + 1}</td>
                                 <td>
                                     <input
                                         type="text"
                                         className="table-control font-fam"
                                         value={row.name || ""}
+                                        style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "name", e)}
                                         onFocus={() => handleFocus(index, "name")}
                                         placeholder="Enter or select name"
@@ -275,6 +276,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         className="table-control font-fam"
                                         value={row.site || ""}
                                         onFocus={() => handleFocus(index, "site")}
+                                        style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "site", e)}
                                         placeholder="Enter company/site"
                                         ref={(el) => (inputRefs.current[`site-${index}`] = el)}
@@ -285,8 +287,9 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         type="text"
                                         className="table-control font-fam"
                                         value={row.num || ""}
+                                        style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "num", e)}
-                                        placeholder="Enter company number"
+                                        placeholder="Enter company / ID number"
                                     />
                                 </td>
                                 <td>
@@ -298,6 +301,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onFocus={() => handleFocus(index, "designation")}
                                         placeholder="Enter or select designation"
                                         readOnly={index === 0}
+                                        style={{ fontSize: "14px" }}
                                         ref={(el) => (inputRefs.current[`designation-${index}`] = el)}
                                     />
                                 </td>
@@ -329,6 +333,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onClick={() => insertRowAt(index + 1)}
                                         title="Add row"
                                         type="button"
+                                        style={{ fontSize: "15px" }}
                                     >
                                         <FontAwesomeIcon icon={faPlusCircle} />
                                     </button>

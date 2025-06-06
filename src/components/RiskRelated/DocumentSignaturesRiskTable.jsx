@@ -175,6 +175,7 @@ const DocumentSignaturesRiskTable = ({
                     className="table-control font-fam"
                     value={row.auth}
                     onChange={e => handleRowChange(e, idx, "auth")}
+                    style={{ fontSize: "14px" }}
                   >
                     <option value="Approver">Approver</option>
                     <option value="Facilitator">Facilitator</option>
@@ -186,6 +187,7 @@ const DocumentSignaturesRiskTable = ({
                   <input
                     type="text"
                     className="table-control font-fam"
+                    style={{ fontSize: "14px" }}
                     value={row.name}
                     onFocus={() => openNameDropdown(idx)}
                     onChange={e => handleNameInputChange(idx, e.target.value)}
@@ -198,6 +200,7 @@ const DocumentSignaturesRiskTable = ({
                     type="text"
                     className="table-control font-fam"
                     value={row.pos}
+                    style={{ fontSize: "14px" }}
                     onFocus={() => openPosDropdown(idx)}
                     onChange={e => handlePosInputChange(idx, e.target.value)}
                     onBlur={() => setTimeout(() => setShowPosDropdown(null), 200)}
@@ -210,6 +213,8 @@ const DocumentSignaturesRiskTable = ({
                     onClick={() => {
                       removeRow(idx);
                     }}
+
+                    style={{ fontSize: "14px" }}
                     title="Remove Row"
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -218,6 +223,7 @@ const DocumentSignaturesRiskTable = ({
                     className="insert-row-button-sig-risk font-fam"
                     onClick={() => insertRowAt(idx + 1)}
                     title="Add Row"
+                    style={{ fontSize: "15px" }}
                   >
                     <FontAwesomeIcon icon={faPlusCircle} />
                   </button>

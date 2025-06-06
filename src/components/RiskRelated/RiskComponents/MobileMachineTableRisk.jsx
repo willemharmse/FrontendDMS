@@ -105,7 +105,7 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
                         checked={isNA}
                         onChange={handleNAToggle}
                     />
-                    <h3 className="font-fam-labels">Mobile Machine</h3>
+                    <h3 className="font-fam-labels">Mobile Machinery</h3>
                 </div>
                 {role === "admin" && (
                     <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Mobile Machines" /></button>
@@ -126,7 +126,7 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
                     <div className="popup-overlay-mac">
                         <div className="popup-content-mac">
                             <div className="review-date-header">
-                                <h2 className="review-date-title">Select Mobile Machines</h2>
+                                <h2 className="review-date-title">Select Mobile Machinery</h2>
                                 <button className="review-date-close" onClick={handlePopupToggle} title="Close Popup">×</button>
                             </div>
 
@@ -204,7 +204,7 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
                         <tbody>
                             {formData.MobileMachine?.map((row, index) => (
                                 <tr key={index}>
-                                    <td>{row.mac}</td>
+                                    <td style={{ fontSize: "14px" }}>{row.mac}</td>
                                     <td className="procCent">
                                         <button
                                             className="remove-row-button"

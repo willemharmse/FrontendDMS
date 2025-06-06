@@ -1011,6 +1011,7 @@ const CreatePage = () => {
               <div className="input-group-cpt">
                 <input
                   spellcheck="true"
+                  style={{ fontSize: "14px" }}
                   type="text"
                   name="title"
                   className="font-fam title-input"
@@ -1029,6 +1030,7 @@ const CreatePage = () => {
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
               <textarea
+                style={{ fontSize: "14px" }}
                 spellcheck="true"
                 name="aim"
                 className="aim-textarea font-fam"
@@ -1056,6 +1058,7 @@ const CreatePage = () => {
               <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
               <input
                 type="number"
+                style={{ fontSize: "14px" }}
                 name="reviewDate"
                 className="aim-textarea cent-create font-fam"
                 value={formData.reviewDate}
@@ -1065,7 +1068,7 @@ const CreatePage = () => {
             </div>
           </div>
 
-          <div className="input-row" onClick={handlePubClick}>
+          <div className="input-row">
             <div className={`input-box-annexures`}>
               <h3 className="font-fam-labels">Appendices</h3>
             </div>

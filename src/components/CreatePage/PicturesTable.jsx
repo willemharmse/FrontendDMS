@@ -5,16 +5,36 @@ import { faSpinner, faTrash, faTrashCan, faPlusCircle } from '@fortawesome/free-
 
 const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) => {
     const handleInputChange = (index, field, value) => {
-        const prefix = `Figure 1.${index + 1}: `; // Auto-numbering format
-        let updatedValue = value.startsWith(prefix) ? value : prefix + value;
+        // 1) Compute a per‐cell figure number:
+        const cellNumber = field === "pic1"
+            ? index * 2 + 1
+            : index * 2 + 2;
+        const prefix = `Figure 1.${cellNumber}: `;
 
-        // Remove if only the prefix exists (no actual value after it)
-        if (updatedValue === prefix) {
+        // 2) Strip any existing "Figure 1.<digits>: " prefix (case‐insensitive).
+        const stripped = value.replace(/^Figure\s*1\.\d+:\s*/i, "");
+
+        let updatedValue;
+
+        // 3) If the user has only typed the prefix so far, keep it.
+        if (
+            stripped.trim() === "" &&
+            value.trim().toLowerCase() === prefix.trim().toLowerCase()
+        ) {
+            updatedValue = prefix;
+
+            // 4) If stripping removed everything and they didn't type exactly our prefix, clear.
+        } else if (stripped.trim() === "") {
             updatedValue = "";
+
+            // 5) Otherwise, re‐prepend the correct prefix + the “real” text.
+        } else {
+            updatedValue = prefix + stripped;
         }
 
         updatePicRow(index, field, updatedValue);
     };
+
 
     return (
         <div className="input-row">
@@ -36,6 +56,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                         <input
                                             type="text"
                                             className="table-control"
+                                            style={{ fontSize: "14px" }}
                                             value={row.pic1}
                                             onChange={(e) => handleInputChange(index, "pic1", e.target.value)}
                                         />
@@ -44,6 +65,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                         <input
                                             type="text"
                                             className="table-control"
+                                            style={{ fontSize: "14px" }}
                                             value={row.pic2}
                                             onChange={(e) => handleInputChange(index, "pic2", e.target.value)}
                                         />

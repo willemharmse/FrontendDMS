@@ -1,19 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGraduationCap, faClipboardList, faFileAlt, faFolderOpen, faFileSignature } from "@fortawesome/free-solid-svg-icons";
 import "./HomePage.css";
 import { toast, ToastContainer } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 import FirstLoginPopup from "./UserManagement/FirstLoginPopup";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(localStorage.getItem("firstLogin") === "true");
+  const [role, setRole] = useState("");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-    navigate("/FrontendDMS/");
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      const decodedToken = jwtDecode(storedToken);
+      setRole(decodedToken.role);
+    }
+  }, []);
+
+  const handleNavigateAdmin = () => {
+    if (role !== "admin") {
+      return;
+    }
+
+    navigate("/FrontendDMS/admin");
   };
 
   const menuItems = [
@@ -45,6 +63,7 @@ const HomePage = () => {
         <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
         <p className="logo-bottom-text">A TAU5 PRODUCT</p>
       </div>
+      {role === "admin" && (<button className="admin-page-home-button" onClick={handleNavigateAdmin}>Admin Page</button>)}
       <button className="logout-button" onClick={handleLogout}>Log Out</button>
       <ToastContainer />
     </div>

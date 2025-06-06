@@ -67,18 +67,19 @@ const FileInfoHome = () => {
     }, [navigate]);
 
     const iconMap = {
-        "All Document": faArrowsRotate,
-        Audit: faClipboardCheck,
-        Guideline: faBookOpen,
-        "DMRE MCOP Guideline": faBook,
-        "Industry Document": faFileAlt,
-        MCOP: faHardHat,
-        Policy: faScaleBalanced,
-        Procedure: faListOl,
-        "Risk Assessment": faTriangleExclamation,
-        "Special Instruction": faFileSignature,
-        Standard: faCertificate,
-        Training: faChalkboardTeacher,
+        "All Document": "allDocumentsDMS.svg",
+        Audit: "auditsDMS.svg",
+        Guideline: "guidelinesDMS.svg",
+        "DMRE MCOP Guideline": "guidelinesDMS.svg",
+        "Industry Document": "guidelinesDMS.svg",
+        MCOP: "guidelinesDMS.svg",
+        Policy: "policiesDMS.svg",
+        Procedure: "proceduresDMS.svg",
+        "Risk Assessment": "riskAssessmentDMS.svg",
+        "Special Instruction": "guidelinesDMS.svg",
+        Standard: "standardsDMS.svg",
+        Training: "guidelinesDMS.svg",
+        Permit: "permitsDMS.svg"
     }
 
     const icon = (type) => {
@@ -196,7 +197,7 @@ const FileInfoHome = () => {
                             {doc && (
                                 <>
                                     <div className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`}>
-                                        <FontAwesomeIcon icon={iconMap[doc._id]} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
+                                        <img src={`${process.env.PUBLIC_URL}/${iconMap[doc._id]}`} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
                                     <h3 className="document-title-fi-home">{doc._id === "Policy" ? "Policie" : doc._id}s</h3>
                                     <p className="document-info-fi-home">Documents: {doc.totalCount}</p>

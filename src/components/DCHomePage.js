@@ -53,15 +53,7 @@ const DCHomePage = () => {
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/constructionDDS/Policy")}>
                         <>
                             <div className="icon-dc">
-                                <FontAwesomeIcon icon={faScaleBalanced} className={"icon-dc"} />
-                            </div>
-                            <h3 className="document-title-dc-home">Policy</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateProc/Procedure")}>
-                        <>
-                            <div className="icon-dc">
-                                <FontAwesomeIcon icon={faListOl} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/proceduresDMS.svg`} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Procedure</h3>
                         </>
@@ -69,7 +61,7 @@ const DCHomePage = () => {
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateStand/Standard")}>
                         <>
                             <div className="icon-dc">
-                                <FontAwesomeIcon icon={faCertificate} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/standardsDMS.svg`} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Standard</h3>
                         </>

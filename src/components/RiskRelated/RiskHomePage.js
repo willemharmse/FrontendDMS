@@ -55,7 +55,7 @@ const RiskHomePage = () => {
                             <div className="icon-risk-all">
                                 <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-all" />
                             </div>
-                            <h3 className="document-title-risk-home">Control Management<br /></h3>
+                            <h3 className="document-title-risk-home">View Site Controls and Attributes<br /></h3>
                         </>
                     </div>
                     <div

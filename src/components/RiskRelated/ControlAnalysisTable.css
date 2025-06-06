@@ -32,7 +32,8 @@
     background-color: #D9D9D9;
     border-right: 1px solid #D9D9D9 !important;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-control {
@@ -43,7 +44,8 @@
     background-color: #D9D9D9;
     border-right: 1px solid #D9D9D9 !important;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-critcal {
@@ -54,7 +56,8 @@
     border-right: 2px solid white !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-hiearchy {
@@ -65,7 +68,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .cea-table-page-critical {
@@ -120,7 +124,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-activation {
@@ -131,7 +136,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-weight: 500 !important;
+    font-size: 16px;
 }
 
 .control-analysis-cons {
@@ -142,7 +148,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-quality {
@@ -153,7 +160,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-cer {
@@ -164,7 +172,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-notes {
@@ -175,7 +184,8 @@
     border-right: 1px solid #D9D9D9 !important;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500 !important;
 }
 
 .control-analysis-del {
@@ -185,7 +195,7 @@
     border-bottom: 1px solid #ddd;
     background-color: #D9D9D9;
     color: black;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .vcr-table-cea tbody td {

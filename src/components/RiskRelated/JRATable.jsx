@@ -565,7 +565,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const availableColumns = [
         { id: "nr", title: "Nr", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Task Step", className: "ibraCent ibraMainJRA", icon: null },
-        { id: "hazards", title: "Hazard", className: "ibraCent ibraPrevJRA", icon: null },
+        { id: "hazards", title: "Hazard Classification / Energy Release", className: "ibraCent ibraPrevJRA", icon: null },
         { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
         { id: "sub", title: "Sub Task Steps\n(Procedure to complete the Main Task Step)", className: "ibraCent ibraSubJRA", icon: null },
         { id: "taskExecution", title: "Task Execution\n(A&R)", className: "ibraCent ibraRisk", icon: null },

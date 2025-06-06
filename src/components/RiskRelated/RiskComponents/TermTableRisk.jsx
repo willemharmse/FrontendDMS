@@ -193,8 +193,8 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
             <tbody>
               {formData.termRows.map((row, index) => (
                 <tr key={index}>
-                  <td>{row.term}</td>
-                  <td>{row.definition}</td>
+                  <td style={{ fontSize: "14px" }}>{row.term}</td>
+                  <td style={{ fontSize: "14px" }}>{row.definition}</td>
                   <td className="procCent">
                     <button
                       className="remove-row-button"

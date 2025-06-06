@@ -1274,7 +1274,7 @@ const RiskManagementPageBTA = () => {
                                 onChange={handleInputChange}
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
-                                placeholder="The aim of this risk assessment is " // Optional placeholder text
+                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven"// Optional placeholder text
                             />
                         </div>
                     </div>

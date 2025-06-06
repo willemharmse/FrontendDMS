@@ -19,7 +19,6 @@ const BurgerMenuFI = ({ role, isOpen, setIsOpen, admin, reset, setReset }) => {
             {isOpen && (
                 <div className="menu-content-FI" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        {(role === "admin" && admin) && (<li onClick={() => navigate("/FrontendDMS/admin")}>Admin Page</li>)}
                         {reset && <li onClick={() => setReset(true)}>Change Password</li>}
                         <li onClick={handleLogout}>Logout</li>
 

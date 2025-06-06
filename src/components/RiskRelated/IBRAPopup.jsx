@@ -16,6 +16,8 @@ import PriorityUE from './RiskInfo/PriorityUE';
 import RiskTreatment from './RiskInfo/RiskTreatment';
 import ConsequenceRating from './RiskInfo/ConsequenceRating';
 import UnwantedEvent from './RiskInfo/UnwantedEvent';
+import ControlDesc from './RiskInfo/ControlDesc';
+import MaterialUE from './RiskInfo/MaterialUE';
 
 const IBRAPopup = ({ onClose, onSave, data }) => {
     const [groupedAreas, setGroupedAreas] = useState({});     // { MA1: [...], MA2: [...] }
@@ -53,9 +55,13 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     const [helpHaz, setHelpHaz] = useState(false);
     const [helpRating, setHelpRating] = useState(false);
     const [helpUE, setHelpUE] = useState(false);
+    const [helpMUE, setHelpMUE] = useState(false);
     const [classNameRiskRank, setClassNameRiskRank] = useState('');
     const [classNamePUE, setClassNamePUE] = useState('');
     const [classNameMUE, setClassNameMUE] = useState('');
+    const [selectedDescription, setSelectedDescription] = useState("");
+    const [selectedPerformance, setSelectedPerformance] = useState("");
+    const [showDescription, setShowDescription] = useState(false);
 
     const riskSourceUEMap = {
         'Biological': ['Exposure to Pathogen', 'Allergic Reaction', 'Contamination', 'Infestation'],
@@ -122,6 +128,14 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         setHelpPUE(false);
     }
 
+    const openHelpMUE = () => {
+        setHelpMUE(true);
+    }
+
+    const closeHelpMUE = () => {
+        setHelpMUE(false);
+    }
+
     const openHelpRR = () => {
         setHelpRR(true);
     }
@@ -176,6 +190,14 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
 
     const closeHelpUE = () => {
         setHelpUE(false);
+    }
+
+    const openDescription = () => {
+        setShowDescription(true);
+    }
+
+    const closeDescription = () => {
+        setShowDescription(false);
     }
 
     // State for selected values
@@ -405,27 +427,20 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         }
     }, [selectedLikelihood, riskRankRows]);
 
-    // Update available sub areas when main area changes
     useEffect(() => {
-        // 1) If no main area chosen, just clear the list
         if (!selectedMainArea) {
-            setAvailableSubAreas([]);
+            // Show all sub-areas if no main area is selected
+            const allSubs = Object.values(groupedAreas).flat();
+            setAvailableSubAreas(allSubs);
             return;
         }
 
-        // 2) Grab the sub–area list for this main area (might be undefined while loading)
         const subs = groupedAreas[selectedMainArea];
-
-        // 3) If it's not loaded yet, do nothing––we don't want to clear your existing sub–area
         if (!subs) return;
 
-        // 4) Now we know we have a real array:
         setAvailableSubAreas(subs);
 
-        // 5) Only clear the current sub–area if it’s non-empty AND *not* in the new list
-        if (selectedSubArea && !subs.includes(selectedSubArea)) {
-            setSelectedSubArea('');
-        }
+        // ❌ Don't clear sub area selection — just leave it as-is
     }, [selectedMainArea, groupedAreas]);
 
     // Functions to handle hazard rows
@@ -473,6 +488,16 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                 autoClose: 800,
             });
         }
+    };
+
+    const handleControlInfo = (controlText) => {
+        const matchedControl = controls.find(c => c.control === controlText);
+        const description = matchedControl?.description || '';
+        const performance = matchedControl?.performance || '';
+
+        setSelectedDescription(description);
+        setSelectedPerformance(performance);
+        openDescription();
     };
 
     const handleRiskRankChange = (id, value) => {
@@ -587,9 +612,19 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     const handleSubAreaInput = (value) => {
         closeAllDropdowns();
         setSelectedSubArea(value);
-        const matches = availableSubAreas
+
+        let options = [];
+
+        if (selectedMainArea && groupedAreas[selectedMainArea]) {
+            options = groupedAreas[selectedMainArea];
+        } else {
+            options = Object.values(groupedAreas).flat();
+        }
+
+        const matches = options
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
             .slice(0, 15);
+
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
 
@@ -607,7 +642,17 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
     // On focus, show all options
     const handleSubAreasFocus = () => {
         closeAllDropdowns();
-        const matches = availableSubAreas.slice(0, 15);
+
+        let matches = [];
+
+        if (selectedMainArea && groupedAreas[selectedMainArea]) {
+            matches = groupedAreas[selectedMainArea];
+        } else {
+            // Flatten all sub-areas from all main areas
+            matches = Object.values(groupedAreas).flat();
+        }
+
+        matches = matches.slice(0, 15);
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
 
@@ -848,14 +893,14 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-half">
                                         <div className="ibra-popup-page-component-wrapper">
                                             <div className={`ibra-popup-page-form-group ${errors.riskSource ? "error-upload-required-up" : ""}`}>
-                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Risk Source <span className="ibra-popup-page-required">*</span></label>
+                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Hazard Classification / Energy Release <span className="ibra-popup-page-required">*</span></label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
                                                         className="ibra-popup-page-select"
                                                         value={riskSource}
                                                         onChange={(e) => setRiskSource(e.target.value)}
                                                     >
-                                                        <option value="">Choose Risk Source</option>
+                                                        <option value="">Select Hazard Classification / Energy Release</option>
                                                         {riskSources.map((term, index) => (
                                                             <option key={index} value={term.term}>
                                                                 {term.term}
@@ -892,7 +937,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                                                     className="ibra-popup-page-action-button"
                                                                                     onClick={() => removeHazardRow(row.id)}
                                                                                 >
-                                                                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                                                                    <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
                                                                                 </button>
                                                                             </div>
                                                                         </td>
@@ -906,7 +951,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                         className="ibra-popup-page-add-row-button"
                                                         onClick={addHazardRow}
                                                     >
-                                                        <FontAwesomeIcon icon={faCirclePlus} />
+                                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -921,6 +966,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                             icon={faInfoCircle}
                                                             className="ibra-popup-hazard-info-icon"
                                                             onClick={openHelpUE}
+                                                            style={{ cursor: 'pointer' }}
                                                             title="What is an Unwanted Event?"
                                                         />
 
@@ -944,7 +990,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     </div>
                                     <div className="ibra-popup-page-component-wrapper-special">
                                         <div className="ibra-popup-page-form-group">
-                                            <label style={{ fontSize: "16px" }}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description</label>
+                                            <label style={{ fontSize: "16px" }}><FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description</label>
                                             <textarea
                                                 className="ibra-popup-page-textarea-2"
                                                 value={maxConsequence}
@@ -955,7 +1001,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     </div>
                                     <div className="ibra-popup-page-component-wrapper">
                                         <div className={`ibra-popup-page-form-group ${errors.controls ? "error-upload-required-up" : ""}`}>
-                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpControl} />Current Controls <span className="ibra-popup-page-required">*</span></label>
+                                            <label><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpControl} />Current Controls <span className="ibra-popup-page-required">*</span></label>
                                             <table className="ibra-popup-page-table">
                                                 <tbody>
                                                     {controlRows.map(row => (
@@ -974,10 +1020,17 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                                     </div>
                                                                     <button
                                                                         type="button"
+                                                                        className="ibra-popup-page-info-button"
+                                                                        onClick={() => handleControlInfo(row.value)}
+                                                                    >
+                                                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
                                                                         className="ibra-popup-page-action-button"
                                                                         onClick={() => removeControlRow(row.id)}
                                                                     >
-                                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
                                                                     </button>
                                                                 </div>
                                                             </td>
@@ -990,7 +1043,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                                 className="ibra-popup-page-add-row-button"
                                                 onClick={addControlRow}
                                             >
-                                                <FontAwesomeIcon icon={faCirclePlus} />
+                                                <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
                                             </button>
                                         </div>
                                     </div>
@@ -1000,7 +1053,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                             <div className="ibra-popup-page-form-group-main-container-2">
                                 <div className="ibra-popup-page-component-wrapper">
                                     <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
-                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px" }} onClick={openHelpOdds} />Likelihood of the Event <span className="ibra-popup-page-required">*</span></label>
+                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px", cursor: "pointer" }} onClick={openHelpOdds} />Likelihood of the Event <span className="ibra-popup-page-required">*</span></label>
                                         <div className="ibra-popup-page-select-container">
                                             <select
                                                 className="ibra-popup-page-select"
@@ -1021,7 +1074,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                 <div className="ibra-popup-page-form-row-2">
                                     <div className="ibra-popup-page-component-wrapper">
                                         <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
-                                            <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpRating} />Consequence Rating <span className="ibra-popup-page-required">*</span></label>
+                                            <label><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpRating} />Consequence Rating <span className="ibra-popup-page-required">*</span></label>
                                             <table className="ibra-popup-page-consequence-table">
                                                 <tbody>
                                                     {riskRankRows.map(row => (
@@ -1059,7 +1112,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-third">
                                         <div className={`ibra-popup-page-component-wrapper ${classNameRiskRank}`}>
                                             <div className={`ibra-popup-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
-                                                <label className={`${classNameRiskRank}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpRR} />Max Risk Rank</label>
+                                                <label className={`${classNameRiskRank}`}><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpRR} />Max Risk Rank</label>
                                                 <label
                                                     className={`ibra-popup-page-label-output ${classNameRiskRank}`}
                                                 >
@@ -1072,7 +1125,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-third">
                                         <div className={`ibra-popup-page-component-wrapper ${classNamePUE}`}>
                                             <div className="ibra-popup-page-form-group">
-                                                <label className={`${classNamePUE}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpPUE} />Priority Unwanted Event (PUE)</label>
+                                                <label className={`${classNamePUE}`}><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpPUE} />Priority Unwanted Event (PUE)</label>
                                                 <label
                                                     className={`ibra-popup-page-label-output ${classNamePUE}`}
                                                 >
@@ -1085,7 +1138,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                     <div className="ibra-popup-page-column-third">
                                         <div className={`ibra-popup-page-component-wrapper ${classNameMUE}`}>
                                             <div className={`ibra-popup-page-form-group`}>
-                                                <label className={`${classNameMUE}`}><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" />Material Unwanted Event (MUE)</label>
+                                                <label className={`${classNameMUE}`}><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} onClick={openHelpMUE} className="ibra-popup-label-icon" />Material Unwanted Event (MUE)</label>
                                                 <label
                                                     className={`ibra-popup-page-label-output ${classNameMUE}`}
                                                 >
@@ -1120,7 +1173,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
                                 onClick={handleSubmit}
                                 disabled={!valid()}
                             >
-                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Submit'}
+                                {loading ? <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faSpinner} spin /> : 'Submit'}
                             </button>
                         </div>
                     </div>
@@ -1244,6 +1297,8 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             {helpPUE && (<PriorityUE setClose={closeHelpPUE} />)}
             {helpRating && (<ConsequenceRating setClose={closeHelpRating} />)}
             {helpUE && (<UnwantedEvent setClose={closeHelpUE} />)}
+            {helpMUE && (<MaterialUE setClose={closeHelpMUE} />)}
+            {showDescription && (<ControlDesc setClose={closeDescription} description={selectedDescription} performance={selectedPerformance} />)}
         </div>
     );
 };

@@ -765,7 +765,7 @@ body {
 
 .input-group-cpt .title-input {
   /* Remove border between the two inputs */
-  width: calc(100% - 120px);
+  width: 100%;
   /* Allow the title input to take most of the space */
 }
 

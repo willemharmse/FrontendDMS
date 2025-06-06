@@ -368,18 +368,19 @@ const FileInfo = () => {
   };
 
   const iconMap = {
-    "All Document": faArrowsRotate,
-    Audit: faClipboardCheck,
-    Guideline: faBookOpen,
-    "DMRE MCOP Guideline": faBook,
-    "Industry Document": faFileAlt,
+    "All Document": "allDocumentsDMS.svg",
+    Audit: "auditsDMSInverted.svg",
+    Guideline: "guidelinesDMSInverted.svg",
+    "DMRE MCOP Guideline": "guidelinesDMSInverted.svg",
+    "Industry Document": "guidelinesDMSInverted.svg",
     MCOP: faHardHat,
-    Policy: faScaleBalanced,
-    Procedure: faListOl,
-    "Risk Assessment": faTriangleExclamation,
-    "Special Instruction": faFileSignature,
-    Standard: faCertificate,
-    Training: faChalkboardTeacher,
+    Policy: "policiesDMSInverted.svg",
+    Procedure: "proceduresDMSInverted.svg",
+    "Risk Assessment": "riskAssessmentDMSInverted.svg",
+    "Special Instruction": "guidelinesDMSInverted.svg",
+    Standard: "standardsDMSInverted.svg",
+    Training: "guidelinesDMSInverted.svg",
+    Permit: "permitsDMSInverted.svg"
   }
 
   const getStatusClass = (status) => {
@@ -513,7 +514,7 @@ const FileInfo = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <FontAwesomeIcon icon={isTrashView ? faTrash : iconMap[type]} alt="Logo" className="logo-img-dept-view" />
+            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trash.png` : `${process.env.PUBLIC_URL}/${iconMap[type]}`} alt="Logo" className="logo-img-dept-view" />
             <p className="logo-text-dm-fi">{isTrashView ? `Trashed Files` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
           </div>
         </div>

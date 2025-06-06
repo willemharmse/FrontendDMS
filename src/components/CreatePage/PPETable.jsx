@@ -203,7 +203,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                         <tbody>
                             {formData.PPEItems?.map((row, index) => (
                                 <tr key={index}>
-                                    <td>{row.ppe}</td>
+                                    <td style={{ fontSize: "14px" }}>{row.ppe}</td>
                                     <td className="procCent">
                                         <button
                                             className="remove-row-button"

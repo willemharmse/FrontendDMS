@@ -65,21 +65,21 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="refColCen refNum">Nr</th>
-                                <th className="refColCen refRef">Document Name</th>
-                                <th className="refColCen refRef">Notes</th>
-                                <th className="refColCen refBut">Action</th>
+                                <th className="refColCen refNum" style={{ width: "5%" }}>Nr</th>
+                                <th className="refColCen refRef" style={{ width: "40%" }}>Document Name</th>
+                                <th className="refColCen refRef" style={{ width: "50%" }}>How Document Was Implemented</th>
+                                <th className="refColCen refBut" style={{ width: "5%" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.supportingDocuments.map((row, index) => (
                                 <tr key={index}>
-                                    <td className="refCent">{row.nr}</td>
-                                    <td className="refCent">{removeFileExtension(row.name)}</td>
+                                    <td className="refCent" style={{ fontSize: "14px" }}>{row.nr}</td>
+                                    <td className="refCent" style={{ fontSize: "14px" }}>{removeFileExtension(row.name)}</td>
                                     <td className="refCent">
                                         <input
                                             type="text"
-                                            style={{ color: "black", cursor: "text" }}
+                                            style={{ color: "black", cursor: "text", fontSize: "14px" }}
                                             className="ibra-popup-page-input-table ibra-popup-page-row-input"
                                             placeholder="Enter Additional Notes"
                                             value={row.note}

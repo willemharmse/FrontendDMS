@@ -176,6 +176,7 @@ const DocumentSignaturesTable = ({
                   <select
                     className="table-control font-fam"
                     value={row.auth}
+                    style={{ fontSize: "14px" }}
                     onChange={e => handleRowChange(e, index, "auth")}
                   >
                     <option value="Author">Author</option>
@@ -188,6 +189,7 @@ const DocumentSignaturesTable = ({
                     type="text"
                     className="table-control font-fam"
                     value={row.name}
+                    style={{ fontSize: "14px" }}
                     onChange={e => handleNameInputChange(index, e.target.value)}
                     onFocus={() => openNameDropdown(index, true)}
                     onBlur={() => setTimeout(() => setShowNameDropdown(null), 200)}
@@ -199,6 +201,7 @@ const DocumentSignaturesTable = ({
                     type="text"
                     className="table-control font-fam"
                     value={row.pos}
+                    style={{ fontSize: "14px" }}
                     onChange={e => handlePosInputChange(index, e.target.value)}
                     onFocus={() => openPosDropdown(index, true)}
                     onBlur={() => setTimeout(() => setShowPosDropdown(null), 200)}

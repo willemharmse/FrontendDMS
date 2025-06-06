@@ -192,8 +192,8 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
             <tbody>
               {formData.abbrRows.map((row, index) => (
                 <tr key={index}>
-                  <td>{row.abbr}</td>
-                  <td>{row.meaning}</td>
+                  <td style={{ fontSize: "14px" }}>{row.abbr}</td>
+                  <td style={{ fontSize: "14px" }}>{row.meaning}</td>
                   <td className="procCent">
                     <button
                       className="remove-row-button"

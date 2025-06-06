@@ -33,8 +33,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         { id: "nr", title: "Nr", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Area", className: "ibraCent ibraMain", icon: null },
         { id: "sub", title: "Sub Area", className: "ibraCent ibraSub", icon: null },
+        { id: "source", title: "Hazard Classification / Energy Release", className: "ibraCent ibraAR", icon: null },
         { id: "hazards", title: "Hazard", className: "ibraCent ibraPrev", icon: null },
-        { id: "source", title: "Risk Source", className: "ibraCent ibraAR", icon: null },
         { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
         { id: "maxConsequence", title: "Max Reasonable Consequence Description", className: "ibraCent ibraDeadline", icon: null },
         { id: "owner", title: "Functional Ownership", className: "ibraCent ibraNotes", icon: null },
@@ -70,6 +70,21 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             possibilities.splice(possIndex, 1);
             updateRow(newRows);
         }
+    };
+
+    // 1) A helper that wraps updateRows but also ensures "possible" is visible
+    const handleSaveWithRiskTreatment = (rowNR, updatedData) => {
+        // 1) Push the new data up to the parent
+        updateRows(rowNR, updatedData);
+
+        // 2) Immediately show only: Nr, Hazard, Hazard Description, Risk Treatment, Action
+        setShowColumns([
+            "nr",        // Nr
+            "source",    // Hazard / Energy Release
+            "hazards",   // Hazard Description
+            "possible",  // Risk Treatment (will expand to possibleI/actions/dueDate)
+            "action"     // Action buttons
+        ]);
     };
 
     // Remove one action & its matching dueDate, but leave at least one
@@ -483,6 +498,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     value={p.possibleI}
                                                                     onChange={e => handlePossibleIChange(rowIndex, pi, e.target.value)}
                                                                     className="ibra-textarea-PI"
+                                                                    style={{ fontSize: "14px" }}
                                                                     placeholder="Insert Improvement to Control"
                                                                 />
                                                                 <FontAwesomeIcon
@@ -514,6 +530,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                             placeholder="Insert Required Action"
                                                                             onChange={e => handleActionChange(rowIndex, pi, ai, e.target.value)}
                                                                             className="ibra-textarea-PI"
+                                                                            style={{ fontSize: "14px" }}
                                                                         />
                                                                         <FontAwesomeIcon
                                                                             icon={faPlusCircle}
@@ -541,7 +558,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                 <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
                                                                     <input
                                                                         type="date"
-                                                                        style={{ fontFamily: "Arial" }}
+                                                                        style={{ fontFamily: "Arial", fontSize: "14px" }}
                                                                         value={d.date}
                                                                         onChange={e => handleDueDateChange(rowIndex, pi, di, e.target.value)}
                                                                         className="ibra-input-date"
@@ -635,6 +652,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             rowSpan={possibilities.length}
                                                             style={{ textAlign: "left" }}
+                                                            className={colId === "UE" ? "unwanted-event-borders" : ""}
                                                         >
                                                             {row.UE}
                                                         </td>
@@ -666,6 +684,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             <span>{cellData}</span>
                                                             <FontAwesomeIcon
                                                                 icon={faArrowUpRightFromSquare}
+                                                                style={{ fontSize: "14px" }}
                                                                 className="ue-popup-icon"
                                                                 title="Evaluate Unwanted Event"
                                                                 onClick={() => {
@@ -732,7 +751,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 </button>
             </div>
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
-            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={updateRows} />)}
+            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} />)}
         </div>
     );
 };

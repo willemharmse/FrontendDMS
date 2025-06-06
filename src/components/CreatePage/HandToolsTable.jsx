@@ -203,7 +203,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                         <tbody>
                             {formData.HandTools?.map((row, index) => (
                                 <tr key={index}>
-                                    <td>{row.tool}</td>
+                                    <td style={{ fontSize: "14px" }}>{row.tool}</td>
                                     <td className="procCent">
                                         <button
                                             className="remove-row-button"

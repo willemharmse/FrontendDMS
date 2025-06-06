@@ -20,6 +20,8 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
     const [quality, setQuality] = useState("");
     const [cer, setCER] = useState("");
     const [notes, setNotes] = useState("");
+    const [description, setDescription] = useState("");
+    const [performance, setPerformance] = useState("");
     const [formattingColour, setFormattingColour] = useState("");
     const [helpCT, setHelpCT] = useState(false);
     const [helpCA, setHelpCA] = useState(false);
@@ -29,8 +31,8 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
     const [controlTypeOptions] = useState(['Act', 'Object', 'System']);
     const [activationOptions] = useState(['Prevention Control', 'Consequence Minimizing Control', 'Both']);
     const [hierarchyOptions] = useState(['1. Elimination', '2. Substitution', '3. Engineering', '4. Separation', '5. Administration', '6. PPE']);
-    const [aimOptions] = useState(['Safety', 'Health', 'Environment', 'Community', 'Legal & Regulatory', 'Material Losses', 'Reputation']);
-    const [qualityOptions] = useState(['<29%', '30-59%', '60-90%', '>90%']);
+    const [aimOptions] = useState(['Safety (S)', 'Health (H)', 'Environment (E)', 'Community (C)', 'Legal & Regulatory (L&R)', 'Material Losses (M)', 'Reputation (R)']);
+    const [qualityOptions] = useState(['< 30%', '30-59%', '60-90%', '> 90%']);
 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({
@@ -103,7 +105,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             let colIndex;
 
             switch (quality) {
-                case "<29%":
+                case "< 30%":
                     colIndex = 3;
                     break;
                 case "30-59%":
@@ -112,7 +114,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                 case "60-90%":
                     colIndex = 1;
                     break;
-                case ">90%":
+                case "> 90%":
                     colIndex = 0;
                     break;
                 default:
@@ -152,6 +154,8 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             setQuality(data.quality || '');
             setCER(data.cer || '');
             setNotes(data.notes || '');
+            setDescription(data.description || "");
+            setPerformance(data.performance || "")
         }
     }, [data]);
 
@@ -167,6 +171,8 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             quality: quality,
             cer: cer,
             notes: notes,
+            description: description,
+            performance: performance
         };
 
         // Call the onSave function with updated data
@@ -190,7 +196,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                     </div>
 
                     <div className="ibra-popup-page-form-group-main-container">
-                        <div className="ibra-popup-page-form-group-main-container-2">
+                        <div className="ibra-popup-page-form-group-main-container-2 scrollable-container-controlea">
                             <div className="cea-popup-page-component-wrapper">
                                 <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
                                     <label style={{ marginRight: '40px', textAlign: "left" }}>Control</label>
@@ -344,9 +350,9 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                                         <div className="ibra-popup-page-column-half">
                                             <div className={`cea-popup-page-component-wrapper ${formattingColour}`}>
                                                 <div className={`ibra-popup-page-form-group`}>
-                                                    <label className={`${formattingColour}`}><FontAwesomeIcon icon={faInfoCircle} className={`ibra-popup-label-icon`} />Control Effectiveness Rating</label>
+                                                    <label className={`ibra-popup-page-label-output-2 ${formattingColour}`}><FontAwesomeIcon icon={faInfoCircle} className={`ibra-popup-label-icon`} />Control Effectiveness Rating</label>
                                                     <label
-                                                        style={{ marginBottom: "18px", fontWeight: "bold" }}
+                                                        style={{ marginBottom: "8px", marginTop: "3px", fontWeight: "bold" }}
                                                         className={`ibra-popup-page-label-output ${formattingColour}`}
                                                     >
                                                         {cer || "-"}
@@ -367,6 +373,30 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                                         onChange={(e) => setNotes(e.target.value)}
                                         className="cea-popup-page-textarea-full"
                                         placeholder="Insert Improvement to Control"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-form-group">
+                                    <label style={{ fontSize: "15px" }}>Description of Control
+                                    </label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        className="cea-popup-page-textarea-full"
+                                        placeholder="Description of control"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-form-group">
+                                    <label style={{ fontSize: "15px" }}>Performance Requirements
+                                    </label>
+                                    <textarea
+                                        value={performance}
+                                        onChange={(e) => setPerformance(e.target.value)}
+                                        className="cea-popup-page-textarea-full"
+                                        placeholder="Performance requirement of control"
                                     ></textarea>
                                 </div>
                             </div>

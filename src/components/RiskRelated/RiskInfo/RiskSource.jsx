@@ -28,7 +28,7 @@ const RiskSource = ({ setClose }) => {
         <div className="popup-overlay-rs">
             <div className="popup-content-rs">
                 <div className="review-date-header">
-                    <h2 className="review-date-title">Risk Source (Generic Energy Hazard)</h2>
+                    <h2 className="review-date-title">Hazard / Energy Release</h2>
                     <button className="review-date-close" onClick={setClose} title="Close Popup">×</button>
                 </div>
 

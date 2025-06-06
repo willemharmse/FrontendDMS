@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -22,6 +22,7 @@ import SharePageRisk from "../RiskRelated/SharePageRisk";
 import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
+import PicturesTable from "../CreatePage/PicturesTable";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ const RiskManagementPageIBRA = () => {
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [role, setRole] = useState("");
+    const [lastAiRewrites, setLastAiRewrites] = useState({});
     const [loadedID, setLoadedID] = useState('');
     const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
     const [titleSet, setTitleSet] = useState(false);
@@ -215,8 +217,11 @@ const RiskManagementPageIBRA = () => {
     };
 
     const handleClick3 = () => {
-        if (formData.title === "") {
-            toast.error("Please fill in the title field", {
+        const newErrors = validateForm();
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            toast.error("Please fill in all required fields marked by a *", {
                 closeButton: true,
                 autoClose: 800, // 1.5 seconds
                 style: {
@@ -261,9 +266,63 @@ const RiskManagementPageIBRA = () => {
         }
     };
 
+    const addPicRow = () => {
+        setFormData((prevData) => {
+            const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
+
+            return {
+                ...prevData,
+                pictures: [
+                    ...prevData.pictures,
+                    {
+                        pic1: `Figure 1.${totalFigures}: `, // Assign next available number
+                        pic2: `Figure 1.${totalFigures + 1}: `
+                    }
+                ]
+            };
+        });
+    };
+
+    const updatePicRow = (index, field, value) => {
+        const updatedPicRows = [...formData.pictures];
+        updatedPicRows[index][field] = value;  // Update the specific field in the row
+
+        setFormData({
+            ...formData,
+            pictures: updatedPicRows,  // Update the procedure rows in state
+        });
+    };
+
+    const removePicRow = (indexToRemove) => {
+        setFormData({
+            ...formData,
+            pictures: formData.pictures.filter((_, index) => index !== indexToRemove),
+        });
+    };
+
+    const undoAiRewrite = (field) => {
+        if (lastAiRewrites[field] !== undefined) {
+            setFormData(prev => ({
+                ...prev,
+                [field]: lastAiRewrites[field],
+            }));
+
+            // Clear stored undo
+            setLastAiRewrites(prev => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
+            });
+
+            toast.success(`AI Rewrite reverted.`);
+        }
+    };
+
     const AiRewriteAim = async () => {
         try {
             const prompt = formData.aim;
+
+            setLastAiRewrites(prev => ({ ...prev, aim: prompt }));
 
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/ibra`, {
                 method: 'POST',
@@ -289,6 +348,8 @@ const RiskManagementPageIBRA = () => {
         try {
             const prompt = formData.scope;
 
+            setLastAiRewrites(prev => ({ ...prev, scope: prompt }));
+
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/ibra`, {
                 method: 'POST',
                 headers: {
@@ -313,6 +374,8 @@ const RiskManagementPageIBRA = () => {
         try {
             const prompt = formData.scopeInclusions;
 
+            setLastAiRewrites(prev => ({ ...prev, scopeInclusions: prompt }));
+
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeI/ibra`, {
                 method: 'POST',
                 headers: {
@@ -336,6 +399,8 @@ const RiskManagementPageIBRA = () => {
     const AiRewriteScopeExlusions = async () => {
         try {
             const prompt = formData.scopeExclusions;
+
+            setLastAiRewrites(prev => ({ ...prev, scopeExclusions: prompt }));
 
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeE/ibra`, {
                 method: 'POST',
@@ -442,7 +507,7 @@ const RiskManagementPageIBRA = () => {
     const [formData, setFormData] = useState({
         title: "",
         documentType: useParams().type,
-        aim: "The aim of this risk assessment is ",
+        aim: "",
         scopeExclusions: "",
         execSummaryGen: "",
         execSummary: "",
@@ -468,7 +533,7 @@ const RiskManagementPageIBRA = () => {
         ],
         cea: [
             {
-                id: uuidv4(), nr: 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: ""
+                id: uuidv4(), nr: 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: "", description: "", performance: ""
             }
         ],
         abbrRows: [],
@@ -478,11 +543,6 @@ const RiskManagementPageIBRA = () => {
                 name: "", site: "", designation: "Facilitator", num: ""
             }
         ],
-        PPEItems: [],
-        HandTools: [],
-        Equipment: [],
-        MobileMachine: [],
-        Materials: [],
         supportingDocuments: [],
         references: [],
         pictures: [],
@@ -664,8 +724,11 @@ const RiskManagementPageIBRA = () => {
         const newErrors = {};
 
         if (!formData.title) newErrors.title = true;
-        if (!formData.documentType) newErrors.documentType = true;
+        if (!formData.site) newErrors.site = true;
+        if (!formData.dateConducted) newErrors.dateConducted = true;
+        if (!formData.scopeInclusions) newErrors.scopeInclusions = true;
         if (!formData.aim) newErrors.aim = true;
+        if (!formData.execSummary) newErrors.execSummary = true;
         if (formData.abbrRows.length === 0) newErrors.abbrs = true;
         if (formData.termRows.length === 0) newErrors.terms = true;
 
@@ -674,6 +737,16 @@ const RiskManagementPageIBRA = () => {
         } else {
             formData.rows.forEach((row, index) => {
                 if (!row.name) newErrors.signs = true;
+            });
+        }
+
+        if (formData.attendance.length === 0) {
+            newErrors.attend = true;
+        } else {
+            formData.attendance.forEach((row, index) => {
+                if (!row.name) newErrors.attend = true;
+                if (!row.site) newErrors.attend = true;
+                if (!row.designation) newErrors.attend = true;
             });
         }
 
@@ -688,7 +761,7 @@ const RiskManagementPageIBRA = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -1219,7 +1292,9 @@ const RiskManagementPageIBRA = () => {
                         cons: oldRow?.cons ?? returned.cons ?? '',
                         quality: oldRow?.quality ?? returned.quality ?? '',
                         cer: oldRow?.cer ?? returned.cer ?? '',
-                        notes: oldRow?.notes ?? returned.notes ?? ''
+                        notes: oldRow?.notes ?? returned.notes ?? '',
+                        description: oldRow?.description ?? returned.description ?? '',
+                        performance: oldRow?.performance ?? returned.performance ?? ''
                     };
                 });
 
@@ -1312,7 +1387,7 @@ const RiskManagementPageIBRA = () => {
                             <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
                             <div className="input-group-risk-create">
                                 <input
-                                    spellcheck="true"
+                                    spellCheck="true"
                                     type="text"
                                     name="title"
                                     className="font-fam title-input"
@@ -1364,20 +1439,31 @@ const RiskManagementPageIBRA = () => {
                             </button>
                             <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
                             <textarea
-                                spellcheck="true"
+                                spellCheck="true"
                                 name="aim"
                                 className="aim-textarea-risk-create-ibra font-fam"
                                 onChange={handleInputChange}
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
-                                placeholder="The aim of this risk assessment is " // Optional placeholder text
+                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven" // Optional placeholder text
                             />
-                            <FontAwesomeIcon
-                                icon={faMagicWandSparkles}
-                                className="aim-textarea-icon-ibra"
-                                title="AI Rewrite"
-                                onClick={() => AiRewriteAim()}
-                            />
+                            {lastAiRewrites.aim ? (
+                                <FontAwesomeIcon
+                                    icon={faRotateLeft}
+                                    className="aim-textarea-icon-ibra"
+                                    title="Undo AI Rewrite"
+                                    style={{ fontSize: "15px" }}
+                                    onClick={() => undoAiRewrite('aim')}
+                                />
+                            ) : (
+                                <FontAwesomeIcon
+                                    icon={faMagicWandSparkles}
+                                    className="aim-textarea-icon-ibra"
+                                    title="AI Rewrite"
+                                    style={{ fontSize: "15px" }}
+                                    onClick={() => AiRewriteAim()}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -1395,7 +1481,8 @@ const RiskManagementPageIBRA = () => {
                                     <div className="risk-popup-page-column-half-scope">
                                         <label className="scope-risk-label">Introduction</label>
                                         <textarea
-                                            spellcheck="true"
+                                            lang="en-ZA"
+                                            spellCheck="true"
                                             name="scope"
                                             className="aim-textarea-risk-scope-2 font-fam"
                                             onChange={handleInputChange}
@@ -1403,7 +1490,23 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
-                                        <FontAwesomeIcon icon={faMagicWandSparkles} title="AI Rewrite" className="scope-textarea-icon" onClick={() => AiRewriteScope()} />
+                                        {lastAiRewrites.scope ? (
+                                            <FontAwesomeIcon
+                                                icon={faRotateLeft}
+                                                className="scope-textarea-icon"
+                                                title="Undo AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => undoAiRewrite('scope')}
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon
+                                                icon={faMagicWandSparkles}
+                                                className="scope-textarea-icon"
+                                                title="AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => AiRewriteScope()}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1412,7 +1515,7 @@ const RiskManagementPageIBRA = () => {
                                     <div className="risk-popup-page-column-half-scope">
                                         <label className="scope-risk-label">Scope Inclusions <span className="required-field">*</span></label>
                                         <textarea
-                                            spellcheck="true"
+                                            spellCheck="true"
                                             name="scopeInclusions"
                                             className="aim-textarea-risk-scope font-fam"
                                             value={formData.scopeInclusions}
@@ -1420,18 +1523,29 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
                                         />
-                                        <FontAwesomeIcon
-                                            icon={faMagicWandSparkles}
-                                            className="scope-textarea-icon"
-                                            title="AI Rewrite"
-                                            onClick={() => AiRewriteScopeInclusions()}
-                                        />
+                                        {lastAiRewrites.scopeInclusions ? (
+                                            <FontAwesomeIcon
+                                                icon={faRotateLeft}
+                                                className="scope-textarea-icon"
+                                                title="Undo AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => undoAiRewrite('scopeInclusions')}
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon
+                                                icon={faMagicWandSparkles}
+                                                className="scope-textarea-icon"
+                                                title="AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => AiRewriteScopeInclusions()}
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="risk-popup-page-column-half-scope">
                                         <label className="scope-risk-label">Scope Exclusions</label>
                                         <textarea
-                                            spellcheck="true"
+                                            spellCheck="true"
                                             name="scopeExclusions"
                                             className="aim-textarea-risk-scope font-fam"
                                             value={formData.scopeExclusions}
@@ -1439,12 +1553,23 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
                                         />
-                                        <FontAwesomeIcon
-                                            icon={faMagicWandSparkles}
-                                            className="scope-textarea-icon"
-                                            title="AI Rewrite"
-                                            onClick={() => AiRewriteScopeExlusions()}
-                                        />
+                                        {lastAiRewrites.scopeExclusions ? (
+                                            <FontAwesomeIcon
+                                                icon={faRotateLeft}
+                                                className="scope-textarea-icon"
+                                                title="Undo AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => undoAiRewrite('scopeExclusions')}
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon
+                                                icon={faMagicWandSparkles}
+                                                className="scope-textarea-icon"
+                                                title="AI Rewrite"
+                                                style={{ fontSize: "15px" }}
+                                                onClick={() => AiRewriteScopeExlusions()}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1456,9 +1581,16 @@ const RiskManagementPageIBRA = () => {
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
                     {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+
                     <ExecutiveSummary formData={formData} setFormData={setFormData} errors={errors} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <div className="input-row">
+                        <div className={`input-box-annexures`}>
+                            <h3 className="font-fam-labels">Appendices</h3>
+                        </div>
+                    </div>
+                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

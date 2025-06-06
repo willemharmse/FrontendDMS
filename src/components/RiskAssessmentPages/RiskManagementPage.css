@@ -274,6 +274,20 @@
     transition: color 0.2s;
 }
 
+.aim-textarea-icon-exec {
+    position: absolute;
+    bottom: 175px;
+    /* tweak as needed for vertical offset */
+    right: 15px;
+    /* tweak for horizontal offset */
+    cursor: pointer;
+    font-size: 18px;
+    /* adjust size to suit */
+    color: black;
+    /* light grey by default */
+    transition: color 0.2s;
+}
+
 .aim-textarea-risk-create-ibra {
     position: relative;
     width: calc(100% - 20px);
@@ -292,7 +306,7 @@
     text-align: center;
     margin-bottom: 10px;
     font-family: Arial;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
 }
 
@@ -519,14 +533,16 @@
 
 .input-group-risk-create .title-input {
     /* Remove border between the two inputs */
-    width: calc(100% - 120px);
+    width: 100%;
     /* Allow the title input to take most of the space */
+    font-size: 14px;
 }
 
 .type-risk-create {
-    margin-left: 10px;
-    width: 5%;
-    font-size: 16px;
+    margin-left: 11px;
+    margin-right: 6px;
+    text-align: right;
+    font-size: 14px;
 }
 
 .input-group-risk-create .document-type-input {

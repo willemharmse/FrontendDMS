@@ -50,6 +50,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
 
                 <div className="control-analysis-labels">
                     <label className="control-analysis-label">Only the controls identified in the Risk Assessment are included in the table below.</label>
+                    <label className="control-analysis-label">The Facilitator and Risk Assessment Team may update control attributes where deemed necessary.</label>
                     <label className="control-analysis-label">Open the popup  {<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}  to edit or view more information regarding a control and its attributes.
                     </label>
                 </div>
@@ -85,8 +86,9 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                         {rows.map((row, index) => (
                             <tr key={index} className={row.nr % 2 === 0 ? `evenTRColour` : ``}>
                                 <td className="cent" style={{ alignItems: 'center', gap: '4px' }}>
-                                    <span>{row.nr}</span>
+                                    <span style={{ fontSize: "14px" }}>{row.nr}</span>
                                     <FontAwesomeIcon
+                                        style={{ fontSize: "14px" }}
                                         icon={faArrowUpRightFromSquare}
                                         className="ue-popup-icon"
                                         title="Evaluate Control"
@@ -95,31 +97,31 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                             setInsertPopup(true)
                                         }}
                                     /></td>
-                                <td>
+                                <td style={{ fontSize: "14px" }}>
                                     {row.control || ""}
                                 </td>
-                                <td className={`${row.critical === "Yes" ? 'cea-table-page-critical' : ''}`} style={{ textAlign: 'center' }}>
+                                <td className={`${row.critical === "Yes" ? 'cea-table-page-critical' : ''}`} style={{ textAlign: 'center', fontSize: "14px" }}>
                                     {row.critical || ""}
                                 </td>
-                                <td style={{ textAlign: 'center' }}>
+                                <td style={{ textAlign: 'center', fontSize: "14px" }}>
                                     {row.act || ""}
                                 </td>
-                                <td>
+                                <td style={{ fontSize: "14px" }}>
                                     {row.activation || ""}
                                 </td>
-                                <td>
+                                <td style={{ fontSize: "14px" }}>
                                     {row.hierarchy || ""}
                                 </td>
-                                <td>
+                                <td style={{ fontSize: "14px" }}>
                                     {row.cons || ""}
                                 </td>
-                                <td style={{ textAlign: 'center' }}>
+                                <td style={{ textAlign: 'center', fontSize: "14px" }}>
                                     {row.quality || ""}
                                 </td>
-                                <td className={getClass(row.cer)} style={{ textAlign: 'center' }}>
+                                <td className={getClass(row.cer)} style={{ textAlign: 'center', fontSize: "14px" }}>
                                     {row.cer || ""}
                                 </td>
-                                <td>
+                                <td style={{ fontSize: "14px" }}>
                                     {row.notes || ""}
                                 </td>
                                 <td className="procCent action-cell">

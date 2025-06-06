@@ -192,7 +192,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                 <React.Fragment key={index}>
                                     {/* Insert button above each row except the first */}
                                     <tr key={index}>
-                                        <td className="procCent">
+                                        <td className="procCent" style={{ fontSize: "14px" }}>
                                             {row.nr}
                                         </td>
                                         <td>
@@ -200,6 +200,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                 name="mainStep"
                                                 className="aim-textarea-pt font-fam"
                                                 value={row.mainStep}
+                                                style={{ fontSize: "14px" }}
                                                 onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
                                                 onInput={(e) => {
                                                     e.target.style.height = 'auto'; // Reset
@@ -214,6 +215,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                 className="aim-textarea-pt font-fam"
                                                 value={row.SubStep}
                                                 onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
+                                                style={{ fontSize: "14px" }}
                                                 onInput={(e) => {
                                                     e.target.style.height = 'auto'; // Reset
                                                     e.target.style.height = e.target.scrollHeight + 'px'; // Expand dynamically
@@ -227,6 +229,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     <div key={stepIndex} className="prev-step-input-ref">
                                                         <input
                                                             type="text"
+                                                            style={{ fontSize: "14px" }}
                                                             className="aim-input-pt font-fam"
                                                             value={step}
                                                             onChange={(e) => {
@@ -279,6 +282,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                         type="text"
                                                         className="table-control-proc"
                                                         value={row.responsible}
+                                                        style={{ fontSize: "14px" }}
                                                         placeholder="Select Responsible"
                                                         ref={(el) => (inputRefs.current[`responsible-${index}`] = el)}
                                                         onChange={(e) => {
@@ -305,6 +309,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                         type="text"
                                                         className="table-control-proc"
                                                         value={row.accountable}
+                                                        style={{ fontSize: "14px" }}
                                                         placeholder="Select Accountable"
                                                         ref={(el) => (inputRefs.current[`accountable-${index}`] = el)}
                                                         onChange={(e) => {
