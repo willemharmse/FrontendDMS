@@ -168,7 +168,7 @@ const ControlAttributes = () => {
                                     <th className="risk-control-attributes-activation">Control Activation (Pre or Post Unwanted Event)</th>
                                     <th className="risk-control-attributes-hiearchy">Hierarchy of Controls</th>
                                     <th className="risk-control-attributes-quality">Control Quality</th>
-                                    <th className="risk-control-attributes-cons">Specific Consequence Addressed</th>
+                                    <th className="risk-control-attributes-cons">Main Consequence Addressed</th>
                                 </tr>
                             </thead>
                             <tbody>

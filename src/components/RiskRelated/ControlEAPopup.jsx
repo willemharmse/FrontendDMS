@@ -302,7 +302,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                                 <div className="ibra-popup-page-column-half">
                                     <div className="cea-popup-page-component-wrapper">
                                         <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                            <label>Specific Consequence that the Control Aims to Address</label>
+                                            <label>Main Consequence that the Control Aims to Address</label>
                                             <div className="ibra-popup-page-select-container">
                                                 <select
                                                     className="ibra-popup-page-select"

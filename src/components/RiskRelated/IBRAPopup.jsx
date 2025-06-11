@@ -17,9 +17,10 @@ import RiskTreatment from './RiskInfo/RiskTreatment';
 import ConsequenceRating from './RiskInfo/ConsequenceRating';
 import UnwantedEvent from './RiskInfo/UnwantedEvent';
 import ControlDesc from './RiskInfo/ControlDesc';
+import { v4 as uuidv4 } from 'uuid';
 import MaterialUE from './RiskInfo/MaterialUE';
 
-const IBRAPopup = ({ onClose, onSave, data }) => {
+const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
     const [groupedAreas, setGroupedAreas] = useState({});     // { MA1: [...], MA2: [...] }
     const [mainAreas, setMainAreas] = useState([]);     // [ 'MA1', 'MA2', … ]
     const [availableSubAreas, setAvailableSubAreas] = useState([]);
@@ -226,9 +227,6 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         const options = riskSourceUEMap[riskSource] || [];
         setUEOptions(options);
         // if current UE isn’t in the new list, clear it
-        if (selectedUE && !options.includes(selectedUE)) {
-            setSelectedUE('');
-        }
     }, [riskSource]);
 
     // Modified state for hazard types (replacing functional ownership)
@@ -310,6 +308,35 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         }
         fetchValues();
     }, []);
+
+    useEffect(() => {
+        // 1️⃣ don’t run until both the API list and the rowsData are in place
+        if (!controls.length || !rowsData?.length) return;
+
+        // 2️⃣ gather every user-typed control from every row
+        const allCustomControls = Array.from(
+            new Set(rowsData.flatMap(r => r.controls || []))
+        );
+
+        // 3️⃣ figure out which of those aren’t already in the API list
+        const existing = new Set(controls.map(c => c.control));
+        const toAdd = allCustomControls.filter(name => !existing.has(name));
+
+        // 4️⃣ if there are any new ones, append them **and then sort**
+        if (toAdd.length) {
+            setControls(prev => {
+                const merged = [
+                    ...prev,
+                    ...toAdd.map(name => ({ _id: uuidv4(), control: name }))
+                ];
+                // sort by the `control` property
+                return merged.slice().sort((a, b) =>
+                    a.control.localeCompare(b.control)
+                );
+            });
+        }
+    }, [rowsData, controls]);
+
 
     useEffect(() => {
         if (data) {
@@ -512,38 +539,6 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             row.id === id ? { ...row, value } : row
         );
         setRiskRankRows(updatedRows);
-    };
-
-    const isFormValid = () => {
-        const newErrors = {
-            author: !selectedMainArea,
-            departmentHead: !selectedSubArea || !selectedOwner || !selectedLikelihood,
-            reviewer: !selectedMaxRiskRank,
-            hazards: hazardRows.some(row => !row.value),
-            controls: controlRows.some(row => !row.value),
-            riskSource: !riskSource
-        };
-
-        setErrors(newErrors);
-        return !Object.values(newErrors).some(error => error);
-    };
-
-    const handleFileUpload = () => {
-        setLoading(true);
-
-        // Mock upload functionality
-        setTimeout(() => {
-            setLoading(false);
-            toast.success("Document uploaded successfully!", {
-                closeButton: false,
-                autoClose: 1500,
-            });
-
-            // Reset form or close popup after successful upload
-            setTimeout(() => {
-                onClose();
-            }, 1500);
-        }, 2000);
     };
 
     const handleSubmit = async (e) => {
@@ -773,8 +768,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         handleControlChange(id, value);
 
         const matches = controls
-            .filter(c => c.control.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(c => c.control.toLowerCase().includes(value.toLowerCase()));
         setFilteredControls(prev => ({ ...prev, [id]: matches }));
 
 
@@ -794,8 +788,7 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
         closeAllDropdowns();
         const current = controlRows.find(r => r.id === id)?.value || '';
         const matches = controls
-            .filter(c => c.control.toLowerCase().includes(current.toLowerCase()))
-            .slice(0, 15);
+            .filter(c => c.control.toLowerCase().includes(current.toLowerCase()));
         setFilteredControls(prev => ({ ...prev, [id]: matches }));
         setShowDropdown(id);
 

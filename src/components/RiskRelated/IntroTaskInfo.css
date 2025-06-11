@@ -1,0 +1,179 @@
+.table-borders-jra-info {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 2px solid #BFBFBF;
+    font-family: Arial;
+    /* outer border */
+}
+
+.table-borders-jra-info th,
+.table-borders-jra-info td {
+    border: 1px solid #BFBFBF;
+    /* inner cell borders */
+    font-family: Arial;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.table-borders-jra-info th {
+    /* make your header cells a fixed width so values wrap nicely */
+    width: 30%;
+    text-align: left;
+    font-family: Arial;
+    background-color: #F2F2F2;
+    font-weight: bold;
+}
+
+.jra-info-table-header {
+    width: 100%;
+    align-content: center;
+    text-align: center;
+    font-family: Arial;
+    border-bottom: 1px solid #ddd;
+    background-color: #F2F2F2 !important;
+    color: black;
+    font-size: 16px;
+}
+
+.table-borders-jra-info td {
+    width: 70%;
+}
+
+.jra-info-popup-page-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.jra-info-popup-page-select-container::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    font-family: Arial;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.jra-info-popup-page-textarea {
+    width: calc(100% - 20px);
+    min-width: calc(100% - 20px);
+    min-height: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-family: Arial;
+    border-radius: 4px;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial;
+    field-sizing: content;
+}
+
+.jra-info-scope-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    width: calc(100% - 30px);
+    height: 100%;
+    font-family: Arial;
+    padding: 15px 15px;
+    background-color: #F2F2F2;
+    border-radius: 5px;
+}
+
+.jra-info-risk-label {
+    display: block;
+    margin-right: 10px;
+    text-align: left;
+    margin-bottom: 10px;
+    font-family: Arial;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* container for question + yes/no row */
+.other-activities-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* space between label and checkbox group */
+}
+
+/* inline yes/no checkboxes */
+.yes-no-checkboxes {
+    display: flex;
+    gap: 12px;
+    /* space between “Yes” and “No” */
+}
+
+.yes-no-checkboxes label {
+    display: flex;
+    align-items: center;
+    font-family: Arial;
+    gap: 4px;
+    /* space between box and text */
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.yes-no-checkboxes input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+.jra-info-popup-page-input-table {
+    width: calc(100% - 20px);
+    padding: 10px;
+    height: 19px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+}
+
+.jra-info-popup-page-row-input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* container for all member rows */
+.members-container-jra-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* space between rows */
+}
+
+/* one row: input + icons */
+.member-input-row-jra-info {
+    display: flex;
+    align-items: center;
+    font-family: Arial;
+    gap: 6px;
+    /* space between input and each icon */
+}
+
+/* common icon styling */
+.icon-jra-info {
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    font-family: Arial;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.icon-jra-info:hover {
+    opacity: 0.7;
+}

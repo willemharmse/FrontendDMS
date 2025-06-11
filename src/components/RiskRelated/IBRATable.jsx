@@ -76,15 +76,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const handleSaveWithRiskTreatment = (rowNR, updatedData) => {
         // 1) Push the new data up to the parent
         updateRows(rowNR, updatedData);
-
-        // 2) Immediately show only: Nr, Hazard, Hazard Description, Risk Treatment, Action
-        setShowColumns([
-            "nr",        // Nr
-            "source",    // Hazard / Energy Release
-            "hazards",   // Hazard Description
-            "possible",  // Risk Treatment (will expand to possibleI/actions/dueDate)
-            "action"     // Action buttons
-        ]);
     };
 
     // Remove one action & its matching dueDate, but leave at least one
@@ -228,7 +219,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
-        "nr", "main", "sub", "hazards", "source", "UE", "action",
+        "nr", "main", "hazards", "source", "UE", "controls", "riskRank", "action",
     ]);
 
     const [showColumnSelector, setShowColumnSelector] = useState(false);
@@ -751,7 +742,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 </button>
             </div>
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
-            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} />)}
+            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} />)}
         </div>
     );
 };

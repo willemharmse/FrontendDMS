@@ -107,7 +107,7 @@
 }
 
 .ibraCon {
-    width: 100px;
+    width: 69px !important;
     background-color: #BBBBBB !important;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
@@ -120,15 +120,15 @@
 }
 
 td.ibraCon {
-    min-width: 100px;
-    max-width: 100px;
+    min-width: 69px !important;
+    max-width: 69px !important;
     background-color: white !important;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
 }
 
 .ibraOther {
-    width: 100px;
+    width: 70px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -136,8 +136,9 @@ td.ibraCon {
 }
 
 .ibraAR {
-    min-width: 150px;
-    max-width: 150px;
+    min-width: 120px !important;
+    width: 120px !important;
+    max-width: 120px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -154,8 +155,8 @@ td.ibraCon {
 }
 
 .ibraPrev {
-    min-width: 300px;
-    max-width: 300px;
+    min-width: 200px;
+    max-width: 200px;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -164,7 +165,7 @@ td.ibraCon {
 
 .ibraStatus {
     min-width: 200px !important;
-    max-width: 400px !important;
+    max-width: 200px !important;
     background-color: #CB6F6F !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;
@@ -177,7 +178,7 @@ td.ibraCon {
 
 td.ibraStatus {
     min-width: 200px !important;
-    max-width: 400px !important;
+    max-width: 200px !important;
     background-color: white !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;
@@ -187,8 +188,8 @@ td.ibraStatus {
 }
 
 .ibraNotes {
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 100px !important;
+    max-width: 100px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -301,15 +302,15 @@ td.ibraPI {
 }
 
 td.ibraRA {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 370px;
+    max-width: 370px;
     background-color: white !important;
     border: 2px solid #BFBFBF !important;
 }
 
 .ibraDD {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 130px;
+    max-width: 130px;
     background-color: #BBBBBB !important;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
@@ -321,23 +322,23 @@ td.ibraRA {
 }
 
 td.ibraDD {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 130px;
+    max-width: 130px;
     background-color: white !important;
     border: 2px solid #BFBFBF !important;
 }
 
 .ibraDate {
-    min-width: 350px;
-    max-width: 650px;
+    min-width: 200px !important;
+    max-width: 500px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
 }
 
 .ibraRisk {
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 95px !important;
+    max-width: 95px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -354,17 +355,17 @@ td.ibraDD {
 }
 
 .ibraDeadline {
-    min-width: 400px !important;
-    max-width: 600px !important;
-    width: 500px;
+    min-width: 200px !important;
+    max-width: 400px !important;
+    width: 300px;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
 }
 
 td.ibraDeadline {
-    min-width: 400px !important;
-    max-width: 400px !important;
+    min-width: 300px !important;
+    max-width: 300px !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;

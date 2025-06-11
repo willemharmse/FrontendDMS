@@ -51,6 +51,7 @@ const RiskManagementPageIBRA = () => {
     const [loadingScope, setLoadingScope] = useState(false);
     const [loadingScopeI, setLoadingScopeI] = useState(false);
     const [loadingScopeE, setLoadingScopeE] = useState(false);
+    const [controls, setControls] = useState([]);
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -1078,7 +1079,7 @@ const RiskManagementPageIBRA = () => {
             formData,
         };
 
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+        const documentName = (formData.title) + ' ' + formData.documentType;
         setLoading(true);
 
         try {

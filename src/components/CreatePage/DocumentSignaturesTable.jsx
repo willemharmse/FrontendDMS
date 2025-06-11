@@ -69,9 +69,11 @@ const DocumentSignaturesTable = ({
   // —— Name handlers —— //
 
   const openNameDropdown = (index, all = false) => {
-    const base = all
-      ? nameLists
-      : nameLists.filter(n => !selectedNames.has(n) || n === rows[index].name);
+    const base = (all ? nameLists : nameLists.filter(n =>
+      (!selectedNames.has(n) || n === rows[index].name)
+    ))
+      // drop any blank or whitespace-only just in case
+      .filter(n => n?.trim() !== "");
     const opts = base.slice(0, 15);
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
@@ -120,7 +122,8 @@ const DocumentSignaturesTable = ({
   // —— Position handlers —— //
 
   const openPosDropdown = (index, all = false) => {
-    const base = all ? posLists : posLists;
+    const base = posLists
+      .filter(p => p?.trim() !== "");
     const opts = base.slice(0, 15);
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);

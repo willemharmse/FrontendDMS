@@ -1,0 +1,114 @@
+.popup-overlay-taks-exe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content-taks-exe {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 1000px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 250px;
+    /* Ensure the popup does not stretch veceically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+.taks-exe-table-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers veceically */
+    height: 100%;
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.taks-exe-table-group-2 {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers veceically */
+    height: 100%;
+    padding: 15px 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 10px !important;
+}
+
+.popup-table-wrapper-taks-exe {
+    overflow-y: auto;
+    max-height: 79px;
+    min-height: 79px;
+    height: 100%;
+    width: 97%;
+    /* You can adjust the width as needed */
+    margin-bottom: 5px;
+    margin-top: 5px;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox rsr centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table veceically */
+    display: block;
+}
+
+.popup-table-wrapper-taks-exe-2 {
+    overflow-y: auto;
+    max-height: 50px;
+    min-height: 50px;
+    height: 100%;
+    width: 97%;
+    /* You can adjust the width as needed */
+    background-color: transparent;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox rsr centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table veceically */
+    display: block;
+    white-space: pre-line;
+}
+
+.taks-exe-headers {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+.inp-size-taks-exe {
+    width: 30%;
+    text-align: center;
+}
+
+.desc-size-taks-exe {
+    width: 70%;
+    text-align: center;
+}

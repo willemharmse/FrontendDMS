@@ -131,7 +131,9 @@ const DocumentSignaturesRiskTable = ({
   // —— Position dropdown handlers —— //
 
   const openPosDropdown = (index) => {
-    const opts = posLists.slice(0, 15);
+    const base = posLists
+      .filter(p => p?.trim() !== "");
+    const opts = base.slice(0, 15);
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);

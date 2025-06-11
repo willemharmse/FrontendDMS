@@ -28,6 +28,8 @@ import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
 import ExecutiveSummaryJRA from "../RiskRelated/ExecutiveSummaryJRA";
+import IntroTaskInfo from "../RiskRelated/IntroTaskInfo";
+import PicturesTable from "../CreatePage/PicturesTable";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -308,7 +310,11 @@ const RiskManagementPageJRA = () => {
     const [formData, setFormData] = useState({
         title: "",
         documentType: useParams().type,
-        aim: "The aim of this risk assessment is ",
+        aim: "",
+        introInfo: {
+            description: "", start: "", end: "", mainArea: "", subArea: "", owner: "", inCharge: "", members: [{ id: uuidv4(), member: "" }],
+            otherAffected: "", howAffected: "", isProcedure: "", procedures: [{ id: uuidv4(), procedure: "", ref: "", version: "", issueDate: "" }]
+        },
         scopeExclusions: "",
         execSummaryGen: "",
         execSummary: "",
@@ -833,6 +839,40 @@ const RiskManagementPageJRA = () => {
         });
     };
 
+    const addPicRow = () => {
+        setFormData((prevData) => {
+            const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
+
+            return {
+                ...prevData,
+                pictures: [
+                    ...prevData.pictures,
+                    {
+                        pic1: `Figure 1.${totalFigures}: `, // Assign next available number
+                        pic2: `Figure 1.${totalFigures + 1}: `
+                    }
+                ]
+            };
+        });
+    };
+
+    const updatePicRow = (index, field, value) => {
+        const updatedPicRows = [...formData.pictures];
+        updatedPicRows[index][field] = value;  // Update the specific field in the row
+
+        setFormData({
+            ...formData,
+            pictures: updatedPicRows,  // Update the procedure rows in state
+        });
+    };
+
+    const removePicRow = (indexToRemove) => {
+        setFormData({
+            ...formData,
+            pictures: formData.pictures.filter((_, index) => index !== indexToRemove),
+        });
+    };
+
     const removeRefRow = (indexToRemove) => {
         setFormData({
             ...formData,
@@ -1130,10 +1170,8 @@ const RiskManagementPageJRA = () => {
                                 value={formData.site}
                                 onChange={handleInputChange}
                             >
-                                <option value="">Select Operation/ Site Name</option>
-                                <option value="Policy">Site 1</option>
-                                <option value="Procedure">Site 2</option>
-                                <option value="Standard">Site 3</option>
+                                <option value="">Select Operation / Site Name</option>
+                                <option value="Site 2">Venetia Mine, Musina</option>
                             </select>
                         </div>
                         <div className="input-box-type-risk-create-date">
@@ -1166,7 +1204,7 @@ const RiskManagementPageJRA = () => {
                                 onChange={handleInputChange}
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
-                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven"// Optional placeholder text
+                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven."// Optional placeholder text
                             />
                             <FontAwesomeIcon
                                 icon={faMagicWandSparkles}
@@ -1249,6 +1287,7 @@ const RiskManagementPageJRA = () => {
 
                     <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
+                    <IntroTaskInfo formData={formData} setFormData={setFormData} />
                     <PPETableRisk formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
                     <HandToolsTableRisk formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
                     <MaterialsTableRisk formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
@@ -1256,8 +1295,9 @@ const RiskManagementPageJRA = () => {
                     <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

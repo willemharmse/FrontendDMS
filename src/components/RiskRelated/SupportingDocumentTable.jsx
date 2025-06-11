@@ -85,7 +85,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
 
                 <h3 className="font-fam-labels">Supporting Documents</h3>
 
-                {selectedFiles.length > 0 && (
+                {formData.supportingDocuments.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
