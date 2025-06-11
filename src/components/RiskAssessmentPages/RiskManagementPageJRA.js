@@ -1051,7 +1051,7 @@ const RiskManagementPageJRA = () => {
                         <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Risk Assessments</span>
+                                <span className="button-text">Published Documents</span>
                             </div>
                         </button>
                     </div>

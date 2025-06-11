@@ -274,11 +274,77 @@
     transition: color 0.2s;
 }
 
+.aim-textarea-icon-ibra-undo {
+    position: absolute;
+    bottom: 25px;
+    /* tweak as needed for vertical offset */
+    right: 50px;
+    /* tweak for horizontal offset */
+    cursor: pointer;
+    font-size: 18px;
+    /* adjust size to suit */
+    color: black;
+    /* light grey by default */
+    transition: color 0.2s;
+}
+
 .aim-textarea-icon-exec {
     position: absolute;
-    bottom: 175px;
+    bottom: 15px;
     /* tweak as needed for vertical offset */
     right: 15px;
+    /* tweak for horizontal offset */
+    cursor: pointer;
+    font-size: 18px;
+    /* adjust size to suit */
+    color: black;
+    /* light grey by default */
+    transition: color 0.2s;
+}
+
+/* 1) make the wrapper sized to the textarea itself */
+.textarea-with-icons {
+    position: relative;
+    width: 100%;
+    /* or whatever width you need */
+    display: inline-block;
+    /* shrink‐wraps to textarea */
+}
+
+/* 2) ensure text won’t run under the icons */
+.textarea-with-icons textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 3em;
+    /* leave room for two icons */
+}
+
+/* 3) absolutely pin the icons to the bottom/right of that wrapper */
+.textarea-with-icons .textarea-icon-rewrite,
+.textarea-with-icons .textarea-icon-undo {
+    position: absolute;
+    bottom: 0.5em;
+    /* adjust to taste */
+    font-size: 1em;
+    /* or inherit your existing fontSize */
+    cursor: pointer;
+}
+
+/* 4) stack them side by side */
+.textarea-with-icons .textarea-icon-rewrite {
+    right: 0.5em;
+}
+
+.textarea-with-icons .textarea-icon-undo {
+    right: 2.5em;
+    /* shift left so it doesn’t overlap the first icon */
+}
+
+.aim-textarea-icon-exec-undo {
+    position: absolute;
+    bottom: 15px;
+    /* tweak as needed for vertical offset */
+    right: 40px;
     /* tweak for horizontal offset */
     cursor: pointer;
     font-size: 18px;
@@ -414,6 +480,17 @@
     transition: color 0.2s;
 }
 
+.scope-textarea-icon-undo {
+    position: absolute;
+    bottom: 15px;
+    /* match your textarea’s padding + border-radius */
+    right: 35px;
+    cursor: pointer;
+    font-size: 18px;
+    color: black;
+    transition: color 0.2s;
+}
+
 .scope-textarea-icon:hover {
     color: #555;
 }
@@ -517,6 +594,13 @@
     align-items: center;
     /* Vertically center the inputs */
     width: 100%;
+}
+
+.button-text-2 {
+    width: 100%;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    text-align: center;
 }
 
 .input-group-risk-create input {

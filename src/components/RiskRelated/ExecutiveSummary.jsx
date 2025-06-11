@@ -1,15 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faMagicWandSparkles, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faMagicWandSparkles, faRotateLeft, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import ExecutiveSummaryInfo from './RiskInfo/ExecutiveSummaryInfo';
 import { toast } from 'react-toastify';
 import "../RiskAssessmentPages/RiskManagementPage.css"
 
-const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) => {
+const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) => {
     const [priorityEvents, setPriorityEvents] = useState([]);
     const [materialEvents, setMaterialEvents] = useState([]);
     const [helpES, setHelpES] = useState(false);
     const [lastAiRewrites, setLastAiRewrites] = useState({});
+    const [aiRewriteInProgress, setAiRewriteInProgress] = useState(false);
+
+    const [rewriteHistory, setRewriteHistory] = useState({
+        execSummary: [],
+    });
+
+    const pushAiRewriteHistory = (field) => {
+        setRewriteHistory(prev => ({
+            ...prev,
+            [field]: [...prev[field], formData[field]]
+        }));
+    };
+
+    const undoAiRewrite = (field) => {
+        setRewriteHistory(prev => {
+            const hist = [...prev[field]];
+            if (hist.length === 0) return prev;         // nothing to undo
+            const lastValue = hist.pop();
+            setFormData(fd => ({ ...fd, [field]: lastValue }));
+            return { ...prev, [field]: hist };
+        });
+    };
 
     const openHelpES = () => {
         setHelpES(true);
@@ -23,8 +45,8 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
         try {
             const prompt = formData.execSummary;
 
-            setLastAiRewrites(prev => ({ ...prev, execSummary: prompt }));
-
+            pushAiRewriteHistory('execSummary');
+            setAiRewriteInProgress(true);
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/execSummary/ibra`, {
                 method: 'POST',
                 headers: {
@@ -34,34 +56,14 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
                 body: JSON.stringify({ prompt }),
             });
 
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                execSummary: data.response,
-            });
+            const { response: newText } = await response.json();
+            setAiRewriteInProgress(false);
+            setFormData(fd => ({ ...fd, execSummary: newText }));
         } catch (error) {
+            setAiRewriteInProgress(false);
             console.error('Error saving data:', error);
         }
     }
-
-    const undoAiRewrite = (field) => {
-        if (lastAiRewrites[field] !== undefined) {
-            setFormData(prev => ({
-                ...prev,
-                [field]: lastAiRewrites[field],
-            }));
-
-            // Clear stored undo
-            setLastAiRewrites(prev => {
-                const updated = { ...prev };
-                delete updated[field];
-                return updated;
-            });
-
-            toast.success(`AI Rewrite reverted.`);
-        }
-    };
 
     useEffect(() => {
         if (formData.execSummaryGen === "") return;
@@ -97,7 +99,7 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
         <>
             {(["IBRA", "JRA"].includes(formData.documentType)) && (
                 <div className="input-row-risk-create">
-                    <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
+                    <div className={`input-box-aim-risk-scope ${error ? "error-create" : ""}`}>
                         <button
                             className="top-left-button-refs"
                             title="Information"
@@ -109,35 +111,42 @@ const ExecutiveSummary = ({ formData, setFormData, errors, handleInputChange }) 
                             <div className="risk-scope-group">
                                 <div className="risk-execSummary-popup-page-additional-row ">
                                     <div className="risk-popup-page-column-half-scope">
-                                        <label className="scope-risk-label">Additional Notes</label>
-                                        <textarea
-                                            spellcheck="true"
-                                            name="execSummary"
-                                            className="aim-textarea-risk-scope font-fam"
-                                            onChange={handleInputChange}
-                                            value={formData.execSummary}
-                                            style={{ fontSize: "14px" }}
-                                            rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="The automatically generated summary below serves as a starting point to help you draft the introduction of the executive summary. Please insert any other important information or additional notes here." // Optional placeholder text
-                                        />
-                                        {lastAiRewrites.execSummary ? (
+                                        <label className="scope-risk-label">Introduction</label>
+                                        <div className="textarea-with-icons">
+                                            <textarea
+                                                spellcheck="true"
+                                                name="execSummary"
+                                                className="aim-textarea-risk-scope font-fam"
+                                                onChange={handleInputChange}
+                                                value={formData.execSummary}
+                                                style={{ fontSize: "14px" }}
+                                                rows="5"   // Adjust the number of rows for initial height
+                                                placeholder="The automatically generated summary below serves as a starting point to help you draft the introduction of the executive summary. Please insert any other important information or additional notes here." // Optional placeholder text
+                                            />
+                                            {aiRewriteInProgress ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-exec spin-animation" />) : (
+                                                <FontAwesomeIcon
+                                                    icon={faMagicWandSparkles}
+                                                    className="aim-textarea-icon-exec"
+                                                    title="AI Rewrite"
+                                                    style={{ fontSize: "15px" }}
+                                                    onClick={() => AiRewriteExec()}
+                                                />
+                                            )}
+
                                             <FontAwesomeIcon
                                                 icon={faRotateLeft}
-                                                className="aim-textarea-icon-exec"
+                                                className="aim-textarea-icon-exec-undo"
                                                 title="Undo AI Rewrite"
-                                                style={{ fontSize: "15px" }}
+                                                style={{
+                                                    marginLeft: '8px',
+                                                    opacity: rewriteHistory.execSummary.length ? 1 : 0.3,
+                                                    cursor: rewriteHistory.execSummary.length ? 'pointer' : 'not-allowed',
+                                                    fontSize: "15px"
+                                                }}
                                                 onClick={() => undoAiRewrite('execSummary')}
                                             />
-                                        ) : (
-                                            <FontAwesomeIcon
-                                                icon={faMagicWandSparkles}
-                                                className="aim-textarea-icon-exec"
-                                                title="AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => AiRewriteExec()}
-                                            />
-                                        )}
-                                        <p style={{ fontSize: "14px" }}><strong>The following notes will be displyed in the report:</strong><br /></p>
+                                        </div>
+                                        <p style={{ fontSize: "14px" }}><strong>The following notes will be displayed in the report:</strong><br /></p>
                                         <p style={{ fontSize: "14px" }}>The <strong>Priority Unwanted Events (PUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
                                         <p style={{ fontSize: "14px" }}>
                                             <ul style={{ listStyleType: "disc", paddingLeft: "30px", marginTop: "-5px" }}>

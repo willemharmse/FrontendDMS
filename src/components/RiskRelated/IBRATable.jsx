@@ -7,7 +7,7 @@ import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
 
-const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible }) => {
+const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error }) => {
     const ibraBoxRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
@@ -337,7 +337,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
     return (
         <div className="input-row-risk-ibra">
-            <div className="ibra-box" ref={ibraBoxRef}>
+            <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
                 <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA) <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"

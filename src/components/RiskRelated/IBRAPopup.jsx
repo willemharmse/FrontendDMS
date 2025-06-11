@@ -369,6 +369,13 @@ const IBRAPopup = ({ onClose, onSave, data }) => {
             return isNaN(value) ? max : Math.max(max, value);
         }, 0);
 
+        console.log("Max Risk Rank:", maxRiskRank);
+
+        if (maxRiskRank === 0) {
+            setMaterialEvent("No");
+            setPriorityEvent("No");
+        }
+
         const maxLikelihood = parseInt(selectedLikelihood.split(':')[0]);
 
         const riskMatrix = [

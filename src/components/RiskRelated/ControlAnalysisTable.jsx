@@ -5,7 +5,7 @@ import "./ControlAnalysisTable.css";
 import { v4 as uuidv4 } from "uuid";
 import ControlEAPopup from "./ControlEAPopup";
 
-const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow }) => {
+const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow, error }) => {
     const [insertPopup, setInsertPopup] = useState();
     const [selectedRowData, setSelectedRowData] = useState();
 
@@ -43,9 +43,9 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
 
     return (
         <div className="input-row-risk-create">
-            <div className={`input-box-attendance`}>
+            <div className={`input-box-attendance ${error ? "error-create" : ""}`}>
                 <h3 className="font-fam-labels">
-                    Control Effectiveness Analysis (CEA)<span className="required-field">*</span>
+                    Control Effectiveness Analysis (CEA)<span className="required-field"> *</span>
                 </h3>
 
                 <div className="control-analysis-labels">

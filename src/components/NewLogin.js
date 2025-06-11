@@ -49,15 +49,6 @@ const NewLogin = () => {
                 }
             }
         }
-
-        if (storedToken) {
-            try {
-                const decodedToken = jwtDecode(storedToken);
-                navigate('/FrontendDMS/home'); // Redirect if already logged in
-            } catch (err) {
-                console.error('Invalid token:', err);
-            }
-        }
     }, [navigate, secret]);
 
     useEffect(() => {

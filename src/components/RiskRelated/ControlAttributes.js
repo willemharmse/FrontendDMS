@@ -151,8 +151,8 @@ const ControlAttributes = () => {
                             </div>
                         )}
                     </div>
-                    <div className="table-scroll-wrapper">
-                        <table className="risk-control-attributes-table">
+                    <div className="table-scroll-wrapper-attributes-controls">
+                        <table className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}>
                             <thead className="risk-control-attributes-head">
                                 <tr>
                                     <th colSpan={5} className="risk-control-attributes-split">Control Identification</th>

@@ -47,6 +47,10 @@ const RiskManagementPageIBRA = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [helpRA, setHelpRA] = useState(false);
     const [helpScope, setHelpScope] = useState(false);
+    const [loadingAim, setLoadingAim] = useState(false);
+    const [loadingScope, setLoadingScope] = useState(false);
+    const [loadingScopeI, setLoadingScopeI] = useState(false);
+    const [loadingScopeE, setLoadingScopeE] = useState(false);
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -300,29 +304,12 @@ const RiskManagementPageIBRA = () => {
         });
     };
 
-    const undoAiRewrite = (field) => {
-        if (lastAiRewrites[field] !== undefined) {
-            setFormData(prev => ({
-                ...prev,
-                [field]: lastAiRewrites[field],
-            }));
-
-            // Clear stored undo
-            setLastAiRewrites(prev => {
-                const updated = { ...prev };
-                delete updated[field];
-                return updated;
-            });
-
-            toast.success(`AI Rewrite reverted.`);
-        }
-    };
-
     const AiRewriteAim = async () => {
         try {
             const prompt = formData.aim;
 
-            setLastAiRewrites(prev => ({ ...prev, aim: prompt }));
+            pushAiRewriteHistory('aim');
+            setLoadingAim(true);
 
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/ibra`, {
                 method: 'POST',
@@ -333,13 +320,11 @@ const RiskManagementPageIBRA = () => {
                 body: JSON.stringify({ prompt }),
             });
 
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                aim: data.response,
-            });
+            const { response: newText } = await response.json();
+            setLoadingAim(false);
+            setFormData(fd => ({ ...fd, aim: newText }));
         } catch (error) {
+            setLoadingAim(false);
             console.error('Error saving data:', error);
         }
     }
@@ -348,8 +333,8 @@ const RiskManagementPageIBRA = () => {
         try {
             const prompt = formData.scope;
 
-            setLastAiRewrites(prev => ({ ...prev, scope: prompt }));
-
+            pushAiRewriteHistory('scope');
+            setLoadingScope(true);
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/ibra`, {
                 method: 'POST',
                 headers: {
@@ -359,13 +344,11 @@ const RiskManagementPageIBRA = () => {
                 body: JSON.stringify({ prompt }),
             });
 
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scope: data.response,
-            });
+            const { response: newText } = await response.json();
+            setLoadingScope(false);
+            setFormData(fd => ({ ...fd, scope: newText }));
         } catch (error) {
+            setLoadingScope(false);
             console.error('Error saving data:', error);
         }
     }
@@ -374,8 +357,8 @@ const RiskManagementPageIBRA = () => {
         try {
             const prompt = formData.scopeInclusions;
 
-            setLastAiRewrites(prev => ({ ...prev, scopeInclusions: prompt }));
-
+            pushAiRewriteHistory('scopeInclusions');
+            setLoadingScopeI(true);
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeI/ibra`, {
                 method: 'POST',
                 headers: {
@@ -385,13 +368,11 @@ const RiskManagementPageIBRA = () => {
                 body: JSON.stringify({ prompt }),
             });
 
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scopeInclusions: data.response,
-            });
+            const { response: newText } = await response.json();
+            setLoadingScopeI(true);
+            setFormData(fd => ({ ...fd, scopeInclusions: newText }));
         } catch (error) {
+            setLoadingScopeI(true);
             console.error('Error saving data:', error);
         }
     }
@@ -400,8 +381,8 @@ const RiskManagementPageIBRA = () => {
         try {
             const prompt = formData.scopeExclusions;
 
-            setLastAiRewrites(prev => ({ ...prev, scopeExclusions: prompt }));
-
+            pushAiRewriteHistory('scopeExclusions');
+            setLoadingScopeE(true);
             const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeE/ibra`, {
                 method: 'POST',
                 headers: {
@@ -411,13 +392,11 @@ const RiskManagementPageIBRA = () => {
                 body: JSON.stringify({ prompt }),
             });
 
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scopeExclusions: data.response,
-            });
+            const { response: newText } = await response.json();
+            setLoadingScopeE(false);
+            setFormData(fd => ({ ...fd, scopeExclusions: newText }));
         } catch (error) {
+            setLoadingScopeE(false);
             console.error('Error saving data:', error);
         }
     }
@@ -551,6 +530,30 @@ const RiskManagementPageIBRA = () => {
             { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
         ],
     });
+
+    const [rewriteHistory, setRewriteHistory] = useState({
+        aim: [],
+        scope: [],
+        scopeInclusions: [],
+        scopeExclusions: [],
+    });
+
+    const pushAiRewriteHistory = (field) => {
+        setRewriteHistory(prev => ({
+            ...prev,
+            [field]: [...prev[field], formData[field]]
+        }));
+    };
+
+    const undoAiRewrite = (field) => {
+        setRewriteHistory(prev => {
+            const hist = [...prev[field]];
+            if (hist.length === 0) return prev;         // nothing to undo
+            const lastValue = hist.pop();
+            setFormData(fd => ({ ...fd, [field]: lastValue }));
+            return { ...prev, [field]: hist };
+        });
+    };
 
     const formDataRef = useRef(formData);
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
@@ -749,6 +752,22 @@ const RiskManagementPageIBRA = () => {
                 if (!row.designation) newErrors.attend = true;
             });
         }
+        if (formData.ibra.length === 0) {
+            newErrors.ibra = true;
+        } else {
+            formData.ibra.forEach((row, index) => {
+                if (!row.main) newErrors.ibra = true;
+                if (!row.sub) newErrors.ibra = true;
+                if (!row.controls) newErrors.ibra = true;
+            });
+        }
+        if (formData.cea.length === 0) {
+            newErrors.cea = true;
+        } else {
+            formData.cea.forEach((row, index) => {
+                if (!row.control) newErrors.cea = true;
+            });
+        }
 
         console.log(newErrors);
 
@@ -890,9 +909,15 @@ const RiskManagementPageIBRA = () => {
     };
 
     const updateCeaRows = (newCEA) => {
+        const withCER = newCEA.map(r => ({
+            ...r,
+            cer: (r.quality && r.hierarchy)
+                ? calculateCER(r.hierarchy, r.quality)
+                : r.cer
+        }));
         setFormData((prevFormData) => ({
             ...prevFormData,
-            cea: newCEA, // Update procedureRows with new data
+            cea: withCER, // Update procedureRows with new data
         }));
     };
 
@@ -1239,6 +1264,23 @@ const RiskManagementPageIBRA = () => {
 
     const prevControlsRef = useRef([]);  // hold last‐seen list so we only fetch on real changes
 
+    const calculateCER = (hierarchy, quality) => {
+        const ratingMatrix = [
+            ['Very Effective', 'Could Improve', 'Not Effective', 'Not Effective'],
+            ['Very Effective', 'Could Improve', 'Not Effective', 'Not Effective'],
+            ['Very Effective', 'Could Improve', 'Not Effective', 'Not Effective'],
+            ['Very Effective', 'Could Improve', 'Not Effective', 'Not Effective'],
+            ['Could Improve', 'Could Improve', 'Not Effective', 'Not Effective'],
+            ['Not Effective', 'Not Effective', 'Not Effective', 'Not Effective']
+        ];
+        const hIndex = parseInt(hierarchy.split('. ')[0], 10) - 1;
+        const qMap = { '> 90%': 0, '60-90%': 1, '30-59%': 2, '< 30%': 3 };
+        const cIndex = qMap[quality];
+        return (hIndex >= 0 && cIndex >= 0)
+            ? ratingMatrix[hIndex][cIndex]
+            : "";
+    };
+
     useEffect(() => {
         // 1. Gather all controls from ibra and dedupe
         const allControls = formData.ibra.flatMap(item => item.controls);
@@ -1330,7 +1372,7 @@ const RiskManagementPageIBRA = () => {
                         <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Risk Assessments</span>
+                                <span className="button-text">Published Documents</span>
                             </div>
                         </button>
                     </div>
@@ -1401,7 +1443,7 @@ const RiskManagementPageIBRA = () => {
                     </div>
 
                     <div className="input-row-risk-create">
-                        <div className="input-box-type-risk-create">
+                        <div className={`input-box-type-risk-create ${errors.site ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
                             <select
                                 className={`table-control font-fam ${formData.site === "" ? "default-site-placeholder" : ""}`}
@@ -1410,12 +1452,10 @@ const RiskManagementPageIBRA = () => {
                                 onChange={handleInputChange}
                             >
                                 <option value="">Select Operation / Site Name</option>
-                                <option value="Policy">Site 1</option>
-                                <option value="Procedure">Site 2</option>
-                                <option value="Standard">Site 3</option>
+                                <option value="Site 2">Venetia Mine, Musina</option>
                             </select>
                         </div>
-                        <div className="input-box-type-risk-create-date">
+                        <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
                             <input
                                 value={formData.dateConducted}
@@ -1445,17 +1485,10 @@ const RiskManagementPageIBRA = () => {
                                 onChange={handleInputChange}
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
-                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven" // Optional placeholder text
+                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven." // Optional placeholder text
                             />
-                            {lastAiRewrites.aim ? (
-                                <FontAwesomeIcon
-                                    icon={faRotateLeft}
-                                    className="aim-textarea-icon-ibra"
-                                    title="Undo AI Rewrite"
-                                    style={{ fontSize: "15px" }}
-                                    onClick={() => undoAiRewrite('aim')}
-                                />
-                            ) : (
+
+                            {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
                                 <FontAwesomeIcon
                                     icon={faMagicWandSparkles}
                                     className="aim-textarea-icon-ibra"
@@ -1464,6 +1497,19 @@ const RiskManagementPageIBRA = () => {
                                     onClick={() => AiRewriteAim()}
                                 />
                             )}
+
+                            <FontAwesomeIcon
+                                icon={faRotateLeft}
+                                className="aim-textarea-icon-ibra-undo"
+                                title="Undo AI Rewrite"
+                                onClick={() => undoAiRewrite('aim')}
+                                style={{
+                                    marginLeft: '8px',
+                                    opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                                    cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                                    fontSize: "15px"
+                                }}
+                            />
                         </div>
                     </div>
 
@@ -1490,23 +1536,29 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
-                                        {lastAiRewrites.scope ? (
-                                            <FontAwesomeIcon
-                                                icon={faRotateLeft}
-                                                className="scope-textarea-icon"
-                                                title="Undo AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => undoAiRewrite('scope')}
-                                            />
-                                        ) : (
-                                            <FontAwesomeIcon
-                                                icon={faMagicWandSparkles}
-                                                className="scope-textarea-icon"
-                                                title="AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => AiRewriteScope()}
-                                            />
-                                        )}
+                                        {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
+                                            : (
+                                                <FontAwesomeIcon
+                                                    icon={faMagicWandSparkles}
+                                                    className="scope-textarea-icon"
+                                                    title="AI Rewrite"
+                                                    style={{ fontSize: "15px" }}
+                                                    onClick={() => AiRewriteScope()}
+                                                />
+                                            )}
+
+                                        <FontAwesomeIcon
+                                            icon={faRotateLeft}
+                                            className="scope-textarea-icon-undo"
+                                            title="Undo AI Rewrite"
+                                            onClick={() => undoAiRewrite('scope')}
+                                            style={{
+                                                marginLeft: '8px',
+                                                opacity: rewriteHistory.scope.length ? 1 : 0.3,
+                                                cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
+                                                fontSize: "15px"
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1523,23 +1575,27 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
                                         />
-                                        {lastAiRewrites.scopeInclusions ? (
-                                            <FontAwesomeIcon
-                                                icon={faRotateLeft}
-                                                className="scope-textarea-icon"
-                                                title="Undo AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => undoAiRewrite('scopeInclusions')}
-                                            />
-                                        ) : (
-                                            <FontAwesomeIcon
+                                        {loadingScopeI ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
+                                            : (<FontAwesomeIcon
                                                 icon={faMagicWandSparkles}
                                                 className="scope-textarea-icon"
                                                 title="AI Rewrite"
                                                 style={{ fontSize: "15px" }}
                                                 onClick={() => AiRewriteScopeInclusions()}
-                                            />
-                                        )}
+                                            />)}
+
+                                        <FontAwesomeIcon
+                                            icon={faRotateLeft}
+                                            className="scope-textarea-icon-undo"
+                                            title="Undo AI Rewrite"
+                                            style={{
+                                                marginLeft: '8px',
+                                                opacity: rewriteHistory.scopeInclusions.length ? 1 : 0.3,
+                                                cursor: rewriteHistory.scopeInclusions.length ? 'pointer' : 'not-allowed',
+                                                fontSize: "15px"
+                                            }}
+                                            onClick={() => undoAiRewrite('scopeInclusions')}
+                                        />
                                     </div>
 
                                     <div className="risk-popup-page-column-half-scope">
@@ -1553,23 +1609,27 @@ const RiskManagementPageIBRA = () => {
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
                                         />
-                                        {lastAiRewrites.scopeExclusions ? (
-                                            <FontAwesomeIcon
-                                                icon={faRotateLeft}
-                                                className="scope-textarea-icon"
-                                                title="Undo AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => undoAiRewrite('scopeExclusions')}
-                                            />
-                                        ) : (
-                                            <FontAwesomeIcon
+                                        {loadingScopeE ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />) :
+                                            (< FontAwesomeIcon
                                                 icon={faMagicWandSparkles}
                                                 className="scope-textarea-icon"
                                                 title="AI Rewrite"
                                                 style={{ fontSize: "15px" }}
                                                 onClick={() => AiRewriteScopeExlusions()}
-                                            />
-                                        )}
+                                            />)}
+
+                                        < FontAwesomeIcon
+                                            icon={faRotateLeft}
+                                            className="scope-textarea-icon-undo"
+                                            title="Undo AI Rewrite"
+                                            style={{
+                                                marginLeft: '8px',
+                                                opacity: rewriteHistory.scopeExclusions.length ? 1 : 0.3,
+                                                cursor: rewriteHistory.scopeExclusions.length ? 'pointer' : 'not-allowed',
+                                                fontSize: "15px"
+                                            }}
+                                            onClick={() => undoAiRewrite('scopeExclusions')}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1578,18 +1638,13 @@ const RiskManagementPageIBRA = () => {
 
                     <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
-                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
+                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
+                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
 
-                    <ExecutiveSummary formData={formData} setFormData={setFormData} errors={errors} handleInputChange={handleInputChange} />
+                    <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
-                    <div className="input-row">
-                        <div className={`input-box-annexures`}>
-                            <h3 className="font-fam-labels">Appendices</h3>
-                        </div>
-                    </div>
                     <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">

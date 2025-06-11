@@ -15,7 +15,7 @@ const HomePage = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-    navigate("/");
+    navigate("/FrontendDMS/");
   };
 
   useEffect(() => {

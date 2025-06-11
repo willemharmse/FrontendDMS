@@ -592,7 +592,7 @@ const RiskManagementPageBTA = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -1159,7 +1159,7 @@ const RiskManagementPageBTA = () => {
                         <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Risk Assessments</span>
+                                <span className="button-text">Published Documents</span>
                             </div>
                         </button>
                     </div>

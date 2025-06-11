@@ -82,14 +82,28 @@
     max-width: 30px;
     min-width: 30px;
     width: 30px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraMain {
     min-width: 115px;
+    max-width: 115px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraSub {
     min-width: 115px;
+    max-width: 115px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraCon {
@@ -99,10 +113,15 @@
     border-right: solid 2px #BBBBBB !important;
     border-top: solid 2px #BBBBBB !important;
     color: black !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 td.ibraCon {
     min-width: 100px;
+    max-width: 100px;
     background-color: white !important;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
@@ -110,39 +129,70 @@ td.ibraCon {
 
 .ibraOther {
     width: 100px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraAR {
     min-width: 150px;
+    max-width: 150px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraAct {
     max-width: 50px;
     min-width: 50px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraPrev {
     min-width: 300px;
+    max-width: 300px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraStatus {
-    min-width: 200px;
-    width: 300px;
+    min-width: 200px !important;
+    max-width: 400px !important;
     background-color: #CB6F6F !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;
     border-top: solid 2px #CB6F6F !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 td.ibraStatus {
-    min-width: 200px;
+    min-width: 200px !important;
+    max-width: 400px !important;
     background-color: white !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
 }
 
 .ibraNotes {
     min-width: 200px;
+    max-width: 200px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraPUE {
@@ -156,7 +206,12 @@ td.ibraStatus {
 
 .ibraRM {
     min-width: 1000px;
+    max-width: 1000px;
     width: 1000px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraAdditional {
@@ -188,6 +243,10 @@ td.ibraStatus {
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
     border-top: solid 2px #BBBBBB !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 td.ibraPI {
@@ -204,6 +263,10 @@ td.ibraPI {
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
     border-top: solid 2px #BBBBBB !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibra-textarea-PI {
@@ -251,6 +314,10 @@ td.ibraRA {
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
     border-top: solid 2px #BBBBBB !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 td.ibraDD {
@@ -270,18 +337,46 @@ td.ibraDD {
 
 .ibraRisk {
     min-width: 200px;
+    max-width: 200px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraOwner {
     min-width: 200px;
+    max-width: 200px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .ibraDeadline {
-    min-width: 350px;
+    min-width: 400px !important;
+    max-width: 600px !important;
+    width: 500px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+}
+
+td.ibraDeadline {
+    min-width: 400px !important;
+    max-width: 400px !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
 }
 
 .ibraBlank {
     min-width: 200px;
+    max-width: 200px;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+    /* Allows wrapping */
 }
 
 .table-borders-ibra {
@@ -304,7 +399,7 @@ td.ibraDD {
 
 .table-borders-ibra th,
 .table-borders-ibra td {
-    white-space: nowrap;
+    white-space: normal !important;
     border: 1px solid #BFBFBF;
     /* Inner cell borders */
     padding: 8px;

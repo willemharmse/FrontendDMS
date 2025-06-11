@@ -111,11 +111,11 @@ const ImportRiskSiteInfo = ({ onClose }) => {
                 </div>
 
                 <div className="import-si-file-group">
-                    <div className="import-si-file-text">Upload Site Information File</div>
-                    <div className="import-si-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
+                    <div className="import-si-file-text">Upload Site Information Document</div>
+                    <div className="import-si-file-text-xlsx">{file ? file.name : "No Document Selected"}</div>
                     <div className="import-si-file-buttons">
                         <label className="import-si-file-button">
-                            {'Choose File'}
+                            {'Choose Document'}
                             <input
                                 type="file"
                                 accept=".xlsx, .xls"

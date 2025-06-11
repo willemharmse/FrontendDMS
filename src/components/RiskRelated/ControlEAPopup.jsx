@@ -390,7 +390,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                             </div>
                             <div className="ibra-popup-page-component-wrapper">
                                 <div className="ibra-popup-page-form-group">
-                                    <label style={{ fontSize: "15px" }}>Performance Requirements
+                                    <label style={{ fontSize: "15px" }}>Performance Requirements and Verification
                                     </label>
                                     <textarea
                                         value={performance}

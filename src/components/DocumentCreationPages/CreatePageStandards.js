@@ -947,7 +947,7 @@ const CreatePageStandards = () => {
             <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                <span className="button-text">Drafts</span>
+                <span className="button-text">Saved Drafts</span>
               </div>
             </button>
             <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
@@ -1062,12 +1062,6 @@ const CreatePageStandards = () => {
                 onChange={handleInputChange}
                 placeholder="Enter the review period in months" // Optional placeholder text
               />
-            </div>
-          </div>
-
-          <div className="input-row" onClick={handlePubClick}>
-            <div className={`input-box-annexures`}>
-              <h3 className="font-fam-labels">Appendices</h3>
             </div>
           </div>
 
