@@ -28,7 +28,7 @@ const RiskHomePage = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="CH_Logo.png" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
                 </div>

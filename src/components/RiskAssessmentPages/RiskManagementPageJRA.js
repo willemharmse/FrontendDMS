@@ -21,13 +21,10 @@ import MaterialsTableRisk from "../RiskRelated/RiskComponents/MaterialsTableRisk
 import MobileMachineTableRisk from "../RiskRelated/RiskComponents/MobileMachineTableRisk";
 import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
 import JRATable from "../RiskRelated/JRATable";
-import ControlAnalysisTable from "../RiskRelated/ControlAnalysisTable";
 import LoadRiskDraftPopup from "../RiskRelated/LoadRiskDraftPopup";
 import SharePageRisk from "../RiskRelated/SharePageRisk";
 import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
-import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
-import ExecutiveSummaryJRA from "../RiskRelated/ExecutiveSummaryJRA";
 import IntroTaskInfo from "../RiskRelated/IntroTaskInfo";
 import PicturesTable from "../CreatePage/PicturesTable";
 
@@ -59,16 +56,8 @@ const RiskManagementPageJRA = () => {
     const [helpRA, setHelpRA] = useState(false);
     const [helpScope, setHelpScope] = useState(false);
 
-    const openHelpRA = () => {
-        setHelpRA(true);
-    };
-
     const closeHelpRA = () => {
         setHelpRA(false);
-    };
-
-    const openHelpScope = () => {
-        setHelpScope(true);
     };
 
     const closeHelpScope = () => {
@@ -270,7 +259,7 @@ const RiskManagementPageJRA = () => {
 
     const loadData = async (loadID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/getDraft/${loadID}`);
             const storedData = await response.json();
             // Update your states as needed:
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -310,16 +299,10 @@ const RiskManagementPageJRA = () => {
     const [formData, setFormData] = useState({
         title: "",
         documentType: useParams().type,
-        aim: "",
         introInfo: {
             description: "", start: "", end: "", mainArea: "", subArea: "", owner: "", inCharge: "", members: [{ id: uuidv4(), member: "" }],
             otherAffected: "", howAffected: "", isProcedure: "", procedures: [{ id: uuidv4(), procedure: "", ref: "", version: "", issueDate: "" }]
         },
-        scopeExclusions: "",
-        execSummaryGen: "",
-        execSummary: "",
-        scopeInclusions: "",
-        scope: "",
         date: new Date().toLocaleDateString(),
         version: "1",
         site: "",
@@ -344,9 +327,8 @@ const RiskManagementPageJRA = () => {
                         taskExecution: [{          // keep as object, A and R dropdowns
                             R: ""
                         }],
-                        controls: [{ control: "" }],         // array of control strings
-                        notes: "",
-                        go: ""
+                        controls: [{ control: "" }],
+                        go_noGo: [{ go: "" }]
                     }     // single textarea for notes
                 ]
             }
@@ -355,7 +337,7 @@ const RiskManagementPageJRA = () => {
         termRows: [],
         attendance: [
             {
-                name: "", site: "", designation: "Facilitator", num: ""
+                name: "", site: "", designation: "Facilitator", num: "", presence: ""
             }
         ],
         PPEItems: [],
@@ -365,8 +347,6 @@ const RiskManagementPageJRA = () => {
         Materials: [],
         supportingDocuments: [],
         references: [],
-        pictures: [],
-        reviewDate: 0,
         changeTable: [
             { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
         ],
@@ -683,102 +663,6 @@ const RiskManagementPageJRA = () => {
         }));
     };
 
-    const AiRewriteAim = async () => {
-        try {
-            const prompt = formData.aim;
-
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/jra`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ prompt }),
-            });
-
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                aim: data.response,
-            });
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    }
-
-    const AiRewriteScope = async () => {
-        try {
-            const prompt = formData.scope;
-
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/jra`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ prompt }),
-            });
-
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scope: data.response,
-            });
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    }
-
-    const AiRewriteScopeInclusions = async () => {
-        try {
-            const prompt = formData.scopeInclusions;
-
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeI/jra`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ prompt }),
-            });
-
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scopeInclusions: data.response,
-            });
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    }
-
-    const AiRewriteScopeExlusions = async () => {
-        try {
-            const prompt = formData.scopeExclusions;
-
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScopeE/jra`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ prompt }),
-            });
-
-            const data = await response.json();
-
-            setFormData({
-                ...formData,
-                scopeExclusions: data.response,
-            });
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    }
-
     // Add a new row to the table
     const addRow = () => {
         setFormData({
@@ -836,40 +720,6 @@ const RiskManagementPageJRA = () => {
                     refDesc: ''
                 }
             ]
-        });
-    };
-
-    const addPicRow = () => {
-        setFormData((prevData) => {
-            const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
-
-            return {
-                ...prevData,
-                pictures: [
-                    ...prevData.pictures,
-                    {
-                        pic1: `Figure 1.${totalFigures}: `, // Assign next available number
-                        pic2: `Figure 1.${totalFigures + 1}: `
-                    }
-                ]
-            };
-        });
-    };
-
-    const updatePicRow = (index, field, value) => {
-        const updatedPicRows = [...formData.pictures];
-        updatedPicRows[index][field] = value;  // Update the specific field in the row
-
-        setFormData({
-            ...formData,
-            pictures: updatedPicRows,  // Update the procedure rows in state
-        });
-    };
-
-    const removePicRow = (indexToRemove) => {
-        setFormData({
-            ...formData,
-            pictures: formData.pictures.filter((_, index) => index !== indexToRemove),
         });
     };
 
@@ -932,7 +782,7 @@ const RiskManagementPageJRA = () => {
             formData,
         };
 
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+        const documentName = (formData.title) + ' ' + formData.documentType;
         setLoading(true);
 
         try {
@@ -1077,7 +927,7 @@ const RiskManagementPageJRA = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
@@ -1171,7 +1021,7 @@ const RiskManagementPageJRA = () => {
                                 onChange={handleInputChange}
                             >
                                 <option value="">Select Operation / Site Name</option>
-                                <option value="Site 2">Venetia Mine, Musina</option>
+                                <option value="Site 2">Venetia Mine</option>
                             </select>
                         </div>
                         <div className="input-box-type-risk-create-date">
@@ -1187,104 +1037,6 @@ const RiskManagementPageJRA = () => {
                     </div>
 
                     <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
-
-                    <div className="input-row-risk-create">
-                        <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
-                            <button
-                                className="top-left-button-refs"
-                                title="Information"
-                            >
-                                <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRA} style={{ cursor: 'pointer' }} className="icon-um-search" />
-                            </button>
-                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
-                            <textarea
-                                spellcheck="true"
-                                name="aim"
-                                className="aim-textarea-risk-create font-fam"
-                                onChange={handleInputChange}
-                                value={formData.aim}
-                                rows="5"   // Adjust the number of rows for initial height
-                                placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven."// Optional placeholder text
-                            />
-                            <FontAwesomeIcon
-                                icon={faMagicWandSparkles}
-                                className="aim-textarea-icon-ibra"
-                                title="AI Rewrite"
-                                onClick={() => AiRewriteAim()}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="input-row-risk-create">
-                        <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
-                            <button
-                                className="top-left-button-refs"
-                                title="Information"
-                            >
-                                <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpScope} style={{ cursor: 'pointer' }} className="icon-um-search" />
-                            </button>
-                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
-                            <div className="risk-scope-group" style={{ marginBottom: "-10px" }}>
-                                <div className="risk-execSummary-popup-page-additional-row ">
-                                    <div className="risk-popup-page-column-half-scope">
-                                        <label className="scope-risk-label">Introduction</label>
-                                        <textarea
-                                            spellcheck="true"
-                                            name="scope"
-                                            className="aim-textarea-risk-scope-2 font-fam"
-                                            onChange={handleInputChange}
-                                            value={formData.scope}
-                                            rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
-                                        />
-                                        <FontAwesomeIcon icon={faMagicWandSparkles} title="AI Rewrite" className="scope-textarea-icon" onClick={() => AiRewriteScope()} />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="risk-scope-group">
-                                <div className="risk-scope-popup-page-additional-row ">
-                                    <div className="risk-popup-page-column-half-scope">
-                                        <label className="scope-risk-label">Scope Inclusions <span className="required-field">*</span></label>
-                                        <textarea
-                                            spellcheck="true"
-                                            name="scopeInclusions"
-                                            className="aim-textarea-risk-scope font-fam"
-                                            value={formData.scopeInclusions}
-                                            onChange={handleInputChange}
-                                            rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
-                                        />
-                                        <FontAwesomeIcon
-                                            icon={faMagicWandSparkles}
-                                            className="scope-textarea-icon"
-                                            title="AI Rewrite"
-                                            onClick={() => AiRewriteScopeInclusions()}
-                                        />
-                                    </div>
-
-                                    <div className="risk-popup-page-column-half-scope">
-                                        <label className="scope-risk-label">Scope Exclusions</label>
-                                        <textarea
-                                            spellcheck="true"
-                                            name="scopeExclusions"
-                                            className="aim-textarea-risk-scope font-fam"
-                                            value={formData.scopeExclusions}
-                                            onChange={handleInputChange}
-                                            rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
-                                        />
-                                        <FontAwesomeIcon
-                                            icon={faMagicWandSparkles}
-                                            className="scope-textarea-icon"
-                                            title="AI Rewrite"
-                                            onClick={() => AiRewriteScopeExlusions()}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
                     <IntroTaskInfo formData={formData} setFormData={setFormData} />
@@ -1297,7 +1049,6 @@ const RiskManagementPageJRA = () => {
                     <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
-                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

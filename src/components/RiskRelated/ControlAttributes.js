@@ -41,7 +41,7 @@ const ControlAttributes = () => {
     const handleDownload = async () => {
         const dataToStore = controls;
 
-        const documentName = `Site-Controls-Output Register`;
+        const documentName = `Site Controls Output Register`;
 
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/generateExcels/generate-xlsx-siteControls`, {
@@ -109,7 +109,7 @@ const ControlAttributes = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Site Controls</p>
                     </div>
                 </div>

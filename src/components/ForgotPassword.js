@@ -147,7 +147,7 @@ function ForgotPassword() {
     return (
         <div className="forgot-password-container">
             <div className="forgot-password-card">
-                <img src='CH_Logo.png' className='forgot-password-logo-img' />
+                <img src='CH_Logo.svg' className='forgot-password-logo-img' />
                 <div className="forgot-password-title">{"Reset Password"}</div>
                 <form onSubmit={handleLogin}>
                     {step === 1 && (

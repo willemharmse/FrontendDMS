@@ -28,9 +28,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     const [showStaffDropdown, setShowStaffDropdown] = useState(false);
     const [activeStaffMemberId, setActiveStaffMemberId] = useState(null);
 
-    const [functionalOwners] = useState(['Owner1', 'Owner2', 'Owner3', 'Owner4', 'Owner5']);
-    const [leaders] = useState(['Leader1', 'Leader2', 'Leader3', 'Leader4', 'Leader5']);
-    const [staffMembers] = useState(['Staff1', 'Staff2', 'Staff3', 'Staff4', 'Staff5']);
+    const [functionalOwners, setFunctionalOwners] = useState([]);
 
     const handleMemberChange = (id, value) => {
         setFormData(prev => ({
@@ -85,20 +83,41 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     };
 
     useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
         const handleClickOutside = (e) => {
             const outside =
-                !e.target.closest('.floating-dropdown') &&
+                !e.target.closest(popupSelector) &&
                 !e.target.closest('input');
             if (outside) {
-                setShowMainAreasDropdown(false);
-                setShowSubAreasDropdown(false);
-                setShowLeaderDropdown(false);
-                setShowOwnerDropdown(false);
-                setShowStaffDropdown(false);
+                closeDropdowns();
             }
         };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowMainAreasDropdown(false);
+            setShowSubAreasDropdown(false);
+            setShowLeaderDropdown(false);
+            setShowOwnerDropdown(false);
+            setShowStaffDropdown(false);
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
     }, [showMainAreasDropdown, showSubAreasDropdown, showLeaderDropdown, showOwnerDropdown, showStaffDropdown]);
 
     useEffect(() => {
@@ -107,7 +126,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                 const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/getValues`);
                 if (!res.ok) throw new Error('Failed to fetch lookup data');
                 // parse once, pull out both
-                const { areas, risks, controls } = await res.json();
+                const { areas, risks, controls, owners } = await res.json();
                 // build a lookup
                 const lookup = {};
                 areas.forEach(({ mainArea, subAreas }) => {
@@ -118,11 +137,28 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                 setMainAreas(Object.keys(lookup));
                 setRiskSources(risks);
                 setControls(controls);
+                setFunctionalOwners(owners);
             } catch (err) {
                 console.error("Error fetching areas:", err);
             }
         }
         fetchValues();
+    }, []);
+
+    useEffect(() => {
+        async function fetchFiles() {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/file/getProcedures`);
+                if (!res.ok) throw new Error('Failed to fetch lookup data');
+                // parse once, pull out both
+                const { files } = await res.json();
+
+                console.log(files);
+            } catch (err) {
+                console.error("Error fetching areas:", err);
+            }
+        }
+        fetchFiles();
     }, []);
 
     useEffect(() => {
@@ -341,7 +377,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             }
         }));
 
-        const matches = leaders
+        const matches = functionalOwners
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
             .slice(0, 15);
         setFilteredLeader(matches);
@@ -361,7 +397,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     // On focus, show all options
     const handleLeaderFocus = () => {
         closeAllDropdowns();
-        const matches = leaders.slice(0, 15);
+        const matches = functionalOwners.slice(0, 15);
         setFilteredLeader(matches);
         setShowLeaderDropdown(true);
 
@@ -393,7 +429,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         // update the typed name
         handleMemberChange(id, value);
         // filter your staff list
-        const matches = staffMembers
+        const matches = functionalOwners
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
             .slice(0, 15);
         setFilteredStaff(matches);
@@ -411,7 +447,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     const handleStaffFocus = (id, e) => {
         closeAllDropdowns();
         // show all staff on focus
-        setFilteredStaff(staffMembers.slice(0, 15));
+        setFilteredStaff(functionalOwners.slice(0, 15));
         setShowStaffDropdown(true);
         setActiveStaffMemberId(id);
         const rect = e.target.getBoundingClientRect();
@@ -829,9 +865,9 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     {filteredStaff.sort().map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectStaffSuggestion(activeStaffMemberId, term)}
+                            onMouseDown={() => selectStaffSuggestion(activeStaffMemberId, term.owner)}
                         >
-                            {term}
+                            {term.owner}
                         </li>
                     ))
                     }
@@ -871,7 +907,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredSubAreas.sort().map((term, i) => (
+                    {filteredSubAreas.filter(Boolean).sort().map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectSubAreaSuggestion(term)}
@@ -896,9 +932,9 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     {filteredLeader.sort().map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectLeaderSuggestion(term)}
+                            onMouseDown={() => selectLeaderSuggestion(term.owner)}
                         >
-                            {term}
+                            {term.owner}
                         </li>
                     ))}
                 </ul>
@@ -918,9 +954,9 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     {filteredOwner.sort().map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectOwnerSuggestion(term)}
+                            onMouseDown={() => selectOwnerSuggestion(term.owner)}
                         >
-                            {term}
+                            {term.owner}
                         </li>
                     ))}
                 </ul>

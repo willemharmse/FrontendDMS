@@ -82,7 +82,7 @@ const UserActivity = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">User Activity</p>
                     </div>
                 </div>

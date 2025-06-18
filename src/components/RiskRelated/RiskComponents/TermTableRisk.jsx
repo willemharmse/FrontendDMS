@@ -21,10 +21,10 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
     const code = newTerm.term;
     // add to the “used” codes array
     setUsedTermCodes((prev) => [...prev, code]);
-    setSearchTerm((prev) => new Set(prev).add(code));
+    setSelectedTerms((prev) => new Set(prev).add(code));
     setFormData((prev) => ({
       ...prev,
-      termRows: [...prev.abbrRows, newTerm],
+      termRows: [...prev.termRows, newTerm],
     }));
   };
 
@@ -93,7 +93,7 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
   return (
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
-        <h3 className="font-fam-labels">Terms & Definitions <span className="required-field">*</span></h3>
+        <h3 className="font-fam-labels">Terms & Definitions</h3>
         {role === "admin" && (
           <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
         )}

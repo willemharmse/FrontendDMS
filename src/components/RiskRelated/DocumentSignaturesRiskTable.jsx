@@ -158,7 +158,7 @@ const DocumentSignaturesRiskTable = ({
     <div className="input-row">
       <div className={`input-box-sig-risk ${error ? "error-sign" : ""}`}>
         <h3 className="font-fam-labels">
-          Authorisations <span className="required-field">*</span>
+          Authorisations
         </h3>
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
@@ -209,7 +209,7 @@ const DocumentSignaturesRiskTable = ({
                     ref={el => (posInputRefs.current[idx] = el)}
                   />
                 </td>
-                <td className="procCent action-cell">
+                <td className="procCent action-cell-auth-risk ">
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {

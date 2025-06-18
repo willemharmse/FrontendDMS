@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Notifications.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-icons";
 
 const Notifications = ({ setClose }) => {
     const [notifications, setNotifications] = useState([]);
@@ -31,6 +31,49 @@ const Notifications = ({ setClose }) => {
 
         getNotifs();
     }, []);
+
+    const clearAllNotifications = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/notifications/clearRead/`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete notification");
+            }
+
+            setNotifications(prev =>
+                prev.map(n => ({
+                    ...n,
+                    read: true
+                }))
+            );
+        } catch (err) {
+            console.error("Error deleting notification:", err);
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/notifications/clearNotifs/`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete notification");
+            }
+
+            setNotifications([]);
+        } catch (err) {
+            console.error("Error deleting notification:", err);
+        }
+    };
 
     const deleteNotification = async (id) => {
         try {
@@ -82,7 +125,23 @@ const Notifications = ({ setClose }) => {
     return (
         <div className="notifications-modal-container" onMouseLeave={() => setClose(false)}>
             <div className="notifications-modal-box">
-                <div className="notifications-modal-title">Notifications</div>
+                <div className="notifications-modal-title">
+                    <span>Notifications</span>
+                    <div className="notifications-title-icons">
+                        <FontAwesomeIcon
+                            icon={faBroom}
+                            title="Clear All"
+                            className="notifications-clear-all-icon"
+                            onClick={clearAllNotifications}
+                        />
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            title="Delete All Notifications"
+                            className="notifications-close-icon"
+                            onClick={deleteAllNotifications}
+                        />
+                    </div>
+                </div>
                 {notifications.length === 0 ? (
                     <div className="notifications-modal-empty">No notifications</div>
                 ) : (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle, faDatabase, faDownload } from "@fortawesome/free-solid-svg-icons";
 import "./ControlAnalysisTable.css";
 import { v4 as uuidv4 } from "uuid";
 import ControlEAPopup from "./ControlEAPopup";
+import { saveAs } from "file-saver";
 
-const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow, error }) => {
+const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow, error, title, onControlRename }) => {
     const [insertPopup, setInsertPopup] = useState();
     const [selectedRowData, setSelectedRowData] = useState();
 
@@ -28,6 +29,31 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         setInsertPopup(false);
     }
 
+    const handleDownload = async () => {
+        const dataToStore = rows;
+
+        const documentName = title + ` Control Effectiveness Analysis Table`;
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/generateExcels/generate-xlsx-cea`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.xlsx`);
+            //saveAs(blob, `${documentName}.pdf`);
+        } catch (error) {
+            console.error("Error generating document:", error);
+        }
+    };
+
     const getClass = (type) => {
         switch (type) {
             case "Very Effective":
@@ -45,7 +71,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-create" : ""}`}>
                 <h3 className="font-fam-labels">
-                    Control Effectiveness Analysis (CEA)<span className="required-field"> *</span>
+                    Control Effectiveness Analysis (CEA)
                 </h3>
 
                 <div className="control-analysis-labels">
@@ -60,6 +86,13 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                     title="Search"
                 >
                     <FontAwesomeIcon icon={faSearch} className="icon-um-search" />
+                </button>
+
+                <button
+                    className="top-right-button-ar-2"
+                    title="Download CEA Table"
+                >
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
 
                 <table className="vcr-table-cea font-fam table-borders">
@@ -142,7 +175,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                     </tbody>
                 </table>
             </div>
-            {insertPopup && (<ControlEAPopup data={selectedRowData} onClose={closeInsertPopup} onSave={updateRows} />)}
+            {insertPopup && (<ControlEAPopup data={selectedRowData} onClose={closeInsertPopup} onSave={updateRows} onControlRename={onControlRename} />)}
         </div>
     );
 };

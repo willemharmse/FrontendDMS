@@ -221,8 +221,8 @@
 
 .popup-table-wrapper-qual {
     overflow-y: auto;
-    max-height: 240px;
-    min-height: 240px;
+    max-height: 252px;
+    min-height: 252px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */

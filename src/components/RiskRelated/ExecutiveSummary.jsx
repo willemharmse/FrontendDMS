@@ -106,7 +106,7 @@ const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) =
                         >
                             <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpES} style={{ cursor: 'pointer' }} className="icon-um-search" />
                         </button>
-                        <h3 className="font-fam-labels">Executive Summary <span className="required-field">*</span></h3>
+                        <h3 className="font-fam-labels">Executive Summary</h3>
                         {formData.execSummaryGen !== "" ? (
                             <div className="risk-scope-group">
                                 <div className="risk-execSummary-popup-page-additional-row ">

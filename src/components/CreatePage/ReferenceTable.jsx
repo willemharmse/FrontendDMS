@@ -184,23 +184,21 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                             onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
                                         />
                                     </td>
-                                    <td className="ref-but-row procCent">
-                                        <div className="ibra-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                onClick={() => handleRemove(index)}
-                                                title="Remove Row"
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
-                                            <button
-                                                className="ibra-add-row-button"
-                                                title="Insert row below"
-                                                onClick={() => handleInsertAt(index + 1)}
-                                            >
-                                                <FontAwesomeIcon icon={faPlusCircle} />
-                                            </button>
-                                        </div>
+                                    <td className="procCent action-cell-auth-risk">
+                                        <button
+                                            className="remove-row-button"
+                                            onClick={() => handleRemove(index)}
+                                            title="Remove Row"
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                        <button
+                                            className="ibra-add-row-button"
+                                            title="Insert row below"
+                                            onClick={() => handleInsertAt(index + 1)}
+                                        >
+                                            <FontAwesomeIcon icon={faPlusCircle} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

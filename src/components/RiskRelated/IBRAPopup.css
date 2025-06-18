@@ -415,6 +415,23 @@
     background-color: white;
     color: #555;
     font-size: 14px;
+    font-family: Arial !important;
+}
+
+.ibra-popup-page-input-table-2 {
+    width: calc(100% - 25px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+    max-height: 78px;
+    min-height: 20px;
+    resize: vertical;
+    field-sizing: content;
 }
 
 .ibra-popup-page-select-container::after {
@@ -527,7 +544,7 @@
     display: flex;
 
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .ibra-popup-hazard-circle {
@@ -538,7 +555,7 @@
     display: block;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     color: black;
     font-size: 16px;
     font-weight: bold;
@@ -563,7 +580,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    margin-top: -15px;
+    transform: translateX(-50%);
     z-index: 0;
 }
 

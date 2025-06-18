@@ -5,6 +5,12 @@ import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus, faDownload } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
+import Hazard from "./RiskInfo/Hazard";
+import UnwantedEvent from "./RiskInfo/UnwantedEvent";
+import TaskExecution from "./RiskInfo/TaskExecution";
+import ControlExecution from "./RiskInfo/ControlExecution";
+import CurrentControls from "./RiskInfo/CurrentControls";
+import { saveAs } from 'file-saver';
 
 const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const ibraBoxRef = useRef(null);
@@ -17,6 +23,113 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const [filteredHazards, setFilteredHazards] = useState([]);
     const [showHazardsDropdown, setShowHazardsDropdown] = useState(false);
+    const [controls, setControls] = useState([]);
+    const [riskSources, setRiskSources] = useState([]);
+    const [helpHazards, setHelpHazards] = useState(false);
+    const [helpUnwantedEvents, setHelpUnwantedEvents] = useState(false);
+    const [helpResponsible, setHelpResponsible] = useState(false);
+    const [helpSub, setHelpSub] = useState(false);
+    const [helpTaskExecution, setHelpTaskExecution] = useState(false);
+
+    const openHazardsHelp = () => {
+        setHelpHazards(true);
+    };
+
+    const openUnwantedEventsHelp = () => {
+        setHelpUnwantedEvents(true);
+    };
+
+    const openResponsibleHelp = () => {
+        setHelpResponsible(true);
+    };
+
+    const openSubHelp = () => {
+        setHelpSub(true);
+    };
+
+    const openTaskExecutionHelp = () => {
+        setHelpTaskExecution(true);
+    };
+
+    const closeHazardsHelp = () => {
+        setHelpHazards(false);
+    };
+
+    const closeUnwantedEventsHelp = () => {
+        setHelpUnwantedEvents(false);
+    };
+
+    const closeResponsibleHelp = () => {
+        setHelpResponsible(false);
+    };
+
+    const closeSubHelp = () => {
+        setHelpSub(false);
+    };
+
+    const closeTaskExecutionHelp = () => {
+        setHelpTaskExecution(false);
+    };
+
+    const unwantedEvents = [
+        'Exposure to Pathogen', 'Allergic Reaction', 'Contamination', 'Infestation', 'Chemical Spill', 'Toxic Fume Release', 'Corrosion Damage', 'Chemical Reaction', 'Flooding',
+        'High Wind Damage', 'Lightning Strike', 'Heatwave', 'Asphyxiation', 'Entrapment', 'Explosion in Space', 'Equipment Failure', 'Airborne Dust Cloud', 'Silica Exposure',
+        'Respiratory Irritation', 'Dust Explosion', 'Electric Shock', 'Short Circuit', 'Fire Due to Wiring', 'Equipment Overload', 'Repetitive Strain Injury', 'Musculoskeletal Disorder',
+        'Poor Posture Injury', 'Fatigue', 'Uncontrolled Detonation', 'Shrapnel Release', 'Blast Overpressure', 'Fire from Explosion', 'Protest Disruption', 'Legislative Change',
+        'Cyber Attack', 'Market Volatility', 'Building Fire', 'Wildfire Spread', 'Equipment Fire', 'Flash Over', 'Falling Object Impact', 'Structural Collapse',
+        'Equipment Drop', 'Material Spill', 'Slip and Fall', 'Trip Hazard', 'Fall from Height', 'Uneven Surface', 'Soil Erosion', 'Contamination Spread', 'Habitat Destruction',
+        'Land Subsidence', 'Glare', 'Insufficient Lighting', 'Flicker Effect', 'Burns from Heat', 'Machine Entanglement', 'Crush Injury', 'Mechanical Failure', 'Tool Breakage',
+        'Vehicle Collision', 'Equipment Rollaway', 'Forklift Tip-Over', 'Mobile Crane Collapse', 'Magnetized Object Attraction', 'Equipment Malfunction', 'Personnel Injury',
+        'Field Leakage', 'Hearing Damage', 'Noise Complaint', 'Acoustic Resonance', 'Human Error', 'Intentional Sabotage', 'Fatigue-Related Error', 'Violence', 'Pressure Vessel Burst',
+        'Blast Wave Injury', 'Air Blast Damage', 'Loud Noise Damage', 'Stress Reaction', 'Anxiety Episode', 'Depression', 'Insomnia', 'Radiation Leak', 'Skin Burn', 'Equipment Damage',
+        'Community Protest', 'Cultural Insensitivity', 'Reputation Damage', 'Boycott', 'Heat Stress', 'Cold Exposure', 'Thermal Shock', 'Burn Injury', 'Hand-Arm Vibration Syndrome',
+        'Whole Body Vibration', 'Structural Fatigue', 'Vibration-Induced Failure', 'Hazardous Waste Leak', 'Landfill Overflow', 'Illegal Dumping', 'Greenhouse Gas Emission',
+        'Flood Contamination', 'Drowning', 'Water Scarcity', 'Water Pollution', 'Unanticipated Hazard', 'Unexpected Reaction', 'Unknown Failure'
+    ];
+
+
+    useEffect(() => {
+        async function fetchValues() {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/getValues`);
+                if (!res.ok) throw new Error('Failed to fetch lookup data');
+                // parse once, pull out both
+                const { risks, controls } = await res.json();
+
+                setRiskSources(risks);
+                setControls(controls);
+            } catch (err) {
+                console.error("Error fetching areas:", err);
+            }
+        }
+        fetchValues();
+    }, []);
+
+    const handleGenerateJRADocument = async () => {
+        const dataToStore = {
+            formData: formData.jra,
+        };
+
+        const documentName = (formData.title) + ' ' + formData.documentType;
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-jra-xlsx`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.xlsx`);
+        } catch (error) {
+            console.error("Error generating document:", error);
+        }
+    };
 
     const hazardsInputRefs = useRef({});
     const unwantedEventRefs = useRef({});
@@ -44,6 +157,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         controlIdx: null,
         pos: { top: 0, left: 0 }
     });
+
+    const closeAllDropdowns = () => {
+        setShowExeDropdown(null);
+        setShowHazardsDropdown(false);
+        setShowUnwantedEventsDropdown(false);
+    };
 
     function openControlPopup(rowId, bodyIdx, controlIdx, e) {
         e.stopPropagation();
@@ -84,7 +203,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 case "sub": return body.sub.map(s => s.task);
                 case "taskExecution": return body.taskExecution.map(te => te.R);
                 case "controls": return body.controls.map(c => c.control);
-                case "notes": return [body.notes];
                 default: return [];
             }
         });
@@ -97,7 +215,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
             case "sub": return body.sub.map(s => s.task);
             case "taskExecution": return body.taskExecution.map(te => te.R);
             case "controls": return body.controls.map(c => c.control);
-            case "notes": return [body.notes];
             default: return [];
         }
     }
@@ -212,6 +329,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     };
 
     const handleHazardsInput = (rowIndex, bodyIdx, hIdx, value) => {
+        closeAllDropdowns();
         updateHazard(rowIndex, bodyIdx, hIdx, value);
         const matches = hazardsOptions
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -234,6 +352,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
     // On focus, show all options
     const handleHazardsFocus = (rowIndex, bodyIdx, hIdx) => {
+        closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
         setFilteredHazards(hazardsOptions.slice(0, 15));
         setShowHazardsDropdown(true);
@@ -280,6 +399,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     };
 
     const handleUnwantedEventInput = (rowIndex, bodyIdx, hIdx, value) => {
+        closeAllDropdowns();
         updateUnwantedEvent(rowIndex, bodyIdx, hIdx, value);
         const matches = unwantedOptions
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -302,6 +422,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
     // On focus, show all options
     const handleUnwantedEventFocus = (rowIndex, bodyIdx, hIdx) => {
+        closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
         setFilteredUnwantedEvents(unwantedOptions.slice(0, 15));
         setShowUnwantedEventsDropdown(true);
@@ -326,6 +447,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     };
 
     const updateResponsible = (rowIndex, bodyIdx, hIdx, newValue) => {
+        closeAllDropdowns();
         setFormData(prev => {
             const newJra = prev.jra.map((row, r) => {
                 if (r !== rowIndex) return row;
@@ -348,6 +470,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     };
 
     const handleResponsibleInput = (rowIndex, bodyIdx, hIdx, value) => {
+        closeAllDropdowns();
         updateResponsible(rowIndex, bodyIdx, hIdx, value);
         const matches = responsibleOptions
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
@@ -421,7 +544,8 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                             ...body,
                             sub: [...body.sub, { task: "" }],
                             taskExecution: [...body.taskExecution, { R: "" }],
-                            controls: [...body.controls, { control: "" }]
+                            controls: [...body.controls, { control: "" }],
+                            go_noGo: [...body.go_noGo, { go: "" }],
                         };
                     })
                 };
@@ -453,11 +577,16 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                             ? body.taskExecution.filter((_, i) => i !== idx)
                             : body.taskExecution;
 
+                        const updatedGO = body.go_noGo.length > 1
+                            ? body.go_noGo.filter((_, i) => i !== idx)
+                            : body.go_noGo;
+
                         return {
                             ...body,
                             sub: updatedSub,
                             taskExecution: updatedTE,
-                            controls: updatedControls
+                            controls: updatedControls,
+                            go_noGo: updatedGO,
                         };
                     })
                 };
@@ -476,9 +605,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     hazards: [{ hazard: "" }],
                     UE: [{ ue: "" }],
                     sub: [{ task: "" }],
-                    taskExecution: [{ A: "", R: "" }],
+                    taskExecution: [{ R: "" }],
                     controls: [{ control: "" }],
-                    notes: ""
+                    go_noGo: [{ go: "" }],
                 };
 
                 const bodies = [
@@ -504,9 +633,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     hazards: [{ hazard: "" }],
                     UE: [{ ue: "" }],
                     sub: [{ task: "" }],
-                    taskExecution: [{ A: "", R: "" }],
+                    taskExecution: [{ R: "" }],
                     controls: [{ control: "" }],
-                    notes: ""
+                    go_noGo: [{ go: "" }],
                 }]
             };
 
@@ -565,15 +694,39 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const availableColumns = [
         { id: "nr", title: "Nr", className: "ibraCent ibraNr", icon: null },
         { id: "main", title: "Main Task Step", className: "ibraCent ibraMainJRA", icon: null },
-        { id: "hazards", title: "Hazard Classification / Energy Release", className: "ibraCent ibraPrevJRA", icon: null },
-        { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
-        { id: "sub", title: "Sub Task Steps\n(Procedure to complete the Main Task Step)", className: "ibraCent ibraSubJRA", icon: null },
-        { id: "taskExecution", title: "Task Execution\n(A&R)", className: "ibraCent ibraRisk", icon: null },
-        { id: "controls", title: "Contol Execution Specification\n(For Work Execution Document [WED])", className: "ibraCent ibraEXEJRA", icon: null },
+        { id: "hazards", title: "Hazard Classification / Energy Release", className: "ibraCent ibraSubJRA", icon: faInfoCircle },
+        { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: faInfoCircle },
+        { id: "sub", title: "Controls/ Sub Task Steps\n(Procedure to complete the Main Task Step)", className: "ibraCent ibraSubJRA", icon: faInfoCircle },
+        { id: "taskExecution", title: "Task Execution", className: "ibraCent ibraMainJRA", icon: faInfoCircle },
+        { id: "controls", title: "Contol Execution Specification\n(For Work Execution Document [WED])", className: "ibraCent ibraEXEJRA", icon: faInfoCircle },
         { id: "go", title: "Go/ No-Go", className: "ibraCent ibraDeadlineJRA", icon: null },
-        { id: "notes", title: "Notes", className: "ibraCent ibraDeadlineJRA", icon: null },
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
     ];
+
+    const openInfo = (type) => {
+        switch (type) {
+            case "hazards": {
+                openHazardsHelp();
+                break;
+            }
+            case "UE": {
+                openUnwantedEventsHelp();
+                break;
+            }
+            case "sub": {
+                openSubHelp();
+                break;
+            }
+            case "taskExecution": {
+                openTaskExecutionHelp();
+                break;
+            }
+            case "controls": {
+                openResponsibleHelp();
+                break;
+            }
+        }
+    }
 
     const removeBodyRow = (rowId, bodyId) => {
         setFormData(prev => {
@@ -784,7 +937,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     className="top-right-button-ibra2"
                     title="Generate JRA"
                 >
-                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" onClick={handleGenerateJRADocument} />
                 </button>
 
                 {showColumnSelector && (
@@ -847,25 +1000,31 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                             <tr>
                                 {displayColumns.map((columnId, index) => {
                                     const column = availableColumns.find(col => col.id === columnId);
-                                    if (column) {
-                                        return (
-                                            <th key={index} className={`${column.className} jra-header-cell ${filters[columnId] ? 'jra-filter-active' : ''}`} onClick={e => openFilterPopup(columnId, e)}>
-                                                {column.icon ? (
-                                                    <FontAwesomeIcon icon={column.icon} />
-                                                ) : (
-                                                    <>
-                                                        <div>{column.title.split('(')[0].trim()}</div>
-                                                        {column.title.includes('(') && (
-                                                            <div className="column-subtitle">
-                                                                ({column.title.split('(')[1].split(')')[0]})
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </th>
-                                        );
+                                    if (!column) {
+                                        return <th key={index} className="ibraCent ibraBlank"></th>;
                                     }
-                                    return <th key={index} className="ibraCent ibraBlank"></th>;
+                                    return (
+                                        <th
+                                            key={index}
+                                            className={`${column.className} jra-header-cell ${filters[columnId] ? 'jra-filter-active' : ''}`}
+                                            onClick={e => openFilterPopup(columnId, e)}
+                                        >
+                                            {/* top-left icon, if any */}
+                                            {column.icon && (
+                                                <FontAwesomeIcon icon={column.icon} className="header-icon" onClick={e => {
+                                                    e.stopPropagation();          // ← prevent the th’s onClick
+                                                    openInfo(column.id);          // ← your “info” popup
+                                                }} />
+                                            )}
+                                            {/* the column title (split subtitle in parentheses) */}
+                                            <div>{column.title.split('(')[0].trim()}</div>
+                                            {column.title.includes('(') && (
+                                                <div className="column-subtitle">
+                                                    ({column.title.split('(')[1].split(')')[0]})
+                                                </div>
+                                            )}
+                                        </th>
+                                    );
                                 })}
                             </tr>
                         </thead>
@@ -1085,7 +1244,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                     <div className="ibra-popup-page-select-container">
                                                                         <input
                                                                             type="text"
-                                                                            style={{ color: "black", cursor: "text" }}
+                                                                            style={{ color: "black", cursor: "text", marginBottom: "5px" }}
                                                                             ref={el => {
                                                                                 const key = `${rowIndex}-${bodyIdx}-${teIdx}`;
                                                                                 if (el) {
@@ -1141,42 +1300,32 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-                                                    // 9. Notes
-                                                    if (colId === "notes") {
-                                                        return (
-                                                            <td key={colIdx} className={cls}>
-                                                                <textarea
-                                                                    className="aim-textarea-risk-jra"
-                                                                    rows={1}
-                                                                    value={body.notes}
-                                                                    onChange={e => {
-                                                                        const upd = [...formData.jra];
-                                                                        upd[rowIndex].jraBody[bodyIdx].notes = e.target.value;
-                                                                        updateRows(upd);
-                                                                    }}
-                                                                />
-                                                            </td>
-                                                        );
-                                                    }
-
                                                     if (colId === "go") {
                                                         return (
                                                             <td key={colIdx} className={cls}>
-                                                                <div className="ibra-popup-page-select-container">
-                                                                    <select
-                                                                        className="ibra-popup-page-select"
-                                                                        value={body.go}
-                                                                        onChange={e => {
-                                                                            const upd = [...formData.jra];
-                                                                            upd[rowIndex].jraBody[bodyIdx].go = e.target.value;
-                                                                            updateRows(upd);
-                                                                        }}
-                                                                    >
-                                                                        <option value="">Select Option</option>
-                                                                        <option value="go">Go</option>
-                                                                        <option value="nogo">No-Go</option>
-                                                                    </select>
-                                                                </div>
+                                                                {body.go_noGo.map((goObj, goIdx) => (
+                                                                    <div className="ibra-popup-page-select-container">
+                                                                        <select
+                                                                            key={goIdx}
+                                                                            className="ibra-popup-page-select"
+                                                                            value={goObj.go}
+                                                                            style={{
+                                                                                display: "block",      // ← optional: make it fill cell width
+                                                                                marginBottom: "5px",
+                                                                                paddingRight: "35px",
+                                                                            }}
+                                                                            onChange={e => {
+                                                                                const upd = [...formData.jra];
+                                                                                upd[rowIndex].jraBody[bodyIdx].go_noGo[goIdx].go = e.target.value;
+                                                                                updateRows(upd);
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select Option</option>
+                                                                            <option value="Go">Go</option>
+                                                                            <option value="No-Go">No-Go</option>
+                                                                        </select>
+                                                                    </div>
+                                                                ))}
                                                             </td>
                                                         );
                                                     }
@@ -1281,7 +1430,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredUnwantedEvents.map((term, i) => (
+                    {unwantedEvents.map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectUnwantedEventSuggestion(term)}
@@ -1303,12 +1452,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredHazards.map((term, i) => (
+                    {riskSources.map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectHazardsSuggestion(term)}
+                            onMouseDown={() => selectHazardsSuggestion(term.term)}
                         >
-                            {term}
+                            {term.term}
                         </li>
                     ))}
                 </ul>
@@ -1335,6 +1484,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     ))}
                 </ul>
             )}
+
+            {helpHazards && (<Hazard setClose={closeHazardsHelp} />)}
+            {helpResponsible && (<ControlExecution setClose={closeResponsibleHelp} />)}
+            {helpSub && (<CurrentControls setClose={closeSubHelp} />)}
+            {helpTaskExecution && (<TaskExecution setClose={closeTaskExecutionHelp} />)}
+            {helpUnwantedEvents && (<UnwantedEvent setClose={closeUnwantedEventsHelp} />)}
         </div>
     );
 };

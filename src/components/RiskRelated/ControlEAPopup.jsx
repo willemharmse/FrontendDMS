@@ -9,8 +9,10 @@ import ControlActivation from './RiskInfo/ControlActivation';
 import ControlHierarchy from './RiskInfo/ControlHierarchy';
 import CriticalControl from './RiskInfo/CriticalControl';
 import ControlQuality from './RiskInfo/ControlQuality';
+import ControlEffectiveness from './RiskInfo/ControlEffectiveness';
 
-const ControlEAPopup = ({ onClose, onSave, data }) => {
+const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
+    const [initialControlName] = useState(data.control);
     const [controlName, setControlName] = useState("");
     const [criticalControl, setCriticalControl] = useState("");
     const [controlType, setControlType] = useState("");
@@ -28,6 +30,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
     const [helpQuality, setHelpQuality] = useState(false);
     const [helpHier, setHelpHier] = useState(false);
     const [helpCritical, setHelpCritical] = useState(false);
+    const [helpCER, setHelpCER] = useState(false);
     const [controlTypeOptions] = useState(['Act', 'Object', 'System']);
     const [activationOptions] = useState(['Prevention Control', 'Consequence Minimizing Control', 'Both']);
     const [hierarchyOptions] = useState(['1. Elimination', '2. Substitution', '3. Engineering', '4. Separation', '5. Administration', '6. PPE']);
@@ -74,6 +77,14 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
 
     const closeHelpCA = () => {
         setHelpCA(false);
+    }
+
+    const openHelpCER = () => {
+        setHelpCER(true);
+    }
+
+    const closeHelpCER = () => {
+        setHelpCER(false);
     }
 
     const openHelpHier = () => {
@@ -174,6 +185,10 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             description: description,
             performance: performance
         };
+
+        if (controlName.trim() !== initialControlName.trim()) {
+            onControlRename(initialControlName.trim(), controlName.trim());
+        }
 
         // Call the onSave function with updated data
         onSave(data.nr, updatedData);
@@ -350,7 +365,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
                                         <div className="ibra-popup-page-column-half">
                                             <div className={`cea-popup-page-component-wrapper ${formattingColour}`}>
                                                 <div className={`ibra-popup-page-form-group`}>
-                                                    <label className={`ibra-popup-page-label-output-2 ${formattingColour}`}><FontAwesomeIcon icon={faInfoCircle} className={`ibra-popup-label-icon`} />Control Effectiveness Rating</label>
+                                                    <label className={`ibra-popup-page-label-output-2 ${formattingColour}`}><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className={`ibra-popup-label-icon`} onClick={openHelpCER} />Control Effectiveness Rating</label>
                                                     <label
                                                         style={{ marginBottom: "8px", marginTop: "3px", fontWeight: "bold" }}
                                                         className={`ibra-popup-page-label-output ${formattingColour}`}
@@ -421,6 +436,7 @@ const ControlEAPopup = ({ onClose, onSave, data }) => {
             {helpHier && (<ControlHierarchy setClose={closeHelpHier} />)}
             {helpCritical && (<CriticalControl setClose={closeHelpCritical} />)}
             {helpQuality && (<ControlQuality setClose={closeHelpQuality} />)}
+            {helpCER && (<ControlEffectiveness setClose={closeHelpCER} />)}
         </div>
     );
 };

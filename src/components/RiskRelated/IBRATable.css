@@ -97,6 +97,25 @@
     /* Allows wrapping */
 }
 
+.drag-handle-icon {
+    cursor: grab;
+    margin-left: 6px;
+}
+
+.drag-handle-icon:active {
+    cursor: grabbing;
+}
+
+.drag-over {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+td.ibraMain {
+    min-width: 115px !important;
+    max-width: 115px !important;
+    text-align: left !important;
+}
+
 .ibraSub {
     min-width: 115px;
     max-width: 115px;
@@ -104,6 +123,12 @@
     /* Ensures long words break */
     white-space: normal !important;
     /* Allows wrapping */
+}
+
+td.ibraSub {
+    min-width: 115px !important;
+    max-width: 115px !important;
+    text-align: left !important;
 }
 
 .ibraCon {

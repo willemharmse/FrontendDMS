@@ -29,6 +29,7 @@ const RiskManagementPageIBRA = () => {
     const riskType = useParams().type;
     const [share, setShare] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
+    const [companies, setCompanies] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [role, setRole] = useState("");
     const [lastAiRewrites, setLastAiRewrites] = useState({});
@@ -520,7 +521,7 @@ const RiskManagementPageIBRA = () => {
         termRows: [],
         attendance: [
             {
-                name: "", site: "", designation: "Facilitator", num: ""
+                name: "", site: "", designation: "Facilitator", num: "", presence: ""
             }
         ],
         supportingDocuments: [],
@@ -662,6 +663,23 @@ const RiskManagementPageIBRA = () => {
         timeoutRef.current = setTimeout(saveToHistory, 1000); // Only save after 1s of inactivity
     }, [formData, usedAbbrCodes, usedTermCodes]);
 
+    const fetchSites = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+            const data = await response.json();
+            setCompanies(data.sites.map(s => s.site));
+        } catch (error) {
+            console.error("Error fetching designations:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSites();
+    }, []);
+
     const undoLastChange = () => {
         if (history.length > 1) {
             const lastState = history[history.length - 2]; // Get the last valid state
@@ -730,47 +748,6 @@ const RiskManagementPageIBRA = () => {
         if (!formData.title) newErrors.title = true;
         if (!formData.site) newErrors.site = true;
         if (!formData.dateConducted) newErrors.dateConducted = true;
-        if (!formData.scopeInclusions) newErrors.scopeInclusions = true;
-        if (!formData.aim) newErrors.aim = true;
-        if (!formData.execSummary) newErrors.execSummary = true;
-        if (formData.abbrRows.length === 0) newErrors.abbrs = true;
-        if (formData.termRows.length === 0) newErrors.terms = true;
-
-        if (formData.rows.length === 0) {
-            newErrors.signs = true;
-        } else {
-            formData.rows.forEach((row, index) => {
-                if (!row.name) newErrors.signs = true;
-            });
-        }
-
-        if (formData.attendance.length === 0) {
-            newErrors.attend = true;
-        } else {
-            formData.attendance.forEach((row, index) => {
-                if (!row.name) newErrors.attend = true;
-                if (!row.site) newErrors.attend = true;
-                if (!row.designation) newErrors.attend = true;
-            });
-        }
-        if (formData.ibra.length === 0) {
-            newErrors.ibra = true;
-        } else {
-            formData.ibra.forEach((row, index) => {
-                if (!row.main) newErrors.ibra = true;
-                if (!row.sub) newErrors.ibra = true;
-                if (!row.controls) newErrors.ibra = true;
-            });
-        }
-        if (formData.cea.length === 0) {
-            newErrors.cea = true;
-        } else {
-            formData.cea.forEach((row, index) => {
-                if (!row.control) newErrors.cea = true;
-            });
-        }
-
-        console.log(newErrors);
 
         return newErrors;
     };
@@ -1012,8 +989,8 @@ const RiskManagementPageIBRA = () => {
         // Prevent deleting the very last CEA row
         if (formData.cea.length === 1) {
             toast.error("You must keep at least one row.", {
-                position: "top-center",
-                autoClose: 3000,
+                position: "top-right",
+                autoClose: 800,
             });
             return;
         }
@@ -1027,8 +1004,8 @@ const RiskManagementPageIBRA = () => {
 
         if (updatedRows.length === formData.cea.length) {
             toast.error("Row not found.", {
-                position: "top-center",
-                autoClose: 3000,
+                position: "top-right",
+                autoClose: 800,
             });
             return;
         }
@@ -1148,7 +1125,7 @@ const RiskManagementPageIBRA = () => {
             return;
         }
 
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType + " Attendance Register";
+        const documentName = (formData.title) + ' ' + formData.documentType + " Attendance Register";
         setLoading(true);
 
         try {
@@ -1178,29 +1155,7 @@ const RiskManagementPageIBRA = () => {
             formData
         };
 
-        const requiredIBRAFields = [
-            "main", "sub", "owner", "odds", "riskRank",
-            "hazards", "controls", "S", "H", "E", "C",
-            "LR", "M", "R", "source", "majorRisk", "priority",
-            "possible", "UE", "additional", "maxConsequence"
-        ];
-
-        if (formData.ibra.some(row =>
-            requiredIBRAFields.some(key => !row[key]?.toString().trim())
-        )) {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.warn("All IBRA fields must have a value.", {
-                closeButton: true,
-                autoClose: 800,
-                style: {
-                    textAlign: 'center'
-                }
-            });
-            return;
-        }
-
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType + " Output Register";
+        const documentName = (formData.title) + ' ' + formData.documentType + " Output Register";
         setLoading(true);
 
         try {
@@ -1285,9 +1240,19 @@ const RiskManagementPageIBRA = () => {
     useEffect(() => {
         // 1. Gather all controls from ibra and dedupe
         const allControls = formData.ibra.flatMap(item => item.controls);
-        const distinctControls = Array.from(new Set(allControls)).sort((a, b) =>
-            a.toLowerCase().localeCompare(b.toLowerCase())
-        );
+        const distinctControls = Array.from(
+            new Set(
+                formData.ibra
+                    .flatMap(item => item.controls || [])
+                    .map(c => {
+                        // if it was a string, use it; if it was { control: 'foo' }, grab .control
+                        if (typeof c === 'string') return c.trim();
+                        if (c && typeof c === 'object' && 'control' in c) return String(c.control).trim();
+                        return "";
+                    })
+                    .filter(name => name.length > 0)        // drop empty / missing names
+            )
+        ).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
         // 2. Bail out if nothing really changed
         const prev = prevControlsRef.current;
@@ -1351,6 +1316,28 @@ const RiskManagementPageIBRA = () => {
         fetchCEAData();
     }, [formData.ibra]);
 
+    const handleControlRename = (oldName, newName) => {
+        // 1) Rename in IBRA rows (all duplicates)
+        const updatedIBRA = formData.ibra.map(r => ({
+            ...r,
+            controls: r.controls.map(c =>
+                c.trim() === oldName.trim() ? newName.trim() : c
+            )
+        }));
+
+        // 2) Rename in CEA rows so popup/table stay in sync
+        const updatedCEA = formData.cea.map(r => ({
+            ...r,
+            control: r.control.trim() === oldName.trim() ? newName.trim() : r.control
+        }));
+
+        setFormData(prev => ({
+            ...prev,
+            ibra: updatedIBRA,
+            cea: updatedCEA
+        }));
+    };
+
     return (
         <div className="risk-create-container">
             {isSidebarVisible && (
@@ -1359,7 +1346,7 @@ const RiskManagementPageIBRA = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.png`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
@@ -1452,8 +1439,12 @@ const RiskManagementPageIBRA = () => {
                                 value={formData.site}
                                 onChange={handleInputChange}
                             >
-                                <option value="">Select Operation / Site Name</option>
-                                <option value="Site 2">Venetia Mine, Musina</option>
+                                <option value="" disabled hidden>Select Operation/Site</option>
+                                {companies.map((company, index) => (
+                                    <option key={index} value={company}>
+                                        {company}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
@@ -1478,7 +1469,7 @@ const RiskManagementPageIBRA = () => {
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRA} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
+                            <h3 className="font-fam-labels">Aim</h3>
                             <textarea
                                 spellCheck="true"
                                 name="aim"
@@ -1522,7 +1513,7 @@ const RiskManagementPageIBRA = () => {
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpScope} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
+                            <h3 className="font-fam-labels">Scope</h3>
                             <div className="risk-scope-group" style={{ marginBottom: "-10px" }}>
                                 <div className="risk-execSummary-popup-page-additional-row ">
                                     <div className="risk-popup-page-column-half-scope">
@@ -1566,7 +1557,7 @@ const RiskManagementPageIBRA = () => {
                             <div className="risk-scope-group">
                                 <div className="risk-scope-popup-page-additional-row ">
                                     <div className="risk-popup-page-column-half-scope">
-                                        <label className="scope-risk-label">Scope Inclusions <span className="required-field">*</span></label>
+                                        <label className="scope-risk-label">Scope Inclusions</label>
                                         <textarea
                                             spellCheck="true"
                                             name="scopeInclusions"
@@ -1641,7 +1632,7 @@ const RiskManagementPageIBRA = () => {
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
-                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
+                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} />)}
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />

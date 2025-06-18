@@ -24,8 +24,8 @@ const ControlQuality = ({ setClose }) => {
                             className="qual-image"
                         />
 
-                        <p className="qual-image-label-2">
-                            Source: TAU5 Tool Compliation
+                        <p style={{ marginBottom: "0px" }}>
+                            Note: A control’s quality must be rated according to its functionality. When rating the quality, do not concider the site’s compliance to the control
                         </p>
                     </div>
                 </div>
@@ -40,7 +40,7 @@ const ControlQuality = ({ setClose }) => {
                         </thead>
                         <tbody>
                             <tr>
-                                <td style={{ fontWeight: "bold", backgroundColor: "#7EAC87" }}>
+                                <td style={{ fontWeight: "bold", backgroundColor: "#7EAC87", textAlign: "center" }}>
                                     {'>'}90%
                                 </td>
                                 <td>
@@ -48,7 +48,7 @@ const ControlQuality = ({ setClose }) => {
                                 </td>
                             </tr>
                             <tr>
-                                <td style={{ fontWeight: "bold", backgroundColor: "#FFFF89" }}>
+                                <td style={{ fontWeight: "bold", backgroundColor: "#FFFF89", textAlign: "center" }}>
                                     60 – 90%
                                 </td>
                                 <td>
@@ -56,7 +56,7 @@ const ControlQuality = ({ setClose }) => {
                                 </td>
                             </tr>
                             <tr>
-                                <td style={{ fontWeight: "bold", backgroundColor: "#FFC000" }}>
+                                <td style={{ fontWeight: "bold", backgroundColor: "#FFC000", textAlign: "center" }}>
                                     30 – 59%
                                 </td>
                                 <td>
@@ -64,7 +64,7 @@ const ControlQuality = ({ setClose }) => {
                                 </td>
                             </tr>
                             <tr>
-                                <td style={{ fontWeight: "bold", backgroundColor: "#CB6F6F" }}>
+                                <td style={{ fontWeight: "bold", backgroundColor: "#CB6F6F", textAlign: "center" }}>
                                     {'<'}30%
                                 </td>
                                 <td>

@@ -94,7 +94,7 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
   return (
     <div className="input-row">
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
-        <h3 className="font-fam-labels">Abbreviations  <span className="required-field">*</span></h3>
+        <h3 className="font-fam-labels">Abbreviations</h3>
         {role === "admin" && (
           <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Abbreviations" /></button>
         )}

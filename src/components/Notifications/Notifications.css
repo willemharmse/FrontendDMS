@@ -22,6 +22,44 @@
     position: relative;
 }
 
+.notifications-modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-bottom: 1px solid #ccc;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* container for the two little icons */
+.notifications-title-icons {
+    display: flex;
+    align-items: center;
+}
+
+/* shared styles for both buttons */
+.notifications-title-icons .notifications-clear-all-icon,
+.notifications-title-icons .notifications-close-icon {
+    margin-left: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+/* hover jiggle */
+.notifications-title-icons .notifications-clear-all-icon:hover,
+.notifications-title-icons .notifications-close-icon:hover {
+    transform: scale(1.2);
+    color: #333;
+}
+
 .notifications-badge {
     position: absolute;
     top: 5px;

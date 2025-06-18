@@ -33,7 +33,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
         const existingRefs = formData.references || [];
         const newRefEntries = selected.map((file, index) => ({
             nr: existingRefs.length + index + 1,
-            ref: file.name,
+            ref: (file.name),
             refDesc: ""
         }));
 
@@ -54,7 +54,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
             .map((doc, i) => ({ ...doc, nr: i + 1 }));
 
         const updatedRefs = (formData.references || [])
-            .filter(entry => entry.ref !== removedName)
+            .filter(entry => entry.ref !== removeFileExtension(removedName))
             .map((entry, i) => ({ ...entry, nr: i + 1 }));
 
         setFormData({
@@ -90,8 +90,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="refColCen refNum" style={{ width: "5%" }}>Nr</th>
-                                <th className="refColCen refRef" style={{ width: "40%" }}>Document Name</th>
-                                <th className="refColCen refRef" style={{ width: "50%" }}>How and Where Document Was Implemented</th>
+                                <th className="refColCen refRef" style={{ width: "90%" }}>Document Name</th>
                                 <th className="refColCen refBut" style={{ width: "5%" }}>Action</th>
                             </tr>
                         </thead>
@@ -100,16 +99,6 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                                 <tr key={index}>
                                     <td className="refCent" style={{ fontSize: "14px" }}>{row.nr}</td>
                                     <td className="refCent" style={{ fontSize: "14px", textAlign: "left" }}>{removeFileExtension(row.name)}</td>
-                                    <td className="refCent">
-                                        <input
-                                            type="text"
-                                            style={{ color: "black", cursor: "text", fontSize: "14px" }}
-                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                            placeholder="Enter Additional Notes"
-                                            value={row.note}
-                                            onChange={e => handleNoteChange(index, e.target.value)}
-                                        />
-                                    </td>
                                     <td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => handleRemoveFile(index)}>
                                             <FontAwesomeIcon icon={faTrash} title="Remove File" />

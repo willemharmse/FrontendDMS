@@ -23,6 +23,33 @@
     font-family: Arial;
 }
 
+.ibra-box input,
+.ibra-box textarea,
+.ibra-box select,
+.ibra-box button,
+.jra-control-popup-btn {
+    font-family: Arial, sans-serif !important;
+}
+
+.jra-header-cell {
+    position: relative;
+    padding-top: 1.2em;
+    /* adjust if your icons overlap the text */
+}
+
+/* the icon style itself */
+.jra-header-cell .header-icon {
+    position: absolute;
+    top: 16px;
+    left: 6px;
+    font-size: 0.9em;
+    /* scale it down a bit */
+    color: #ffffff;
+    /* or whatever contrast color you prefer */
+    pointer-events: auto;
+    /* let clicks go through to the header */
+}
+
 .column-subtitle {
     font-size: 0.6em;
     color: white;

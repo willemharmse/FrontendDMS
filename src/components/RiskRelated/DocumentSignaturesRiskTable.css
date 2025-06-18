@@ -19,6 +19,22 @@
     color: #CB6F6F;
 }
 
+/* A flex container just for the Action icons */
+.action-cell-auth-risk {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid #D9D9D9 !important;
+    /* space between trash & plus */
+}
+
+/* nuke any odd default margins on those buttons */
+.action-cell-auth-risk .remove-row-button,
+.action-cell-auth-risk .insert-row-button-sig-risk {
+    margin: 0;
+}
+
 .add-row-button-ds-risk {
     display: flex;
     justify-content: center;

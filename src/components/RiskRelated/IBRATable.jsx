@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
@@ -15,6 +15,64 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const [noteText, setNoteText] = useState("");
     const [showNote, setShowNote] = useState(false);
     const savedWidthRef = useRef(null);
+    const [armedDragRow, setArmedDragRow] = useState(null);
+    const [draggedRowIndex, setDraggedRowIndex] = useState(null);
+    const [dragOverRowIndex, setDragOverRowIndex] = useState(null);
+
+    const handleDragStart = (e, rowIndex) => {
+        setDraggedRowIndex(rowIndex);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', ''); // Required for Firefox
+
+        // Add visual feedback to the dragged row
+        setTimeout(() => {
+            if (e.target.closest('tr')) {
+                e.target.closest('tr').style.opacity = '0.5';
+            }
+        }, 0);
+    };
+
+    const handleDragOver = (e, rowIndex) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOverRowIndex(rowIndex);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverRowIndex(null);
+        setArmedDragRow(null);
+    };
+
+    const handleDrop = (e, dropRowIndex) => {
+        e.preventDefault();
+        if (draggedRowIndex === null || draggedRowIndex === dropRowIndex) {
+            setDraggedRowIndex(null);
+            setDragOverRowIndex(null);
+            return;
+        }
+        // 1) Remove the dragged row
+        const newRows = [...rows];
+        const [dragged] = newRows.splice(draggedRowIndex, 1);
+        // 2) Insert it exactly at the drop index
+        newRows.splice(dropRowIndex, 0, dragged);
+        // 3) Renumber
+        newRows.forEach((r, idx) => r.nr = idx + 1);
+        // 4) Push back up
+        updateRow(newRows);
+        setDraggedRowIndex(null);
+        setDragOverRowIndex(null);
+        setArmedDragRow(null);
+    };
+
+    const handleDragEnd = (e) => {
+        // Reset visual feedback
+        if (e.target.closest('tr')) {
+            e.target.closest('tr').style.opacity = '';
+        }
+        setDraggedRowIndex(null);
+        setDragOverRowIndex(null);
+        setArmedDragRow(null);
+    };
 
     const openNote = (text) => {
         setShowNote(true);
@@ -153,7 +211,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         let scrollLeft;
 
         const mouseDownHandler = (e) => {
-            if (e.target.closest('input, textarea, select, button')) {
+            if (e.target.closest('input, textarea, select, button') || e.target.closest('.drag-handle')) {
                 return;
             }
             isDown = true;
@@ -329,7 +387,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
-                <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA) <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA)</h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -340,7 +398,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                 <button
                     className="top-right-button-ibra2"
-                    title="Generate IBRA"
+                    title="Download IBRA"
                     onClick={generate}
                 >
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
@@ -454,8 +512,21 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                 return possibilities.map((p, pi) => {
                                     const isFirst = pi === 0
+                                    const isDragOver = dragOverRowIndex === rowIndex && isFirst;
+
                                     return (
-                                        <tr key={`${row.id}-${pi}`} className={row.nr % 2 === 0 ? `evenTRColour` : ``}>
+                                        <tr
+                                            key={`${row.id}-${pi}`}
+                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${isDragOver ? 'drag-over' : ''}`}
+                                            draggable={isFirst && armedDragRow === rowIndex}
+                                            onDragStart={isFirst && armedDragRow === rowIndex
+                                                ? (e) => handleDragStart(e, rowIndex)
+                                                : undefined}
+                                            onDragOver={isFirst ? (e) => handleDragOver(e, rowIndex) : undefined}
+                                            onDragLeave={isFirst ? handleDragLeave : undefined}
+                                            onDrop={isFirst ? (e) => handleDrop(e, rowIndex) : undefined}
+                                            onDragEnd={isFirst && armedDragRow === rowIndex ? handleDragEnd : undefined}
+                                        >
                                             {displayColumns.map((colId, idx) => {
                                                 const columnMeta = availableColumns.find(c => c.id === colId)
                                                 const colClass = columnMeta?.className || ""
@@ -674,8 +745,15 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         >
                                                             <span>{cellData}</span>
                                                             <FontAwesomeIcon
+                                                                icon={faArrowsUpDown}
+                                                                className="drag-handle"
+                                                                onMouseDown={() => setArmedDragRow(rowIndex)}
+                                                                onMouseUp={() => setArmedDragRow(null)}
+                                                                style={{ cursor: 'grab', marginRight: "3px", marginLeft: "3px" }}
+                                                            />
+                                                            <FontAwesomeIcon
                                                                 icon={faArrowUpRightFromSquare}
-                                                                style={{ fontSize: "14px" }}
+                                                                style={{ fontSize: "14px", marginLeft: "1px" }}
                                                                 className="ue-popup-icon"
                                                                 title="Evaluate Unwanted Event"
                                                                 onClick={() => {
@@ -683,6 +761,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     setIbraPopup(true)
                                                                 }}
                                                             />
+
                                                         </td>
                                                     )
                                                 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./AttendanceTable.css";
 import "../CreatePage/ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faInfoCircle, faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faInfoCircle, faPlusCircle, faTableColumns, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
 
 const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR }) => {
@@ -16,6 +16,72 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const [activeField, setActiveField] = useState(null); // Track which field (name or designation)
     const inputRefs = useRef({});
+    const [showColumnSelector, setShowColumnSelector] = useState(false);
+    const popupRef = useRef(null);
+
+    const availableColumns = [
+        { id: "nr", title: "Nr" },
+        { id: "name", title: "Name & Surname" },
+        { id: "site", title: "Company/Site" },
+        { id: "attendance", title: "Attendance" },
+        { id: "designation", title: "Designation" },
+        { id: "num", title: "Company/ ID Number" },
+        { id: "action", title: "Action" },
+    ];
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setShowColumnSelector(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const toggleColumn = (columnId) => {
+        setShowColumns(prev => {
+            if (prev.includes(columnId)) {
+                if (columnId === 'action' || columnId === 'nr') return prev;
+                return prev.filter(id => id !== columnId);
+            } else {
+                const actionIndex = prev.indexOf('action');
+                if (actionIndex !== -1) {
+                    return [...prev.slice(0, actionIndex), columnId, ...prev.slice(actionIndex)];
+                } else {
+                    return [...prev, columnId];
+                }
+            }
+        });
+    };
+
+    const toggleAllColumns = (selectAll) => {
+        if (selectAll) {
+            const allColumns = availableColumns
+                .map(col => col.id)
+                .filter(id => id !== 'action');
+            setShowColumns([...allColumns, 'action',]);
+        } else {
+            setShowColumns(['nr', 'action', 'attendance', 'name', 'site', 'designation']);
+        }
+    };
+
+    const areAllColumnsSelected = () => {
+        const selectableColumns = availableColumns
+            .filter(col => col.id !== 'action')
+            .map(col => col.id);
+
+        return selectableColumns.every(colId =>
+            showColumns.includes(colId) || colId === 'nr'
+        );
+    };
+
+    const [showColumns, setShowColumns] = useState([
+        "nr", "name", "site", "designation", "attendance", "action",
+    ]);
 
     const fetchAuthors = async () => {
         try {
@@ -233,25 +299,87 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-sign" : ""}`}>
                 <h3 className="font-fam-labels">
-                    Attendance Register <span className="required-field">*</span>
+                    Attendance Register
                 </h3>
                 <button
                     className="top-right-button-ar"
+                    title="Show / Hide Columns"
+                    onClick={() => setShowColumnSelector(!showColumnSelector)}
+                >
+                    <FontAwesomeIcon icon={faTableColumns} className="icon-um-search" />
+                </button>
+
+                <button
+                    className="top-right-button-ar-2"
                     title="Generate Attendance Register"
                     onClick={generateAR}
                 >
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
 
+                {showColumnSelector && (
+                    <div className="column-selector-popup" ref={popupRef}>
+                        <div className="column-selector-header">
+                            <h4>Select Columns</h4>
+                            <button
+                                className="close-popup-btn"
+                                onClick={() => setShowColumnSelector(false)}
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </div>
+                        <div className="column-selector-content">
+                            <p className="column-selector-note">Select columns to display</p>
+
+                            <div className="select-all-container">
+                                <label className="select-all-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={areAllColumnsSelected()}
+                                        onChange={(e) => toggleAllColumns(e.target.checked)}
+                                    />
+                                    <span className="select-all-text">Select All</span>
+                                </label>
+                            </div>
+
+                            <div className="column-checkbox-container">
+                                {availableColumns.map(column => (
+                                    <div className="column-checkbox-item" key={column.id}>
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={showColumns.includes(column.id)}
+                                                disabled={column.id === 'action' || column.id === 'nr' || column.id === 'attendance' || column.id === 'name' || column.id === 'site' || column.id === 'designation'}
+                                                onChange={() => toggleColumn(column.id)}
+                                            />
+                                            <span>{column.title}</span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="column-selector-footer">
+                                <p>{showColumns.length - 1} columns selected</p>
+                                <button
+                                    className="apply-columns-btn"
+                                    onClick={() => setShowColumnSelector(false)}
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <table className="vcr-table-2 font-fam table-borders">
                     <thead className="cp-table-header">
                         <tr>
-                            <th className="font-fam cent">Nr</th>
-                            <th className="font-fam cent">Name & Surname</th>
-                            <th className="font-fam cent">Company/Site</th>
-                            <th className="font-fam cent">Company / ID Number</th>
-                            <th className="font-fam cent">Designation</th>
-                            <th className="font-fam cent col-sig-act">Action</th>
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-nr` : `attend-nr`}`}>Nr</th>
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-name` : `attend-name-exp`}`}>Name & Surname</th>
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-comp` : `attend-comp-exp`}`}>Company/Site</th>
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-desg` : `attend-desg-exp`}`}>Designation</th>
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-pres` : `attend-pres-exp`}`}>Attendance</th>
+                            {showColumns.includes("num") && (<th className="font-fam cent attend-id">Company / ID Number</th>)}
+                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-act` : `attend-act-exp`}`}>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -286,16 +414,6 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                     <input
                                         type="text"
                                         className="table-control font-fam"
-                                        value={row.num || ""}
-                                        style={{ fontSize: "14px" }}
-                                        onChange={(e) => handleInputChange(index, "num", e)}
-                                        placeholder="Enter company / ID number"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        className="table-control font-fam"
                                         value={row.designation || ""}
                                         onChange={(e) => handleInputChange(index, "designation", e)}
                                         onFocus={() => handleFocus(index, "designation")}
@@ -305,7 +423,30 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         ref={(el) => (inputRefs.current[`designation-${index}`] = el)}
                                     />
                                 </td>
-                                <td className="procCent action-cell">
+                                <td>
+                                    <select
+                                        type="text"
+                                        className="table-control font-fam"
+                                        value={row.presence || ""}
+                                        style={{ fontSize: "14px" }}
+                                        onChange={(e) => handleInputChange(index, "presence", e)}
+                                    >
+                                        {!row.presence && <option value={""}>Select Option</option>}
+                                        <option value={"Present"}>Present</option>
+                                        <option value={"Not Present"}>Absent</option>
+                                    </select>
+                                </td>
+                                {showColumns.includes("num") && (<td className="font-fam cent">
+                                    <input
+                                        type="text"
+                                        className="table-control font-fam"
+                                        value={row.num || ""}
+                                        style={{ fontSize: "14px" }}
+                                        onChange={(e) => handleInputChange(index, "num", e)}
+                                        placeholder="Enter company / ID number"
+                                    />
+                                </td>)}
+                                <td className="procCent action-cell-auth-risk">
                                     <button
                                         className="remove-row-button font-fam"
                                         onClick={() => {

@@ -46,7 +46,7 @@ const HomePage = () => {
     <div className="homepage-container">
       {showPopup && (<FirstLoginPopup onClose={() => setShowPopup(false)} />)}
       <header className="header">
-        <img src="CH_Logo.png" alt="Logo" className="header-logo" />
+        <img src="CH_Logo.svg" alt="Logo" className="header-logo" />
         <h1>ComplianceHub{"\u2122"}</h1>
       </header>
       <div className="content-grid">
