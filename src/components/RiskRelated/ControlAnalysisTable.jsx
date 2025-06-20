@@ -92,7 +92,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                     className="top-right-button-ar-2"
                     title="Download CEA Table"
                 >
-                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" onClick={handleDownload} />
                 </button>
 
                 <table className="vcr-table-cea font-fam table-borders">

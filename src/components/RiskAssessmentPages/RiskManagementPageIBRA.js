@@ -403,6 +403,37 @@ const RiskManagementPageIBRA = () => {
         }
     }
 
+    function normalizeIbraFormData(formData = {}) {
+        if (!Array.isArray(formData.ibra)) return formData;
+
+        return {
+            ...formData,
+            ibra: formData.ibra.map(row => {
+                const possible = Array.isArray(row.possible) ? row.possible : [];
+
+                return {
+                    ...row,
+                    possible: possible.map(block => {
+                        const actions = Array.isArray(block.actions) ? block.actions : [];
+                        const count = actions.length;
+
+                        // Ensure exactly `count` responsible entries
+                        const responsible = Array.from({ length: count }, (_, i) =>
+                            (block.responsible && block.responsible[i]) || { person: '' }
+                        );
+
+                        // Ensure exactly `count` dueDate entries
+                        const dueDate = Array.from({ length: count }, (_, i) =>
+                            (block.dueDate && block.dueDate[i]) || { date: '' }
+                        );
+
+                        return { ...block, actions, responsible, dueDate };
+                    })
+                };
+            })
+        };
+    }
+
     const loadData = async (loadID) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/getDraft/${loadID}`);
@@ -411,7 +442,11 @@ const RiskManagementPageIBRA = () => {
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
             setUserIDs(storedData.userIDs || []);
-            setFormData(storedData.formData || {});
+
+            const raw = storedData.formData || {};
+            const patched = normalizeIbraFormData(raw);
+            setFormData(patched);
+
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
             loadedIDRef.current = loadID;
@@ -509,7 +544,7 @@ const RiskManagementPageIBRA = () => {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
                 LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
-                possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                possible: [{ actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
             }
         ],
         cea: [
@@ -521,7 +556,7 @@ const RiskManagementPageIBRA = () => {
         termRows: [],
         attendance: [
             {
-                name: "", site: "", designation: "Facilitator", num: "", presence: ""
+                name: "", site: "", designation: "Facilitator", num: "", presence: "Absent"
             }
         ],
         supportingDocuments: [],

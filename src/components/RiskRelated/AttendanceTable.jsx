@@ -424,17 +424,20 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                     />
                                 </td>
                                 <td>
-                                    <select
-                                        type="text"
-                                        className="table-control font-fam"
-                                        value={row.presence || ""}
-                                        style={{ fontSize: "14px" }}
-                                        onChange={(e) => handleInputChange(index, "presence", e)}
-                                    >
-                                        {!row.presence && <option value={""}>Select Option</option>}
-                                        <option value={"Present"}>Present</option>
-                                        <option value={"Not Present"}>Absent</option>
-                                    </select>
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox-inp-attend"
+                                        checked={row.presence === "Present"}
+                                        onChange={(e) => {
+                                            const updatedRow = {
+                                                ...rows[index],
+                                                presence: e.target.checked ? "Present" : "Absent"
+                                            };
+                                            const newRows = [...rows];
+                                            newRows[index] = updatedRow;
+                                            updateRows(newRows);
+                                        }}
+                                    />
                                 </td>
                                 {showColumns.includes("num") && (<td className="font-fam cent">
                                     <input

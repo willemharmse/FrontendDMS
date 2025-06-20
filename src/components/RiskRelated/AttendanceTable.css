@@ -59,40 +59,80 @@
     padding: 0px;
 }
 
+.checkbox-inp-attend {
+    appearance: none;
+
+    /* Remove default styling */
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: auto;
+    border-radius: 20%;
+    /* Fully rounded corners */
+    border: 2px solid #ccc;
+    /* Lighter border color */
+    background-color: white;
+    /* White background for unselected state */
+    position: relative;
+    /* Required for pseudo-elements */
+}
+
+/* When the checkbox is checked */
+.checkbox-inp-attend:checked {
+    background-color: #002060;
+    /* Green background for checked state */
+    border-color: #002060;
+    /* Border color matches the background */
+}
+
+/* Custom checkmark with ::after for the checked state */
+.checkbox-inp-attend:checked::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 3px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    /* Rotate to form a checkmark */
+}
+
 .attend-act {
     width: 3%;
 }
 
 .attend-name {
-    width: 23.32%;
+    width: 25.32%;
 }
 
 .attend-name-exp {
-    width: 19%;
+    width: 21%;
 }
 
 .attend-comp {
-    width: 23%;
+    width: 25%;
 }
 
 .attend-comp-exp {
-    width: 17.32%;
+    width: 19.32%;
 }
 
 .attend-desg {
-    width: 23%;
+    width: 25%;
 }
 
 .attend-desg-exp {
-    width: 19%;
+    width: 21%;
 }
 
 .attend-pres {
-    width: 23%;
+    width: 17%;
 }
 
 .attend-pres-exp {
-    width: 19%;
+    width: 11%;
 }
 
 .attend-nr {
@@ -100,7 +140,7 @@
 }
 
 .attend-id {
-    width: 18%;
+    width: 20%;
 }
 
 .input-box-attendance {

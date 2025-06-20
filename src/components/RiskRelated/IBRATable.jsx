@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
@@ -30,6 +30,18 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 e.target.closest('tr').style.opacity = '0.5';
             }
         }, 0);
+    };
+
+    const handleDuplicateRow = (rowIndex) => {
+        const newRows = [...rows];
+        // deep-clone the row
+        const rowCopy = JSON.parse(JSON.stringify(newRows[rowIndex]));
+        rowCopy.id = uuidv4();
+        // insert it directly below
+        newRows.splice(rowIndex + 1, 0, rowCopy);
+        // re-number every row
+        newRows.forEach((r, idx) => { r.nr = idx + 1 });
+        updateRow(newRows);
     };
 
     const handleDragOver = (e, rowIndex) => {
@@ -112,10 +124,10 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             id: "possible",
             title: "Risk Treatment",
             className: "ibraCent ibraRM",
-            children: ["possibleI", "actions", "dueDate"]
+            children: ["actions", "responsible", "dueDate"]
         },
-        { id: "possibleI", title: "Possible Improvements / Future Control", className: "ibraCent ibraPI" },
-        { id: "actions", title: "Required Action", className: "ibraCent ibraRA" },
+        { id: "actions", title: "Required Action", className: "ibraCent ibraPI" },
+        { id: "responsible", title: "Responsible Person", className: "ibraCent ibraRA" },
         { id: "dueDate", title: "Due Date", className: "ibraCent ibraDD" },
         { id: "additional", title: "Notes Regarding the UE", className: "ibraCent ibraAdditional", icon: null },
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
@@ -146,6 +158,10 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             if (Array.isArray(block.dueDate) && block.dueDate.length > actionIndex) {
                 block.dueDate.splice(actionIndex, 1);
             }
+
+            if (Array.isArray(block.responsible) && block.responsible.length > actionIndex) {
+                block.responsible.splice(actionIndex, 1);
+            }
             updateRow(newRows);
         }
     };
@@ -161,7 +177,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         targetRow.possible.splice(
             possIndex + 1,
             0,
-            { possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }
+            { actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }
         );
 
         updateRow(newRows);
@@ -176,6 +192,11 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         }
         block.actions.push({ action: "" });
 
+        if (!Array.isArray(block.responsible)) {
+            block.responsible = [];
+        }
+        block.responsible.push({ person: "" });
+
         if (!Array.isArray(block.dueDate)) {
             block.dueDate = [];
         }
@@ -184,9 +205,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         updateRow(newRows);
     };
 
-    const handlePossibleIChange = (rowIndex, possIndex, value) => {
+    const handleResponsibleChange = (rowIndex, possIndex, responsibleIndex, value) => {
         const newRows = [...rows];
-        newRows[rowIndex].possible[possIndex].possibleI = value;
+        newRows[rowIndex].possible[possIndex].responsible[responsibleIndex].person = value;
         updateRow(newRows);
     };
 
@@ -290,8 +311,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         raw.forEach(id => {
             if (id === "possible") {
                 // insert its children instead of the group id
-                expanded.push("possibleI", "actions", "dueDate");
-            } else if (!["possibleI", "actions", "dueDate"].includes(id)) {
+                expanded.push("actions", "responsible", "dueDate");
+            } else if (!["actions", "responsible", "dueDate"].includes(id)) {
                 // everything else (but not the children by themselves)
                 expanded.push(id);
             }
@@ -329,7 +350,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             main: "", sub: "", owner: "", odds: "", riskRank: "",
             hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
             R: "-", source: "", material: "", priority: "",
-            possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }],
+            possible: [{ actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }],
             UE: "", additional: "", maxConsequence: ""
         };
 
@@ -463,7 +484,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                             <tr>
                                 {displayColumns.map((columnId, idx) => {
                                     // — “Risk Treatment” group header — 
-                                    if (columnId === 'possibleI') {
+                                    if (columnId === 'actions') {
                                         return (
                                             <th key={idx} className="ibraCent ibraRM" colSpan={3}>
                                                 Risk Treatment
@@ -471,7 +492,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                         );
                                     }
                                     // — skip the two other children here —
-                                    if (columnId === 'actions' || columnId === 'dueDate') {
+                                    if (columnId === 'responsible' || columnId === 'dueDate') {
                                         return null;
                                     }
                                     // — everything else spans both rows —
@@ -491,7 +512,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                             </tr>
                             <tr>
                                 {displayColumns.map((columnId, idx) => {
-                                    if (['possibleI', 'actions', 'dueDate'].includes(columnId)) {
+                                    if (['actions', "responsible", 'dueDate'].includes(columnId)) {
                                         const col = availableColumns.find(c => c.id === columnId);
                                         return (
                                             <th key={idx} className={col.className}>
@@ -551,35 +572,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     );
                                                 }
 
-                                                // ─── Risk-Treatment children ───
-                                                if (colId === "possibleI") {
-                                                    return (
-                                                        <td key={idx} className={colClass}>
-                                                            <div className="control-with-icons">
-                                                                <textarea
-                                                                    value={p.possibleI}
-                                                                    onChange={e => handlePossibleIChange(rowIndex, pi, e.target.value)}
-                                                                    className="ibra-textarea-PI"
-                                                                    style={{ fontSize: "14px" }}
-                                                                    placeholder="Insert Improvement to Control"
-                                                                />
-                                                                <FontAwesomeIcon
-                                                                    icon={faPlusCircle}
-                                                                    className="control-icon-add-ibra magic-icon"
-                                                                    onClick={() => handleAddPossible(rowIndex, pi)}
-                                                                    title="Add Possible Improvement" />
-                                                                {possibilities.length > 1 && (
-                                                                    <FontAwesomeIcon
-                                                                        icon={faTrash}
-                                                                        className="control-icon-remove-ibra magic-icon"
-                                                                        onClick={() => handleRemovePossible(rowIndex, pi)}
-                                                                        title="Remove this possible improvement"
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    );
-                                                }
                                                 if (colId === "actions") {
                                                     return (
                                                         <td key={idx} className={colClass}>
@@ -610,6 +602,27 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     </div>
                                                                 </div>
                                                             ))}
+                                                        </td>
+                                                    );
+                                                }
+
+                                                // ─── Risk-Treatment children ───
+                                                if (colId === "responsible") {
+                                                    return (
+                                                        <td key={idx} className={colClass}>
+                                                            {p.responsible.map((d, di) => (
+                                                                <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={d.person}
+                                                                        onChange={e => handleResponsibleChange(rowIndex, pi, di, e.target.value)}
+                                                                        className="ibra-textarea-PI"
+                                                                        style={{ fontSize: "14px" }}
+                                                                        placeholder="Insert or Select Responsible Person"
+                                                                    />
+                                                                </div>
+                                                            ))}
+
                                                         </td>
                                                     );
                                                 }
@@ -784,6 +797,14 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     onClick={() => insertRowAt(rowIndex + 1)}
                                                                 >
                                                                     <FontAwesomeIcon icon={faPlusCircle} />
+                                                                </button>
+                                                                <button
+                                                                    className="ibra-add-row-button"
+                                                                    title="Duplicate row"
+                                                                    onClick={() => handleDuplicateRow(rowIndex)}
+                                                                    style={{ display: 'block', marginTop: '4px' }}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faCopy} />
                                                                 </button>
                                                             </div>
                                                         </td>

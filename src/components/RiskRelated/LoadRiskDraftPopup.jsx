@@ -6,10 +6,15 @@ import { faTrash, } from '@fortawesome/free-solid-svg-icons';
 const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
+    const [isLoading, setIsLoading] = useState(true);
+    const [showNoDrafts, setShowNoDrafts] = useState(false);
 
     useEffect(() => {
         const getDraftDocuments = async () => {
             const route = `riskDraft/${riskType.toLowerCase()}/drafts/${userID}`;
+            setIsLoading(true);
+            setShowNoDrafts(false);
+
             try {
                 const response = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
                     method: "GET",
@@ -25,11 +30,22 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                 setDrafts(data);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         getDraftDocuments();
     }, [userID]);
+
+    useEffect(() => {
+        if (!isLoading && drafts.length === 0) {
+            const timer = setTimeout(() => setShowNoDrafts(true), 1000);
+            return () => clearTimeout(timer);
+        } else {
+            setShowNoDrafts(false);
+        }
+    }, [isLoading, drafts]);
 
     const formatDateTime = (dateString) => {
         const date = new Date(dateString);
@@ -112,7 +128,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                                 </tr>
                             </thead>
                             <tbody>
-                                {drafts.length > 0 ? (
+                                {!isLoading && drafts.length > 0 && (
                                     drafts
                                         .map((item, index) => (
                                             <tr key={item._id}>
@@ -142,9 +158,21 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                                                 </td>
                                             </tr>
                                         ))
-                                ) : (
+                                )}
+
+                                {isLoading && (
                                     <tr>
-                                        <td colSpan="5">No Drafts Available</td>
+                                        <td colSpan="5" className="cent">
+                                            Loading drafts…
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {!isLoading && drafts.length === 0 && showNoDrafts && (
+                                    <tr>
+                                        <td colSpan="5" className="cent">
+                                            No Drafts Available
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>

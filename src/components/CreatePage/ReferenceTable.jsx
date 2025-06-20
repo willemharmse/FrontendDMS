@@ -136,15 +136,15 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
     return (
         <div className="input-row">
             <div className="input-box-ref">
-                <h3 className="font-fam-labels">References</h3>
+                <h3 className="font-fam-labels">Site Reference Documents</h3>
 
                 {referenceRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="refColCen refNum">Nr</th>
-                                <th className="refColCen refRef">Document Name</th>
-                                <th className="refColCen refDocID">Document Reference</th>
+                                <th className="refColCen refRef">Name</th>
+                                <th className="refColCen refDocID">Reference Number (If Applicable)</th>
                                 <th className="refColCen refBut">Action</th>
                             </tr>
                         </thead>

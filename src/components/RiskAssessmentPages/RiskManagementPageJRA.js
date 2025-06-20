@@ -337,7 +337,7 @@ const RiskManagementPageJRA = () => {
         termRows: [],
         attendance: [
             {
-                name: "", site: "", designation: "Facilitator", num: "", presence: ""
+                name: "", site: "", designation: "Facilitator", num: "", presence: "Absent"
             }
         ],
         PPEItems: [],
