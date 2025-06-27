@@ -5,9 +5,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const BurgerMenu = ({ role, isOpen, setIsOpen }) => {
+const BurgerMenu = ({ role, isOpen, setIsOpen, risk }) => {
     const navigate = useNavigate();
-
+    const link = risk ? "/FrontendDMS/riskApprover" : "/FrontendDMS/adminApprover";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
@@ -55,7 +55,7 @@ const BurgerMenu = ({ role, isOpen, setIsOpen }) => {
                 <div className="menu-content" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
                         {role === "admin" && (
-                            <li onClick={() => navigate('/FrontendDMS/adminApprover')}>Suggestions</li>
+                            <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 
                         <li onClick={handleLogout}>Logout</li>

@@ -1,35 +1,124 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faArrowUpRightFromSquare, faCheck, faCirclePlus, faDownload } from '@fortawesome/free-solid-svg-icons';
-import IBRAPopup from "./IBRAPopup";
+import { faTrash, faPlus, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Hazard from "./RiskInfo/Hazard";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import TaskExecution from "./RiskInfo/TaskExecution";
 import ControlExecution from "./RiskInfo/ControlExecution";
 import CurrentControls from "./RiskInfo/CurrentControls";
 import { saveAs } from 'file-saver';
+import axios from "axios";
 
 const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const ibraBoxRef = useRef(null);
     const [filters, setFilters] = useState({});
     const tableWrapperRef = useRef(null);
-    const [ibraPopup, setIbraPopup] = useState(false);
-    const [selectedRowData, setSelectedRowData] = useState(null);
     const [hoveredBody, setHoveredBody] = useState({ rowId: null, bodyIdx: null });
     const savedWidthRef = useRef(null);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const [filteredHazards, setFilteredHazards] = useState([]);
     const [showHazardsDropdown, setShowHazardsDropdown] = useState(false);
-    const [controls, setControls] = useState([]);
-    const [riskSources, setRiskSources] = useState([]);
     const [helpHazards, setHelpHazards] = useState(false);
     const [helpUnwantedEvents, setHelpUnwantedEvents] = useState(false);
     const [helpResponsible, setHelpResponsible] = useState(false);
     const [helpSub, setHelpSub] = useState(false);
     const [helpTaskExecution, setHelpTaskExecution] = useState(false);
+    const [posLists, setPosLists] = useState([]);
+    const [filteredMainStep, setFilteredMainStep] = useState([]);
+    const [showMainStepDropdown, setShowMainStepDropdown] = useState(false);
+    const [mainIndex, setMainIndex] = useState("");
+    const mainStepInputRefs = useRef({});
+    const mainOptions = ["Main Step 1", "Main Step 2", "Main Step 3", "Main Step 4", "Main Step 5", "Main Step 6"];
+    const hazardsInputRefs = useRef({});
+    const unwantedEventRefs = useRef({});
+    const responsibleInputRefs = useRef({});
+    const controlsInputRefs = useRef({});
+    const [filteredControls, setFilteredControls] = useState([]);
+    const [showControlsDropdown, setShowControlsDropdown] = useState(false);
+    const [activeHazardCell, setActiveHazardCell] = useState({ row: null, body: null, idx: null });
+    const [filteredUnwantedEvents, setFilteredUnwantedEvents] = useState([]);
+    const [showUnwantedEventsDropdown, setShowUnwantedEventsDropdown] = useState(false);
+    const [filteredExe, setFilteredExe] = useState([]);
+    const [showExeDropdown, setShowExeDropdown] = useState(false);
+    const responsibleOptions = posLists;
+
+    const updateMainStep = (rowIndex, newValue) => {
+        setFormData(prev => {
+            const newJra = prev.jra.map((row, idx) => {
+                if (idx !== rowIndex) return row;
+                return {
+                    ...row,
+                    main: newValue
+                };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const handleMainStepInput = (rowIndex, colId, value) => {
+        closeAllDropdowns();
+        updateMainStep(rowIndex, value);
+
+        const matches = mainOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+        setFilteredMainStep(matches);
+        setShowMainStepDropdown(true);
+        setMainIndex(rowIndex);
+
+        const key = `${rowIndex}-${colId}`
+        const el = mainStepInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const handleMainStepFocus = (rowIndex, colId) => {
+        closeAllDropdowns();
+        const matches = mainOptions;
+        setFilteredMainStep(matches);
+        setShowMainStepDropdown(true);
+        setMainIndex(rowIndex);
+
+        const key = `${rowIndex}-${colId}`
+        const el = mainStepInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const selectMainStepSuggestion = (suggestion) => {
+        updateMainStep(mainIndex, suggestion);
+        setShowMainStepDropdown(false);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+                const data = res.data.stakeholders;
+
+                const positions = Array.from(new Set(data.map(d => d.pos))).sort();
+
+                setPosLists(positions);
+            } catch (error) {
+                console.log(error)
+            }
+        };
+        fetchData();
+    }, []);
 
     const openHazardsHelp = () => {
         setHelpHazards(true);
@@ -71,33 +160,16 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         setHelpTaskExecution(false);
     };
 
-    const unwantedEvents = [
-        'Exposure to Pathogen', 'Allergic Reaction', 'Contamination', 'Infestation', 'Chemical Spill', 'Toxic Fume Release', 'Corrosion Damage', 'Chemical Reaction', 'Flooding',
-        'High Wind Damage', 'Lightning Strike', 'Heatwave', 'Asphyxiation', 'Entrapment', 'Explosion in Space', 'Equipment Failure', 'Airborne Dust Cloud', 'Silica Exposure',
-        'Respiratory Irritation', 'Dust Explosion', 'Electric Shock', 'Short Circuit', 'Fire Due to Wiring', 'Equipment Overload', 'Repetitive Strain Injury', 'Musculoskeletal Disorder',
-        'Poor Posture Injury', 'Fatigue', 'Uncontrolled Detonation', 'Shrapnel Release', 'Blast Overpressure', 'Fire from Explosion', 'Protest Disruption', 'Legislative Change',
-        'Cyber Attack', 'Market Volatility', 'Building Fire', 'Wildfire Spread', 'Equipment Fire', 'Flash Over', 'Falling Object Impact', 'Structural Collapse',
-        'Equipment Drop', 'Material Spill', 'Slip and Fall', 'Trip Hazard', 'Fall from Height', 'Uneven Surface', 'Soil Erosion', 'Contamination Spread', 'Habitat Destruction',
-        'Land Subsidence', 'Glare', 'Insufficient Lighting', 'Flicker Effect', 'Burns from Heat', 'Machine Entanglement', 'Crush Injury', 'Mechanical Failure', 'Tool Breakage',
-        'Vehicle Collision', 'Equipment Rollaway', 'Forklift Tip-Over', 'Mobile Crane Collapse', 'Magnetized Object Attraction', 'Equipment Malfunction', 'Personnel Injury',
-        'Field Leakage', 'Hearing Damage', 'Noise Complaint', 'Acoustic Resonance', 'Human Error', 'Intentional Sabotage', 'Fatigue-Related Error', 'Violence', 'Pressure Vessel Burst',
-        'Blast Wave Injury', 'Air Blast Damage', 'Loud Noise Damage', 'Stress Reaction', 'Anxiety Episode', 'Depression', 'Insomnia', 'Radiation Leak', 'Skin Burn', 'Equipment Damage',
-        'Community Protest', 'Cultural Insensitivity', 'Reputation Damage', 'Boycott', 'Heat Stress', 'Cold Exposure', 'Thermal Shock', 'Burn Injury', 'Hand-Arm Vibration Syndrome',
-        'Whole Body Vibration', 'Structural Fatigue', 'Vibration-Induced Failure', 'Hazardous Waste Leak', 'Landfill Overflow', 'Illegal Dumping', 'Greenhouse Gas Emission',
-        'Flood Contamination', 'Drowning', 'Water Scarcity', 'Water Pollution', 'Unanticipated Hazard', 'Unexpected Reaction', 'Unknown Failure'
-    ];
-
+    const [jraInfo, setJraInfo] = useState([]);
 
     useEffect(() => {
         async function fetchValues() {
             try {
-                const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/getValues`);
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/jraInfo`);
                 if (!res.ok) throw new Error('Failed to fetch lookup data');
-                // parse once, pull out both
-                const { risks, controls } = await res.json();
-
-                setRiskSources(risks);
-                setControls(controls);
+                const { jraInfo: raw } = await res.json();
+                const jraList = Array.isArray(raw[0]) ? raw[0] : raw;
+                setJraInfo(jraList);
             } catch (err) {
                 console.error("Error fetching areas:", err);
             }
@@ -105,15 +177,81 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         fetchValues();
     }, []);
 
+    const hazardOptions = useMemo(
+        () => jraInfo.map(node => node.hazard),
+        [jraInfo]
+    );
+
+    const allUnwantedOptions = useMemo(
+        () => Array.from(
+            new Set(
+                jraInfo.flatMap(h => h.unwantedEvents.map(e => e.unwantedEvent))
+            )
+        ),
+        [jraInfo]
+    );
+
+    const allSubStepOptions = useMemo(
+        () => Array.from(
+            new Set(
+                jraInfo.flatMap(h =>
+                    h.unwantedEvents.flatMap(e => e.subTaskSteps)
+                )
+            )
+        ),
+        [jraInfo]
+    );
+
+    function getUnwantedOptions(selectedHazard) {
+        if (!selectedHazard) return allUnwantedOptions
+        const node = jraInfo.find(h => h.hazard === selectedHazard)
+        return node
+            ? node.unwantedEvents.map(e => e.unwantedEvent)
+            : []
+    }
+
+    function getSubStepOptions(selectedHazard, selectedUE) {
+        if (selectedHazard && selectedUE) {
+            const node = jraInfo.find(h => h.hazard === selectedHazard)
+            const ev = node?.unwantedEvents.find(e => e.unwantedEvent === selectedUE)
+            return ev ? ev.subTaskSteps : []
+        }
+
+        if (selectedHazard) {
+            const node = jraInfo.find(h => h.hazard === selectedHazard)
+            return node
+                ? Array.from(
+                    new Set(
+                        node.unwantedEvents.flatMap(e => e.subTaskSteps)
+                    )
+                )
+                : []
+        }
+
+        if (selectedUE) {
+            return Array.from(
+                new Set(
+                    jraInfo.flatMap(h =>
+                        h.unwantedEvents
+                            .filter(e => e.unwantedEvent === selectedUE)
+                            .flatMap(e => e.subTaskSteps)
+                    )
+                )
+            )
+        }
+
+        return allSubStepOptions
+    }
+
     const handleGenerateJRADocument = async () => {
         const dataToStore = {
-            formData: formData.jra,
+            formData: formData,
         };
 
         const documentName = (formData.title) + ' ' + formData.documentType;
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-jra-xlsx`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-jra-xlsx-2`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -130,19 +268,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
             console.error("Error generating document:", error);
         }
     };
-
-    const hazardsInputRefs = useRef({});
-    const unwantedEventRefs = useRef({});
-    const responsibleInputRefs = useRef({});
-
-    const [activeHazardCell, setActiveHazardCell] = useState({ row: null, body: null, idx: null });
-    const [filteredUnwantedEvents, setFilteredUnwantedEvents] = useState([]);
-    const [showUnwantedEventsDropdown, setShowUnwantedEventsDropdown] = useState(false);
-    const [filteredExe, setFilteredExe] = useState([]);
-    const [showExeDropdown, setShowExeDropdown] = useState(false);
-    const hazardsOptions = ["Hazard1", "Hazard2", "Hazard3"];
-    const unwantedOptions = ["Unwanted1", "Unwanted2", "Unwanted3"];
-    const responsibleOptions = ["Responsible1", "Responsible2", "Responsible3"];
 
     const [filterPopup, setFilterPopup] = useState({
         visible: false,
@@ -161,6 +286,8 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const closeAllDropdowns = () => {
         setShowExeDropdown(null);
         setShowHazardsDropdown(false);
+        setShowControlsDropdown(false);
+        setShowMainStepDropdown(false);
         setShowUnwantedEventsDropdown(false);
     };
 
@@ -193,21 +320,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [controlPopup.visible]);
 
-    function extractColumnValues(row, colId) {
-        if (colId === "nr") return [String(row.nr)];
-        if (colId === "main") return [row.main];
-        return row.jraBody.flatMap(body => {
-            switch (colId) {
-                case "hazards": return body.hazards.map(h => h.hazard);
-                case "UE": return body.UE.map(u => u.ue);
-                case "sub": return body.sub.map(s => s.task);
-                case "taskExecution": return body.taskExecution.map(te => te.R);
-                case "controls": return body.controls.map(c => c.control);
-                default: return [];
-            }
-        });
-    }
-
     function extractBodyValues(body, colId) {
         switch (colId) {
             case "hazards": return body.hazards.map(h => h.hazard);
@@ -227,7 +339,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         setFilterPopup(prev => ({ ...prev, visible: false }));
     }
 
-    // clear the filter & close popup
     function clearFilter() {
         setFilters(prev => {
             const next = { ...prev };
@@ -257,7 +368,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         for (const [colId, text] of Object.entries(filters)) {
             const lcText = text.toLowerCase();
 
-            // 1) group-level filters:
             if (colId === "nr") {
                 if (!String(row.nr).toLowerCase().includes(lcText)) {
                     keepRow = false;
@@ -268,14 +378,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     keepRow = false;
                     break;
                 }
-
-                // 2) body-level filters: prune jraBody array
             } else {
                 survivingBodies = survivingBodies.filter(body =>
                     extractBodyValues(body, colId)
                         .some(val => val.toLowerCase().includes(lcText))
                 );
-                // if no bodies remain, we must drop the whole row
                 if (survivingBodies.length === 0) {
                     keepRow = false;
                     break;
@@ -284,27 +391,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }
 
         if (keepRow) {
-            // push a copy of the row with its pruned jraBody
             acc.push({ ...row, jraBody: survivingBodies });
         }
         return acc;
 
     }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            const outside =
-                !e.target.closest('.floating-dropdown') &&
-                !e.target.closest('input');
-            if (outside) {
-                setShowExeDropdown(null);
-                setShowHazardsDropdown(false);
-                setShowUnwantedEventsDropdown(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showUnwantedEventsDropdown, showExeDropdown, showHazardsDropdown]);
 
     const updateHazard = (rowIndex, bodyIdx, hIdx, newValue) => {
         setFormData(prev => {
@@ -331,9 +422,8 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleHazardsInput = (rowIndex, bodyIdx, hIdx, value) => {
         closeAllDropdowns();
         updateHazard(rowIndex, bodyIdx, hIdx, value);
-        const matches = hazardsOptions
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+        const matches = hazardOptions
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredHazards(matches);
         setShowHazardsDropdown(true);
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
@@ -354,7 +444,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleHazardsFocus = (rowIndex, bodyIdx, hIdx) => {
         closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
-        setFilteredHazards(hazardsOptions.slice(0, 15));
+        setFilteredHazards(hazardOptions);
         setShowHazardsDropdown(true);
 
         const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
@@ -401,9 +491,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleUnwantedEventInput = (rowIndex, bodyIdx, hIdx, value) => {
         closeAllDropdowns();
         updateUnwantedEvent(rowIndex, bodyIdx, hIdx, value);
-        const matches = unwantedOptions
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+        const base = getUnwantedOptions(formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
+        const matches = base
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredUnwantedEvents(matches);
         setShowUnwantedEventsDropdown(true);
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
@@ -420,11 +510,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }
     };
 
-    // On focus, show all options
     const handleUnwantedEventFocus = (rowIndex, bodyIdx, hIdx) => {
         closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
-        setFilteredUnwantedEvents(unwantedOptions.slice(0, 15));
+        const base = getUnwantedOptions(formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
+        setFilteredUnwantedEvents(base);
         setShowUnwantedEventsDropdown(true);
 
         const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
@@ -439,7 +529,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }
     };
 
-    // When they pick one
     const selectUnwantedEventSuggestion = (suggestion) => {
         const { row, body, idx } = activeHazardCell;
         updateUnwantedEvent(row, body, idx, suggestion);
@@ -473,8 +562,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         closeAllDropdowns();
         updateResponsible(rowIndex, bodyIdx, hIdx, value);
         const matches = responsibleOptions
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredExe(matches);
         setShowExeDropdown(true);
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
@@ -491,10 +579,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }
     };
 
-    // On focus, show all options
     const handleResponsibleFocus = (rowIndex, bodyIdx, hIdx) => {
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
-        setFilteredExe(responsibleOptions.slice(0, 15));
+        setFilteredExe(responsibleOptions);
         setShowExeDropdown(true);
 
         const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
@@ -509,16 +596,87 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }
     };
 
-    // When they pick one
     const selectResponsibleSuggestion = (suggestion) => {
         const { row, body, idx } = activeHazardCell;
         updateResponsible(row, body, idx, suggestion);
         setShowExeDropdown(false);
     };
 
-    const closePopup = () => {
-        setIbraPopup(false);
-    }
+    const updateSubStep = (rowIndex, bodyIdx, hIdx, newValue) => {
+        closeAllDropdowns();
+        setFormData(prev => {
+            const newJra = prev.jra.map((row, r) => {
+                if (r !== rowIndex) return row;
+                return {
+                    ...row,
+                    jraBody: row.jraBody.map((body, b) => {
+                        if (b !== bodyIdx) return body;
+                        return {
+                            ...body,
+                            sub: body.sub.map((hObj, h) => {
+                                if (h !== hIdx) return hObj;
+                                return { ...hObj, task: newValue };
+                            })
+                        };
+                    })
+                };
+            });
+            return { ...prev, jra: newJra };
+        });
+    };
+
+    const handleSubStepInput = (rowIndex, bodyIdx, hIdx, value) => {
+        closeAllDropdowns();
+        updateSubStep(rowIndex, bodyIdx, hIdx, value);
+
+        const haz = formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard;
+        const ue = formData.jra[rowIndex].jraBody[bodyIdx].UE[0].ue;
+        const base = getSubStepOptions(haz, ue);
+        const matches = base.filter(opt =>
+            opt.toLowerCase().includes(value.toLowerCase())
+        );
+
+        setFilteredControls(matches);
+        setShowControlsDropdown(true);
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = controlsInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const handleSubStepFocus = (rowIndex, bodyIdx, hIdx) => {
+        setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
+        const haz = formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard;
+        const ue = formData.jra[rowIndex].jraBody[bodyIdx].UE[0].ue;
+        const base = getSubStepOptions(haz, ue);
+        setFilteredControls(base);
+        setShowControlsDropdown(true);
+
+        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+        const el = controlsInputRefs.current[key];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const selectSubStepSuggestion = (suggestion) => {
+        const { row, body, idx } = activeHazardCell;
+        updateSubStep(row, body, idx, suggestion);
+        setShowControlsDropdown(false);
+    };
 
     const updateRows = (nrToUpdate, newValues) => {
         setFormData(prev => ({
@@ -553,7 +711,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }));
     };
 
-    // Remove sub & control at the same index
     const removeSubControl = (rowId, bodyId, idx) => {
         setFormData(prev => ({
             ...prev,
@@ -564,7 +721,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     jraBody: item.jraBody.map(body => {
                         if (body.idBody !== bodyId) return body;
 
-                        // Only filter if there's more than one item
                         const updatedSub = body.sub.length > 1
                             ? body.sub.filter((_, i) => i !== idx)
                             : body.sub;
@@ -623,15 +779,14 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
     const insertMainRow = (afterIndex) => {
         setFormData(prev => {
-            // build the new main‐step entry
             const newEntry = {
                 id: uuidv4(),
-                nr: null,           // we’ll renumber in a moment
+                nr: null,
                 main: "",
                 jraBody: [{
                     idBody: uuidv4(),
-                    hazards: [{ hazard: "" }],
-                    UE: [{ ue: "" }],
+                    hazards: [{ hazard: "Work Execution" }],
+                    UE: [{ ue: "Non-adherence to task step requirements / specifications" }],
                     sub: [{ task: "" }],
                     taskExecution: [{ R: "" }],
                     controls: [{ control: "" }],
@@ -639,55 +794,18 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 }]
             };
 
-            // splice it into the right position
             const newJra = [
                 ...prev.jra.slice(0, afterIndex + 1),
                 newEntry,
                 ...prev.jra.slice(afterIndex + 1)
             ];
 
-            // renumber all rows
             const renumbered = newJra.map((item, idx) => ({
                 ...item,
                 nr: idx + 1
             }));
 
             return { ...prev, jra: renumbered };
-        });
-    };
-
-    const removeRow = (idToRemove) => {
-        if (formData.jra.length === 1) {
-            toast.error("You must keep at least one row.", {
-                closeButton: true,
-                autoClose: 800,
-                style: { textAlign: 'center' }
-            });
-            return;
-        }
-
-        const updatedRows = formData.jra.filter(row => row.id !== idToRemove);
-
-        if (updatedRows.length === formData.jra.length) {
-            toast.error("Row not found.", {
-                closeButton: true,
-                autoClose: 800,
-                style: { textAlign: 'center' }
-            });
-            return;
-        }
-
-        // Re-number the rows in ascending order starting from 1
-        const reNumberedRows = updatedRows.map((jra, index) => ({
-            ...jra,
-            nr: index + 1
-        }));
-
-        console.log('After re-numbering:', reNumberedRows);
-
-        setFormData({
-            ...formData,
-            jra: reNumberedRows,
         });
     };
 
@@ -733,9 +851,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
             const newJra = prev.jra.flatMap(item => {
                 if (item.id !== rowId) return item;
 
-                // if it’s the only sub-step, delegate back to removeRow
                 if (item.jraBody.length === 1) {
-                    // don’t delete the very last row in the table
                     if (prev.jra.length === 1) {
                         toast.clearWaitingQueue();
                         toast.dismiss();
@@ -747,17 +863,15 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         });
                         return item;
                     }
-                    return []; // drop the entire JRA entry
+                    return [];
                 }
 
-                // otherwise just filter out that one body entry
                 return {
                     ...item,
                     jraBody: item.jraBody.filter(b => b.idBody !== bodyId)
                 };
             });
 
-            // re-number the remaining main rows
             const renumbered = newJra.map((j, i) => ({ ...j, nr: i + 1 }));
             return { ...prev, jra: renumbered };
         });
@@ -828,15 +942,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         if (!wrapper) return;
 
         if (!isSidebarVisible) {
-            // Sidebar just hid: remember current width
             savedWidthRef.current = wrapper.offsetWidth;
         } else if (savedWidthRef.current != null) {
-            // Sidebar just shown again: re-apply the old width
             wrapper.style.width = `${savedWidthRef.current}px`;
-            // skip the "live" recalc this one time
             return;
         }
-        // otherwise (e.g. initial mount or no saved width) do a normal recalc
         const boxW = ibraBoxRef.current.offsetWidth;
         wrapper.style.width = `${boxW - 30}px`;
     }, [isSidebarVisible]);
@@ -889,21 +999,17 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         });
     };
 
-    // New function to handle "Select All" functionality
     const toggleAllColumns = (selectAll) => {
         if (selectAll) {
-            // Select all columns except 'action' (which is added separately)
             const allColumns = availableColumns
                 .map(col => col.id)
                 .filter(id => id !== 'action');
             setShowColumns([...allColumns, 'action']);
         } else {
-            // Keep only required columns
             setShowColumns(['nr', 'action']);
         }
     };
 
-    // Check if all selectable columns are selected
     const areAllColumnsSelected = () => {
         const selectableColumns = availableColumns
             .filter(col => col.id !== 'action')
@@ -916,6 +1022,54 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
     const displayColumns = getDisplayColumns();
 
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+        const columnSelector = '.column-selector-popup';
+        const filterSelector = ".jra-filter-popup";
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest(columnSelector) &&
+                !e.target.closest(filterSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector) || e.target.closest(columnSelector) || e.target.closest(filterSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowColumnSelector(null);
+            setShowExeDropdown(false);
+            setShowHazardsDropdown(false);
+            setShowUnwantedEventsDropdown(false);
+            setShowControlsDropdown(false);
+            setShowMainStepDropdown(false);
+            setFilterPopup(false);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showColumnSelector, showExeDropdown, showHazardsDropdown, showUnwantedEventsDropdown, filterPopup, showMainStepDropdown, showControlsDropdown]);
+
     return (
         <div className="input-row-risk-ibra">
             <div className="ibra-box" ref={ibraBoxRef}>
@@ -925,7 +1079,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 >
                     <FontAwesomeIcon icon={faInfoCircle} className="icon-um-search" />
                 </button>
-                <h3 className="font-fam-labels">Job Risk Assesment (JRA) <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">Job Risk Assessment (JRA) <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -953,8 +1107,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         </div>
                         <div className="column-selector-content">
                             <p className="column-selector-note">Select columns to display</p>
-
-                            {/* Select All option */}
                             <div className="select-all-container">
                                 <label className="select-all-checkbox">
                                     <input
@@ -982,7 +1134,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                 ))}
                             </div>
                             <div className="column-selector-footer">
-                                <p>{showColumns.length - 1} columns selected</p> {/* Subtract 1 to exclude 'action' */}
+                                <p>{showColumns.length - 1} columns selected</p>
                                 <button
                                     className="apply-columns-btn"
                                     onClick={() => setShowColumnSelector(false)}
@@ -1009,14 +1161,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                             className={`${column.className} jra-header-cell ${filters[columnId] ? 'jra-filter-active' : ''}`}
                                             onClick={e => openFilterPopup(columnId, e)}
                                         >
-                                            {/* top-left icon, if any */}
                                             {column.icon && (
                                                 <FontAwesomeIcon icon={column.icon} className="header-icon" onClick={e => {
-                                                    e.stopPropagation();          // ← prevent the th’s onClick
-                                                    openInfo(column.id);          // ← your “info” popup
+                                                    e.stopPropagation();
+                                                    openInfo(column.id);
                                                 }} />
                                             )}
-                                            {/* the column title (split subtitle in parentheses) */}
                                             <div>{column.title.split('(')[0].trim()}</div>
                                             {column.title.includes('(') && (
                                                 <div className="column-subtitle">
@@ -1031,7 +1181,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         <tbody>
                             {filteredRows.map((row, rowIndex) => {
                                 const rowCount = row.jraBody.length;
-
                                 return (
                                     <React.Fragment key={row.id}>
                                         {row.jraBody.map((body, bodyIdx) => (
@@ -1049,7 +1198,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                     const meta = availableColumns.find(c => c.id === colId);
                                                     const cls = meta?.className || "";
 
-                                                    // ─────── GROUP-LEVEL ───────
                                                     if (colId === "nr" && bodyIdx === 0) {
                                                         return (
                                                             <td key={colIdx} rowSpan={rowCount} className={cls}>
@@ -1069,12 +1217,17 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                     <textarea
                                                                         className="aim-textarea-risk-jra"
                                                                         rows={1}
-                                                                        value={row.main}
-                                                                        onChange={e => {
-                                                                            const upd = [...formData.jra];
-                                                                            upd[rowIndex].main = e.target.value;
-                                                                            updateRows(upd);
+                                                                        ref={el => {
+                                                                            const key = `${rowIndex}-${colId}`;
+                                                                            if (el) {
+                                                                                mainStepInputRefs.current[key] = el;
+                                                                            } else {
+                                                                                delete mainStepInputRefs.current[key];
+                                                                            }
                                                                         }}
+                                                                        value={row.main}
+                                                                        onChange={e => handleMainStepInput(rowIndex, colId, e.target.value)}
+                                                                        onFocus={() => handleMainStepFocus(rowIndex, colId)}
                                                                     />
                                                                 </div>
                                                                 <button
@@ -1109,38 +1262,42 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-
-                                                    // ─────── BODY-LEVEL ───────
-
-                                                    // 3. Hazard
                                                     if (colId === "hazards") {
                                                         return (
                                                             <td key={colIdx} className="hazard-cell">
-                                                                {body.hazards.map((hObj, hIdx) => (
-                                                                    <div className="ibra-popup-page-select-container" key={hIdx}>
-                                                                        <div className="ibra-popup-page-select-container">
-                                                                            <input
-                                                                                type="text"
-                                                                                style={{ color: "black", cursor: "text" }}
-                                                                                ref={el => {
-                                                                                    const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
-                                                                                    if (el) {
-                                                                                        hazardsInputRefs.current[key] = el;
-                                                                                    } else {
-                                                                                        delete hazardsInputRefs.current[key];
-                                                                                    }
-                                                                                }}
-                                                                                className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                                                placeholder="Choose Hazard"
-                                                                                value={hObj.hazard}
-                                                                                onChange={e => handleHazardsInput(rowIndex, bodyIdx, hIdx, e.target.value)}
-                                                                                onFocus={() => handleHazardsFocus(rowIndex, bodyIdx, hIdx)}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
+                                                                {body.hazards.map((hObj, hIdx) => {
+                                                                    const isFirst = bodyIdx === 0;
 
-                                                                {/* the floating “+” icon */}
+                                                                    return (
+                                                                        <div className="ibra-popup-page-select-container" key={hIdx}>
+                                                                            <div className="ibra-popup-page-select-container">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    style={{ color: "black", cursor: "text" }}
+                                                                                    ref={el => {
+                                                                                        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+                                                                                        if (el) {
+                                                                                            hazardsInputRefs.current[key] = el;
+                                                                                        } else {
+                                                                                            delete hazardsInputRefs.current[key];
+                                                                                        }
+                                                                                    }}
+                                                                                    readOnly={isFirst}
+                                                                                    className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                                    placeholder="Choose Hazard"
+                                                                                    value={hObj.hazard}
+                                                                                    onChange={e => {
+                                                                                        if (!isFirst) handleHazardsInput(rowIndex, bodyIdx, hIdx, e.target.value);
+                                                                                    }}
+                                                                                    onFocus={() => {
+                                                                                        if (!isFirst) handleHazardsFocus(rowIndex, bodyIdx, hIdx);
+                                                                                    }}
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+
                                                                 <button
                                                                     type="button"
                                                                     className="insert-subrow-button"
@@ -1153,41 +1310,49 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-                                                    // 4. Unwanted Event
                                                     if (colId === "UE") {
                                                         return (
                                                             <td key={colIdx} className={cls} >
-                                                                {/* remove paired sub/control */}
+                                                                {body.UE.map((uObj, uIdx) => {
+                                                                    const isFirst = bodyIdx === 0;
 
-
-                                                                {body.UE.map((uObj, uIdx) => (
-                                                                    <div className="ibra-popup-page-select-container" key={uIdx}>
-                                                                        <div className="ibra-popup-page-select-container">
-                                                                            <input
-                                                                                type="text"
-                                                                                style={{ color: "black", cursor: "text" }}
-                                                                                ref={el => {
-                                                                                    const key = `${rowIndex}-${bodyIdx}-${uIdx}`;
-                                                                                    if (el) {
-                                                                                        unwantedEventRefs.current[key] = el;
-                                                                                    } else {
-                                                                                        delete unwantedEventRefs.current[key];
-                                                                                    }
-                                                                                }}
-                                                                                className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                                                placeholder="Choose Unwanted Event"
-                                                                                value={uObj.ue}
-                                                                                onChange={e => handleUnwantedEventInput(rowIndex, bodyIdx, uIdx, e.target.value)}
-                                                                                onFocus={() => handleUnwantedEventFocus(rowIndex, bodyIdx, uIdx)}
-                                                                            />
+                                                                    return (
+                                                                        <div className="ibra-popup-page-select-container" key={uIdx}>
+                                                                            <div className="ibra-popup-page-select-container">
+                                                                                <textarea
+                                                                                    type="text"
+                                                                                    style={{
+                                                                                        display: "block",
+                                                                                        width: "100%",
+                                                                                        marginBottom: "5px"
+                                                                                    }}
+                                                                                    ref={el => {
+                                                                                        const key = `${rowIndex}-${bodyIdx}-${uIdx}`;
+                                                                                        if (el) {
+                                                                                            unwantedEventRefs.current[key] = el;
+                                                                                        } else {
+                                                                                            delete unwantedEventRefs.current[key];
+                                                                                        }
+                                                                                    }}
+                                                                                    className="aim-textarea-ue-jra"
+                                                                                    placeholder="Choose Unwanted Event"
+                                                                                    value={uObj.ue}
+                                                                                    readOnly={isFirst}
+                                                                                    onChange={e => {
+                                                                                        if (!isFirst) handleUnwantedEventInput(rowIndex, bodyIdx, uIdx, e.target.value);
+                                                                                    }}
+                                                                                    onFocus={() => {
+                                                                                        if (!isFirst) handleUnwantedEventFocus(rowIndex, bodyIdx, uIdx);
+                                                                                    }}
+                                                                                />
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                ))}
+                                                                    );
+                                                                })}
                                                             </td>
                                                         );
                                                     }
 
-                                                    // 6. Sub Task Steps
                                                     if (colId === "sub") {
                                                         return (
                                                             <td key={colIdx} className={cls}>
@@ -1199,8 +1364,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                             title="Remove this control & sub-step"
                                                                             onClick={() => removeSubControl(row.id, body.idBody, sIdx)}
                                                                         />
-
-                                                                        {/* add new paired sub/control at end */}
                                                                         <FontAwesomeIcon
                                                                             icon={faCirclePlus}
                                                                             className="control-icon plus-icon"
@@ -1208,20 +1371,24 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                             onClick={() => insertSubControl(row.id, body.idBody)}
                                                                         />
                                                                         <textarea
-                                                                            key={sIdx}
+                                                                            ref={el => {
+                                                                                const key = `${rowIndex}-${bodyIdx}-${sIdx}`;
+                                                                                if (el) {
+                                                                                    controlsInputRefs.current[key] = el;
+                                                                                } else {
+                                                                                    delete controlsInputRefs.current[key];
+                                                                                }
+                                                                            }}
                                                                             className="aim-textarea-sub-jra"
                                                                             rows={1}
                                                                             value={sObj.task}
                                                                             style={{
-                                                                                display: "block",       // ← force it onto its own line
-                                                                                width: "100%",        // ← optional: make it fill cell width
+                                                                                display: "block",
+                                                                                width: "100%",
                                                                                 marginBottom: "5px"
                                                                             }}
-                                                                            onChange={e => {
-                                                                                const upd = [...formData.jra];
-                                                                                upd[rowIndex].jraBody[bodyIdx].sub[sIdx].task = e.target.value;
-                                                                                updateRows(upd);
-                                                                            }}
+                                                                            onChange={e => handleSubStepInput(rowIndex, bodyIdx, sIdx, e.target.value)}
+                                                                            onFocus={() => handleSubStepFocus(rowIndex, bodyIdx, sIdx)}
                                                                         />
                                                                         <FontAwesomeIcon
                                                                             icon={faMagicWandSparkles}
@@ -1235,7 +1402,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-                                                    // 7. Task Execution
                                                     if (colId === "taskExecution") {
                                                         const TE = body.taskExecution[0];
                                                         return (
@@ -1265,7 +1431,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-                                                    // 8. Controls
                                                     if (colId === "controls") {
                                                         return (
                                                             <td key={colIdx} className={cls}>
@@ -1277,7 +1442,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                             rows={1}
                                                                             value={cObj.control}
                                                                             style={{
-                                                                                display: "block",      // ← optional: make it fill cell width
+                                                                                display: "block",
                                                                                 marginBottom: "5px",
                                                                                 paddingRight: "35px",
                                                                             }}
@@ -1288,7 +1453,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                             }}
                                                                         />
 
-                                                                        {/* magic sparkles */}
                                                                         <FontAwesomeIcon
                                                                             icon={faMagicWandSparkles}
                                                                             className="control-icon-ai magic-icon"
@@ -1310,7 +1474,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                             className="ibra-popup-page-select"
                                                                             value={goObj.go}
                                                                             style={{
-                                                                                display: "block",      // ← optional: make it fill cell width
+                                                                                display: "block",
                                                                                 marginBottom: "5px",
                                                                                 paddingRight: "35px",
                                                                             }}
@@ -1330,7 +1494,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         );
                                                     }
 
-                                                    // else empty
                                                     return <td key={colIdx} />;
                                                 })}
                                             </tr>
@@ -1357,7 +1520,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     <button
                         className="jra-control-popup-btn jra-control-popup-option1"
                         onClick={() => {
-                            // Option 1 logic here…
                             setControlPopup(cp => ({ ...cp, visible: false }));
                         }}
                     >
@@ -1366,7 +1528,6 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     <button
                         className="jra-control-popup-btn jra-control-popup-option2"
                         onClick={() => {
-                            // Option 2 logic here…
                             setControlPopup(cp => ({ ...cp, visible: false }));
                         }}
                     >
@@ -1430,7 +1591,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {unwantedEvents.map((term, i) => (
+                    {filteredUnwantedEvents.map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectUnwantedEventSuggestion(term)}
@@ -1452,12 +1613,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {riskSources.map((term, i) => (
+                    {filteredHazards.map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectHazardsSuggestion(term.term)}
+                            onMouseDown={() => selectHazardsSuggestion(term)}
                         >
-                            {term.term}
+                            {term}
                         </li>
                     ))}
                 </ul>
@@ -1474,10 +1635,54 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredExe.map((term, i) => (
+                    {filteredExe.filter(term => term && term.trim() !== "").map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectResponsibleSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showMainStepDropdown && filteredMainStep.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredMainStep.filter(term => term && term.trim() !== "").map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectMainStepSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showControlsDropdown && filteredControls.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredControls.filter(term => term && term.trim() !== "").map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectSubStepSuggestion(term)}
                         >
                             {term}
                         </li>

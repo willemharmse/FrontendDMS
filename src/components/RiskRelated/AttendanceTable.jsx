@@ -30,17 +30,45 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     ];
 
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (popupRef.current && !popupRef.current.contains(event.target)) {
-                setShowColumnSelector(false);
+        const popupSelector = '.floating-dropdown';
+        const columnSelector = '.column-selector-popup';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest(columnSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector) || e.target.closest(columnSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowDropdown(null);
+            setShowColumnSelector(null);
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
             }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
         };
-    }, []);
+    }, [showDropdown, showColumnSelector]);
 
     const toggleColumn = (columnId) => {
         setShowColumns(prev => {
@@ -90,22 +118,11 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                 throw new Error("Failed to fetch values");
             }
             const data = await response.json();
+            const positions = Array.from(new Set(data.stakeholders.map(d => d.pos))).sort();
+            setDesignations(positions);
             setAuthors(data.stakeholders);
         } catch (error) {
             console.error("Error fetching authors:", error);
-        }
-    };
-
-    const fetchDesignations = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/des`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch values");
-            }
-            const data = await response.json();
-            setDesignations(data.designations);
-        } catch (error) {
-            console.error("Error fetching designations:", error);
         }
     };
 
@@ -124,7 +141,6 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
 
     useEffect(() => {
         fetchAuthors();
-        fetchDesignations();
         fetchSites();
     }, []);
 
@@ -157,7 +173,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
         if (field === "name") {
             const filtered = authors.filter(author =>
                 author.name.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+            );
 
             setFilteredAuthorOptions(prev => ({ ...prev, [index]: filtered }));
             setActiveField("name");
@@ -175,8 +191,8 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
 
         if (field === "designation") {
             const filtered = designations.filter(designation =>
-                designation.designation.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+                designation.toLowerCase().includes(value.toLowerCase())
+            );
 
             setFilteredDesignationOptions(prev => ({ ...prev, [index]: filtered }));
             setActiveField("designation");
@@ -195,7 +211,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
         if (field === "site") { // For company/site field
             const filtered = companies.filter(company =>
                 company.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+            );
 
             setFilteredCompanyOptions(prev => ({ ...prev, [index]: filtered }));
             setActiveField("site");
@@ -220,7 +236,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
             const value = rows[index].name || "";
             const filtered = authors.filter(author =>
                 author.name.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+            );
 
             setFilteredAuthorOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -239,8 +255,8 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
             // Show all designations or filtered options on focus
             const value = rows[index].designation || "";
             const filtered = designations.filter(designation =>
-                designation.designation.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+                designation.toLowerCase().includes(value.toLowerCase())
+            );
 
             setFilteredDesignationOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -259,7 +275,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
             const value = rows[index].site || "";
             const filtered = companies.filter(company =>
                 company.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 15);
+            );
 
             setFilteredCompanyOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -519,9 +535,9 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                         zIndex: 1000
                     }}
                 >
-                    {filteredDesignationOptions[showDropdown].map((designation, i) => (
-                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, "designation", designation.designation)}>
-                            {designation.designation}
+                    {filteredDesignationOptions[showDropdown].filter(term => term && term.trim() !== "").map((designation, i) => (
+                        <li key={i} onMouseDown={() => handleSelectOption(showDropdown, "designation", designation)}>
+                            {designation}
                         </li>
                     ))}
                 </ul>

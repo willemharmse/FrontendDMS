@@ -31,6 +31,45 @@ const DocumentSignaturesTable = ({
   const posInputRefs = useRef([]);
 
   useEffect(() => {
+    const popupSelector = '.floating-dropdown';
+
+    const handleClickOutside = (e) => {
+      const outside =
+        !e.target.closest(popupSelector) &&
+        !e.target.closest('input');
+      if (outside) {
+        closeDropdowns();
+      }
+    };
+
+    const handleScroll = (e) => {
+      const isInsidePopup = e.target.closest(popupSelector);
+      if (!isInsidePopup) {
+        closeDropdowns();
+      }
+
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    };
+
+    const closeDropdowns = () => {
+      setShowNameDropdown(null);
+      setShowPosDropdown(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [showNameDropdown, showPosDropdown]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
@@ -74,7 +113,7 @@ const DocumentSignaturesTable = ({
     ))
       // drop any blank or whitespace-only just in case
       .filter(n => n?.trim() !== "");
-    const opts = base.slice(0, 15);
+    const opts = base;
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
@@ -94,8 +133,7 @@ const DocumentSignaturesTable = ({
       .filter(n =>
         n.toLowerCase().includes(value.toLowerCase()) &&
         (!selectedNames.has(n) || n === rows[index].name)
-      )
-      .slice(0, 15);
+      );
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
@@ -124,7 +162,7 @@ const DocumentSignaturesTable = ({
   const openPosDropdown = (index, all = false) => {
     const base = posLists
       .filter(p => p?.trim() !== "");
-    const opts = base.slice(0, 15);
+    const opts = base;
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
@@ -133,8 +171,7 @@ const DocumentSignaturesTable = ({
   const handlePosInputChange = (index, value) => {
     handleRowChange({ target: { value } }, index, "pos");
     const opts = posLists
-      .filter(p => p.toLowerCase().includes(value.toLowerCase()))
-      .slice(0, 15);
+      .filter(p => p.toLowerCase().includes(value.toLowerCase()));
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
@@ -195,7 +232,6 @@ const DocumentSignaturesTable = ({
                     style={{ fontSize: "14px" }}
                     onChange={e => handleNameInputChange(index, e.target.value)}
                     onFocus={() => openNameDropdown(index, true)}
-                    onBlur={() => setTimeout(() => setShowNameDropdown(null), 200)}
                     ref={el => (nameInputRefs.current[index] = el)}
                   />
                 </td>
@@ -207,7 +243,6 @@ const DocumentSignaturesTable = ({
                     style={{ fontSize: "14px" }}
                     onChange={e => handlePosInputChange(index, e.target.value)}
                     onFocus={() => openPosDropdown(index, true)}
-                    onBlur={() => setTimeout(() => setShowPosDropdown(null), 200)}
                     ref={el => (posInputRefs.current[index] = el)}
                   />
                 </td>

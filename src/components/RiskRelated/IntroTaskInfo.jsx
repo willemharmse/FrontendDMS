@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const IntroTaskInfo = ({ formData, setFormData }) => {
     const [groupedAreas, setGroupedAreas] = useState({});
@@ -24,62 +25,57 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     const [filteredLeader, setFilteredLeader] = useState([]);
     const [showLeaderDropdown, setShowLeaderDropdown] = useState(false);
     const leaderInputRef = useRef(null);
-    const [filteredStaff, setFilteredStaff] = useState([]);
-    const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-    const [activeStaffMemberId, setActiveStaffMemberId] = useState(null);
-
     const [functionalOwners, setFunctionalOwners] = useState([]);
+    const [posLists, setPosLists] = useState([]);
 
-    const handleMemberChange = (id, value) => {
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+                const data = res.data.stakeholders;
+
+                const positions = Array.from(new Set(data.map(d => d.pos))).sort();
+
+                setPosLists(positions);
+            } catch (error) {
+                console.log(error)
+            }
+        };
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        // collect all non-blank R values
+        const seen = new Set();
+        formData.jra.forEach(block =>
+            block.jraBody.forEach(entry =>
+                entry.taskExecution.forEach(te => {
+                    seen.add(te.R.trim());
+                })
+            )
+        );
+
+        // build new members array
+        const newMembers = Array.from(seen).map(rVal => ({
+            _id: uuidv4(),
+            member: rVal
+        }));
+
+        // write them into formData.introInfo.members
         setFormData(prev => ({
             ...prev,
             introInfo: {
                 ...prev.introInfo,
-                members: prev.introInfo.members.map(m =>
-                    m._id === id ? { ...m, member: value } : m
-                )
+                members: newMembers
             }
         }));
-    };
-
-    const addMember = (index) => {
-        setFormData(prev => {
-            const newArr = [...prev.introInfo.members];
-            newArr.splice(index + 1, 0, { _id: uuidv4(), member: "" });
-            return {
-                ...prev,
-                introInfo: { ...prev.introInfo, members: newArr }
-            };
-        });
-    };
-
-    const removeMember = (id) => {
-        setFormData(prev => {
-            const curr = prev.introInfo.members;
-            // if there's only one member left, bail out
-            if (curr.length <= 1) {
-                toast.warn("You must have at least one staff value", {
-                    closeButton: false,
-                    autoClose: 800,
-                });
-                return prev;
-            }
-            return {
-                ...prev,
-                introInfo: {
-                    ...prev.introInfo,
-                    members: curr.filter(m => m._id !== id)
-                }
-            };
-        });
-    };
+    }, [formData.jra]);
 
     const closeAllDropdowns = () => {
         setShowMainAreasDropdown(false);
         setShowSubAreasDropdown(false);
         setShowLeaderDropdown(false);
         setShowOwnerDropdown(false);
-        setShowStaffDropdown(false);
     };
 
     useEffect(() => {
@@ -99,6 +95,10 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             if (!isInsidePopup) {
                 closeDropdowns();
             }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
         };
 
         const closeDropdowns = () => {
@@ -106,7 +106,6 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             setShowSubAreasDropdown(false);
             setShowLeaderDropdown(false);
             setShowOwnerDropdown(false);
-            setShowStaffDropdown(false);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -118,7 +117,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             document.removeEventListener('touchstart', handleClickOutside);
             window.removeEventListener('scroll', handleScroll, true);
         };
-    }, [showMainAreasDropdown, showSubAreasDropdown, showLeaderDropdown, showOwnerDropdown, showStaffDropdown]);
+    }, [showMainAreasDropdown, showSubAreasDropdown, showLeaderDropdown, showOwnerDropdown]);
 
     useEffect(() => {
         async function fetchValues() {
@@ -196,8 +195,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         }
 
         const matches = options
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
 
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
@@ -226,7 +224,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             matches = Object.values(groupedAreas).flat();
         }
 
-        matches = matches.slice(0, 15);
+        matches = matches;
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
 
@@ -264,8 +262,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         }));
 
         const matches = mainAreas
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredMainAreas(matches);
         setShowMainAreasDropdown(true);
 
@@ -283,7 +280,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     // On focus, show all options
     const handleMainAreasFocus = () => {
         closeAllDropdowns();
-        const matches = mainAreas.slice(0, 15);
+        const matches = mainAreas;
         setFilteredMainAreas(matches);
         setShowMainAreasDropdown(true);
 
@@ -321,8 +318,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         }));
 
         const matches = functionalOwners
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredOwner(matches);
         setShowOwnerDropdown(true);
 
@@ -340,7 +336,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     // On focus, show all options
     const handleOwnerFocus = () => {
         closeAllDropdowns();
-        const matches = functionalOwners.slice(0, 15);
+        const matches = functionalOwners;
         setFilteredOwner(matches);
         setShowOwnerDropdown(true);
 
@@ -377,9 +373,8 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             }
         }));
 
-        const matches = functionalOwners
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+        const matches = posLists
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredLeader(matches);
         setShowLeaderDropdown(true);
 
@@ -397,7 +392,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     // On focus, show all options
     const handleLeaderFocus = () => {
         closeAllDropdowns();
-        const matches = functionalOwners.slice(0, 15);
+        const matches = posLists;
         setFilteredLeader(matches);
         setShowLeaderDropdown(true);
 
@@ -424,50 +419,10 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         setShowLeaderDropdown(false);
     };
 
-    const handleStaffInput = (id, value, e) => {
-        closeAllDropdowns();
-        // update the typed name
-        handleMemberChange(id, value);
-        // filter your staff list
-        const matches = functionalOwners
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
-        setFilteredStaff(matches);
-        setShowStaffDropdown(true);
-        setActiveStaffMemberId(id);
-        // position it under the current input
-        const rect = e.target.getBoundingClientRect();
-        setDropdownPosition({
-            top: rect.bottom + window.scrollY + 5,
-            left: rect.left + window.scrollX,
-            width: rect.width
-        });
-    };
-
-    const handleStaffFocus = (id, e) => {
-        closeAllDropdowns();
-        // show all staff on focus
-        setFilteredStaff(functionalOwners.slice(0, 15));
-        setShowStaffDropdown(true);
-        setActiveStaffMemberId(id);
-        const rect = e.target.getBoundingClientRect();
-        setDropdownPosition({
-            top: rect.bottom + window.scrollY + 5,
-            left: rect.left + window.scrollX,
-            width: rect.width
-        });
-    };
-
-    const selectStaffSuggestion = (id, value) => {
-        handleMemberChange(id, value);
-        setShowStaffDropdown(false);
-        setActiveStaffMemberId(null);
-    };
-
     return (
         <div className="input-row">
             <div className="input-box-ref">
-                <h3 className="font-fam-labels">Introductory Task Information <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">JRA Task Information <span className="required-field">*</span></h3>
                 <table className="table-borders-jra-info">
                     <tbody>
                         <tr>
@@ -591,37 +546,6 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <th scope="row" className="jra-info-table-header">Other Team Members Involved in this Task</th>
-                            <td>
-                                <div className="members-container-jra-info">
-                                    {formData.introInfo.members.map((m, idx) => (
-                                        <div key={m._id} className="member-input-row-jra-info">
-                                            <div className="jra-info-popup-page-select-container">
-                                                <input
-                                                    type="text"
-                                                    value={m.member}
-                                                    placeholder="Choose Team Member"
-                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                    onChange={e => handleStaffInput(m._id, e.target.value, e)}
-                                                    onFocus={e => handleStaffFocus(m._id, e)}
-                                                />
-                                            </div>
-                                            <FontAwesomeIcon
-                                                icon={faPlusCircle}
-                                                className="icon-jra-info add-icon-jra-info"
-                                                onClick={() => addMember(idx)}
-                                            />
-                                            <FontAwesomeIcon
-                                                icon={faTrash}
-                                                className="icon-jra-info delete-icon-jra-info"
-                                                onClick={() => removeMember(m._id)}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
                 <div className="jra-info-scope-group" style={{ marginTop: "15px" }}>
@@ -629,7 +553,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         <div className="risk-popup-page-column-half-scope">
                             <div className="other-activities-group">
                                 <label className="jra-info-risk-label">Are there other activities affected by this task? <span className="required-field">*</span></label>
-                                <div className="yes-no-checkboxes">
+                                <div className="yes-no-checkboxes-2">
                                     <label>
                                         <input
                                             type="checkbox"
@@ -850,30 +774,6 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                 </div>
             </div>
 
-
-            {showStaffDropdown && filteredStaff.length > 0 && (
-                <ul
-                    className="floating-dropdown"
-                    style={{
-                        position: 'fixed',
-                        top: dropdownPosition.top,
-                        left: dropdownPosition.left,
-                        width: dropdownPosition.width,
-                        zIndex: 1000
-                    }}
-                >
-                    {filteredStaff.sort().map((term, i) => (
-                        <li
-                            key={i}
-                            onMouseDown={() => selectStaffSuggestion(activeStaffMemberId, term.owner)}
-                        >
-                            {term.owner}
-                        </li>
-                    ))
-                    }
-                </ul >
-            )}
-
             {showMainAreasDropdown && filteredMainAreas.length > 0 && (
                 <ul
                     className="floating-dropdown"
@@ -929,12 +829,12 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredLeader.sort().map((term, i) => (
+                    {filteredLeader.filter(term => term && term.trim() !== "").sort().map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectLeaderSuggestion(term.owner)}
+                            onMouseDown={() => selectLeaderSuggestion(term)}
                         >
-                            {term.owner}
+                            {term}
                         </li>
                     ))}
                 </ul>

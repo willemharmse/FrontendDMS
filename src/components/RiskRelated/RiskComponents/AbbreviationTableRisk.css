@@ -256,6 +256,10 @@
     /* Border color matches the background */
 }
 
+.abbr-slim {
+    height: 10px !important;
+}
+
 /* Custom checkmark with ::after for the checked state */
 .checkbox-inp-abbr:checked::after {
     content: "";

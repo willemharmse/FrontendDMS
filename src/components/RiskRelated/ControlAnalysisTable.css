@@ -26,9 +26,74 @@
 }
 
 .control-analysis-nr {
+    width: 2.5%;
+    padding: 10px;
+    text-align: center;
+    border-right: 1px solid #D9D9D9 !important;
+    color: black;
+    font-size: 15px;
+    font-weight: bold !important;
+}
+
+.control-analysis-notes {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    border-right: 1px solid #D9D9D9 !important;
+    color: black;
+    font-size: 15px;
+    font-weight: bold !important;
+}
+
+.drag-handle {
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* row under pointer when dragging over */
+.drag-over {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* row being dragged */
+.dragging {
+    opacity: 0.5;
+}
+
+.control-analysis-date {
     width: 5%;
     padding: 10px;
     text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    border-right: 1px solid #D9D9D9 !important;
+    color: black;
+    font-size: 15px;
+    font-weight: bold !important;
+}
+
+.control-analysis-responsible {
+    width: 7%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    background-color: #D9D9D9;
+    border-right: 1px solid #D9D9D9 !important;
+    color: black;
+    font-size: 15px;
+    font-weight: bold !important;
+}
+
+.control-analysis-action {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
     background-color: #D9D9D9;
     border-right: 1px solid #D9D9D9 !important;
     color: black;
@@ -37,7 +102,7 @@
 }
 
 .control-analysis-control {
-    width: 20%;
+    width: 15%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -49,7 +114,7 @@
 }
 
 .control-analysis-critcal {
-    width: 5%;
+    width: 3%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -61,7 +126,7 @@
 }
 
 .control-analysis-hiearchy {
-    width: 10%;
+    width: 7%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -92,6 +157,72 @@
     /* optional spacing below */
 }
 
+.table-wrapper-cea {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    cursor: grab;
+    scrollbar-width: auto !important;
+    /* Firefox */
+}
+
+.table-wrapper-cea::-webkit-scrollbar {
+    /* show it in Chrome/Safari */
+    display: block !important;
+    height: 12px;
+    /* adjust thickness if you like */
+}
+
+/* Optional: style the WebKit scrollbar thumb/track */
+.table-wrapper-cea::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-wrapper-cea::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 6px;
+}
+
+.table-wrapper-cea.grabbing {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.table-borders-cea {
+    min-width: 100%;
+    width: max-content;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 2px solid #BFBFBF;
+    table-layout: fixed !important;
+    /* Outer border */
+}
+
+.table-borders-cea th,
+.table-borders-cea td {
+    white-space: normal !important;
+    border: 1px solid #BFBFBF;
+    /* Inner cell borders */
+    padding: 8px;
+}
+
+.table-borders-cea th {
+    font-weight: bold;
+}
+
+.table-borders-cea td {
+    border-bottom: 1px solid #BFBFBF !important;
+    font-size: 14px;
+}
+
+.table-borders-cea th {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 5;
+}
+
 .control-analysis-label {
     /* each label stacks naturally in the flex column */
     font-size: 14px;
@@ -117,7 +248,7 @@
 }
 
 .control-analysis-act {
-    width: 7%;
+    width: 4%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -129,7 +260,7 @@
 }
 
 .control-analysis-activation {
-    width: 10%;
+    width: 7%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -141,7 +272,7 @@
 }
 
 .control-analysis-cons {
-    width: 10%;
+    width: 6%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -153,7 +284,7 @@
 }
 
 .control-analysis-quality {
-    width: 8%;
+    width: 5%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -165,19 +296,7 @@
 }
 
 .control-analysis-cer {
-    width: 10%;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #D9D9D9 !important;
-    background-color: #D9D9D9;
-    color: black;
-    font-size: 15px;
-    font-weight: bold !important;
-}
-
-.control-analysis-notes {
-    width: 10%;
+    width: 5%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;

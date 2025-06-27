@@ -284,6 +284,10 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
             if (!isInsidePopup) {
                 closeDropdowns();
             }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
         };
 
         const closeDropdowns = () => {
@@ -593,8 +597,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
         closeAllDropdowns();
         setSelectedUE(value);
         const matches = ueOptions
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredUE(matches);
         setShowUEDropdown(true);
 
@@ -612,7 +615,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
     // On focus, show all options
     const handleUEFocus = () => {
         closeAllDropdowns();
-        const matches = ueOptions.slice(0, 15);
+        const matches = ueOptions;
         setFilteredUE(matches);
         setShowUEDropdown(true);
 
@@ -646,8 +649,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
         }
 
         const matches = options
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
 
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
@@ -676,7 +678,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
             matches = Object.values(groupedAreas).flat();
         }
 
-        matches = matches.slice(0, 15);
+        matches = matches;
         setFilteredSubAreas(matches);
         setShowSubAreasDropdown(true);
 
@@ -701,8 +703,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
         closeAllDropdowns();
         setSelectedMainArea(value);
         const matches = mainAreas
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredMainAreas(matches);
         setShowMainAreasDropdown(true);
 
@@ -720,7 +721,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
     // On focus, show all options
     const handleMainAreasFocus = () => {
         closeAllDropdowns();
-        const matches = mainAreas.slice(0, 15);
+        const matches = mainAreas;
         setFilteredMainAreas(matches);
         setShowMainAreasDropdown(true);
 
@@ -745,8 +746,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
         closeAllDropdowns();
         setSelectedOwner(value);
         const matches = functionalOwners
-            .filter(opt => opt.owner.toLowerCase().includes(value.toLowerCase()))
-            .slice(0, 15);
+            .filter(opt => opt.owner.toLowerCase().includes(value.toLowerCase()));
         setFilteredOwners(matches);
         setShowOwnersDropdown(true);
 
@@ -764,7 +764,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
     // On focus, show all options
     const handleOwnerFocus = () => {
         closeAllDropdowns();
-        const matches = functionalOwners.slice(0, 15);
+        const matches = functionalOwners;
         setFilteredOwners(matches);
         setShowOwnersDropdown(true);
 

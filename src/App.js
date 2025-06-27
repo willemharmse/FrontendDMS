@@ -40,6 +40,7 @@ import ControlAttributes from './components/RiskRelated/ControlAttributes';
 import RiskDocumentsIBRA from './components/RiskRelated/RiskDocuments/RiskDocumentsIBRA';
 import RiskManagementPageBTA from './components/RiskAssessmentPages/RiskManagementPageBTA';
 import CreatePageStandards from './components/DocumentCreationPages/CreatePageStandards';
+import RiskSIPage from './components/RiskRelated/RiskValueChanges/RiskSIPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -133,6 +134,7 @@ function App() {
         <Route path="FrontendDMS/riskBTA/:type" element={<RiskManagementPageBTA />} />
         <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
         <Route path='FrontendDMS/generatedIBRADocs' element={<RiskDocumentsIBRA />} />
+        <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

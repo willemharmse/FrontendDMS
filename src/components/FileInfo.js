@@ -71,25 +71,25 @@ const FileInfo = () => {
   });
   const [count, setCount] = useState(""); // Placeholder for unread notifications count
 
-  useEffect(() => {
-    const fetchNotificationCount = async () => {
-      const route = `/api/notifications/count`;
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch notification count');
+  const fetchNotificationCount = async () => {
+    const route = `/api/notifications/count`;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
-        const data = await response.json();
-        setCount(data.notifications);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch notification count');
       }
-    };
+      const data = await response.json();
+      setCount(data.notifications);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchNotificationCount();
   }, []);
 
@@ -566,7 +566,7 @@ const FileInfo = () => {
             <div className="burger-menu-icon-um">
               <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
             </div>
-            {showNotifications && (<Notifications setClose={setShowNotifications} />)}
+            {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
             {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
           </div>
         </div>

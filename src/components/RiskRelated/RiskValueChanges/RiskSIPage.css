@@ -1,0 +1,351 @@
+.risk-admin-draft-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
+}
+
+.main-box-admin-info {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Floating shadow effect */
+    position: relative;
+    z-index: 5;
+    /* Ensures the main content stays below the sidebar */
+    overflow: hidden;
+    /* Allows scrolling if content overflows */
+}
+
+.admin-title {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.draft-list-admin {
+    height: calc(100% - 90px);
+    /* Set a fixed height */
+    overflow-y: auto;
+    /* Allow scrolling */
+    padding: 10px;
+    border: 1px solid #ddd;
+    /* Optional: Adds a subtle border */
+    background-color: #f9f9f9;
+}
+
+.cent-risk-admin-draft {
+    text-align: center;
+}
+
+.edit-row-button {
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.no-drafts {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+}
+
+.draft-card {
+    background: #ecf0f1;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draft-card h3 {
+    margin: 0;
+    color: #000000;
+}
+
+.draft-details {
+    justify-content: center;
+    text-align: center;
+}
+
+.draft-card p {
+    font-size: 14px;
+    color: #333;
+    word-wrap: break-word;
+}
+
+.draft-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.approve-btn {
+    background-color: #7EAC89;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.approve-btn:hover {
+    background-color: #7EAC89;
+}
+
+.decline-btn {
+    background-color: #CB6F6F;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.decline-btn:hover {
+    background-color: #CB6F6F;
+}
+
+.error-message {
+    color: red;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* For modern browsers */
+.table-container-risk-admin-approve::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.table-container-risk-admin-approve::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.table-container-risk-admin-approve::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.table-container-risk-admin-approve::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.table-container-risk-admin-approve {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.table-container-risk-admin-approve {
+    height: calc(100%);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.risk-admin-approve-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.risk-admin-approve-head {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+.risk-admin-approve-tr {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.risk-admin-approve-th {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.risk-admin-approve-th-index {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 5%;
+}
+
+.risk-admin-approve-th-type {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 10%;
+}
+
+.risk-admin-approve-th-item {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 10%;
+}
+
+.risk-admin-approve-th-desc {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 25%;
+}
+
+.risk-admin-approve-th-user {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 15%;
+}
+
+.risk-admin-approve-th-status {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 10%;
+}
+
+.risk-admin-approve-th-date {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 10%;
+}
+
+.risk-admin-approve-th-action {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-family: Arial;
+    font-size: 14px;
+    width: 5%;
+}
+
+.popup-overlay-risk-admin-approve {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-container-risk-admin-approve {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    text-align: center;
+    position: relative;
+    /* For positioning the close button */
+}
+
+.popup-container-risk-admin-approve h3 {
+    margin-top: 0;
+}
+
+.popup-container-risk-admin-approve p {
+    margin-bottom: 3px;
+}
+
+.popup-actions-risk-admin-approve {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.popup-actions-risk-admin-approve button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.approve-btn-risk-admin-approve {
+    background-color: #7EAC89;
+    color: white;
+}
+
+.decline-btn-risk-admin-approve {
+    background-color: #CB6F6F;
+    color: white;
+}
+
+.cancel-btn-risk-admin-approve {
+    background-color: #9E9E9E;
+    color: rgb(0, 0, 0);
+}
+
+.popup-comment-textbox {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #333;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    /* Ensure padding is included in the width */
+}
+
+.popup-comment-textbox:focus {
+    outline: none;
+    border-color: #4CAF50;
+    /* Green border on focus */
+    background-color: #fff;
+}

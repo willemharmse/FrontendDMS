@@ -13,12 +13,6 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
 
     const handleFileChange = (event) => {
         const selected = Array.from(event.target.files);
-        const newFiles = selected.map((file, index) => ({
-            nr: formData.supportingDocuments.length + index + 1,
-            name: file.name,
-            file: file,
-            note: ""
-        }));
 
         const updatedFiles = [
             ...formData.supportingDocuments,
@@ -30,17 +24,9 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
             }))
         ];
 
-        const existingRefs = formData.references || [];
-        const newRefEntries = selected.map((file, index) => ({
-            nr: existingRefs.length + index + 1,
-            ref: (file.name),
-            refDesc: ""
-        }));
-
         setFormData({
             ...formData,
-            supportingDocuments: updatedFiles,
-            references: [...existingRefs, ...newRefEntries]
+            supportingDocuments: updatedFiles
         }
         );
 
@@ -48,49 +34,30 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
     };
 
     const handleRemoveFile = (indexToRemove) => {
-        const removedName = formData.supportingDocuments[indexToRemove].name;
         const updatedDocuments = formData.supportingDocuments
             .filter((_, i) => i !== indexToRemove)
             .map((doc, i) => ({ ...doc, nr: i + 1 }));
 
-        const updatedRefs = (formData.references || [])
-            .filter(entry => entry.ref !== removeFileExtension(removedName))
-            .map((entry, i) => ({ ...entry, nr: i + 1 }));
-
         setFormData({
             ...formData,
             supportingDocuments: updatedDocuments,
-            references: updatedRefs
         });
 
         setSelectedFiles(updatedDocuments);
-    };
-
-    const handleNoteChange = (index, newNote) => {
-        const updated = formData.supportingDocuments.map((doc, i) =>
-            i === index
-                ? { ...doc, note: newNote }
-                : doc
-        );
-        setFormData({
-            ...formData,
-            supportingDocuments: updated
-        });
-        setSelectedFiles(updated);
     };
 
     return (
         <div className="input-row">
             <div className="input-box-ref">
 
-                <h3 className="font-fam-labels">Supporting Documents</h3>
+                <h3 className="font-fam-labels">External Support Documents</h3>
 
                 {formData.supportingDocuments.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="refColCen refNum" style={{ width: "5%" }}>Nr</th>
-                                <th className="refColCen refRef" style={{ width: "90%" }}>Document Name</th>
+                                <th className="refColCen refRef" style={{ width: "90%" }}>Name</th>
                                 <th className="refColCen refBut" style={{ width: "5%" }}>Action</th>
                             </tr>
                         </thead>

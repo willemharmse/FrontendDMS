@@ -78,7 +78,7 @@
 
 .jra-info-scope-group {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     /* Centers horizontally */
     align-items: center;
     /* Centers vertically */
@@ -103,7 +103,7 @@
 /* container for question + yes/no row */
 .other-activities-group {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     /* space between label and checkbox group */
 }
@@ -126,6 +126,29 @@
 }
 
 .yes-no-checkboxes input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+/* inline yes/no checkboxes */
+.yes-no-checkboxes-2 {
+    display: flex;
+    gap: 12px;
+    margin-left: 48px;
+    /* space between “Yes” and “No” */
+}
+
+.yes-no-checkboxes-2 label {
+    display: flex;
+    align-items: center;
+    font-family: Arial;
+    gap: 4px;
+    /* space between box and text */
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.yes-no-checkboxes-2 input[type="checkbox"] {
     width: 16px;
     height: 16px;
 }

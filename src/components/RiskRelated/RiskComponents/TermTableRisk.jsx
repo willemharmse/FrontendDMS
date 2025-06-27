@@ -28,6 +28,34 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
     }));
   };
 
+
+  const handleTermUpdate = (updatedTerm, oldTerm) => {
+    // 1) Swap out the code in usedAbbrCodes
+    setUsedTermCodes(prev =>
+      prev.map(code => (code === oldTerm ? updatedTerm.term : code))
+    );
+
+    // 2) Update the selectedAbbrs Set
+    setSelectedTerms(prev => {
+      const next = new Set(prev);
+      if (next.has(oldTerm)) {
+        next.delete(oldTerm);
+        next.add(updatedTerm.term);
+      }
+      return next;
+    });
+
+    // 3) Remap the rows in formData.abbrRows
+    setFormData(prev => ({
+      ...prev,
+      termRows: prev.termRows.map(row =>
+        row.term === oldTerm
+          ? { term: updatedTerm.term + " *", definition: updatedTerm.definition }
+          : row
+      ),
+    }));
+  };
+
   const fetchValues = async () => {
     const route = `/api/riskInfo/def`;
     try {
@@ -107,7 +135,10 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
           onAdd={handleNewTerm}
         />
 
-        {isManageOpen && <ManageRiskDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageRiskDefinitions closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleTermUpdate}
+          userID={userID}
+          setTermData={setTermData}
+          onAdd={handleNewTerm} />}
 
         {popupVisible && (
           <div className="popup-overlay-terms">
@@ -199,18 +230,19 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
                     <button
                       className="remove-row-button"
                       onClick={() => {
+                        const cleanTerm = row.term.replace(/\s*\*$/, "");
                         // Remove abbreviation from table and the selected abbreviations set
                         setFormData({
                           ...formData,
                           termRows: formData.termRows.filter((_, i) => i !== index),
                         });
                         setUsedTermCodes(
-                          usedTermCodes.filter((term) => term !== row.term)
+                          usedTermCodes.filter((term) => term !== cleanTerm)
                         );
 
                         // Update the selectedAbbrs state to reflect the removal
                         const newSelectedTerms = new Set(selectedTerms);
-                        newSelectedTerms.delete(row.term);
+                        newSelectedTerms.delete(cleanTerm);
                         setSelectedTerms(newSelectedTerms);
                       }}
                     >

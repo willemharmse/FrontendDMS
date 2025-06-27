@@ -93,7 +93,7 @@ const DocumentSignaturesRiskTable = ({
 
   const openNameDropdown = (index) => {
     // show all except other selected
-    const opts = nameLists.slice(0, 15);
+    const opts = nameLists;
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
@@ -110,8 +110,7 @@ const DocumentSignaturesRiskTable = ({
     );
 
     const opts = nameLists
-      .filter(n => n.toLowerCase().includes(value.toLowerCase()))
-      .slice(0, 15);
+      .filter(n => n.toLowerCase().includes(value.toLowerCase()));
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
@@ -133,7 +132,7 @@ const DocumentSignaturesRiskTable = ({
   const openPosDropdown = (index) => {
     const base = posLists
       .filter(p => p?.trim() !== "");
-    const opts = base.slice(0, 15);
+    const opts = base;
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
@@ -142,8 +141,7 @@ const DocumentSignaturesRiskTable = ({
   const handlePosInputChange = (index, value) => {
     handleRowChange({ target: { value } }, index, "pos");
     const opts = posLists
-      .filter(p => p.toLowerCase().includes(value.toLowerCase()))
-      .slice(0, 15);
+      .filter(p => p.toLowerCase().includes(value.toLowerCase()));
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
@@ -153,6 +151,47 @@ const DocumentSignaturesRiskTable = ({
     handleRowChange({ target: { value: pos } }, index, "pos");
     setShowPosDropdown(null);
   };
+
+  useEffect(() => {
+    const popupSelector = '.floating-dropdown';
+
+    const handleClickOutside = e => {
+      const outside =
+        !e.target.closest(popupSelector) &&
+        !e.target.closest('input');
+      if (outside) {
+        closeDropdowns();
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }
+    };
+
+    const handleScroll = e => {
+      const isInsidePopup = e.target.closest(popupSelector);
+      if (!isInsidePopup) {
+        closeDropdowns();
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }
+    };
+
+    const closeDropdowns = () => {
+      setShowNameDropdown(null);
+      setShowPosDropdown(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [showNameDropdown, showPosDropdown]);
 
   return (
     <div className="input-row">
@@ -193,7 +232,6 @@ const DocumentSignaturesRiskTable = ({
                     value={row.name}
                     onFocus={() => openNameDropdown(idx)}
                     onChange={e => handleNameInputChange(idx, e.target.value)}
-                    onBlur={() => setTimeout(() => setShowNameDropdown(null), 200)}
                     ref={el => (nameInputRefs.current[idx] = el)}
                   />
                 </td>
@@ -205,7 +243,6 @@ const DocumentSignaturesRiskTable = ({
                     style={{ fontSize: "14px" }}
                     onFocus={() => openPosDropdown(idx)}
                     onChange={e => handlePosInputChange(idx, e.target.value)}
-                    onBlur={() => setTimeout(() => setShowPosDropdown(null), 200)}
                     ref={el => (posInputRefs.current[idx] = el)}
                   />
                 </td>
@@ -243,7 +280,7 @@ const DocumentSignaturesRiskTable = ({
               position: "fixed",
               top: dropdownPosition.top,
               left: dropdownPosition.left,
-              width: dropdownPosition.width
+              width: dropdownPosition.width,
             }}
           >
             {filteredNameOptions[showNameDropdown].map((n, i) => (

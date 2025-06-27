@@ -3,7 +3,7 @@ import "./Notifications.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-icons";
 
-const Notifications = ({ setClose }) => {
+const Notifications = ({ setClose, getCount }) => {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
@@ -24,6 +24,7 @@ const Notifications = ({ setClose }) => {
                 const data = await response.json();
 
                 setNotifications(data.notifications);
+                getCount();
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
             }
@@ -51,6 +52,8 @@ const Notifications = ({ setClose }) => {
                     read: true
                 }))
             );
+
+            getCount();
         } catch (err) {
             console.error("Error deleting notification:", err);
         }
@@ -70,6 +73,7 @@ const Notifications = ({ setClose }) => {
             }
 
             setNotifications([]);
+            getCount();
         } catch (err) {
             console.error("Error deleting notification:", err);
         }
@@ -89,6 +93,7 @@ const Notifications = ({ setClose }) => {
             }
 
             setNotifications((prev) => prev.filter((n) => n._id !== id));
+            getCount();
         } catch (err) {
             console.error("Error deleting notification:", err);
         }
@@ -111,6 +116,7 @@ const Notifications = ({ setClose }) => {
             setNotifications((prev) =>
                 prev.map((n) => (n._id === id ? { ...n, read: true } : n))
             );
+            getCount();
         } catch (err) {
             console.error("Error marking notification as read:", err);
         }
@@ -130,7 +136,7 @@ const Notifications = ({ setClose }) => {
                     <div className="notifications-title-icons">
                         <FontAwesomeIcon
                             icon={faBroom}
-                            title="Clear All"
+                            title="Mark All As Read"
                             className="notifications-clear-all-icon"
                             onClick={clearAllNotifications}
                         />

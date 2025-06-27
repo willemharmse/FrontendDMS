@@ -169,6 +169,44 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         updateRow(index, field, value);
     };
 
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown-proc';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowARDropdown({ index: null, field: "" });
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showARDropdown]);
+
     return (
         <div className="input-row">
             <div className={`proc-box ${error ? "error-proc" : ""}`}>
@@ -299,7 +337,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.accountable));
                                                             setShowARDropdown({ index, field: "responsible" });
                                                         }}
-                                                        onBlur={() => setTimeout(() => setShowARDropdown({ index: null, field: "" }), 200)}
                                                     />
                                                 </div>
 
@@ -326,7 +363,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.responsible));
                                                             setShowARDropdown({ index, field: "accountable" });
                                                         }}
-                                                        onBlur={() => setTimeout(() => setShowARDropdown({ index: null, field: "" }), 200)}
                                                     />
                                                 </div>
                                             </div>

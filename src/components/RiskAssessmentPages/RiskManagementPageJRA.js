@@ -27,6 +27,7 @@ import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import IntroTaskInfo from "../RiskRelated/IntroTaskInfo";
 import PicturesTable from "../CreatePage/PicturesTable";
+import OtherTeam from "../RiskRelated/OtherTeam";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -321,8 +322,8 @@ const RiskManagementPageJRA = () => {
                 jraBody: [
                     {
                         idBody: uuidv4(),
-                        hazards: [{ hazard: "" }],            // now an array, one hazard per sub-step
-                        UE: [{ ue: "" }],                 // array of unwanted-events
+                        hazards: [{ hazard: "Work Execution" }],            // now an array, one hazard per sub-step
+                        UE: [{ ue: "Non-adherence to task step requirements / specifications" }],                 // array of unwanted-events
                         sub: [{ task: "" }],    // array of sub-step objects
                         taskExecution: [{          // keep as object, A and R dropdowns
                             R: ""
@@ -809,7 +810,7 @@ const RiskManagementPageJRA = () => {
 
     const handleGenerateARegister = async () => {
         const dataToStore = {
-            formData
+            attendance: formData.attendance
         };
 
         if (formData.attendance.some(row => !row.name.trim())) {
@@ -855,7 +856,7 @@ const RiskManagementPageJRA = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-risk`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-attend-xlsx`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -867,7 +868,7 @@ const RiskManagementPageJRA = () => {
             if (!response.ok) throw new Error("Failed to generate document");
 
             const blob = await response.blob();
-            saveAs(blob, `${documentName}.docx`);
+            saveAs(blob, `${documentName}.xlsx`);
             setLoading(false);
             //saveAs(blob, `${documentName}.pdf`);
         } catch (error) {
@@ -993,7 +994,7 @@ const RiskManagementPageJRA = () => {
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
-                    <div className="input-row-risk-create">
+                    <div className="input-row-risk-create" onclick={console.log(formData)}>
                         <div className={`input-box-title-risk-create ${errors.title ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
                             <div className="input-group-risk-create">
@@ -1047,6 +1048,7 @@ const RiskManagementPageJRA = () => {
                     <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />
+                    <OtherTeam formData={formData} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
 

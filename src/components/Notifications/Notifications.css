@@ -63,7 +63,7 @@
 .notifications-badge {
     position: absolute;
     top: 5px;
-    right: -9px;
+    right: -1px;
     background: #e53935;
     color: #fff;
     font-size: 12px;

@@ -327,17 +327,44 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const popupRef = useRef(null);
 
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (popupRef.current && !popupRef.current.contains(event.target)) {
-                setShowColumnSelector(false);
+        const popupSelector = '.floating-dropdown';
+        const columnSelector = '.column-selector-popup';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest(columnSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
             }
         };
 
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector) || e.target.closest(columnSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowColumnSelector(null);
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
         };
-    }, []);
+    }, [showColumnSelector]);
 
     const insertRowAt = (insertIndex) => {
         // copy existing rows

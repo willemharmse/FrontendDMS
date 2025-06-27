@@ -163,7 +163,7 @@ const AdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={openBatch}>
                         <>
                             <div className="icon-dept">
-                                <FontAwesomeIcon icon={faFolderOpen} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Batch Upload Documents</h3>
                         </>
@@ -171,7 +171,7 @@ const AdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={openImportSI}>
                         <>
                             <div className="icon-dept">
-                                <FontAwesomeIcon icon={faCloudUploadAlt} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/adminSIDDS.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Import Site Info</h3>
                         </>
@@ -179,7 +179,7 @@ const AdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={openImportRSI}>
                         <>
                             <div className="icon-dept">
-                                <FontAwesomeIcon icon={faCloudUploadAlt} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/adminSIRMS.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Import Risk Site Info</h3>
                         </>
@@ -187,7 +187,7 @@ const AdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
                         <>
                             <div className="icon-dept">
-                                <FontAwesomeIcon icon={faUsersCog} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/adminUsers.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">User Management</h3>
                         </>
@@ -195,7 +195,7 @@ const AdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/departmentManage")}>
                         <>
                             <div className="icon-dept">
-                                <FontAwesomeIcon icon={faSitemap} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/adminDepartments.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Department Management</h3>
                         </>

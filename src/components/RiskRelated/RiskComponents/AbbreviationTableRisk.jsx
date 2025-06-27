@@ -62,6 +62,33 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
     setPopupVisible(!popupVisible);
   };
 
+  const handleAbbreviationUpdate = (updatedAbbr, oldAbbr) => {
+    // 1) Swap out the code in usedAbbrCodes
+    setUsedAbbrCodes(prev =>
+      prev.map(code => (code === oldAbbr ? updatedAbbr.abbr : code))
+    );
+
+    // 2) Update the selectedAbbrs Set
+    setSelectedAbbrs(prev => {
+      const next = new Set(prev);
+      if (next.has(oldAbbr)) {
+        next.delete(oldAbbr);
+        next.add(updatedAbbr.abbr);
+      }
+      return next;
+    });
+
+    // 3) Remap the rows in formData.abbrRows
+    setFormData(prev => ({
+      ...prev,
+      abbrRows: prev.abbrRows.map(row =>
+        row.abbr === oldAbbr
+          ? { abbr: updatedAbbr.abbr + " *", meaning: updatedAbbr.meaning }
+          : row
+      ),
+    }));
+  };
+
   const handleCheckboxChange = (abbr) => {
     const newSelectedAbbrs = new Set(selectedAbbrs);
     if (newSelectedAbbrs.has(abbr)) {
@@ -108,7 +135,10 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
           onAdd={handleNewAbbreviation}
         />
 
-        {isManageOpen && <ManageRiskAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageRiskAbbreviations closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleAbbreviationUpdate} userID={userID}
+          setAbbrData={setAbbrData}
+          onAdd={handleNewAbbreviation}
+        />}
         {/* Popup */}
         {popupVisible && (
           <div className="popup-overlay-abbr">
@@ -191,25 +221,28 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
             </thead>
             <tbody>
               {formData.abbrRows.map((row, index) => (
-                <tr key={index}>
-                  <td style={{ fontSize: "14px" }}>{row.abbr}</td>
-                  <td style={{ fontSize: "14px" }}>{row.meaning}</td>
-                  <td className="procCent">
+                <tr style={{ paddingTop: "1px", paddingBottom: "1px", height: "13px" }} key={index}>
+                  <td style={{ fontSize: "14px", paddingTop: "1px", paddingBottom: "1px", height: "13px" }} className="abbr-slim">{row.abbr}</td>
+                  <td style={{ fontSize: "14px", paddingTop: "1px", paddingBottom: "1px", height: "13px" }} className="abbr-slim">{row.meaning}</td>
+                  <td className="procCent"
+                    style={{ paddingTop: "1px", paddingBottom: "1px", height: "13px" }}>
                     <button
                       className="remove-row-button"
                       onClick={() => {
                         // Remove abbreviation from table and the selected abbreviations set
+                        const cleanAbbr = row.abbr.replace(/\s*\*$/, "");
+
                         setFormData({
                           ...formData,
                           abbrRows: formData.abbrRows.filter((_, i) => i !== index),
                         });
                         setUsedAbbrCodes(
-                          usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
+                          usedAbbrCodes.filter((abbr) => abbr !== cleanAbbr)
                         );
 
                         // Update the selectedAbbrs state to reflect the removal
                         const newSelectedAbbrs = new Set(selectedAbbrs);
-                        newSelectedAbbrs.delete(row.abbr);
+                        newSelectedAbbrs.delete(cleanAbbr);
                         setSelectedAbbrs(newSelectedAbbrs);
                       }}
                     >

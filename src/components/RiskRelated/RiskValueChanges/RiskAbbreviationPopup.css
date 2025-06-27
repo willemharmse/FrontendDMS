@@ -177,3 +177,40 @@
 .abbr-popup-btn:active {
     transform: translateY(0);
 }
+
+.inline-field .abbr-popup-page-select-container {
+    flex: 1;
+    /* let the select fill remaining space */
+    margin: 0;
+    /* reset any unintended margins */
+}
+
+.abbr-popup-page-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.abbr-popup-page-select-container::after {
+    content: '';
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.abbr-popup-select {
+    width: 95%;
+    display: unset;
+    padding: 0.8rem;
+    appearance: none;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}

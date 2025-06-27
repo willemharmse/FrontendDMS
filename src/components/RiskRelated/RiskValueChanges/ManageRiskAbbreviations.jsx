@@ -2,16 +2,36 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageRiskAbbreviations.css";
 
-const ManageRiskAbbreviations = ({ closePopup, onClose }) => {
+const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, onAdd, userID }) => {
     const [abbreviations, setAbbreviations] = useState([]);
     const [selectedAbbreviation, setSelectedAbbreviation] = useState("");
+    const [approver, setApprover] = useState("");
     const [abbrInp, setAbbrInp] = useState("");
     const [meanInp, setMeanInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [usersList, setUsersList] = useState([]);
 
     useEffect(() => {
         fetchAbbreviations();
+    }, []);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
     }, []);
 
     const closeFunction = () => {
@@ -47,30 +67,49 @@ const ManageRiskAbbreviations = ({ closePopup, onClose }) => {
             return;
         }
 
+        const data = { abbr: abbrInp, meaning: meanInp };
+        const type = "Abbreviation";
+        const route = `/api/riskInfo/draft`;
+
         try {
-            await axios.put(`${process.env.REACT_APP_URL}/api/riskInfo/abbr/update/${selectedAbbreviation}`, {
-                abbr: abbrInp,
-                meaning: meanInp,
-            }, {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                }
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
             });
 
-            setMessage("Abbreviation updated successfully.");
+            setMessage("Abbreviation update suggested successfully.");
             setError("");
             setSelectedAbbreviation("");
             setAbbrInp("");
             setMeanInp("");
+            const newAbbrObj = {
+                abbr: abbrInp.trim() + " *",
+                meaning: meanInp.trim()
+            };
+            setAbbrData((prevData) => [...prevData, newAbbrObj]);
+
+            if (onAdd) onAdd(newAbbrObj);
 
             setTimeout(() => {
-                setMessage("");
+                handleClose();
             }, 1000);
-            fetchAbbreviations();
         } catch (err) {
             setError("Failed to update abbreviation.");
         }
+    };
+
+    const handleClose = () => {
+        setAbbrInp("");
+        setMeanInp("");
+        setApprover("");
+        setMessage("");
+        onClose();
     };
 
     return (
@@ -99,6 +138,28 @@ const ManageRiskAbbreviations = ({ closePopup, onClose }) => {
                 <div className="manAbbr-popup-group">
                     <label className="manAbbr-popup-label">New Abbreviation Meaning</label>
                     <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Enter new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                </div>
+
+                <div className="abbr-popup-group">
+                    <label className="abbr-popup-label">Approver:</label>
+                    <div className="abbr-popup-page-select-container">
+                        <select
+                            spellcheck="true"
+                            type="text"
+                            value={approver}
+                            onChange={(e) => setApprover(e.target.value)}
+                            className="abbr-popup-select"
+                            required
+                            placeholder="Choose Approver"
+                        >
+                            <option value="">Select Approver</option>
+                            {usersList.map((value, index) => (
+                                <option key={index} value={value.id || value._id || value}>
+                                    {value.username || value.label || value}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {message && <div className="manAbbr-message-manage">{message}</div>}

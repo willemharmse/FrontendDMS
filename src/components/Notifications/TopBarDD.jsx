@@ -6,31 +6,31 @@ import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
 
-const TopBarDD = ({ role, menu, create, loadOfflineDraft }) => {
+const TopBarDD = ({ role, menu, create, loadOfflineDraft, risk = false }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [count, setCount] = useState(""); // Placeholder for unread notifications count
 
-    useEffect(() => {
-        const fetchNotificationCount = async () => {
-            const route = `/api/notifications/count`;
-            try {
-                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch notification count');
+    const fetchNotificationCount = async () => {
+        const route = `/api/notifications/count`;
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 }
-                const data = await response.json();
-                setCount(data.notifications);
-            } catch (error) {
-                console.error("Failed to fetch notifications:", error);
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch notification count');
             }
-        };
+            const data = await response.json();
+            setCount(data.notifications);
+        } catch (error) {
+            console.error("Failed to fetch notifications:", error);
+        }
+    };
 
+    useEffect(() => {
         fetchNotificationCount();
     }, []);
 
@@ -50,9 +50,9 @@ const TopBarDD = ({ role, menu, create, loadOfflineDraft }) => {
                 <FontAwesomeIcon icon={faCircleUser} title="Menu" />
             </div>
 
-            {showNotifications && (<Notifications setClose={setShowNotifications} />)}
+            {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
             {(isMenuOpen && menu != "1") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-            {(isMenuOpen && menu === "1") && (<BurgerMenu role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+            {(isMenuOpen && menu === "1") && (<BurgerMenu role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} risk={risk} />)}
         </div>
     );
 };

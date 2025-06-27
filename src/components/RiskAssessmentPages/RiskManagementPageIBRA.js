@@ -23,6 +23,8 @@ import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
 import PicturesTable from "../CreatePage/PicturesTable";
+import SaveAsPopup from "../Popups/SaveAsPopup";
+import SavePopup from "../Popups/SavePopup";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -52,6 +54,8 @@ const RiskManagementPageIBRA = () => {
     const [loadingScope, setLoadingScope] = useState(false);
     const [loadingScopeI, setLoadingScopeI] = useState(false);
     const [loadingScopeE, setLoadingScopeE] = useState(false);
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [controls, setControls] = useState([]);
 
     const openHelpRA = () => {
@@ -68,6 +72,32 @@ const RiskManagementPageIBRA = () => {
 
     const closeHelpScope = () => {
         setHelpScope(false);
+    };
+
+    const openSaveAs = () => {
+        if (!titleSet) {
+            toast.warn("Please fill in at least the title field before saving.", {
+                closeButton: false,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+        setIsSaveAsModalOpen(true);
+    };
+
+    const closeSaveAs = () => {
+        setIsSaveAsModalOpen(false);
+    };
+
+    const openSaveMenu = () => {
+        setIsSaveMenuOpen(true);
+    };
+
+    const closeSaveMenu = () => {
+        setIsSaveMenuOpen(false);
     };
 
     const openShare = () => {
@@ -133,6 +163,47 @@ const RiskManagementPageIBRA = () => {
                 }
             });
         }
+    };
+
+    const saveDraft = async () => {
+        if (!loadedIDRef.current) {
+            await saveData();
+        } else {
+            await updateData(userIDsRef.current);
+        }
+    }
+
+    const confirmSaveAs = (newTitle) => {
+        // apply the new title, clear loadedID, then save
+        const me = userIDRef.current;
+        const newFormData = {
+            ...formDataRef.current,        // your current formData
+            title: newTitle,             // override title
+        };
+
+        setFormData(newFormData);
+        formDataRef.current = newFormData;
+
+        setUserIDs([me]);
+        userIDsRef.current = [me];
+
+        loadedIDRef.current = '';
+        setLoadedID('');
+
+        handleSave();
+        loadData(loadedIDRef.current);
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("New Draft Successfully Loaded", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
+        setIsSaveAsModalOpen(false);
     };
 
     const saveData = async () => {
@@ -222,20 +293,25 @@ const RiskManagementPageIBRA = () => {
         }
     };
 
-    const handleClick3 = () => {
+    const handleClick3 = async () => {
         const newErrors = validateForm();
         setErrors(newErrors);
-
         if (Object.keys(newErrors).length > 0) {
-            toast.error("Please fill in all required fields marked by a *", {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        } else {
-            handleGenerateIBRADocument();  // Call your function when the form is valid
+            toast.error("Please fill in all required fields marked by a *");
+            return;
+        }
+
+        try {
+            toast.info("Saving draft…", { autoClose: false });
+            await saveDraft();
+            toast.dismiss();
+            toast.success("Draft saved");
+
+            await handleGenerateIBRADocument();
+
+        } catch (err) {
+            toast.error("Could not save draft, generation aborted.");
+            console.error(err);
         }
     };
 
@@ -549,7 +625,7 @@ const RiskManagementPageIBRA = () => {
         ],
         cea: [
             {
-                id: uuidv4(), nr: 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: "", description: "", performance: ""
+                id: uuidv4(), nr: 1, control: "", critical: "", act: "", activation: "", hierarchy: "", cons: "", quality: "", cer: "", notes: "", description: "", performance: "", dueDate: "", responsible: "", action: ""
             }
         ],
         abbrRows: [],
@@ -1118,7 +1194,7 @@ const RiskManagementPageIBRA = () => {
 
     const handleGenerateARegister = async () => {
         const dataToStore = {
-            formData
+            attendance: formData.attendance
         };
 
         if (formData.attendance.some(row => !row.name.trim())) {
@@ -1164,7 +1240,7 @@ const RiskManagementPageIBRA = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-risk`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-attend-xlsx`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1176,7 +1252,7 @@ const RiskManagementPageIBRA = () => {
             if (!response.ok) throw new Error("Failed to generate document");
 
             const blob = await response.blob();
-            saveAs(blob, `${documentName}.docx`);
+            saveAs(blob, `${documentName}.xlsx`);
             setLoading(false);
             //saveAs(blob, `${documentName}.pdf`);
         } catch (error) {
@@ -1272,24 +1348,25 @@ const RiskManagementPageIBRA = () => {
             : "";
     };
 
+
     useEffect(() => {
-        // 1. Gather all controls from ibra and dedupe
-        const allControls = formData.ibra.flatMap(item => item.controls);
+        // 1. Build a de-duplicated list of controls in the order they first appeared
         const distinctControls = Array.from(
             new Set(
                 formData.ibra
                     .flatMap(item => item.controls || [])
-                    .map(c => {
-                        // if it was a string, use it; if it was { control: 'foo' }, grab .control
-                        if (typeof c === 'string') return c.trim();
-                        if (c && typeof c === 'object' && 'control' in c) return String(c.control).trim();
-                        return "";
-                    })
-                    .filter(name => name.length > 0)        // drop empty / missing names
+                    .map(c =>
+                        typeof c === "string"
+                            ? c.trim()
+                            : c && typeof c === "object" && "control" in c
+                                ? String(c.control).trim()
+                                : ""
+                    )
+                    .filter(name => name.length > 0)
             )
-        ).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        );
 
-        // 2. Bail out if nothing really changed
+        // 2. If the list really hasn’t changed, do nothing
         const prev = prevControlsRef.current;
         if (
             distinctControls.length === prev.length &&
@@ -1299,52 +1376,65 @@ const RiskManagementPageIBRA = () => {
         }
         prevControlsRef.current = distinctControls;
 
-        // 3. If no controls, clear the CEA
+        // 3. If no controls at all, clear the CEA table
         if (distinctControls.length === 0) {
             updateCeaRows([]);
             return;
         }
 
-        // 4. Fetch details for the new/removed set
+        // 4. Fetch your metadata for all controls
         const fetchCEAData = async () => {
             try {
                 const res = await fetch(
                     `${process.env.REACT_APP_URL}/api/riskInfo/getControls`,
                     {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ controls: distinctControls }),
                     }
                 );
-                const { controls: data } = await res.json(); // e.g. [{ control: 'ctrl1', critical: 'Yes', act: '...', activation: 'Pre', … }, …]
+                const { controls: returnedData } = await res.json();
 
-                // 5. Build the new cea array by merging
-                const mergedCEA = distinctControls.map((ctrl, idx) => {
-                    // find the old row (if any) and the returned data (if any)
+                // 5. Merge into existing CEA rows:
+                //    • Keep rows the user already has, in their current order
+                //    • Append any brand-new controls at the end
+                const kept = formData.cea.filter(r =>
+                    distinctControls.includes(r.control)
+                );
+                const existingNames = kept.map(r => r.control);
+                const toAdd = distinctControls.filter(
+                    c => !existingNames.includes(c)
+                );
+                const newRows = toAdd.map(ctrl => {
                     const oldRow = formData.cea.find(r => r.control === ctrl);
-                    const returned = data.find(d => d.control === ctrl) || {};
-
+                    const ret = returnedData.find(d => d.control === ctrl) || {};
                     return {
                         id: oldRow?.id || uuidv4(),
-                        nr: idx + 1,
                         control: ctrl,
-                        critical: oldRow?.critical ?? returned.critical ?? '',
-                        act: oldRow?.act ?? returned.act ?? '',
-                        activation: oldRow?.activation ?? returned.activation ?? '',
-                        hierarchy: oldRow?.hierarchy ?? returned.hierarchy ?? '',
-                        cons: oldRow?.cons ?? returned.cons ?? '',
-                        quality: oldRow?.quality ?? returned.quality ?? '',
-                        cer: oldRow?.cer ?? returned.cer ?? '',
-                        notes: oldRow?.notes ?? returned.notes ?? '',
-                        description: oldRow?.description ?? returned.description ?? '',
-                        performance: oldRow?.performance ?? returned.performance ?? ''
+                        critical: oldRow?.critical ?? ret.critical ?? "",
+                        act: oldRow?.act ?? ret.act ?? "",
+                        activation: oldRow?.activation ?? ret.activation ?? "",
+                        hierarchy: oldRow?.hierarchy ?? ret.hierarchy ?? "",
+                        cons: oldRow?.cons ?? ret.cons ?? "",
+                        quality: oldRow?.quality ?? ret.quality ?? "",
+                        cer: oldRow?.cer ?? ret.cer ?? "",
+                        notes: oldRow?.notes ?? ret.notes ?? "",
+                        description: oldRow?.description ?? ret.description ?? "",
+                        performance: oldRow?.performance ?? ret.performance ?? "",
+                        action: oldRow?.action ?? ret.action ?? "",
+                        dueDate: oldRow?.dueDate ?? ret.dueDate ?? "",
+                        responsible: oldRow?.responsible ?? ret.responsible ?? "",
                     };
                 });
 
-                // 6. Push it back into your formData
-                updateCeaRows(mergedCEA);
+                // 6. Renumber and push back to state
+                const merged = [...kept, ...newRows].map((r, i) => ({
+                    ...r,
+                    nr: i + 1,
+                }));
+                updateCeaRows(merged);
             } catch (err) {
-                console.error('Failed to fetch CEA data', err);
+                console.error("Failed to fetch CEA data", err);
             }
         };
 
@@ -1419,7 +1509,7 @@ const RiskManagementPageIBRA = () => {
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={openSaveMenu} />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
@@ -1439,11 +1529,12 @@ const RiskManagementPageIBRA = () => {
                         </div>
                     </div>
 
+                    {isSaveMenuOpen && (<SavePopup isOpen={isSaveMenuOpen} closeSaveMenu={closeSaveMenu} save={handleSave} openSaveAs={openSaveAs} />)}
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} />
+                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
@@ -1667,7 +1758,7 @@ const RiskManagementPageIBRA = () => {
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
                     {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
-                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} />)}
+                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
@@ -1695,6 +1786,7 @@ const RiskManagementPageIBRA = () => {
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
         </div>
     );
 };

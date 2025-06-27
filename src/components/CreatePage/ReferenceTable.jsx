@@ -46,8 +46,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
 
         if (field === "ref") {
             const filtered = files
-                .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase()))
-                .slice(0, 15); // Show only top 5 results
+                .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase())); // Show only top 5 results
 
             setFilteredOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -69,8 +68,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
 
         if (field === "ref") {
             const filtered = files
-                .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase()))
-                .slice(0, 15); // Show only top 10 results
+                .filter(file => file.fileName.toLowerCase().includes(value.toLowerCase())); // Show only top 10 results
 
             setFilteredOptions(prev => ({ ...prev, [index]: filtered }));
 
@@ -133,6 +131,44 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
         removeRefRow(index);
     };
 
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowDropdown(null);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showDropdown]);
+
     return (
         <div className="input-row">
             <div className="input-box-ref">
@@ -161,7 +197,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                             onChange={(e) => handleDescChange(index, "ref", e.target.value)}
                                             onFocus={() => {
                                                 setShowDropdown(index);
-                                                setFilteredOptions(prev => ({ ...prev, [index]: files.slice(0, 15) }));
+                                                setFilteredOptions(prev => ({ ...prev, [index]: files }));
                                                 if (inputRefs.current[index]) {
                                                     const rect = inputRefs.current[index].getBoundingClientRect();
                                                     setDropdownPosition({
@@ -171,7 +207,6 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                                     });
                                                 }
                                             }}
-                                            onBlur={() => setTimeout(() => setShowDropdown(null), 200)}
                                             ref={(el) => (inputRefs.current[index] = el)}
                                         />
                                     </td>

@@ -24,6 +24,9 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
     const [notes, setNotes] = useState("");
     const [description, setDescription] = useState("");
     const [performance, setPerformance] = useState("");
+    const [action, setAction] = useState("");
+    const [responsible, setResponsible] = useState("");
+    const [dueDate, setDueDate] = useState("");
     const [formattingColour, setFormattingColour] = useState("");
     const [helpCT, setHelpCT] = useState(false);
     const [helpCA, setHelpCA] = useState(false);
@@ -156,6 +159,8 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
 
     useEffect(() => {
         if (data) {
+            console.log("🔍 incoming data:", data)
+
             setControlName(data.control || '');
             setCriticalControl(data.critical || '');
             setControlType(data.act || '');
@@ -166,7 +171,10 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
             setCER(data.cer || '');
             setNotes(data.notes || '');
             setDescription(data.description || "");
-            setPerformance(data.performance || "")
+            setPerformance(data.performance || "");
+            setResponsible(data.responsible || "");
+            setAction(data.action || "");
+            setDueDate(data.dueDate || "");
         }
     }, [data]);
 
@@ -183,7 +191,10 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
             cer: cer,
             notes: notes,
             description: description,
-            performance: performance
+            performance: performance,
+            action: action,
+            dueDate: dueDate,
+            responsible: responsible
         };
 
         if (controlName.trim() !== initialControlName.trim()) {
@@ -413,6 +424,61 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                         className="cea-popup-page-textarea-full"
                                         placeholder="Performance requirement of control"
                                     ></textarea>
+                                </div>
+                            </div>
+                            <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-form-group">
+                                    <label style={{ fontSize: "16px", marginBottom: "15px", fontWeight: "bold" }}>Control Treatment</label>
+                                    <div className="ibra-popup-page-additional-row">
+                                        <div className="ibra-popup-page-column-half">
+                                            <div className="ibra-popup-page-component-wrapper">
+                                                <div className="ibra-popup-page-form-group">
+                                                    <label style={{ fontSize: "15px" }}>Control Improvement/ Action
+                                                    </label>
+                                                    <input
+                                                        className="cea-popup-page-input"
+                                                        value={action}
+                                                        onChange={(e) => setAction(e.target.value)}
+                                                        placeholder="Insert Required Action to Improve Control"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="ibra-popup-page-column-half">
+                                            <div className="ibra-popup-page-additional-row">
+                                                <div className="ibra-popup-page-column-half">
+                                                    <div className="ibra-popup-page-component-wrapper">
+                                                        <div className="ibra-popup-page-form-group">
+                                                            <label style={{ fontSize: "15px" }}>Responible Person
+                                                            </label>
+                                                            <div className="ibra-popup-page-select-container">
+                                                                <input
+                                                                    className="cea-popup-page-input"
+                                                                    value={responsible}
+                                                                    onChange={(e) => setResponsible(e.target.value)}
+                                                                    placeholder="Select Responsible Person"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="ibra-popup-page-column-half">
+                                                    <div className="ibra-popup-page-component-wrapper">
+                                                        <div className="ibra-popup-page-form-group">
+                                                            <label style={{ fontSize: "15px" }}>Due Date
+                                                            </label>
+                                                            <input
+                                                                type='date'
+                                                                className="cea-popup-page-input"
+                                                                value={dueDate}
+                                                                onChange={(e) => setDueDate(e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
