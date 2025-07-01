@@ -18,6 +18,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     const inputRefs = useRef({});
     const [showColumnSelector, setShowColumnSelector] = useState(false);
     const popupRef = useRef(null);
+    const [nameToPositionMap, setNameToPositionMap] = useState({});
 
     const availableColumns = [
         { id: "nr", title: "Nr" },
@@ -118,6 +119,13 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                 throw new Error("Failed to fetch values");
             }
             const data = await response.json();
+
+            const positionMap = {};
+            data.stakeholders.forEach(({ name, pos }) => {
+                positionMap[name] = pos;
+            });
+            setNameToPositionMap(positionMap);
+
             const positions = Array.from(new Set(data.stakeholders.map(d => d.pos))).sort();
             setDesignations(positions);
             setAuthors(data.stakeholders);
@@ -292,7 +300,18 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     };
 
     const handleSelectOption = (index, field, value) => {
+        // start with whatever was in the row before...
         const updatedRow = { ...rows[index], [field]: value };
+
+        // if the user just picked a name, auto‐populate designation
+        if (field === "name") {
+            // look up the title; if no match, fall back to empty string
+            const title = nameToPositionMap[value] || "";
+
+            if (index !== 0)
+                updatedRow.designation = title;
+        }
+
         const newRows = [...rows];
         newRows[index] = updatedRow;
         updateRows(newRows);

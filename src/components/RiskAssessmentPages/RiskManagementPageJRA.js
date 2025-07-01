@@ -211,7 +211,15 @@ const RiskManagementPageJRA = () => {
         }
     };
 
-    const handleClick3 = () => {
+    const saveDraft = async () => {
+        if (!loadedIDRef.current) {
+            await saveData();
+        } else {
+            await updateData(userIDsRef.current);
+        }
+    }
+
+    const handleClick3 = async () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
@@ -220,8 +228,22 @@ const RiskManagementPageJRA = () => {
                     textAlign: 'center'
                 }
             });
-        } else {
-            handleGenerateJRADocument();  // Call your function when the form is valid
+        }
+        else {
+
+            try {
+                toast.info("Saving draft…", { autoClose: false });
+                await saveDraft();
+                toast.dismiss();
+                toast.success("Draft saved");
+
+                await handleGenerateJRADocument();
+
+            } catch (err) {
+                toast.error("Could not save draft, generation aborted.");
+                console.error(err);
+            }
+
         }
     };
 
@@ -302,7 +324,7 @@ const RiskManagementPageJRA = () => {
         documentType: useParams().type,
         introInfo: {
             description: "", start: "", end: "", mainArea: "", subArea: "", owner: "", inCharge: "", members: [{ id: uuidv4(), member: "" }],
-            otherAffected: "", howAffected: "", isProcedure: "", procedures: [{ id: uuidv4(), procedure: "", ref: "", version: "", issueDate: "" }]
+            otherAffected: "", howAffected: "", isProcedure: "", procedures: { id: uuidv4(), procedure: "", ref: "", version: "", issueDate: "" }
         },
         date: new Date().toLocaleDateString(),
         version: "1",
@@ -780,14 +802,13 @@ const RiskManagementPageJRA = () => {
     // Send data to backend to generate a Word document
     const handleGenerateJRADocument = async () => {
         const dataToStore = {
-            formData,
+            formData: formData,
         };
 
         const documentName = (formData.title) + ' ' + formData.documentType;
-        setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-jra`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/generateJRA/generate-jra-sheet1`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -799,12 +820,9 @@ const RiskManagementPageJRA = () => {
             if (!response.ok) throw new Error("Failed to generate document");
 
             const blob = await response.blob();
-            saveAs(blob, `${documentName}.docx`);
-            setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
+            saveAs(blob, `${documentName}.xlsx`);
         } catch (error) {
             console.error("Error generating document:", error);
-            setLoading(false);
         }
     };
 
@@ -939,7 +957,7 @@ const RiskManagementPageJRA = () => {
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
+                        <button className="but-um" onClick={() => navigate('/FrontendDMS/constructionJRA')}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                                 <span className="button-text">Published Documents</span>

@@ -55,7 +55,7 @@ const RiskHomePage = () => {
                             <div className="icon-risk-all">
                                 <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-all" />
                             </div>
-                            <h3 className="document-title-risk-home">View Site Controls and Attributes<br /></h3>
+                            <h3 className="document-title-risk-home">View Controls<br /></h3>
                         </>
                     </div>
                     <div
@@ -67,7 +67,7 @@ const RiskHomePage = () => {
                             </div>
 
                             <h3 className="document-title-risk-home">
-                                Create New BLRA,<br />using the WRAC Tool
+                                BLRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the WRAC Tool)</span>
                             </h3>
                         </>
                     </div>
@@ -81,7 +81,7 @@ const RiskHomePage = () => {
                             </div>
 
                             <h3 className="document-title-risk-home">
-                                Create New IBRA,<br />using the WRAC Tool
+                                IBRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the WRAC Tool)</span>
                             </h3>
                         </>
                     </div>
@@ -90,7 +90,7 @@ const RiskHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/bta.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Create New IBRA,<br />using the BTA tool</h3>
+                            <h3 className="document-title-risk-home">IBRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the BTA tool)</span></h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskJRA/JRA")}>
@@ -98,7 +98,7 @@ const RiskHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/jra.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Create New JRA<br /></h3>
+                            <h3 className="document-title-risk-home">JRA<br /></h3>
                         </>
                     </div>
                 </div>

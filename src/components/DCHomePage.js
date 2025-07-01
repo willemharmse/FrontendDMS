@@ -55,7 +55,7 @@ const DCHomePage = () => {
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/proceduresDMS.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Procedure</h3>
+                            <h3 className="document-title-dc-home">Procedures</h3>
                         </>
                     </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateStand/Standard")}>
@@ -63,7 +63,7 @@ const DCHomePage = () => {
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/standardsDMS.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Standard</h3>
+                            <h3 className="document-title-dc-home">Standards</h3>
                         </>
                     </div>
                 </div>

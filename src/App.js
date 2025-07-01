@@ -41,6 +41,7 @@ import RiskDocumentsIBRA from './components/RiskRelated/RiskDocuments/RiskDocume
 import RiskManagementPageBTA from './components/RiskAssessmentPages/RiskManagementPageBTA';
 import CreatePageStandards from './components/DocumentCreationPages/CreatePageStandards';
 import RiskSIPage from './components/RiskRelated/RiskValueChanges/RiskSIPage';
+import ConstructionJRA from './components/Construction/ConstructionJRA';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -123,6 +124,7 @@ function App() {
         <Route path="FrontendDMS/constructionTM" element={<ConstructionTM />} />
         <Route path="FrontendDMS/constructionRM" element={<ConstructionRM />} />
         <Route path="FrontendDMS/constructionDDS/:type" element={<ConstructionDDS />} />
+        <Route path="FrontendDMS/constructionJRA" element={<ConstructionJRA />} />
         <Route path="FrontendDMS/constructionRMS/:type" element={<ConstructionRMS />} />
         <Route path="FrontendDMS/constructionHelp" element={<ConstructionHelp />} />
         <Route path="FrontendDMS/admin" element={<AdminPage />} />

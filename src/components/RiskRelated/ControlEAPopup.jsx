@@ -10,6 +10,7 @@ import ControlHierarchy from './RiskInfo/ControlHierarchy';
 import CriticalControl from './RiskInfo/CriticalControl';
 import ControlQuality from './RiskInfo/ControlQuality';
 import ControlEffectiveness from './RiskInfo/ControlEffectiveness';
+import axios from 'axios';
 
 const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
     const [initialControlName] = useState(data.control);
@@ -39,6 +40,11 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
     const [hierarchyOptions] = useState(['1. Elimination', '2. Substitution', '3. Engineering', '4. Separation', '5. Administration', '6. PPE']);
     const [aimOptions] = useState(['Safety (S)', 'Health (H)', 'Environment (E)', 'Community (C)', 'Legal & Regulatory (L&R)', 'Material Losses (M)', 'Reputation (R)']);
     const [qualityOptions] = useState(['< 30%', '30-59%', '60-90%', '> 90%']);
+    const [posLists, setPosLists] = useState([]);
+    const [filteredResponsible, setFilteredResponsible] = useState([]);
+    const [showResponsibleDropdown, setShowResponsibleDropdown] = useState(false);
+    const responsibleInputRef = useRef(null);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({
@@ -156,6 +162,107 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
             }
         }
     }, [quality, hierarchy]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+                const data = res.data.stakeholders;
+
+                const positions = Array.from(new Set(data.map(d => d.pos))).sort();
+
+                setPosLists(positions);
+            } catch (error) {
+                console.log(error)
+            }
+        };
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowResponsibleDropdown(null);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showResponsibleDropdown]);
+
+    const closeAllDropdowns = () => {
+        setShowResponsibleDropdown(null);
+    };
+
+    const handleResponsibleInput = (value) => {
+        closeAllDropdowns();
+        setResponsible(value);
+        const matches = posLists
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+        setFilteredResponsible(matches);
+        setShowResponsibleDropdown(true);
+
+        const el = responsibleInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleResponsibleFocus = () => {
+        closeAllDropdowns();
+        const matches = posLists;
+        setFilteredResponsible(matches);
+        setShowResponsibleDropdown(true);
+
+        const el = responsibleInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectResponsibleSuggestion = (value) => {
+        setResponsible(value);
+        setShowResponsibleDropdown(false);
+    };
 
     useEffect(() => {
         if (data) {
@@ -453,9 +560,11 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                             </label>
                                                             <div className="ibra-popup-page-select-container">
                                                                 <input
+                                                                    ref={responsibleInputRef}
                                                                     className="cea-popup-page-input"
                                                                     value={responsible}
-                                                                    onChange={(e) => setResponsible(e.target.value)}
+                                                                    onChange={e => handleResponsibleInput(e.target.value)}
+                                                                    onFocus={() => handleResponsibleFocus()}
                                                                     placeholder="Select Responsible Person"
                                                                 />
                                                             </div>
@@ -496,6 +605,28 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                     </div>
                 </div>
             </div>
+
+            {showResponsibleDropdown && filteredResponsible.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredResponsible.filter(term => term && term.trim() !== "").map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectResponsibleSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
 
             {helpCT && (<ControlType setClose={closeHelpCT} />)}
             {helpCA && (<ControlActivation setClose={closeHelpCA} />)}

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, version } from "react";
 import "./IntroTaskInfo.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faInfoCircle, faL } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -27,6 +27,14 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     const leaderInputRef = useRef(null);
     const [functionalOwners, setFunctionalOwners] = useState([]);
     const [posLists, setPosLists] = useState([]);
+    const [filteredFiles, setFilteredFiles] = useState([]);
+    const [showFilesDropdown, setShowFilesDropdown] = useState(false);
+    const filesInputRef = useRef(null);
+    const [files, setFiles] = useState([]);
+
+    const removeFileExtension = (fileName) => {
+        return fileName.replace(/\.[^/.]+$/, "");
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -76,6 +84,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         setShowSubAreasDropdown(false);
         setShowLeaderDropdown(false);
         setShowOwnerDropdown(false);
+        setShowFilesDropdown(false);
     };
 
     useEffect(() => {
@@ -106,6 +115,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             setShowSubAreasDropdown(false);
             setShowLeaderDropdown(false);
             setShowOwnerDropdown(false);
+            setShowFilesDropdown(false);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -117,7 +127,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             document.removeEventListener('touchstart', handleClickOutside);
             window.removeEventListener('scroll', handleScroll, true);
         };
-    }, [showMainAreasDropdown, showSubAreasDropdown, showLeaderDropdown, showOwnerDropdown]);
+    }, [showMainAreasDropdown, showSubAreasDropdown, showLeaderDropdown, showOwnerDropdown, showFilesDropdown]);
 
     useEffect(() => {
         async function fetchValues() {
@@ -152,7 +162,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                 // parse once, pull out both
                 const { files } = await res.json();
 
-                console.log(files);
+                setFiles(files)
             } catch (err) {
                 console.error("Error fetching areas:", err);
             }
@@ -249,6 +259,72 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
             }
         }));
         setShowSubAreasDropdown(false);
+    };
+
+    const handleProcedureInput = (value) => {
+        closeAllDropdowns();
+        setFormData(prev => ({
+            ...prev,
+            introInfo: {
+                ...prev.introInfo,
+                procedures: {
+                    ...prev.introInfo.procedures,
+                    procedure: removeFileExtension(value)
+                }
+            }
+        }));
+
+        const matches = files
+            .filter(opt => opt.fileName.toLowerCase().includes(value.toLowerCase()));
+        setFilteredFiles(matches);
+        setShowFilesDropdown(true);
+
+        const el = filesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleProcedureFocus = () => {
+        closeAllDropdowns();
+
+        const matches = files;
+        setFilteredFiles(matches);
+        setShowFilesDropdown(true);
+
+        const el = filesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectProcedureSuggestion = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            introInfo: {
+                ...prev.introInfo,
+                procedures: {
+                    id: uuidv4(),
+                    procedure: removeFileExtension(value.fileName),
+                    ref: value.docID,
+                    version: "",
+                    issueDate: ""
+                }
+            }
+        }));
+        setShowFilesDropdown(false);
     };
 
     const handleMainAreaInput = (value) => {
@@ -431,7 +507,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                 <textarea
                                     className="jra-info-popup-page-textarea"
                                     value={formData.introInfo.description}
-                                    placeholder="Enter task description."
+                                    placeholder="Enter a brief description of the task that is addressed in this JRA."
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -552,7 +628,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     <div className="risk-scope-popup-page-additional-row ">
                         <div className="risk-popup-page-column-half-scope">
                             <div className="other-activities-group">
-                                <label className="jra-info-risk-label">Are there other activities affected by this task? <span className="required-field">*</span></label>
+                                <label style={{ marginRight: "60px" }} className="jra-info-risk-label">Are there other activities affected by this task? <span className="required-field">*</span></label>
                                 <div className="yes-no-checkboxes-2">
                                     <label>
                                         <input
@@ -602,7 +678,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                     name="scope"
                                     className="jra-info-popup-page-textarea font-fam"
                                     rows="5"   // Adjust the number of rows for initial height
-                                    placeholder="Please describe the activity and how it affects this task." // Optional placeholder text
+                                    placeholder="Describe the activity and how it affects this task." // Optional placeholder text
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -678,93 +754,90 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {formData.introInfo.procedures.map((row, index) => (
-                                            <tr key={row.id}>
-                                                <td>
-                                                    <div className="jra-info-popup-page-select-container">
-                                                        <input
-                                                            type="text"
-                                                            name="procedure"
-                                                            value={row.procedure}
-                                                            className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                            placeholder="Choose Procedure"
-                                                            onChange={e =>
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    introInfo: {
-                                                                        ...prev.introInfo,
-                                                                        procedures: prev.introInfo.procedures.map((p, i) =>
-                                                                            i === index ? { ...p, procedure: e.target.value } : p
-                                                                        )
-                                                                    }
-                                                                }))
+                                        <tr key={formData.introInfo.procedures.id}>
+                                            <td>
+                                                <div className="jra-info-popup-page-select-container">
+                                                    <input
+                                                        type="text"
+                                                        name="procedure"
+                                                        autoComplete="off"
+                                                        value={formData.introInfo.procedures.procedure}
+                                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                                        placeholder="Choose Procedure"
+                                                        ref={filesInputRef}
+                                                        onChange={e => handleProcedureInput(e.target.value)}
+                                                        onFocus={handleProcedureFocus}
+                                                    />
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="reference"
+                                                    autoComplete="off"
+                                                    value={formData.introInfo.procedures.ref}
+                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                                    placeholder="Enter Reference Number"
+                                                    onChange={e =>
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            introInfo: {
+                                                                ...prev.introInfo,
+                                                                procedures: {
+                                                                    ...prev.introInfo.procedures,
+                                                                    ref: e.target.value
+                                                                }
                                                             }
-                                                        />
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        name="reference"
-                                                        value={row.ref}
-                                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                        placeholder="Enter Reference Number"
-                                                        onChange={e =>
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                introInfo: {
-                                                                    ...prev.introInfo,
-                                                                    procedures: prev.introInfo.procedures.map((p, i) =>
-                                                                        i === index ? { ...p, ref: e.target.value } : p
-                                                                    )
+                                                        }))
+                                                    }
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="version"
+                                                    autoComplete="off"
+                                                    value={formData.introInfo.procedures.version}
+                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                                    placeholder="Enter Version"
+                                                    onChange={e =>
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            introInfo: {
+                                                                ...prev.introInfo,
+                                                                procedures: {
+                                                                    ...prev.introInfo.procedures,
+                                                                    version: e.target.value
                                                                 }
-                                                            }))
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        name="version"
-                                                        value={row.version}
-                                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                        placeholder="Enter Version"
-                                                        onChange={e =>
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                introInfo: {
-                                                                    ...prev.introInfo,
-                                                                    procedures: prev.introInfo.procedures.map((p, i) =>
-                                                                        i === index ? { ...p, version: e.target.value } : p
-                                                                    )
+                                                            }
+                                                        }))
+                                                    }
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="date"
+                                                    name="issueDate"
+                                                    autoComplete="off"
+                                                    style={{ fontFamily: "Arial" }}
+                                                    value={formData.introInfo.procedures.issueDate}
+                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                                    placeholder="Enter Issue Date"
+                                                    onChange={e =>
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            introInfo: {
+                                                                ...prev.introInfo,
+                                                                procedures: {
+                                                                    ...prev.introInfo.procedures,
+                                                                    issueDate: e.target.value
                                                                 }
-                                                            }))
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="date"
-                                                        name="issueDate"
-                                                        style={{ fontFamily: "Arial" }}
-                                                        value={row.issueDate}
-                                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                        placeholder="Enter Issue Date"
-                                                        onChange={e =>
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                introInfo: {
-                                                                    ...prev.introInfo,
-                                                                    procedures: prev.introInfo.procedures.map((p, i) =>
-                                                                        i === index ? { ...p, issueDate: e.target.value } : p
-                                                                    )
-                                                                }
-                                                            }))
-                                                        }
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                            }
+                                                        }))
+                                                    }
+                                                />
+                                            </td>
+                                        </tr>
                                     </tbody>
 
                                 </table>
@@ -857,6 +930,28 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                             onMouseDown={() => selectOwnerSuggestion(term.owner)}
                         >
                             {term.owner}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {showFilesDropdown && files.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredFiles.sort().map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectProcedureSuggestion(term)}
+                        >
+                            {removeFileExtension(term.fileName)}
                         </li>
                     ))}
                 </ul>

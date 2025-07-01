@@ -101,13 +101,23 @@
 }
 
 .ibraMainJRA {
-    min-width: 300px;
-    max-width: 300px;
+    min-width: 220px;
+    max-width: 220px;
+}
+
+.ibraHazJRA {
+    min-width: 250px;
+    max-width: 250px;
 }
 
 .ibraSubJRA {
-    min-width: 400px;
-    max-width: 400px;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+.ibraTXJRA {
+    min-width: 250px;
+    max-width: 250px;
 }
 
 /* ── Control-icon popup ── */
@@ -268,6 +278,24 @@ td.ibraCon {
     min-width: 200px;
 }
 
+.jra-page-input-resp-input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.jra-page-input-resp {
+    width: calc(100% - 25px);
+    padding: 10px;
+    height: 19px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+}
+
 .ibraStatus {
     min-width: 200px;
     width: 300px;
@@ -301,8 +329,8 @@ td.ibraStatus {
 }
 
 .ibraDeadlineJRA {
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 150px;
+    max-width: 150px;
 }
 
 .hazard-cell {
@@ -706,4 +734,12 @@ th.ibraAct {
     height: 100%;
     background: #ccc;
     /* The 'thumb' color */
+}
+
+.jra-normal-text {
+    appearance: none;
+    color: black;
+    text-align: left;
+    font-size: 14px;
+    font-family: Arial !important;
 }

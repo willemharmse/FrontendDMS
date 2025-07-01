@@ -482,7 +482,7 @@ const RiskManagementPageIBRA = () => {
     function normalizeIbraFormData(formData = {}) {
         if (!Array.isArray(formData.ibra)) return formData;
 
-        return {
+        const normalized = {
             ...formData,
             ibra: formData.ibra.map(row => {
                 const possible = Array.isArray(row.possible) ? row.possible : [];
@@ -508,6 +508,18 @@ const RiskManagementPageIBRA = () => {
                 };
             })
         };
+
+        // ——— Normalize CEA: just add missing plain fields ———
+        if (Array.isArray(normalized.cea)) {
+            normalized.cea = normalized.cea.map(block => ({
+                ...block,
+                action: block.action !== undefined ? block.action : '',
+                responsible: block.responsible !== undefined ? block.responsible : '',
+                dueDate: block.dueDate !== undefined ? block.dueDate : ''
+            }));
+        }
+
+        return normalized;
     }
 
     const loadData = async (loadID) => {
