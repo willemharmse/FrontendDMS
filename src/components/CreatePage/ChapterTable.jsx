@@ -67,7 +67,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             type="text"
                             value={chapter.chapterTitle}
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterTitle")}
-                            placeholder="Enter section title..."
+                            placeholder="Insert section title..."
                         />
 
                         <label style={{ marginBottom: "5px", marginTop: "5px" }}>Section Body:</label>
@@ -75,7 +75,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             className="mct-textarea"
                             value={chapter.chapterBody}
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterBody")}
-                            placeholder="Enter content..."
+                            placeholder="Insert content..."
                             rows="10"
                         />
 
@@ -90,13 +90,13 @@ const ChapterTable = ({ formData, setFormData }) => {
                                     type="text"
                                     value={subheading.subheadingTitle}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "subheadingTitle")}
-                                    placeholder="Enter subheading title..."
+                                    placeholder="Insert subheading title..."
                                 />
                                 <textarea
                                     className="mct-textarea"
                                     value={subheading.body}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "body")}
-                                    placeholder="Enter content..."
+                                    placeholder="Insert content..."
                                     rows="10"
                                 />
                             </div>

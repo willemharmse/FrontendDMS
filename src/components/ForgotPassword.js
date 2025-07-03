@@ -180,7 +180,7 @@ function ForgotPassword() {
 
                     {step === 2 && (
                         <div className="forgot-password-group">
-                            <label className="forgot-password-label">Enter OTP</label>
+                            <label className="forgot-password-label">Insert OTP</label>
                             <div className="forgot-password-input-container">
                                 <input
                                     type="text"

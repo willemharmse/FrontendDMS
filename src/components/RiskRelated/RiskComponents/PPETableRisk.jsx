@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PPETableRisk.css"; // Add styling here
-import PPEPopup from "../../ValueChanges/PPEPopup.jsx";
-import ManagePPE from "../../ValueChanges/ManagePPE.jsx";
+import RiskPPEPopup from "../RiskValueChanges/RiskPPEPopup"
+import RiskManagePPE from "../RiskValueChanges/RiskManagePPE"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -39,6 +39,44 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
         fetchValues();
     }, []);
 
+    const handleNewPpe = (newPPE) => {
+        const code = newPPE.ppe;
+        // add to the “used” codes array
+        setUsedPPEOptions((prev) => [...prev, code]);
+        setSelectedPPE((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            PPEItems: [...prev.PPEItems, newPPE],
+        }));
+    };
+
+    const handlePpeUpdate = (updatedPPE, oldPPE) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedPPEOptions(prev =>
+            prev.map(code => (code === oldPPE ? updatedPPE.ppe : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedPPE(prev => {
+            const next = new Set(prev);
+            if (next.has(oldPPE)) {
+                next.delete(oldPPE);
+                next.add(updatedPPE.ppe);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            PPEItems: prev.PPEItems.map(row =>
+                row.ppe === oldPPE
+                    ? { ppe: updatedPPE.ppe + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedPPE(new Set(usedPPEOptions));
         if (usedPPEOptions.length > 0) {
@@ -47,6 +85,7 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
     }, [usedPPEOptions]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 
@@ -111,15 +150,19 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                     <button className="top-right-button-ppe-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit PPE" /></button>
                 )}
                 <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest PPE" /></button>
-                <PPEPopup
+                <RiskPPEPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setPPEData={setPPEData}  // Pass the setter to update PPE options locally
+                    onAdd={handleNewPpe}
                 />
 
-                {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <RiskManagePPE closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handlePpeUpdate}
+                    userID={userID}
+                    setPPEData={setPPEData}
+                    onAdd={handleNewPpe} />}
 
                 {/* Popup */}
                 {popupVisible && (

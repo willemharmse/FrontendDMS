@@ -113,7 +113,7 @@ const RiskAbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData, onA
                             onChange={(e) => setAbbreviation(e.target.value)}
                             className="abbr-popup-input"
                             required
-                            placeholder="Enter abbreviation code here"
+                            placeholder="Insert abbreviation code here"
                         />
                     </div>
                     <div className="abbr-popup-group">
@@ -126,7 +126,7 @@ const RiskAbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData, onA
                             onChange={(e) => setMeaning(e.target.value)}
                             className="abbr-popup-text-area"
                             required
-                            placeholder="Enter description here"
+                            placeholder="Insert description here"
                         />
                     </div>
                     <div className="abbr-popup-group">
@@ -139,7 +139,7 @@ const RiskAbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData, onA
                                 onChange={(e) => setApprover(e.target.value)}
                                 className="abbr-popup-select"
                                 required
-                                placeholder="Choose Approver"
+                                placeholder="Select Approver"
                             >
                                 <option value="">Select Approver</option>
                                 {usersList.map((value, index) => (

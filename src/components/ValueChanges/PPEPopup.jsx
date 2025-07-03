@@ -112,7 +112,7 @@ const PPEPopup = ({ isOpen, onClose, role, userID, setPPEData }) => {
                             onChange={(e) => setPPE(e.target.value)}
                             className="ppe-popup-input"
                             required
-                            placeholder="Enter PPE"
+                            placeholder="Insert PPE"
                         />
                     </div>
 

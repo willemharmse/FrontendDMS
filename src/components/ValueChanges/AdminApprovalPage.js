@@ -292,7 +292,7 @@ const AdminApprovalPage = () => {
                         <p>Do you want to approve or decline this draft?</p>
                         <textarea
                             className="popup-comment-textbox"
-                            placeholder="Enter your comment..."
+                            placeholder="Insert your comment..."
                             value={comment || ""}
                             onChange={(e) => setComment(e.target.value)}
                             rows="4"

@@ -51,6 +51,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
     }, [usedMaterials]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 

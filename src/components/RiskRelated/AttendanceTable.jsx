@@ -429,7 +429,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "name", e)}
                                         onFocus={() => handleFocus(index, "name")}
-                                        placeholder="Enter or select name"
+                                        placeholder="Insert or select name"
                                         ref={(el) => (inputRefs.current[`name-${index}`] = el)}
                                     />
                                 </td>
@@ -441,7 +441,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onFocus={() => handleFocus(index, "site")}
                                         style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "site", e)}
-                                        placeholder="Enter company/site"
+                                        placeholder="Insert company/site"
                                         ref={(el) => (inputRefs.current[`site-${index}`] = el)}
                                     />
                                 </td>
@@ -452,7 +452,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         value={row.designation || ""}
                                         onChange={(e) => handleInputChange(index, "designation", e)}
                                         onFocus={() => handleFocus(index, "designation")}
-                                        placeholder="Enter or select designation"
+                                        placeholder="Insert or select designation"
                                         readOnly={index === 0}
                                         style={{ fontSize: "14px" }}
                                         ref={(el) => (inputRefs.current[`designation-${index}`] = el)}
@@ -481,7 +481,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         value={row.num || ""}
                                         style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "num", e)}
-                                        placeholder="Enter company / ID number"
+                                        placeholder="Insert company / ID number"
                                     />
                                 </td>)}
                                 <td className="procCent action-cell-auth-risk">

@@ -352,7 +352,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     value={criticalControl}
                                                     onChange={(e) => setCriticalControl(e.target.value)}
                                                 >
-                                                    <option value="">Choose Option</option>
+                                                    <option value="">Select Option</option>
                                                     <option value='Yes'>Yes</option>
                                                     <option value='No'>No</option>
                                                 </select>
@@ -370,7 +370,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     value={controlType}
                                                     onChange={(e) => setControlType(e.target.value)}
                                                 >
-                                                    <option value="">Choose Option</option>
+                                                    <option value="">Select Option</option>
                                                     {
                                                         controlTypeOptions.map((option, index) => (
                                                             <option key={index} value={option}>
@@ -393,7 +393,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     value={controlActivation}
                                                     onChange={(e) => setControlActivation(e.target.value)}
                                                 >
-                                                    <option value="">Choose Option</option>
+                                                    <option value="">Select Option</option>
                                                     {
                                                         activationOptions.map((option, index) => (
                                                             <option key={index} value={option}>
@@ -416,7 +416,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     value={hierarchy}
                                                     onChange={(e) => setHierarchy(e.target.value)}
                                                 >
-                                                    <option value="">Choose Option</option>
+                                                    <option value="">Select Option</option>
                                                     {
                                                         hierarchyOptions.map((option, index) => (
                                                             <option key={index} value={option}>
@@ -442,7 +442,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     value={controlAim}
                                                     onChange={(e) => setControlAim(e.target.value)}
                                                 >
-                                                    <option value="">Choose Consequence</option>
+                                                    <option value="">Select Consequence</option>
                                                     {
                                                         aimOptions.map((option, index) => (
                                                             <option key={index} value={option}>
@@ -467,7 +467,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                             value={quality}
                                                             onChange={(e) => setQuality(e.target.value)}
                                                         >
-                                                            <option value="">Choose Quality</option>
+                                                            <option value="">Select Quality</option>
                                                             {
                                                                 qualityOptions.map((option, index) => (
                                                                     <option key={index} value={option}>

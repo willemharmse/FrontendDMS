@@ -4,6 +4,8 @@ import EquipmentPopup from "../../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../../ValueChanges/ManageEquipment";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import RiskEquipmentPopup from "../RiskValueChanges/RiskEquipmentPopup"
+import RiskManageEquipment from "../RiskValueChanges/RiskManageEquipment"
 
 const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
@@ -16,7 +18,46 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
     const [searchTerm, setSearchTerm] = useState("");
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
+    };
+
+    const handleNewEqp = (newEqp) => {
+        const code = newEqp.eqp;
+        // add to the “used” codes array
+        setUsedEquipment((prev) => [...prev, code]);
+        setSelectedEquipment((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            Equipment: [...prev.Equipment, newEqp],
+        }));
+    };
+
+    const handleEqpUpdate = (updatedEqp, oldEqp) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedEquipment(prev =>
+            prev.map(code => (code === oldEqp ? updatedEqp.eqp : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedEquipment(prev => {
+            const next = new Set(prev);
+            if (next.has(oldEqp)) {
+                next.delete(oldEqp);
+                next.add(updatedEqp.eqp);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            Equipment: prev.Equipment.map(row =>
+                row.eqp === oldEqp
+                    ? { eqp: updatedEqp.eqp + " *" }
+                    : row
+            ),
+        }));
     };
 
     useEffect(() => {
@@ -112,15 +153,20 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                 )}
                 <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Equipment" /></button>
 
-                <EquipmentPopup
+                <RiskEquipmentPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setEqpData={setEqpData}
+                    onAdd={handleNewEqp}
                 />
 
-                {isManageOpen && <ManageEquipment closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <RiskManageEquipment closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleEqpUpdate}
+                    userID={userID}
+                    setEqpData={setEqpData}
+                    onAdd={handleNewEqp} />}
+
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-eqp">

@@ -189,7 +189,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                                 className="update-file-button-select-file"
                                 onClick={handleChooseFile}
                             >
-                                Choose Document
+                                Select Document
                             </button>
                         </div>
                     </div>

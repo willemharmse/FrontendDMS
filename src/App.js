@@ -123,7 +123,7 @@ function App() {
         <Route path="FrontendDMS/constructionCM" element={<ConstructionCM />} />
         <Route path="FrontendDMS/constructionTM" element={<ConstructionTM />} />
         <Route path="FrontendDMS/constructionRM" element={<ConstructionRM />} />
-        <Route path="FrontendDMS/constructionDDS/:type" element={<ConstructionDDS />} />
+        <Route path="FrontendDMS/constructionDDS" element={<ConstructionDDS />} />
         <Route path="FrontendDMS/constructionJRA" element={<ConstructionJRA />} />
         <Route path="FrontendDMS/constructionRMS/:type" element={<ConstructionRMS />} />
         <Route path="FrontendDMS/constructionHelp" element={<ConstructionHelp />} />

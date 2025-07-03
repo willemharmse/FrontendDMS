@@ -17,7 +17,7 @@
     width: 1000px;
     /* Wider popup */
     max-height: 100%;
-    min-height: 500px;
+    min-height: 520px;
     /* Ensure the popup does not stretch vertically */
     overflow: hidden;
     /* Prevent the popup content from scrolling */
@@ -55,8 +55,8 @@
 
 .popup-table-wrapper-ue {
     overflow-y: auto;
-    max-height: 207px;
-    min-height: 207px;
+    max-height: 247px;
+    min-height: 247px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */
@@ -76,8 +76,8 @@
 
 .popup-table-wrapper-ue-2 {
     overflow-y: auto;
-    max-height: 190px;
-    min-height: 190px;
+    max-height: 200px;
+    min-height: 200px;
     height: 100%;
     width: 97%;
     /* You can adjust the width as needed */

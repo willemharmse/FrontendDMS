@@ -859,7 +859,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                         style={{ color: "black", cursor: "text" }}
                                                         ref={mainAreasInputRef}
                                                         className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                        placeholder="Choose Main Area"
+                                                        placeholder="Select Main Area"
                                                         value={selectedMainArea}
                                                         onChange={e => handleMainAreaInput(e.target.value)}
                                                         onFocus={handleMainAreasFocus}
@@ -878,7 +878,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                         style={{ color: "black", cursor: "text" }}
                                                         ref={subAreasInputRef}
                                                         className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                        placeholder="Choose Sub Area"
+                                                        placeholder="Select Sub Area"
                                                         value={selectedSubArea}
                                                         onChange={e => handleSubAreaInput(e.target.value)}
                                                         onFocus={handleSubAreasFocus}
@@ -1001,7 +1001,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                             ref={ueInputRef}
 
                                                             className="ibra-popup-dropdown ibra-popup-page-input-table-2"
-                                                            placeholder="Choose Unwanted Event"
+                                                            placeholder="Select Unwanted Event"
                                                             value={selectedUE}
                                                             onChange={e => handleUEInput(e.target.value)}
                                                             onFocus={handleUEFocus}
@@ -1018,7 +1018,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                 className="ibra-popup-page-textarea-2"
                                                 value={maxConsequence}
                                                 onChange={(e) => setMaxConsequence(e.target.value)}
-                                                placeholder="Enter max reasonable consequence details"
+                                                placeholder="Insert max reasonable consequence details"
                                             ></textarea>
                                         </div>
                                     </div>
@@ -1181,7 +1181,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                             className="ibra-popup-page-textarea-full"
                                             value={additionalComments}
                                             onChange={(e) => setAdditionalComments(e.target.value)}
-                                            placeholder="Enter additional notes for this specific unwanted event (Do not include future controls or improvements here, these should be listed at the end of the IBRA table)."
+                                            placeholder="Insert additional notes for this specific unwanted event (Do not include future controls or improvements here, these should be listed at the end of the IBRA table)."
                                         ></textarea>
                                     </div>
                                 </div>

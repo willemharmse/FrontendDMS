@@ -16,6 +16,7 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
     const [searchTerm, setSearchTerm] = useState("");
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 

@@ -66,7 +66,7 @@ function ForgotPasswordMobile() {
             </header>
             <div className="forgot-mobile-box">
                 <h2 className='forgot-mobile-heading'>
-                    {step === 1 ? 'Enter Username & Email' : step === 2 ? 'Enter OTP' : 'Set New Password'}
+                    {step === 1 ? 'Insert Username & Email' : step === 2 ? 'Insert OTP' : 'Set New Password'}
                 </h2>
                 <form onSubmit={handleSubmit}>
                     {step === 1 && (
@@ -84,7 +84,7 @@ function ForgotPasswordMobile() {
 
                     {step === 2 && (
                         <div className="forgot-mobile-input-group">
-                            <label>Enter OTP</label>
+                            <label>Insert OTP</label>
                             <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required />
                         </div>
                     )}

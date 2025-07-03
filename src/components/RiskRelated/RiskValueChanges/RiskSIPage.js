@@ -36,6 +36,26 @@ const RiskSIPage = () => {
             setSelectedData(draft);
             setShowTermPopup(true);
         }
+        else if (draft.type === "Mobile") {
+            setSelectedData(draft);
+            //setShowTermPopup(true);
+        }
+        else if (draft.type === "PPE") {
+            setSelectedData(draft);
+            //setShowTermPopup(true);
+        }
+        else if (draft.type === "Material") {
+            setSelectedData(draft);
+            //setShowTermPopup(true);
+        }
+        else if (draft.type === "Tool") {
+            setSelectedData(draft);
+            //setShowTermPopup(true);
+        }
+        else if (draft.type === "Equipment") {
+            setSelectedData(draft);
+            //setShowTermPopup(true);
+        }
     };
 
     const closePopup = () => {
@@ -134,6 +154,26 @@ const RiskSIPage = () => {
 
             case 'Definition':
                 return "Term";
+                break;
+
+            case 'PPE':
+                return "PPE";
+                break;
+
+            case 'Tool':
+                return "Hand Tool";
+                break;
+
+            case 'Material':
+                return "Material";
+                break;
+
+            case 'Mobile':
+                return "Mobile Machinery";
+                break;
+
+            case 'Equipment':
+                return "Equipment";
                 break;
         }
     };

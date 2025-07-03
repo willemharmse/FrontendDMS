@@ -143,7 +143,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
                             value={icon}
                             onChange={(e) => setIcon(e.target.value)}
                         >
-                            <option value="" className="def-colour">Choose Icon</option>
+                            <option value="" className="def-colour">Select Icon</option>
                             {Object.keys(iconMap).map((key) => (
                                 <option key={key} value={key}>
                                     {key.replace("fa", "").replace(/([A-Z])/g, " $1").trim()} {/* Format icon name */}

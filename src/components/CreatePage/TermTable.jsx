@@ -47,6 +47,7 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   }, []);
 
   const handlePopupToggle = () => {
+    setSearchTerm("")
     setPopupVisible(!popupVisible);
   };
 

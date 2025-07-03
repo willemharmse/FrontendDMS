@@ -57,12 +57,12 @@ const UpdateAbbreviation = ({ onClose, data }) => {
 
                 <div className="admin-update-abbrs-popup-group">
                     <label className="admin-update-abbrs-popup-label">Abbreviation</label>
-                    <input spellcheck="true" className="admin-update-abbrs-input" placeholder="Enter Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
+                    <input spellcheck="true" className="admin-update-abbrs-input" placeholder="Insert Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
                 </div>
 
                 <div className="admin-update-abbrs-popup-group">
                     <label className="admin-update-abbrs-popup-label">Abbreviation Meaning</label>
-                    <textarea rows={4} spellcheck="true" className="admin-update-abbrs-input" placeholder="Enter abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                    <textarea rows={4} spellcheck="true" className="admin-update-abbrs-input" placeholder="Insert abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 
                 {message && <div className="admin-update-abbrs-message-manage">{message}</div>}

@@ -51,6 +51,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
     }, [usedHandTools]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 

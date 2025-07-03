@@ -112,7 +112,7 @@ export default function BatchUpload() {
                             accept=".xlsx, .xls"
                             onChange={handleFileChange}
                         />
-                        <label>Choose Excel File</label>
+                        <label>Select Excel File</label>
                         {file && <span className="file-name-batch">{file.name}</span>}
                     </div>
                 </div>
@@ -126,7 +126,7 @@ export default function BatchUpload() {
                             multiple
                             onChange={handleAdditionalFilesChange}
                         />
-                        <label>Choose Files</label>
+                        <label>Select Files</label>
                     </div>
                     {additionalFiles.length > 0 && (
                         <div className="selected-files-container-b">
@@ -144,7 +144,7 @@ export default function BatchUpload() {
                     className="subBut-b"
                     onClick={handleClick}
                     disabled={loading}
-                    title="Enter all fields marked by a * to submit the form"
+                    title="Insert all fields marked by a * to submit the form"
                 >
                     {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Batch Upload Files'}
                 </button>

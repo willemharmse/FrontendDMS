@@ -2,12 +2,20 @@ import { useEffect, useState } from "react";
 import "./LoadRiskDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, } from '@fortawesome/free-solid-svg-icons';
+import DeleteDraftPopup from "../Popups/DeleteDraftPopup";
 
 const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
     const [isLoading, setIsLoading] = useState(true);
     const [showNoDrafts, setShowNoDrafts] = useState(false);
+    const [deletePopup, setDeletePopup] = useState(false);
+    const [title, setTitle] = useState("");
+
+    const closeDelete = () => {
+        setDeletePopup(false);
+        setDeleteConfirm({ open: false, draftId: null });
+    }
 
     useEffect(() => {
         const getDraftDocuments = async () => {
@@ -75,14 +83,16 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
         onClose();
     };
 
-    const confirmDelete = (draftId) => {
+    const confirmDelete = (draftId, title) => {
         setDeleteConfirm({ open: true, draftId });
+        setTitle(title);
+        setDeletePopup(true);
     };
 
     const handleDelete = async () => {
         const { draftId } = deleteConfirm;
         if (!draftId) return;
-        const route = riskType === "IBRA" ? `riskDraft/ibra/delete/${draftId}` : ``;
+        const route = `riskDraft/${riskType.toLowerCase()}/delete/${draftId}`;
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
                 method: "DELETE",
@@ -101,6 +111,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
         }
 
         setDeleteConfirm({ open: false, draftId: null });
+        closeDelete();
     };
 
     if (!isOpen) return null;
@@ -138,20 +149,20 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                                                 <td onClick={() => handleLoad(item._id)} className="load-draft-td">{`${item.formData.title} ${item.formData.documentType}`}</td>
                                                 <td className="cent-draft-class">
                                                     <div>{item.creator?.username || "Unknown"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                    <div style={{ fontSize: "12px", color: "#667" }}>
                                                         {formatDateTime(item.dateCreated)}
                                                     </div>
                                                 </td>
                                                 <td className="cent-draft-class">
                                                     <div>{item.updater?.username || "-"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                    <div style={{ fontSize: "12px", color: "#667" }}>
                                                         {item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
                                                     </div>
                                                 </td>
                                                 <td className="load-draft-delete">
                                                     <button
                                                         className={"action-button-load-draft delete-button-load-draft"}
-                                                        onClick={() => confirmDelete(item._id)}
+                                                        onClick={() => confirmDelete(item._id, item.formData.title)}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
                                                     </button>
@@ -181,17 +192,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                 </div>
             </div>
 
-            {deleteConfirm.open && (
-                <div className="delete-confirm-overlay-ld">
-                    <div className="delete-confirm-content-ld">
-                        <p>Are you sure you want to delete this draft?</p>
-                        <div className="delete-confirm-actions-ld">
-                            <button className="confirm-btn-ld" onClick={handleDelete}>Yes</button>
-                            <button className="cancel-btn-ld" onClick={() => setDeleteConfirm({ open: false, draftId: null })}>No</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} />)}
         </div>
     );
 };

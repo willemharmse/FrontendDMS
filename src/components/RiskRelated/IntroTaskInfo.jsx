@@ -39,12 +39,14 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
-                const data = res.data.stakeholders;
+                const res = await axios.get(`${process.env.REACT_APP_URL}/api/riskInfo/desgntions`);
+                const data = res.data.designations;
 
-                const positions = Array.from(new Set(data.map(d => d.pos))).sort();
+                const positions = Array.from(new Set(data.map(d => d.person))).sort();
 
                 setPosLists(positions);
+
+                console.log(positions);
             } catch (error) {
                 console.log(error)
             }
@@ -507,7 +509,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                 <textarea
                                     className="jra-info-popup-page-textarea"
                                     value={formData.introInfo.description}
-                                    placeholder="Enter a brief description of the task that is addressed in this JRA."
+                                    placeholder="Insert a brief description of the task that is addressed in this JRA."
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -526,7 +528,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                 <textarea
                                     className="jra-info-popup-page-textarea"
                                     value={formData.introInfo.start}
-                                    placeholder="Enter how the task will be started."
+                                    placeholder="Insert how the task will be started."
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -545,7 +547,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                 <textarea
                                     className="jra-info-popup-page-textarea"
                                     value={formData.introInfo.end}
-                                    placeholder="Enter how the task will be ended."
+                                    placeholder="Insert how the task will be ended."
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -567,7 +569,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         value={formData.introInfo.mainArea}
                                         className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={mainAreasInputRef}
-                                        placeholder="Choose Main Area"
+                                        placeholder="Select Main Area"
                                         onChange={e => handleMainAreaInput(e.target.value)}
                                         onFocus={handleMainAreasFocus}
                                     />
@@ -583,7 +585,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         value={formData.introInfo.subArea}
                                         className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={subAreasInputRef}
-                                        placeholder="Choose Sub Area"
+                                        placeholder="Select Sub Area"
                                         onChange={e => handleSubAreaInput(e.target.value)}
                                         onFocus={handleSubAreasFocus}
                                     />
@@ -599,7 +601,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         value={formData.introInfo.owner}
                                         className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={ownerInputRef}
-                                        placeholder="Choose Functional Owner"
+                                        placeholder="Select Functional Owner"
                                         onChange={e => handleOwnerInput(e.target.value)}
                                         onFocus={handleOwnerFocus}
                                     />
@@ -615,7 +617,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         value={formData.introInfo.inCharge}
                                         className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={leaderInputRef}
-                                        placeholder="Choose Person in Charge"
+                                        placeholder="Select Person in Charge"
                                         onChange={e => handleLeaderInput(e.target.value)}
                                         onFocus={handleLeaderFocus}
                                     />
@@ -628,7 +630,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     <div className="risk-scope-popup-page-additional-row ">
                         <div className="risk-popup-page-column-half-scope">
                             <div className="other-activities-group">
-                                <label style={{ marginRight: "60px" }} className="jra-info-risk-label">Are there other activities affected by this task? <span className="required-field">*</span></label>
+                                <label style={{ marginRight: "78px" }} className="jra-info-risk-label">Are there any activities affected by this JRA task? <span className="required-field">*</span></label>
                                 <div className="yes-no-checkboxes-2">
                                     <label>
                                         <input
@@ -678,7 +680,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                     name="scope"
                                     className="jra-info-popup-page-textarea font-fam"
                                     rows="5"   // Adjust the number of rows for initial height
-                                    placeholder="Describe the activity and how it affects this task." // Optional placeholder text
+                                    placeholder="If yes, which activity is affected and how?" // Optional placeholder text
                                     onChange={e =>
                                         setFormData(prev => ({
                                             ...prev,
@@ -700,7 +702,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                     <div className="risk-scope-popup-page-additional-row ">
                         <div className="risk-popup-page-column-half-scope">
                             <div className="other-activities-group">
-                                <label className="jra-info-risk-label">Is there an existing procedure available for this task? <span className="required-field">*</span></label>
+                                <label className="jra-info-risk-label">Is there an existing procedure/ SOP available for this JRA? <span className="required-field">*</span></label>
                                 <div className="yes-no-checkboxes">
                                     <label>
                                         <input
@@ -756,19 +758,17 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                     <tbody>
                                         <tr key={formData.introInfo.procedures.id}>
                                             <td>
-                                                <div className="jra-info-popup-page-select-container">
-                                                    <input
-                                                        type="text"
-                                                        name="procedure"
-                                                        autoComplete="off"
-                                                        value={formData.introInfo.procedures.procedure}
-                                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                        placeholder="Choose Procedure"
-                                                        ref={filesInputRef}
-                                                        onChange={e => handleProcedureInput(e.target.value)}
-                                                        onFocus={handleProcedureFocus}
-                                                    />
-                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name="procedure"
+                                                    autoComplete="off"
+                                                    value={formData.introInfo.procedures.procedure}
+                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                                    placeholder="Insert the name of the procedure/ SOP that must accompany this JRA."
+                                                    ref={filesInputRef}
+                                                    onChange={e => handleProcedureInput(e.target.value)}
+                                                    onFocus={handleProcedureFocus}
+                                                />
                                             </td>
                                             <td>
                                                 <input
@@ -777,7 +777,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                     autoComplete="off"
                                                     value={formData.introInfo.procedures.ref}
                                                     className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                    placeholder="Enter Reference Number"
+                                                    placeholder="Insert Reference Number"
                                                     onChange={e =>
                                                         setFormData(prev => ({
                                                             ...prev,
@@ -799,7 +799,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                     autoComplete="off"
                                                     value={formData.introInfo.procedures.version}
                                                     className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                    placeholder="Enter Version"
+                                                    placeholder="Insert Version"
                                                     onChange={e =>
                                                         setFormData(prev => ({
                                                             ...prev,
@@ -822,7 +822,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                     style={{ fontFamily: "Arial" }}
                                                     value={formData.introInfo.procedures.issueDate}
                                                     className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                    placeholder="Enter Issue Date"
+                                                    placeholder="Insert Issue Date"
                                                     onChange={e =>
                                                         setFormData(prev => ({
                                                             ...prev,
@@ -935,7 +935,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                 </ul>
             )}
 
-            {showFilesDropdown && files.length > 0 && (
+            {(false && showFilesDropdown) && files.length > 0 && (
                 <ul
                     className="floating-dropdown"
                     style={{

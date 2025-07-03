@@ -215,7 +215,7 @@ const UploadPopup = ({ onClose }) => {
                         <div className="upload-file-name">{selectedFile ? selectedFile.name : "No Document Selected"}</div>
                         <div className="create-user-buttons">
                             <label className="choose-upload-file-button">
-                                {'Choose Document'}
+                                {'Select Document'}
                                 <input
                                     type="file"
                                     onChange={handleFileChange}

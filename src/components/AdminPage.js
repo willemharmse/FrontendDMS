@@ -165,7 +165,7 @@ const AdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Batch Upload Documents</h3>
+                            <h3 className="document-title-fi-home">Upload Batch Documents</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={openImportSI}>
@@ -173,7 +173,7 @@ const AdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/adminSIDDS.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Import Site Info</h3>
+                            <h3 className="document-title-fi-home">Import Site General Information</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={openImportRSI}>
@@ -181,7 +181,7 @@ const AdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/adminSIRMS.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Import Risk Site Info</h3>
+                            <h3 className="document-title-fi-home">Import Site Risk Information</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
@@ -189,7 +189,7 @@ const AdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/adminUsers.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">User Management</h3>
+                            <h3 className="document-title-fi-home">Manage Users</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/departmentManage")}>
@@ -197,7 +197,7 @@ const AdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/adminDepartments.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Department Management</h3>
+                            <h3 className="document-title-fi-home">Manage Departments</h3>
                         </>
                     </div>
                 </div>

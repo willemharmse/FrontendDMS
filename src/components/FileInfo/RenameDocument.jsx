@@ -79,7 +79,7 @@ const RenameDocument = ({ isOpen, onClose, documentName, fileID }) => {
                         type="text"
                         value={newName}
                         onChange={handleNameChange}
-                        placeholder="Enter New Document Name"
+                        placeholder="Insert New Document Name"
                         className="review-popup-input"
                     />
                 </div>

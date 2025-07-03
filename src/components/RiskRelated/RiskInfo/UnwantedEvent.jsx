@@ -18,10 +18,20 @@ const UnwantedEvent = ({ setClose }) => {
                             As far as reasonably practicable the unwanted event must be written in such a way as not to pre-empt the consequences or impact of the unwanted event.
                         </p>
                         <p>
-                            <strong>Example of incorrect unwanted event:</strong> Loss of life due to vehicle collision. This approach will limit the thinking of the workshop team to focus on a specific outcome or consequence such as Safety only. All consequence types should be considered in the formulation of the unwanted event.
+                            <strong>Example of incorrect unwanted event:</strong> Loss of life due to vehicle collision.
+                            <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginTop: "2px" }}>
+                                <li>
+                                    This approach will limit the thinking of the workshop team to focus on a specific outcome or consequence such as Safety only. All consequence types should be considered in the formulation of the unwanted event.
+                                </li>
+                            </ul>
                         </p>
                         <p>
-                            <strong>Example of correct unwanted event:</strong> Vehicle collision. As far as reasonably practicable the unwanted events must not be written to include a specific cause related to the unwanted event.
+                            <strong>Example of correct unwanted event:</strong> Vehicle collision.
+                            <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginTop: "2px" }}>
+                                <li>
+                                    As far as reasonably practicable the unwanted events must not be written to include a specific cause related to the unwanted event.
+                                </li>
+                            </ul>
                         </p>
                     </div>
                 </div>
@@ -53,6 +63,7 @@ const UnwantedEvent = ({ setClose }) => {
                                     <td>
                                         A key point in a scenario at which a hazard is realized, often resulting in injury, damage, or loss.
                                         <br /><span className="itals-help-info">Source: MHSC Risk Assessment Frameworks (e.g. FOGRA or MOSH).</span>
+                                        <br /><br />Uncontrolled release of hazard/ exposure to hazard or risk source.
                                     </td>
                                 </tr>
                             </tbody>

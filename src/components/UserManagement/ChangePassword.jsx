@@ -124,7 +124,7 @@ const ChangePassword = ({ onClose }) => {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="password-reset-popup-group">
-                        <label className="password-reset-popup-label">Enter Current Password:</label>
+                        <label className="password-reset-popup-label">Insert Current Password:</label>
                         <div className="password-reset-input-container">
                             <input
                                 spellcheck="true"
@@ -146,7 +146,7 @@ const ChangePassword = ({ onClose }) => {
                     </div>
 
                     <div className="password-reset-popup-group">
-                        <label className="password-reset-popup-label">Enter New Password:</label>
+                        <label className="password-reset-popup-label">Insert New Password:</label>
                         <div className="password-reset-input-container">
                             <input
                                 spellcheck="true"

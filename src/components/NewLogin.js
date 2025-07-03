@@ -198,7 +198,7 @@ const NewLogin = () => {
                             <input
                                 type="text"
                                 id="username"
-                                placeholder="Enter your username"
+                                placeholder="Insert your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
@@ -213,7 +213,7 @@ const NewLogin = () => {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 id="password"
-                                placeholder="Enter your password"
+                                placeholder="Insert your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required

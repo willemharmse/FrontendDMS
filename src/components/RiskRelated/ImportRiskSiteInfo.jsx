@@ -115,7 +115,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
                     <div className="import-si-file-text-xlsx">{file ? file.name : "No Document Selected"}</div>
                     <div className="import-si-file-buttons">
                         <label className="import-si-file-button">
-                            {'Choose Document'}
+                            {'Select Document'}
                             <input
                                 type="file"
                                 accept=".xlsx, .xls"

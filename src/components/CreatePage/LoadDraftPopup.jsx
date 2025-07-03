@@ -2,13 +2,26 @@ import React, { useEffect, useState } from "react";
 import "./LoadDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import DeleteDraftPopup from "../Popups/DeleteDraftPopup";
 
 const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
+    const [isLoading, setIsLoading] = useState(true);
+    const [showNoDrafts, setShowNoDrafts] = useState(false);
+    const [deletePopup, setDeletePopup] = useState(false);
+    const [title, setTitle] = useState("");
+
+    const closeDelete = () => {
+        setDeletePopup(false);
+        setDeleteConfirm({ open: false, draftId: null });
+    }
 
     useEffect(() => {
         const getDraftDocuments = async () => {
+            setIsLoading(true);
+            setShowNoDrafts(false);
+
             try {
                 const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/drafts/${userID}`, {
                     method: "GET",
@@ -24,6 +37,8 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                 setDrafts(data);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -57,8 +72,10 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         onClose();
     };
 
-    const confirmDelete = (draftId) => {
+    const confirmDelete = (draftId, title) => {
         setDeleteConfirm({ open: true, draftId });
+        setTitle(title);
+        setDeletePopup(true);
     };
 
     const handleDelete = async () => {
@@ -83,6 +100,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         }
 
         setDeleteConfirm({ open: false, draftId: null });
+        closeDelete();
     };
 
     if (!isOpen) return null;
@@ -110,7 +128,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {drafts.length > 0 ? (
+                                {!isLoading && drafts.length > 0 && (
                                     drafts
                                         .map((item, index) => (
                                             <tr key={item._id}>
@@ -120,29 +138,41 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                                 <td onClick={() => handleLoad(item._id)} className="load-draft-td">{`${item.formData.title} ${item.formData.documentType}`}</td>
                                                 <td className="cent-draft-class">
                                                     <div>{item.creator?.username || "Unknown"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                    <div style={{ fontSize: "12px", color: "#667" }}>
                                                         {formatDateTime(item.dateCreated)}
                                                     </div>
                                                 </td>
                                                 <td className="cent-draft-class">
                                                     <div>{item.updater?.username || "-"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#666" }}>
+                                                    <div style={{ fontSize: "12px", color: "#667" }}>
                                                         {item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
                                                     </div>
                                                 </td>
                                                 <td className="load-draft-delete">
                                                     <button
                                                         className={"action-button-load-draft delete-button-load-draft"}
-                                                        onClick={() => confirmDelete(item._id)}
+                                                        onClick={() => confirmDelete(item._id, item.formData.title)}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))
-                                ) : (
+                                )}
+
+                                {isLoading && (
                                     <tr>
-                                        <td colSpan="5">No Drafts Available</td>
+                                        <td colSpan="5" className="cent">
+                                            Loading drafts…
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {!isLoading && drafts.length === 0 && showNoDrafts && (
+                                    <tr>
+                                        <td colSpan="5" className="cent">
+                                            No Drafts Available
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
@@ -151,17 +181,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                 </div>
             </div>
 
-            {deleteConfirm.open && (
-                <div className="delete-confirm-overlay-ld">
-                    <div className="delete-confirm-content-ld">
-                        <p>Are you sure you want to delete this draft?</p>
-                        <div className="delete-confirm-actions-ld">
-                            <button className="confirm-btn-ld" onClick={handleDelete}>Yes</button>
-                            <button className="cancel-btn-ld" onClick={() => setDeleteConfirm({ open: false, draftId: null })}>No</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} />)}
         </div>
     );
 };

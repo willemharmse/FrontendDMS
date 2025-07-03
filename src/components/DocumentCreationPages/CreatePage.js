@@ -1037,7 +1037,7 @@ const CreatePage = () => {
                 value={formData.aim}
                 onChange={handleInputChange}
                 rows="5"   // Adjust the number of rows for initial height
-                placeholder="Enter the aim of the document here..." // Optional placeholder text
+                placeholder="Insert the aim of the document here..." // Optional placeholder text
               />
             </div>
           </div>
@@ -1063,7 +1063,7 @@ const CreatePage = () => {
                 className="aim-textarea cent-create font-fam"
                 value={formData.reviewDate}
                 onChange={handleInputChange}
-                placeholder="Enter the review period in months" // Optional placeholder text
+                placeholder="Insert the review period in months" // Optional placeholder text
               />
             </div>
           </div>

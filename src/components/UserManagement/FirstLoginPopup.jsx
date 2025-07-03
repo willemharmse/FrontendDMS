@@ -124,7 +124,7 @@ const FirstLoginPopup = ({ onClose }) => {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="first-login-popup-group">
-                        <label className="first-login-popup-label">Enter Current Password:</label>
+                        <label className="first-login-popup-label">Insert Current Password:</label>
                         <div className="first-login-input-container">
                             <input
                                 spellcheck="true"
@@ -146,7 +146,7 @@ const FirstLoginPopup = ({ onClose }) => {
                     </div>
 
                     <div className="first-login-popup-group">
-                        <label className="first-login-popup-label">Enter New Password:</label>
+                        <label className="first-login-popup-label">Insert New Password:</label>
                         <div className="first-login-input-container">
                             <input
                                 spellcheck="true"

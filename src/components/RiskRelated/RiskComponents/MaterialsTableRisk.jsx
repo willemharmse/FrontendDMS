@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MaterialsTableRisk.css"; // Add styling here
-import MaterialPopup from "../../ValueChanges/MaterialPopup";
-import ManageMaterial from "../../ValueChanges/ManageMaterial";
+import RiskMaterialPopup from "../RiskValueChanges/RiskMaterialPopup"
+import RiskManageMaterial from "../RiskValueChanges/RiskManageMaterial"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -43,6 +43,44 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
         fetchValues();
     }, []);
 
+    const handleNewMat = (newMat) => {
+        const code = newMat.mat;
+        // add to the “used” codes array
+        setUsedMaterials((prev) => [...prev, code]);
+        setSelectedMaterials((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            Materials: [...prev.Materials, newMat],
+        }));
+    };
+
+    const handleMatUpdate = (updatedMat, oldMat) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedMaterials(prev =>
+            prev.map(code => (code === oldMat ? updatedMat.mat : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedMaterials(prev => {
+            const next = new Set(prev);
+            if (next.has(oldMat)) {
+                next.delete(oldMat);
+                next.add(updatedMat.mat);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            Materials: prev.Materials.map(row =>
+                row.mat === oldMat
+                    ? { mat: updatedMat.mat + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedMaterials(new Set(usedMaterials));
         if (usedMaterials.length > 0) {
@@ -51,6 +89,7 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
     }, [usedMaterials]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 
@@ -111,15 +150,20 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                     <button className="top-right-button-mat-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Materials" /></button>
                 )}
                 <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Material" /></button>
-                <MaterialPopup
+                <RiskMaterialPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setMatsData={setMatsData}
+                    onAdd={handleNewMat}
                 />
 
-                {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <RiskManageMaterial closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleMatUpdate}
+                    userID={userID}
+                    setMatData={setMatsData}
+                    onAdd={handleNewMat} />}
+
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-mat">

@@ -1299,7 +1299,7 @@ const RiskManagementPageBTA = () => {
                                             onChange={handleInputChange}
                                             value={formData.scope}
                                             rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
+                                            placeholder="Insert a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
                                     </div>
                                 </div>

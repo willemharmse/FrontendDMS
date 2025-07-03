@@ -244,7 +244,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     e.target.style.height = 'auto'; // Reset
                                                     e.target.style.height = e.target.scrollHeight + 'px'; // Expand dynamically
                                                 }}
-                                                placeholder="Enter the main step of the procedure here..." // Optional placeholder text
+                                                placeholder="Insert the main step of the procedure here..." // Optional placeholder text
                                             />
                                         </td>
                                         <td>
@@ -258,7 +258,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     e.target.style.height = 'auto'; // Reset
                                                     e.target.style.height = e.target.scrollHeight + 'px'; // Expand dynamically
                                                 }}
-                                                placeholder="Enter the sub steps of the procedure here..." // Optional placeholder text
+                                                placeholder="Insert the sub steps of the procedure here..." // Optional placeholder text
                                             />
                                         </td>
                                         <td>
@@ -281,7 +281,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
                                                                 updateRow(index, "prevStep", updatedSteps.join(";"));
                                                             }}
-                                                            placeholder="Enter step"
+                                                            placeholder="Insert step"
                                                         />
                                                         <button
                                                             className="remove-step-button-ref"

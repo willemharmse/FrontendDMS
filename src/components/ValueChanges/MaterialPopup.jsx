@@ -111,7 +111,7 @@ const MaterialPopup = ({ isOpen, onClose, role, userID, setMatsData }) => {
                             onChange={(e) => setMat(e.target.value)}
                             className="mat-popup-input"
                             required
-                            placeholder="Enter material name"
+                            placeholder="Insert material name"
                         />
                     </div>
 

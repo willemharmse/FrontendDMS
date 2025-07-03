@@ -48,6 +48,7 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   }, []);
 
   const handlePopupToggle = () => {
+    setSearchTerm("")
     setPopupVisible(!popupVisible);
   };
 

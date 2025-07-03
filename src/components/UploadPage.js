@@ -28,6 +28,7 @@ const UploadPage = () => {
   const adminRoles = ['admin', 'teamleader', 'developer'];
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [userID, setUserID] = useState('');
   const [errors, setErrors] = useState([]);
 
   const handleSubmit = async (e) => {
@@ -44,6 +45,8 @@ const UploadPage = () => {
       if (!(adminRoles.includes(decodedToken.role))) {
         navigate("/FrontendDMS/403");
       }
+
+      setUserID(decodedToken.userId);
     }
   }, [navigate]);
 
@@ -111,6 +114,7 @@ const UploadPage = () => {
     formData.append('documentType', documentType);
     formData.append('discipline', discipline);
     formData.append('status', status);
+    formData.append('userID', userID);
     formData.append('reviewDate', reviewDate);
 
     try {
@@ -174,7 +178,7 @@ const UploadPage = () => {
             <label>File <span className="required-field">*</span></label>
             <div className="custom-file-input">
               <input type="file" className="upload-font-components" id="file" onChange={handleFileChange} />
-              <label htmlFor="file">Choose File</label>
+              <label htmlFor="file">Select File</label>
               {selectedFile && <span className="file-name">{selectedFile.name}</span>}
             </div>
           </div>
@@ -198,7 +202,6 @@ const UploadPage = () => {
                 options={users.map(user => ({ value: user, label: user }))}
                 isMulti
                 onChange={(selected) => setOwner(selected.map(s => s.value))}
-                className="sidebar-select-up upload-font-components"
                 placeholder="Select Authors"
                 value={owner.length > 0 ? owner.map(o => ({ value: o, label: o })) : []}
               />
@@ -243,7 +246,7 @@ const UploadPage = () => {
               <input type="date" value={reviewDate} className="upload-font-components" onChange={(e) => setReviewDate(e.target.value)}></input>
             </div>
           </div>
-          <button className="subBut" type="submit" disabled={loading} title="Enter all fields marked by a * to submit the form">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
+          <button className="subBut" type="submit" disabled={loading} title="Insert all fields marked by a * to submit the form">{loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Upload File'}</button>
         </form>
         {showPopup && <UploadPopup message={successMessage} onClose={() => setShowPopup(false)} />}
         {error && <div className="error-message">{error}</div>}

@@ -112,8 +112,7 @@
 .yes-no-checkboxes {
     display: flex;
     gap: 12px;
-    margin-left: auto;
-    margin-right: 0px;
+    margin-left: 0px;
     /* space between “Yes” and “No” */
 }
 
@@ -136,8 +135,7 @@
 .yes-no-checkboxes-2 {
     display: flex;
     gap: 12px;
-    margin-left: auto;
-    margin-right: 0px;
+    margin-left: 0px;
     /* space between “Yes” and “No” */
 }
 

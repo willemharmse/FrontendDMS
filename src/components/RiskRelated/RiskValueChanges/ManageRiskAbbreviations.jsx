@@ -132,12 +132,12 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
 
                 <div className="manAbbr-popup-group">
                     <label className="manAbbr-popup-label">New Abbreviation</label>
-                    <input spellcheck="true" className="manAbbr-input" placeholder="Enter New Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
+                    <input spellcheck="true" className="manAbbr-input" placeholder="Insert New Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
                 </div>
 
                 <div className="manAbbr-popup-group">
                     <label className="manAbbr-popup-label">New Abbreviation Meaning</label>
-                    <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Enter new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                    <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Insert new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 
                 <div className="abbr-popup-group">
@@ -150,7 +150,7 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
                             onChange={(e) => setApprover(e.target.value)}
                             className="abbr-popup-select"
                             required
-                            placeholder="Choose Approver"
+                            placeholder="Select Approver"
                         >
                             <option value="">Select Approver</option>
                             {usersList.map((value, index) => (

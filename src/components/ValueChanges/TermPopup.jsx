@@ -115,7 +115,7 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                             onChange={(e) => setTerm(e.target.value)}
                             className="term-popup-input"
                             required
-                            placeholder="Enter term here"
+                            placeholder="Insert term here"
                         />
                     </div>
                     <div className="term-popup-group">
@@ -128,7 +128,7 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData }) => {
                             onChange={(e) => setDefinition(e.target.value)}
                             className="term-popup-text-area"
                             required
-                            placeholder="Enter description here"
+                            placeholder="Insert description here"
                         />
                     </div>
 

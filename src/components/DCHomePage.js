@@ -66,6 +66,14 @@ const DCHomePage = () => {
                             <h3 className="document-title-dc-home">Standards</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/constructionDDS")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/specialInst.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Special Instructions *</h3>
+                        </>
+                    </div>
                 </div>
             </div>
             <ToastContainer />

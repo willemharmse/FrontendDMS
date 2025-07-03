@@ -132,12 +132,12 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
 
                 <div className="manDefs-popup-group">
                     <label className="manDefs-popup-label">New Term</label>
-                    <input spellcheck="true" className="manDefs-input" placeholder="Enter New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
+                    <input spellcheck="true" className="manDefs-input" placeholder="Insert New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                 </div>
 
                 <div className="manDefs-popup-group">
                     <label className="manDefs-popup-label">New Term Definition</label>
-                    <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Enter new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                    <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                 </div>
 
                 <div className="abbr-popup-group">
@@ -150,7 +150,7 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
                             onChange={(e) => setApprover(e.target.value)}
                             className="abbr-popup-select"
                             required
-                            placeholder="Choose Approver"
+                            placeholder="Select Approver"
                         >
                             <option value="">Select Approver</option>
                             {usersList.map((value, index) => (

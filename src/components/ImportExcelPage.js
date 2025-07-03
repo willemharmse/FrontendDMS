@@ -110,7 +110,7 @@ export default function ImportExcelPage() {
                             accept=".xlsx, .xls"
                             onChange={handleFileChange}
                         />
-                        <label>Choose Excel File</label>
+                        <label>Select Excel File</label>
                         {file && <span className="file-name-import">{file.name}</span>}
                     </div>
                 </div>
@@ -120,7 +120,7 @@ export default function ImportExcelPage() {
                     className="subBut-import"
                     onClick={handleUpload}
                     disabled={loading}
-                    title="Enter all fields marked by a * to submit the form"
+                    title="Insert all fields marked by a * to submit the form"
                 >
                     {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Import Values For Upload Page'}
                 </button>

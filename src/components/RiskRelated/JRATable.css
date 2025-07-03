@@ -31,6 +31,10 @@
     font-family: Arial, sans-serif !important;
 }
 
+.weRow {
+    background-color: #F2F2F2 !important;
+}
+
 .jra-header-cell {
     position: relative;
     padding-top: 1.2em;
@@ -106,18 +110,19 @@
 }
 
 .ibraHazJRA {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 220px;
+    max-width: 220px;
 }
 
 .ibraSubJRA {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 550px;
+    max-width: 550px;
+    padding-right: 2px !important;
 }
 
 .ibraTXJRA {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 200px;
+    max-width: 200px;
 }
 
 /* ── Control-icon popup ── */
@@ -172,6 +177,7 @@
     transition: border 0.3s ease-in-out;
     outline: none;
     field-sizing: content;
+    resize: none;
 }
 
 .aim-textarea-sub-jra {
@@ -186,6 +192,22 @@
     transition: border 0.3s ease-in-out;
     outline: none;
     field-sizing: content;
+    resize: none;
+}
+
+.aim-textarea-sub-jra-tx {
+    max-width: calc(100% - 20px);
+    width: calc(100% - 20px);
+    min-height: 20px;
+    padding: 10px;
+    padding-right: 30px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+    resize: none;
 }
 
 .aim-textarea-ue-jra {
@@ -199,6 +221,7 @@
     transition: border 0.3s ease-in-out;
     outline: none;
     field-sizing: content;
+    resize: none;
 }
 
 .aim-textarea-WED-jra {
@@ -212,26 +235,15 @@
     transition: border 0.3s ease-in-out;
     outline: none;
     field-sizing: content;
-}
-
-.ibraEXE {
-    width: 300px;
-    background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
-}
-
-td.ibraEXE {
-    min-width: 200px;
-    background-color: white !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
+    resize: none;
 }
 
 .ibraEXEJRA {
-    width: 300px;
-    max-width: 300px;
+    width: 550px;
+    max-width: 550px;
+}
+
+th.ibraEXEJRA {
     background-color: #BBBBBB !important;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
@@ -241,9 +253,13 @@ td.ibraEXE {
 td.ibraEXEJRA {
     min-width: 200px;
     max-width: 300px;
-    background-color: white !important;
+    background-color: white;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
+}
+
+.drag-over {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .ibraCon {
@@ -296,20 +312,25 @@ td.ibraCon {
     font-family: Arial !important;
 }
 
-.ibraStatus {
-    min-width: 200px;
-    width: 300px;
-    background-color: #CB6F6F !important;
-    border-left: solid 2px #CB6F6F !important;
-    border-right: solid 2px #CB6F6F !important;
-    border-top: solid 2px #CB6F6F !important;
+.jraStatus {
+    min-width: 200px !important;
+    max-width: 200px !important;
 }
 
-td.ibraStatus {
-    min-width: 200px;
-    background-color: white !important;
-    border-left: solid 2px #CB6F6F !important;
-    border-right: solid 2px #CB6F6F !important;
+th.jraStatus {
+    background-color: #CB6F6F !important;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
+}
+
+td.jraStatus {
+    min-width: 200px !important;
+    max-width: 200px !important;
+    background-color: white;
+    word-wrap: break-word !important;
+    /* Ensures long words break */
+    white-space: normal !important;
 }
 
 .ibraNotes {
@@ -329,8 +350,8 @@ td.ibraStatus {
 }
 
 .ibraDeadlineJRA {
-    min-width: 150px;
-    max-width: 150px;
+    min-width: 120px;
+    max-width: 120px;
 }
 
 .hazard-cell {
@@ -353,6 +374,7 @@ td.ibraStatus {
     border: 1px solid #ccc;
     border-radius: 50%;
     cursor: pointer;
+    z-index: 10;
 }
 
 .main-cell {
@@ -363,7 +385,7 @@ td.ibraStatus {
 /* floating “+” button */
 .insert-mainrow-button {
     position: absolute;
-    right: 160px;
+    right: 110px;
     bottom: -11px;
     /* tweak to sit on the border/edge
     background: #fff;
@@ -411,9 +433,20 @@ td.ibraStatus {
 }
 
 .control-icon {
-    margin-right: 8px;
-    margin-bottom: 5px;
+    margin-right: 5px;
     cursor: pointer;
+}
+
+.control-icon-action {
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.icons-add-delete-jra {
+    margin-left: 20px;
+    margin-bottom: 5px;
 }
 
 .control-icon-ai {

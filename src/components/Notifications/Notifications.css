@@ -1,8 +1,8 @@
 .notifications-modal-container {
     position: absolute;
-    top: 40px;
+    top: 45px;
     /* Adjust based on bell icon position */
-    right: 40px;
+    right: 13px;
     z-index: 9999;
 }
 

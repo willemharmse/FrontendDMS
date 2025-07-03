@@ -47,6 +47,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
     }, [usedMobileMachine]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 

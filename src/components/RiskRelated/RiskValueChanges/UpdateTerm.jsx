@@ -56,12 +56,12 @@ const UpdateTerm = ({ onClose, data }) => {
 
                 <div className="admin-update-defs-popup-group">
                     <label className="admin-update-defs-popup-label">Term</label>
-                    <input spellcheck="true" className="admin-update-defs-input" placeholder="Enter Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
+                    <input spellcheck="true" className="admin-update-defs-input" placeholder="Insert Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                 </div>
 
                 <div className="admin-update-defs-popup-group">
                     <label className="admin-update-defs-popup-label">Term Definition</label>
-                    <textarea rows={4} spellcheck="true" className="admin-update-defs-input-text-area" placeholder="Enter term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                    <textarea rows={4} spellcheck="true" className="admin-update-defs-input-text-area" placeholder="Insert term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                 </div>
 
                 {message && <div className="admin-update-defs-message-manage">{message}</div>}

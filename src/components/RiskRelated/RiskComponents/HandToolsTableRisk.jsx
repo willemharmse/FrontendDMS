@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./HandToolsTableRisk.css"; // Add styling here
-import ToolPopup from "../../ValueChanges/HandToolPopup";
-import ManageHandTools from "../../ValueChanges/ManageHandTools";
+import RiskHandToolPopup from "../RiskValueChanges/RiskHandToolPopup"
+import RiskManageHandTools from "../RiskValueChanges/RiskManageHandTools"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -43,6 +43,44 @@ const HandToolsTableRisk = ({ formData, setFormData, usedHandTools, setUsedHandT
         fetchValues();
     }, []);
 
+    const handleNewTool = (newTool) => {
+        const code = newTool.tool;
+        // add to the “used” codes array
+        setUsedHandTools((prev) => [...prev, code]);
+        setSelectedTools((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            HandTools: [...prev.HandTools, newTool],
+        }));
+    };
+
+    const handleToolUpdate = (updatedTool, oldTool) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedHandTools(prev =>
+            prev.map(code => (code === oldTool ? updatedTool.tool : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setUsedHandTools(prev => {
+            const next = new Set(prev);
+            if (next.has(oldTool)) {
+                next.delete(oldTool);
+                next.add(updatedTool.tool);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            HandTools: prev.HandTools.map(row =>
+                row.tool === oldTool
+                    ? { tool: updatedTool.tool + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedTools(new Set(usedHandTools));
         if (usedHandTools.length > 0) {
@@ -51,6 +89,7 @@ const HandToolsTableRisk = ({ formData, setFormData, usedHandTools, setUsedHandT
     }, [usedHandTools]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 
@@ -111,15 +150,20 @@ const HandToolsTableRisk = ({ formData, setFormData, usedHandTools, setUsedHandT
                     <button className="top-right-button-tool-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Tools" /></button>
                 )}
                 <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Tool" /></button>
-                <ToolPopup
+                <RiskHandToolPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setToolsData={setToolsData}
+                    onAdd={handleNewTool}
                 />
 
-                {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <RiskManageHandTools closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleToolUpdate}
+                    userID={userID}
+                    setToolData={setToolsData}
+                    onAdd={handleNewTool} />}
+
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-tool">

@@ -112,7 +112,7 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData }) => {
                             onChange={(e) => setMachine(e.target.value)}
                             className="mac-popup-input"
                             required
-                            placeholder="Enter machine name"
+                            placeholder="Insert machine name"
                         />
                     </div>
 

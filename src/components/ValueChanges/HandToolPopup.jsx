@@ -112,7 +112,7 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                             onChange={(e) => setTool(e.target.value)}
                             className="tool-popup-input"
                             required
-                            placeholder="Enter tool name"
+                            placeholder="Insert tool name"
                         />
                     </div>
 

@@ -118,7 +118,7 @@ const VersionControlPage = () => {
                             className="vc-select vc-font-change"
                             onChange={(e) => setSelectedExistingFile(e.target.value)}
                         >
-                            <option value="">Choose a file</option>
+                            <option value="">Select a file</option>
                             {files.map((file, index) => (
                                 <option key={index} value={file._id}>
                                     {file.fileName}
@@ -130,7 +130,7 @@ const VersionControlPage = () => {
                         <label htmlFor="new-file">Select New File</label>
                         <div className="vc-custom-file-input">
                             <input type="file" id="new-file" className="vc-font-change" onChange={handleNewFileChange} />
-                            <label htmlFor="new-file">Choose File</label>
+                            <label htmlFor="new-file">Select File</label>
                             {newFile && <span className="vc-file-name vc-font-change">{newFile.name}</span>}
                         </div>
                     </div>

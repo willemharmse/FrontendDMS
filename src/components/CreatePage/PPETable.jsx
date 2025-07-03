@@ -47,6 +47,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
     }, [usedPPEOptions]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 

@@ -112,7 +112,7 @@ const EquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData }) => {
                             onChange={(e) => setEqp(e.target.value)}
                             className="eqp-popup-input"
                             required
-                            placeholder="Enter equipment name"
+                            placeholder="Insert equipment name"
                         />
                     </div>
 

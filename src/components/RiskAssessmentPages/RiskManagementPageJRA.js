@@ -28,6 +28,8 @@ import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import IntroTaskInfo from "../RiskRelated/IntroTaskInfo";
 import PicturesTable from "../CreatePage/PicturesTable";
 import OtherTeam from "../RiskRelated/OtherTeam";
+import SavePopup from "../Popups/SavePopup";
+import SaveAsPopup from "../Popups/SaveAsPopup";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -56,6 +58,9 @@ const RiskManagementPageJRA = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [helpRA, setHelpRA] = useState(false);
     const [helpScope, setHelpScope] = useState(false);
+    const [companies, setCompanies] = useState([]);
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
 
     const closeHelpRA = () => {
         setHelpRA(false);
@@ -124,6 +129,65 @@ const RiskManagementPageJRA = () => {
                 }
             });
         }
+    };
+
+    const openSaveAs = () => {
+        if (!titleSet) {
+            toast.warn("Please fill in at least the title field before saving.", {
+                closeButton: false,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+        setIsSaveAsModalOpen(true);
+    };
+
+    const confirmSaveAs = (newTitle) => {
+        // apply the new title, clear loadedID, then save
+        const me = userIDRef.current;
+        const newFormData = {
+            ...formDataRef.current,        // your current formData
+            title: newTitle,             // override title
+        };
+
+        setFormData(newFormData);
+        formDataRef.current = newFormData;
+
+        setUserIDs([me]);
+        userIDsRef.current = [me];
+
+        loadedIDRef.current = '';
+        setLoadedID('');
+
+        handleSave();
+        loadData(loadedIDRef.current);
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("New Draft Successfully Loaded", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
+        setIsSaveAsModalOpen(false);
+    };
+
+    const closeSaveAs = () => {
+        setIsSaveAsModalOpen(false);
+    };
+
+    const openSaveMenu = () => {
+        setIsSaveMenuOpen(true);
+    };
+
+    const closeSaveMenu = () => {
+        setIsSaveMenuOpen(false);
     };
 
     const saveData = async () => {
@@ -374,6 +438,122 @@ const RiskManagementPageJRA = () => {
             { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
         ],
     });
+
+
+    const fetchSites = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+            const data = await response.json();
+            setCompanies(data.sites.map(s => s.site));
+        } catch (error) {
+            console.error("Error fetching designations:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSites();
+    }, []);
+
+    const closeAllDropdowns = () => {
+        setShowSiteDropdown(null);
+    };
+
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [filteredSites, setFilteredSites] = useState([]);
+    const [showSiteDropdown, setShowSiteDropdown] = useState(false);
+    const sitesInputRef = useRef(null);
+
+    const handleSiteInput = (value) => {
+        closeAllDropdowns();
+        setFormData(prev => ({
+            ...prev,
+            site: value
+        }));
+
+        const matches = companies
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+        setFilteredSites(matches);
+        setShowSiteDropdown(true);
+
+        const el = sitesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleSiteFocus = () => {
+        closeAllDropdowns();
+
+        const matches = companies;
+        setFilteredSites(matches);
+        setShowSiteDropdown(true);
+
+        const el = sitesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectSiteSuggestion = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            site: value
+        }));
+        setShowSiteDropdown(false);
+    };
+
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowSiteDropdown(false);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showSiteDropdown]);
 
     const formDataRef = useRef(formData);
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
@@ -984,7 +1164,7 @@ const RiskManagementPageJRA = () => {
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={openSaveMenu} />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
@@ -1004,11 +1184,13 @@ const RiskManagementPageJRA = () => {
                         </div>
                     </div>
 
+                    {isSaveMenuOpen && (<SavePopup isOpen={isSaveMenuOpen} closeSaveMenu={closeSaveMenu} save={handleSave} openSaveAs={openSaveAs} />)}
+
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} />
+                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
@@ -1023,7 +1205,7 @@ const RiskManagementPageJRA = () => {
                                     className="font-fam title-input"
                                     value={formData.title}
                                     onChange={handleInputChange}
-                                    placeholder="Insert Risk Assessment Title (e.g., Working at Heights)"
+                                    placeholder="Insert the Risk Assessment Title (E.g. Perform Earth Leakage Test on Electrical Circuits)"
                                 />
                                 <span className="type-risk-create">{formData.documentType}</span>
                             </div>
@@ -1033,15 +1215,17 @@ const RiskManagementPageJRA = () => {
                     <div className="input-row-risk-create">
                         <div className="input-box-type-risk-create">
                             <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
-                            <select
-                                className="table-control font-fam"
-                                name="site"
-                                value={formData.site}
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Select Operation / Site Name</option>
-                                <option value="Site 2">Venetia Mine</option>
-                            </select>
+                            <div className="jra-info-popup-page-select-container">
+                                <input
+                                    type="text"
+                                    value={formData.site}
+                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                    ref={sitesInputRef}
+                                    placeholder="Select Site"
+                                    onChange={e => handleSiteInput(e.target.value)}
+                                    onFocus={handleSiteFocus}
+                                />
+                            </div>
                         </div>
                         <div className="input-box-type-risk-create-date">
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
@@ -1089,7 +1273,30 @@ const RiskManagementPageJRA = () => {
             </div>
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
             <ToastContainer />
+
+            {showSiteDropdown && filteredSites.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredSites.sort().map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectSiteSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };

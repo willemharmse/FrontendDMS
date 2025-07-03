@@ -7,11 +7,11 @@ import axios from "axios";
 
 const BurgerMenu = ({ role, isOpen, setIsOpen, risk }) => {
     const navigate = useNavigate();
-    const link = risk ? "/FrontendDMS/riskApprover" : "/FrontendDMS/adminApprover";
+    const link = risk ? "/riskApprover" : "/adminApprover";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/FrontendDMS/");
+        navigate("/");
     };
 
     const handleDownload = async () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MobileMachineTableRisk.css"; // Add styling here
-import MobileMachinePopup from "../../ValueChanges/MobileMachinePopup";
-import ManageMobileMachines from "../../ValueChanges/ManageMobileMachines";
+import RiskMobileMachinePopup from "../RiskValueChanges/RiskMobileMachinePopup"
+import RiskManageMobileMachines from "../RiskValueChanges/RiskManageMobileMachines"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -39,6 +39,44 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
         fetchValues();
     }, []);
 
+    const handleNewMac = (newMac) => {
+        const code = newMac.mac;
+        // add to the “used” codes array
+        setUsedMobileMachine((prev) => [...prev, code]);
+        setSelectedMMachine((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            MobileMachine: [...prev.MobileMachine, newMac],
+        }));
+    };
+
+    const handleMacUpdate = (updatedMac, oldMac) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedMobileMachine(prev =>
+            prev.map(code => (code === oldMac ? updatedMac.mac : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedMMachine(prev => {
+            const next = new Set(prev);
+            if (next.has(oldMac)) {
+                next.delete(oldMac);
+                next.add(updatedMac.mac);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            MobileMachine: prev.MobileMachine.map(row =>
+                row.mac === oldMac
+                    ? { mac: updatedMac.mac + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedMMachine(new Set(usedMobileMachine));
         if (usedMobileMachine.length > 0) {
@@ -47,6 +85,7 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
     }, [usedMobileMachine]);
 
     const handlePopupToggle = () => {
+        setSearchTerm("")
         setPopupVisible(!popupVisible);
     };
 
@@ -111,15 +150,19 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
                     <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Mobile Machines" /></button>
                 )}
                 <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Mobile Machine" /></button>
-                <MobileMachinePopup
+                <RiskMobileMachinePopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setMacData={setMacData}
+                    onAdd={handleNewMac}
                 />
 
-                {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <RiskManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleMacUpdate}
+                    userID={userID}
+                    setMachineData={setMacData}
+                    onAdd={handleNewMac} />}
 
                 {/* Popup */}
                 {popupVisible && (

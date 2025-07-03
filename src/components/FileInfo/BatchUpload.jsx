@@ -135,7 +135,7 @@ const BatchUpload = ({ onClose }) => {
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">
-                            {'Choose Document'}
+                            {'Select Document'}
                             <input
                                 type="file"
                                 accept=".xlsx, .xls"
@@ -151,7 +151,7 @@ const BatchUpload = ({ onClose }) => {
                     <div className="batch-file-text">Upload Documents from the List</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button-files">
-                            {'Choose Documents'}
+                            {'Select Documents'}
                             <input
                                 type="file"
                                 multiple

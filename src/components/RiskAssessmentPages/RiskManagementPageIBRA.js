@@ -656,6 +656,121 @@ const RiskManagementPageIBRA = () => {
         ],
     });
 
+    const fetchSites = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch values");
+            }
+            const data = await response.json();
+            setCompanies(data.sites.map(s => s.site));
+        } catch (error) {
+            console.error("Error fetching designations:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSites();
+    }, []);
+
+    const closeAllDropdowns = () => {
+        setShowSiteDropdown(null);
+    };
+
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [filteredSites, setFilteredSites] = useState([]);
+    const [showSiteDropdown, setShowSiteDropdown] = useState(false);
+    const sitesInputRef = useRef(null);
+
+    const handleSiteInput = (value) => {
+        closeAllDropdowns();
+        setFormData(prev => ({
+            ...prev,
+            site: value
+        }));
+
+        const matches = companies
+            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+        setFilteredSites(matches);
+        setShowSiteDropdown(true);
+
+        const el = sitesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleSiteFocus = () => {
+        closeAllDropdowns();
+
+        const matches = companies;
+        setFilteredSites(matches);
+        setShowSiteDropdown(true);
+
+        const el = sitesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // When they pick one
+    const selectSiteSuggestion = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            site: value
+        }));
+        setShowSiteDropdown(false);
+    };
+
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowSiteDropdown(false);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showSiteDropdown]);
+
     const [rewriteHistory, setRewriteHistory] = useState({
         aim: [],
         scope: [],
@@ -785,23 +900,6 @@ const RiskManagementPageIBRA = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(saveToHistory, 1000); // Only save after 1s of inactivity
     }, [formData, usedAbbrCodes, usedTermCodes]);
-
-    const fetchSites = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch values");
-            }
-            const data = await response.json();
-            setCompanies(data.sites.map(s => s.site));
-        } catch (error) {
-            console.error("Error fetching designations:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchSites();
-    }, []);
 
     const undoLastChange = () => {
         if (history.length > 1) {
@@ -1571,19 +1669,17 @@ const RiskManagementPageIBRA = () => {
                     <div className="input-row-risk-create">
                         <div className={`input-box-type-risk-create ${errors.site ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
-                            <select
-                                className={`table-control font-fam ${formData.site === "" ? "default-site-placeholder" : ""}`}
-                                name="site"
-                                value={formData.site}
-                                onChange={handleInputChange}
-                            >
-                                <option value="" disabled hidden>Select Operation/Site</option>
-                                {companies.map((company, index) => (
-                                    <option key={index} value={company}>
-                                        {company}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="jra-info-popup-page-select-container">
+                                <input
+                                    type="text"
+                                    value={formData.site}
+                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                    ref={sitesInputRef}
+                                    placeholder="Select Site"
+                                    onChange={e => handleSiteInput(e.target.value)}
+                                    onFocus={handleSiteFocus}
+                                />
+                            </div>
                         </div>
                         <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
@@ -1664,7 +1760,7 @@ const RiskManagementPageIBRA = () => {
                                             onChange={handleInputChange}
                                             value={formData.scope}
                                             rows="5"   // Adjust the number of rows for initial height
-                                            placeholder="Enter a brief scope introduction (General scope notes and comments)." // Optional placeholder text
+                                            placeholder="Insert a brief scope introduction (General scope notes and comments)." // Optional placeholder text
                                         />
                                         {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
                                             : (
@@ -1799,6 +1895,28 @@ const RiskManagementPageIBRA = () => {
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
             {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
+
+            {showSiteDropdown && filteredSites.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredSites.sort().map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectSiteSuggestion(term)}
+                        >
+                            {term}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };
