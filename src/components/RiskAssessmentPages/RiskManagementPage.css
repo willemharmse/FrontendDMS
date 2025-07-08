@@ -22,10 +22,25 @@
     width: 100%;
 }
 
+.owText {
+    font-size: 13px;
+    font-family: Arial;
+    margin-bottom: 100px !important;
+}
+
 .other-team__info {
     font-size: 16px;
     text-align: left;
     margin-bottom: 10px !important;
+    /* tweak as needed */
+}
+
+.other-team__ow {
+    font-size: 14px;
+    font-family: Arial;
+    margin-bottom: 10px !important;
+    display: block;
+    color: #333 !important;
     /* tweak as needed */
 }
 
@@ -145,7 +160,7 @@
     font-size: 24px;
     padding: 8px 8px;
     text-align: center;
-    color: #002060;
+    color: gray;
     border-radius: 50%;
     height: 100%;
     display: flex;

@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faArrowLeft, faSave, faPen } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -1183,7 +1183,25 @@ const RiskManagementPageBTA = () => {
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
                         <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                        </div>
+
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} title="Save As">
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faSave} />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    transform="shrink-6 down-5 right-7"
+                                    color="gray"   /* or whatever contrast you need */
+                                />
+                            </span>
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
@@ -1207,7 +1225,7 @@ const RiskManagementPageBTA = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} />
+                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>

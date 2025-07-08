@@ -56,14 +56,24 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     useEffect(() => {
         // collect all non-blank R values
+        const forbidden = new Set([
+            "person in charge of work",
+            "all team members"
+        ]);
+
         const seen = new Set();
         formData.jra.forEach(block =>
             block.jraBody.forEach(entry =>
                 entry.taskExecution.forEach(te => {
-                    seen.add(te.R.trim());
+                    const val = te.R.trim();
+                    if (!val) return;                       // skip blanks
+                    if (forbidden.has(val.toLowerCase()))   // skip these two
+                        return;
+                    seen.add(val);
                 })
             )
         );
+
 
         // build new members array
         const newMembers = Array.from(seen).map(rVal => ({

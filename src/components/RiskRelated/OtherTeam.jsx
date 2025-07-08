@@ -15,6 +15,11 @@ const OtherTeam = ({ formData }) => {
                 <div className="risk-members-group">
                     <div className="risk-execSummary-popup-page-additional-row ">
                         <div className="risk-popup-page-column-half-scope">
+                            <label className="other-team__ow">
+                                This list is automatically populated based on the
+                                Responsible Person column that is filled in inside the JRA table.<br />
+                            </label>
+
                             <label className="other-team__info">
                                 <strong>
                                     The following team members were also involved in this task:

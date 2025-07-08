@@ -60,6 +60,7 @@ const RiskHomePage = () => {
                     </div>
                     <div
                         className="document-card-risk-home"
+                        onClick={() => navigate("/FrontendDMS/riskBLRA/BLRA")}
                     >
                         <>
                             <div className="icon-risk">

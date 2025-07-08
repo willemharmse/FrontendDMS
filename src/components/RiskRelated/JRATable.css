@@ -110,8 +110,8 @@
 }
 
 .ibraHazJRA {
-    min-width: 220px;
-    max-width: 220px;
+    min-width: 200px;
+    max-width: 200px;
 }
 
 .ibraSubJRA {
@@ -253,7 +253,6 @@ th.ibraEXEJRA {
 td.ibraEXEJRA {
     min-width: 200px;
     max-width: 300px;
-    background-color: white;
     border-left: solid 2px #BBBBBB !important;
     border-right: solid 2px #BBBBBB !important;
 }
@@ -327,7 +326,6 @@ th.jraStatus {
 td.jraStatus {
     min-width: 200px !important;
     max-width: 200px !important;
-    background-color: white;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -385,7 +383,7 @@ td.jraStatus {
 /* floating “+” button */
 .insert-mainrow-button {
     position: absolute;
-    right: 110px;
+    left: 79px;
     bottom: -11px;
     /* tweak to sit on the border/edge
     background: #fff;
@@ -401,6 +399,68 @@ td.jraStatus {
     cursor: pointer;
     z-index: 100;
     /* float on top */
+}
+
+.test-jra {
+    align-content: center;
+}
+
+.delete-mainrow-button {
+    position: absolute;
+    left: 104px;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.delete-mainrow-button:hover {
+    background: #f8f8f8;
+}
+
+.main-cell:hover .delete-mainrow-button {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.duplicate-mainrow-button {
+    position: absolute;
+    left: 130px;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.duplicate-mainrow-button:hover {
+    background: #f8f8f8;
+}
+
+.main-cell:hover .duplicate-mainrow-button {
+    display: flex;
+    /* show it when the cell is hovered */
 }
 
 .control-with-icons {

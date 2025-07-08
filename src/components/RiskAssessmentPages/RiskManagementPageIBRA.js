@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -1619,7 +1619,24 @@ const RiskManagementPageIBRA = () => {
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={openSaveMenu} />
+                            <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faSave} />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    transform="shrink-6 down-5 right-7"
+                                    color="gray"   /* or whatever contrast you need */
+                                />
+                            </span>
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
@@ -1634,12 +1651,11 @@ const RiskManagementPageIBRA = () => {
                             <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
                         </div>
 
-                        <div className="burger-menu-icon-create-page-1">
+                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
-                    {isSaveMenuOpen && (<SavePopup isOpen={isSaveMenuOpen} closeSaveMenu={closeSaveMenu} save={handleSave} openSaveAs={openSaveAs} />)}
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 

@@ -37,10 +37,7 @@ const TopBarDD = ({ role, menu, create, loadOfflineDraft, risk = false }) => {
     return (
         <div className="icons-container-create-page">
             <div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
-            </div>
-            <div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+                <FontAwesomeIcon onClick={() => navigate("/home")} icon={faHome} title="Home" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />

@@ -6,20 +6,13 @@ import "./CreatePage.css";
 import DocumentSignaturesTable from "../CreatePage/DocumentSignaturesTable";
 import TermTable from "../CreatePage/TermTable";
 import AbbreviationTable from "../CreatePage/AbbreviationTable";
-import ChapterTable from "../CreatePage/ChapterTable";
-import ProcedureTable from "../CreatePage/ProcedureTable";
 import ReferenceTable from "../CreatePage/ReferenceTable";
-import PPETable from "../CreatePage/PPETable";
-import HandToolTable from "../CreatePage/HandToolsTable";
-import EquipmentTable from "../CreatePage/EquipmentTable";
-import MaterialsTable from "../CreatePage/MaterialsTable";
-import MobileMachineTable from "../CreatePage/MobileMachineTable";
 import PicturesTable from "../CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
@@ -970,28 +963,45 @@ const CreatePageStandards = () => {
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+            </div>
+
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
+              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} title="Save As">
+                {/* base floppy-disk, full size */}
+                <FontAwesomeIcon icon={faSave} />
+                {/* pen, shrunk & nudged down/right into corner */}
+                <FontAwesomeIcon
+                  icon={faPen}
+                  transform="shrink-6 down-5 right-7"
+                  color="gray"   /* or whatever contrast you need */
+                />
+              </span>
+            </div>
+
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>
 
             {(localStorage.getItem("draftData")) && (
-              <div className="burger-menu-icon-create-page-1" onClick={() => loadOfflineData()}>
+              <div className="burger-menu-icon-risk-create-page-1" onClick={() => loadOfflineData()}>
                 <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
               </div>
             )}
@@ -1040,16 +1050,10 @@ const CreatePageStandards = () => {
             </div>
           </div>
 
-          <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
-          <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
-          <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
-          <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-          <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
           <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
-          <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1065,7 +1069,6 @@ const CreatePageStandards = () => {
             </div>
           </div>
 
-          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
           <div className="input-row-buttons">
             {/* Generate File Button */}
             <button

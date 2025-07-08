@@ -19,10 +19,11 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
+import SaveAsPopup from "../Popups/SaveAsPopup";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const CreatePage = () => {
   const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
   const [offlineDraft, setOfflineDraft] = useState(false);
 
@@ -59,6 +61,57 @@ const CreatePage = () => {
       ...prevFormData,
       procedureRows: updatedProcedureRows,
     }));
+  };
+
+  const openSaveAs = () => {
+    if (!titleSet) {
+      toast.warn("Please fill in at least the title field before saving.", {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+      return;
+    }
+    setIsSaveAsModalOpen(true);
+  };
+
+  const closeSaveAs = () => {
+    setIsSaveAsModalOpen(false);
+  };
+
+  const confirmSaveAs = (newTitle) => {
+    // apply the new title, clear loadedID, then save
+    const me = userIDRef.current;
+    const newFormData = {
+      ...formDataRef.current,        // your current formData
+      title: newTitle,             // override title
+    };
+
+    setFormData(newFormData);
+    formDataRef.current = newFormData;
+
+    setUserIDs([me]);
+    userIDsRef.current = [me];
+
+    loadedIDRef.current = '';
+    setLoadedID('');
+
+    handleSave();
+    loadData(loadedIDRef.current);
+
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("New Draft Successfully Loaded", {
+      closeButton: false,
+      autoClose: 1500, // 1.5 seconds
+      style: {
+        textAlign: 'center'
+      }
+    });
+
+    setIsSaveAsModalOpen(false);
   };
 
   const openShare = () => {
@@ -970,28 +1023,45 @@ const CreatePage = () => {
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+            </div>
+
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
+              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                {/* base floppy-disk, full size */}
+                <FontAwesomeIcon icon={faSave} />
+                {/* pen, shrunk & nudged down/right into corner */}
+                <FontAwesomeIcon
+                  icon={faPen}
+                  transform="shrink-6 down-5 right-7"
+                  color="gray"   /* or whatever contrast you need */
+                />
+              </span>
+            </div>
+
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
-            <div className="burger-menu-icon-create-page-1">
+            <div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>
 
             {(localStorage.getItem("draftData")) && (
-              <div className="burger-menu-icon-create-page-1" onClick={() => loadOfflineData()}>
+              <div className="burger-menu-icon-risk-create-page-1" onClick={() => loadOfflineData()}>
                 <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
               </div>
             )}
@@ -1086,6 +1156,7 @@ const CreatePage = () => {
             </button>
           </div>
         </div>
+        {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
       </div>
       <ToastContainer />
     </div>
