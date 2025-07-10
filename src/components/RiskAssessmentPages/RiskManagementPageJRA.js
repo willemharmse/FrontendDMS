@@ -312,9 +312,6 @@ const RiskManagementPageJRA = () => {
     };
 
     const handlePubClick = () => {
-        const newErrors = validateForm();
-        setErrors(newErrors);
-
         if (loadedIDRef.current === '') {
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -329,20 +326,8 @@ const RiskManagementPageJRA = () => {
             return;
         }
 
-        if (Object.keys(newErrors).length > 0) {
-            toast.error("Please fill in all required fields marked by a *", {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        } else {
-            if (riskType === "JRA") {
-                handleJRAPublish();  // Call your function when the form is valid
-            }
-        }
-    };
+        handleJRAPublish();
+    }
 
     const loadData = async (loadID) => {
         try {
@@ -1092,7 +1077,7 @@ const RiskManagementPageJRA = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/publish-jra`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/t/publish-jra-sheet1`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1137,7 +1122,7 @@ const RiskManagementPageJRA = () => {
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/constructionJRA')}>
+                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                                 <span className="button-text">Published Documents</span>

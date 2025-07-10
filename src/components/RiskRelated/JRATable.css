@@ -31,6 +31,34 @@
     font-family: Arial, sans-serif !important;
 }
 
+.jra-popup-page-select-c {
+    width: 100%;
+    padding: 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 45px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+}
+
+.jra-popup-page-select-c-blank {
+    width: 100%;
+    padding: 10px;
+    padding-top: 0px;
+    padding-bottom: 5px;
+    height: 45px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: gray;
+    font-size: 14px;
+}
+
 .weRow {
     background-color: #F2F2F2 !important;
 }
@@ -497,6 +525,11 @@ td.jraStatus {
     cursor: pointer;
 }
 
+.control-delete-icon {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
 .control-icon-action {
     margin-right: 10px;
     margin-left: 10px;
@@ -518,6 +551,10 @@ td.jraStatus {
 
 .control-icon:hover {
     color: #002060;
+}
+
+.control-delete-icon:hover {
+    color: #CB6F6F;
 }
 
 .insert-mainrow-button:hover {

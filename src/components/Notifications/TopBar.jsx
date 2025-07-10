@@ -36,10 +36,7 @@ const TopBar = ({ role, menu, setReset }) => {
     return (
         <div className="icons-container">
             <div className="burger-menu-icon-um-home">
-                <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
-            </div>
-            <div className="burger-menu-icon-um">
-                <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                <FontAwesomeIcon onClick={() => navigate("/home")} icon={faHome} title="Home" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />

@@ -96,6 +96,9 @@ const UserActivity = () => {
 
             <div className="main-box-user-activity-log">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 

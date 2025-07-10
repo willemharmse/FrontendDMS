@@ -30,6 +30,11 @@ const DocumentSignaturesTable = ({
   const nameInputRefs = useRef([]);
   const posInputRefs = useRef([]);
 
+  const closeDropdowns = () => {
+    setShowNameDropdown(null);
+    setShowPosDropdown(false);
+  };
+
   useEffect(() => {
     const popupSelector = '.floating-dropdown';
 
@@ -108,6 +113,7 @@ const DocumentSignaturesTable = ({
   // —— Name handlers —— //
 
   const openNameDropdown = (index, all = false) => {
+    closeDropdowns();
     const base = (all ? nameLists : nameLists.filter(n =>
       (!selectedNames.has(n) || n === rows[index].name)
     ))
@@ -160,6 +166,7 @@ const DocumentSignaturesTable = ({
   // —— Position handlers —— //
 
   const openPosDropdown = (index, all = false) => {
+    closeDropdowns();
     const base = posLists
       .filter(p => p?.trim() !== "");
     const opts = base;

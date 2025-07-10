@@ -227,15 +227,15 @@ const RiskSIPage = () => {
             )}
             <div className="main-box-gen-info">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
                     <div className="icons-container">
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
-                        </div>
                         <div className="burger-menu-icon-um">
                             <FontAwesomeIcon icon={faBell} title="Notifications" />
                         </div>

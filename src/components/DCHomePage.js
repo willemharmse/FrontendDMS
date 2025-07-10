@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import "./DCHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "./Notifications/TopBar";
 
@@ -42,6 +42,10 @@ const DCHomePage = () => {
             )}
             <div className="main-box-dc">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
+
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 

@@ -528,6 +528,10 @@ const FileInfo = () => {
 
       <div className="main-box-file-info">
         <div className="top-section-um">
+          <div className="burger-menu-icon-um">
+            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+          </div>
+
           <div className="um-input-container">
             <input
               className="search-input-um"
@@ -552,9 +556,6 @@ const FileInfo = () => {
           <div className="icons-container">
             <div className="burger-menu-icon-um">
               <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
-            </div>
-            <div className="burger-menu-icon-um">
-              <FontAwesomeIcon onClick={() => isTrashView ? toggleTrashView() : navigate(-1)} icon={faArrowLeft} title="Back" />
             </div>
             <div className="sort-menu-icon-um">
               <FontAwesomeIcon icon={faSort} onClick={openSortModal} title="Sort" />

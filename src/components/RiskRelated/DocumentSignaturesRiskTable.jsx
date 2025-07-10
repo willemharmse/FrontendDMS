@@ -92,6 +92,7 @@ const DocumentSignaturesRiskTable = ({
   // —— Name dropdown handlers —— //
 
   const openNameDropdown = (index) => {
+    closeDropdowns();
     // show all except other selected
     const opts = nameLists;
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
@@ -130,6 +131,7 @@ const DocumentSignaturesRiskTable = ({
   // —— Position dropdown handlers —— //
 
   const openPosDropdown = (index) => {
+    closeDropdowns();
     const base = posLists
       .filter(p => p?.trim() !== "");
     const opts = base;
@@ -150,6 +152,11 @@ const DocumentSignaturesRiskTable = ({
   const handleSelectPos = (index, pos) => {
     handleRowChange({ target: { value: pos } }, index, "pos");
     setShowPosDropdown(null);
+  };
+
+  const closeDropdowns = () => {
+    setShowNameDropdown(null);
+    setShowPosDropdown(false);
   };
 
   useEffect(() => {

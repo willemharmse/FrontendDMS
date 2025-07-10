@@ -38,6 +38,7 @@ import ConstructionRMS from './components/Construction/ConstructionRMS';
 import ConstructionHelp from './components/Construction/ConstructionHelp';
 import ControlAttributes from './components/RiskRelated/ControlAttributes';
 import RiskDocumentsIBRA from './components/RiskRelated/RiskDocuments/RiskDocumentsIBRA';
+import RiskDocumentsJRA from './components/RiskRelated/RiskDocuments/RiskDocumentsJRA';
 import RiskManagementPageBTA from './components/RiskAssessmentPages/RiskManagementPageBTA';
 import CreatePageStandards from './components/DocumentCreationPages/CreatePageStandards';
 import RiskSIPage from './components/RiskRelated/RiskValueChanges/RiskSIPage';
@@ -138,6 +139,7 @@ function App() {
         <Route path="/riskBLRA/:type" element={<RiskManagementPageBLRA />} />
         <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
         <Route path='FrontendDMS/generatedIBRADocs' element={<RiskDocumentsIBRA />} />
+        <Route path='/generatedJRADocs' element={<RiskDocumentsJRA />} />
         <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
 
         {/* Mobile Routes */}

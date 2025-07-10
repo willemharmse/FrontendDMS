@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
+import BurgerMenuFI from "../../FileInfo/BurgerMenuFI";
 import { jwtDecode } from 'jwt-decode';
-import "./GeneratedFileInfo.css";
-import PopupMenuPubFiles from "./PublishedDocuments/PopupMenuPubFiles";
-import TopBar from "./Notifications/TopBar";
+import "./RiskDocumentsIBRA.css";
+import PopupMenuPubFiles from "../../PublishedDocuments/PopupMenuPubFiles"
+import TopBar from "../../Notifications/TopBar";
 
-const GeneratedFileInfo = () => {
+const RiskDocumentsJRA = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
@@ -23,12 +23,6 @@ const GeneratedFileInfo = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
-    };
 
     const clearSearch = () => {
         setSearchQuery("");
@@ -58,7 +52,7 @@ const GeneratedFileInfo = () => {
 
     // Fetch files from the API
     const fetchFiles = async () => {
-        const route = `/api/fileGenDocs/${userID}`;
+        const route = `/api/fileGenDocs/jra/${userID}`;
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                 headers: {
@@ -70,9 +64,7 @@ const GeneratedFileInfo = () => {
             }
             const data = await response.json();
 
-            const sortedFiles = data.files.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate));
-
-            setFiles(sortedFiles);
+            setFiles(data.files);
         } catch (error) {
             setError(error.message);
         }
@@ -82,7 +74,7 @@ const GeneratedFileInfo = () => {
         try {
             setLoading(true);
 
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/file//generated/download/${fileId}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/file/generatedJRA/download/${fileId}`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -112,14 +104,6 @@ const GeneratedFileInfo = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString); // Convert to Date object
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-        const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
-        return `${year}-${month}-${day}`;
-    };
-
     const removeFileExtension = (fileName) => {
         return fileName.replace(/\.[^/.]+$/, "");
     };
@@ -145,7 +129,7 @@ const GeneratedFileInfo = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Generated Files</p>
+                        <p className="logo-text-um">Risk Documents</p>
                     </div>
                 </div>
             )}
@@ -191,7 +175,6 @@ const GeneratedFileInfo = () => {
                                 <th className="gen-th">Document Type</th>
                                 <th className="gen-th">Version</th>
                                 <th className="gen-th">Published By</th>
-                                <th className="gen-th">Review Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,6 +190,7 @@ const GeneratedFileInfo = () => {
                                             {(hoveredFileId === file._id) && (
                                                 <PopupMenuPubFiles
                                                     file={file}
+                                                    type={"dont"}
                                                     isOpen={hoveredFileId === file._id}
                                                     openDownloadModal={downloadFile}
                                                     setHoveredFileId={setHoveredFileId}
@@ -218,7 +202,6 @@ const GeneratedFileInfo = () => {
                                     <td className="gen-stat  gen-point">{file.formData.documentType}</td>
                                     <td className="gen-ver  gen-point">{file.formData.version}</td>
                                     <td className="gen-pub  gen-point">{file.publisher.username}</td>
-                                    <td className="gen-rev  gen-point">{formatDate(file.reviewDate)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -229,4 +212,4 @@ const GeneratedFileInfo = () => {
     );
 };
 
-export default GeneratedFileInfo;
+export default RiskDocumentsJRA;

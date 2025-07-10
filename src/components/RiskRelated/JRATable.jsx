@@ -316,6 +316,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 if (!res.ok) throw new Error('Failed to fetch lookup data');
                 const { jraInfo: raw } = await res.json();
                 const jraList = Array.isArray(raw[0]) ? raw[0] : raw;
+                console.log("Fetched JRA Info:", jraList);
                 setJraInfo(jraList);
             } catch (err) {
                 console.error("Error fetching areas:", err);
@@ -329,14 +330,28 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         [jraInfo]
     );
 
-    const allHazardOptions = useMemo(
-        () => Array.from(
-            new Set(
-                jraInfo.flatMap(h => h.hazards.map(e => e.hazard))
-            )
-        ),
-        [jraInfo]
-    );
+    const [sourceData, setSourceData] = useState([]);
+
+    useEffect(() => {
+        const fetchValues = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/source`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch values");
+                }
+
+                const data = await response.json();
+
+                setSourceData(data.risks);
+            } catch (error) {
+                console.error("Error fetching equipment:", error);
+            }
+        };
+
+        fetchValues();
+    }, []);
+
+    const allHazardOptions = sourceData;
 
     const allUnwantedOptions = useMemo(
         () => Array.from(
@@ -363,70 +378,22 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         [jraInfo]
     );
 
-    function getHazardOptions(selectedMain) {
-        if (!selectedMain) return allHazardOptions
-
-        const exists = jraInfo.some(m => m.mainTaskStep === selectedMain);
-        if (!exists) {
-            return allHazardOptions;            // or allHazardOptions, or throw, whatever makes sense
-        }
-
-        const node = jraInfo.find(m => m.mainTaskStep === selectedMain)
-        return node
-            ? node.hazards.map(e => e.hazard)
-            : []
+    function getHazardOptions() {
+        return allHazardOptions.sort();
     }
 
-    function getUnwantedOptions(main, hazard) {
-        // no filters → everything
-        if (!main && !hazard) return allUnwantedOptions;
+    function getUnwantedOptions(hazard) {
+        if (!hazard) return allUnwantedOptions.slice().sort(); // sort alphabetically
 
-        if (!main && hazard) {
-            // collect every unwantedEvent where h.hazard matches
-            const matches = jraInfo.flatMap(node =>
-                node.hazards
-                    .filter(h => h.hazard === hazard)
-                    .flatMap(h => h.unwantedEvents.map(e => e.unwantedEvent))
-            );
-            // dedupe
-            return Array.from(new Set(matches));
-        }
+        // collect every unwantedEvent where h.hazard matches
+        const matches = jraInfo.flatMap(node =>
+            node.hazards
+                .filter(h => h.hazard === hazard)
+                .flatMap(h => h.unwantedEvents.map(e => e.unwantedEvent))
+        );
 
-        // if main only, show *all* events under that main
-        if (main && !hazard) {
-            const exists = jraInfo.some(m => m.mainTaskStep === main);
-            if (!exists) {
-                return allUnwantedOptions;            // or allHazardOptions, or throw, whatever makes sense
-            }
-
-            const node = jraInfo.find(n => n.mainTaskStep === main);
-            return node
-                ? Array.from(
-                    new Set(
-                        node.hazards.flatMap(h =>
-                            h.unwantedEvents.map(e => e.unwantedEvent)
-                        )
-                    )
-                )
-                : [];
-        }
-
-        // if both main + hazard
-        const exists = jraInfo.some(m => m.mainTaskStep === main);
-        if (exists) {
-            const node = jraInfo.find(n => n.mainTaskStep === main);
-            const haz = node?.hazards.find(h => h.hazard === hazard);
-            return haz ? haz.unwantedEvents.map(e => e.unwantedEvent) : [];
-        }
-        else {
-            const matches = jraInfo.flatMap(node =>
-                node.hazards
-                    .filter(h => h.hazard === hazard)
-                    .flatMap(h => h.unwantedEvents.map(e => e.unwantedEvent))
-            );
-            // dedupe
-            return Array.from(new Set(matches));
-        }
+        // dedupe and sort
+        return Array.from(new Set(matches)).sort();
     }
 
     function getSubStepOptions(main, hazard, ue) {
@@ -494,7 +461,15 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         // main + hazard + UE
         if (main && hazard && ue) {
             const exists = jraInfo.some(m => m.mainTaskStep === main);
-            if (!exists) {
+            const validUE = jraInfo.some(node =>
+                node.hazards.some(hazard =>
+                    hazard.unwantedEvents.some(event =>
+                        event.unwantedEvent.toLowerCase() === ue.toLowerCase()
+                    )
+                )
+            );
+
+            if (!exists && validUE) {
                 return Array.from(
                     new Set(
                         jraInfo.flatMap(n =>
@@ -510,6 +485,25 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 );
             }
 
+            if (!validUE) {
+                // Pull every subTaskSteps array, flatten it, and dedupe
+                const allSubSteps = Array.from(
+                    new Set(
+                        jraInfo.flatMap(node =>
+                            node.hazards
+                                .filter(h => h.hazard === hazard)
+                                .flatMap(h =>
+                                    h.unwantedEvents.flatMap(e =>
+                                        e.subTaskSteps
+                                    )
+                                )
+                        )
+                    )
+                );
+
+                return allSubSteps;
+            }
+
             const node = jraInfo.find(n => n.mainTaskStep === main);
             const haz = node?.hazards.find(h => h.hazard === hazard);
             const ev = haz?.unwantedEvents.find(e => e.unwantedEvent === ue);
@@ -518,6 +512,17 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
         // UE only (across all mains)
         if (!main && !hazard && ue) {
+            const validUE = jraInfo.some(node =>
+                node.hazards.some(hazard =>
+                    hazard.unwantedEvents.some(event =>
+                        event.unwantedEvent.toLowerCase() === ue.toLowerCase()
+                    )
+                )
+            );
+
+            if (!validUE) {
+                return allSubStepOptions; // or throw, or return empty, whatever makes sense
+            }
             return Array.from(
                 new Set(
                     jraInfo.flatMap(n =>
@@ -533,6 +538,28 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
         // hazard + UE (across all mains)
         if (!main && hazard && ue) {
+            const validUE = jraInfo.some(node =>
+                node.hazards.some(hazard =>
+                    hazard.unwantedEvents.some(event =>
+                        event.unwantedEvent.toLowerCase() === ue.toLowerCase()
+                    )
+                )
+            );
+
+            if (!validUE) {
+                return Array.from(
+                    new Set(
+                        jraInfo.flatMap(n =>
+                            n.hazards
+                                .filter(h => h.hazard === hazard)
+                                .flatMap(h =>
+                                    h.unwantedEvents.flatMap(e => e.subTaskSteps)
+                                )
+                        )
+                    )
+                );
+            }
+
             return Array.from(
                 new Set(
                     jraInfo.flatMap(n =>
@@ -667,9 +694,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleHazardsInput = (rowIndex, bodyIdx, hIdx, value) => {
         closeAllDropdowns();
         updateHazard(rowIndex, bodyIdx, hIdx, value);
-        const base = getHazardOptions(formData.jra[rowIndex].main);
+        const base = getHazardOptions();
         const matches = base
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+            .filter(opt => opt.term.toLowerCase().includes(value.toLowerCase()));
         setFilteredHazards(matches);
         setShowHazardsDropdown(true);
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
@@ -690,7 +717,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleHazardsFocus = (rowIndex, bodyIdx, hIdx) => {
         closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
-        const base = getHazardOptions(formData.jra[rowIndex].main);
+        const base = getHazardOptions();
         setFilteredHazards(base);
         setShowHazardsDropdown(true);
 
@@ -738,7 +765,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleUnwantedEventInput = (rowIndex, bodyIdx, hIdx, value) => {
         closeAllDropdowns();
         updateUnwantedEvent(rowIndex, bodyIdx, hIdx, value);
-        const base = getUnwantedOptions(formData.jra[rowIndex].main, formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
+        const base = getUnwantedOptions(formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
         const matches = base
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredUnwantedEvents(matches);
@@ -760,7 +787,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const handleUnwantedEventFocus = (rowIndex, bodyIdx, hIdx) => {
         closeAllDropdowns();
         setActiveHazardCell({ row: rowIndex, body: bodyIdx, idx: hIdx });
-        const base = getUnwantedOptions(formData.jra[rowIndex].main, formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
+        const base = getUnwantedOptions(formData.jra[rowIndex].jraBody[bodyIdx].hazards[0].hazard);
         setFilteredUnwantedEvents(base);
         setShowUnwantedEventsDropdown(true);
 
@@ -1652,30 +1679,47 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                     }
                                                                     return (
                                                                         <div className="ibra-popup-page-select-container" key={hIdx}>
-                                                                            <div className="ibra-popup-page-select-container">
-                                                                                <input
-                                                                                    type="text"
-                                                                                    style={{ color: "black", cursor: "text", marginBottom: "5px" }}
-                                                                                    ref={el => {
-                                                                                        const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
-                                                                                        if (el) {
-                                                                                            hazardsInputRefs.current[key] = el;
-                                                                                        } else {
-                                                                                            delete hazardsInputRefs.current[key];
-                                                                                        }
-                                                                                    }}
-                                                                                    readOnly={isFirst}
-                                                                                    className="ibra-popup-page-input-table ibra-popup-page-row-input"
-                                                                                    placeholder="Select Hazard"
-                                                                                    value={hObj.hazard}
-                                                                                    onChange={e => {
-                                                                                        handleHazardsInput(rowIndex, bodyIdx, hIdx, e.target.value);
-                                                                                    }}
-                                                                                    onFocus={() => {
-                                                                                        handleHazardsFocus(rowIndex, bodyIdx, hIdx);
-                                                                                    }}
-                                                                                />
-                                                                            </div>
+
+                                                                            <input
+                                                                                type="text"
+                                                                                style={{ color: "black", cursor: "text", marginBottom: "5px", height: "23px" }}
+                                                                                ref={el => {
+                                                                                    const key = `${rowIndex}-${bodyIdx}-${hIdx}`;
+                                                                                    if (el) {
+                                                                                        hazardsInputRefs.current[key] = el;
+                                                                                    } else {
+                                                                                        delete hazardsInputRefs.current[key];
+                                                                                    }
+                                                                                }}
+                                                                                readOnly={isFirst}
+                                                                                className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                                placeholder="Select Hazard"
+                                                                                value={hObj.hazard}
+                                                                                onChange={e => {
+                                                                                    handleHazardsInput(rowIndex, bodyIdx, hIdx, e.target.value);
+                                                                                }}
+                                                                                onFocus={() => {
+                                                                                    handleHazardsFocus(rowIndex, bodyIdx, hIdx);
+                                                                                }}
+                                                                            />
+
+                                                                            {/*
+                                                                            <select
+                                                                                className={`${hObj.hazard === "" ? `jra-popup-page-select-c-blank` : `jra-popup-page-select-c`}`}
+                                                                                style={{ cursor: "text", marginBottom: "5px" }}
+                                                                                value={hObj.hazard}
+                                                                                onChange={(e) => {
+                                                                                    updateHazard(rowIndex, bodyIdx, hIdx, e.target.value);
+                                                                                }}>
+                                                                                <option value="" style={{ color: "gray" }}>Select Hazard</option>
+                                                                                {allHazardOptions.filter(option => option !== 'Work Execution')
+                                                                                    .sort()
+                                                                                    .map((option, optIdx) => (
+                                                                                        <option style={{ color: "black" }} key={optIdx} value={option.term}>
+                                                                                            {option.term}
+                                                                                        </option>
+                                                                                    ))}
+                                                                            </select>*/}
                                                                         </div>
                                                                     );
                                                                 })}
@@ -1799,7 +1843,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                                 />
                                                                                 <FontAwesomeIcon
                                                                                     icon={faTrash}
-                                                                                    className="control-icon trash-icon"
+                                                                                    className="control-delete-icon trash-icon"
                                                                                     title="Remove this control & sub-step"
                                                                                     onClick={() => removeSubControl(row.id, body.idBody, sIdx)}
                                                                                 />
@@ -2013,7 +2057,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredUnwantedEvents.map((term, i) => (
+                    {filteredUnwantedEvents.sort().filter(term => term && term.trim() !== "").map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectUnwantedEventSuggestion(term)}
@@ -2035,12 +2079,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredHazards.map((term, i) => (
+                    {filteredHazards.sort().map((term, i) => (
                         <li
                             key={i}
-                            onMouseDown={() => selectHazardsSuggestion(term)}
+                            onMouseDown={() => selectHazardsSuggestion(term.term)}
                         >
-                            {term}
+                            {term.term}
                         </li>
                     ))}
                 </ul>
@@ -2057,7 +2101,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredExe.filter(term => term && term.trim() !== "").map((term, i) => (
+                    {filteredExe.sort().filter(term => term && term.trim() !== "").map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectResponsibleSuggestion(term)}
@@ -2079,7 +2123,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredMainStep.filter(term => term && term.trim() !== "").map((term, i) => (
+                    {filteredMainStep.sort().filter(term => term && term.trim() !== "").map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectMainStepSuggestion(term)}
@@ -2101,7 +2145,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                         zIndex: 1000
                     }}
                 >
-                    {filteredControls.filter(term => term && term.trim() !== "").map((term, i) => (
+                    {filteredControls.sort().filter(term => term && term.trim() !== "").map((term, i) => (
                         <li
                             key={i}
                             onMouseDown={() => selectSubStepSuggestion(term)}

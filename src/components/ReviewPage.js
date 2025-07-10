@@ -758,6 +758,9 @@ const ReviewPage = () => {
             {/* Main content */}
             <div className="main-box-create">
                 <div className="top-section-create-page">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 

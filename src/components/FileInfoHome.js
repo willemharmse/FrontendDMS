@@ -170,6 +170,9 @@ const FileInfoHome = () => {
 
             <div className="main-box-user">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
                     <div className="um-input-container">
                         <input
                             className="search-input-um"

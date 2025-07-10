@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import "./RiskHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "../Notifications/TopBar";
 
@@ -28,7 +28,7 @@ const RiskHomePage = () => {
                         <FontAwesomeIcon icon={faChevronLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
                 </div>
@@ -42,6 +42,10 @@ const RiskHomePage = () => {
 
             <div className="main-box-risk">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
+
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
