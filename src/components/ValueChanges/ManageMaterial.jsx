@@ -2,12 +2,32 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageMaterial.css";
 
-const ManageMaterial = ({ closePopup, onClose }) => {
+const ManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, userID }) => {
     const [materials, setMaterials] = useState([]);
     const [selectedMaterial, setSelectedMaterial] = useState("");
     const [matInp, setMatInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [approver, setApprover] = useState("");
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         fetchMaterials();
@@ -44,28 +64,46 @@ const ManageMaterial = ({ closePopup, onClose }) => {
             return;
         }
 
+        const data = { mat: matInp };
+        const type = "Material";
+        const route = `/api/docCreateVals/draft`;
+
         try {
-            await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/mat/update/${selectedMaterial}`, {
-                mat: matInp,
-            }, {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                }
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
             });
 
-            setMessage("Material updated successfully.");
+            setMessage("Material update suggested successfully.");
             setError("");
             setSelectedMaterial("");
             setMatInp("");
+            const newMat = {
+                mat: matInp.trim() + " *",
+            };
+            setMatData((prevData) => [...prevData, newMat]);
+
+            if (onAdd) onAdd(newMat);
 
             setTimeout(() => {
-                setMessage("");
+                handleClose();
             }, 1000);
-            fetchMaterials();
         } catch (err) {
             setError("Failed to update material.");
         }
+    }
+
+    const handleClose = () => {
+        setMatInp("");
+        setMessage("");
+        setApprover("");
+        onClose();
     };
 
     return (
@@ -89,6 +127,28 @@ const ManageMaterial = ({ closePopup, onClose }) => {
                 <div className="manMat-popup-group">
                     <label className="manMat-popup-label">New Material Name</label>
                     <input spellcheck="true" className="manMat-input" placeholder="Insert New Material Name" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
+                </div>
+
+                <div className="abbr-popup-group">
+                    <label className="abbr-popup-label">Approver:</label>
+                    <div className="abbr-popup-page-select-container">
+                        <select
+                            spellcheck="true"
+                            type="text"
+                            value={approver}
+                            onChange={(e) => setApprover(e.target.value)}
+                            className="abbr-popup-select"
+                            required
+                            placeholder="Select Approver"
+                        >
+                            <option value="">Select Approver</option>
+                            {usersList.map((value, index) => (
+                                <option key={index} value={value.id || value._id || value}>
+                                    {value.username || value.label || value}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {message && <div className="manMat-message-manage">{message}</div>}

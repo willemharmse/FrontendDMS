@@ -3,7 +3,7 @@ import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import Hazard from "./RiskInfo/Hazard";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import TaskExecution from "./RiskInfo/TaskExecution";
@@ -14,6 +14,7 @@ import axios from "axios";
 import HazardJRA from "./RiskInfo/HazardJRA";
 import Go_Nogo from "./RiskInfo/Go_Nogo";
 import { aiRewrite, aiRewriteWED } from "../../utils/jraAI";
+import CurrentControlsJRA from "./RiskInfo/CurrentControlsJRA";
 
 const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     const ibraBoxRef = useRef(null);
@@ -971,7 +972,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
         }));
     };
 
-    const insertSubControl = (rowId, bodyId) => {
+    const insertSubControl = (rowId, bodyId, insertAfterIdx) => {
         setFormData(prev => ({
             ...prev,
             jra: prev.jra.map(item => {
@@ -980,12 +981,32 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                     ...item,
                     jraBody: item.jraBody.map(body => {
                         if (body.idBody !== bodyId) return body;
+
+                        // we want to insert *after* the clicked index
+                        const idx = insertAfterIdx + 1;
+
                         return {
                             ...body,
-                            sub: [...body.sub, { task: "" }],
-                            taskExecution: [...body.taskExecution, { R: "" }],
-                            controls: [...body.controls, { control: "" }],
-                            go_noGo: [...body.go_noGo, { go: "" }],
+                            sub: [
+                                ...body.sub.slice(0, idx),
+                                { task: "" },
+                                ...body.sub.slice(idx)
+                            ],
+                            taskExecution: [
+                                ...body.taskExecution.slice(0, idx),
+                                { R: "" },
+                                ...body.taskExecution.slice(idx)
+                            ],
+                            controls: [
+                                ...body.controls.slice(0, idx),
+                                { control: "" },
+                                ...body.controls.slice(idx)
+                            ],
+                            go_noGo: [
+                                ...body.go_noGo.slice(0, idx),
+                                { go: "" },
+                                ...body.go_noGo.slice(idx)
+                            ],
                         };
                     })
                 };
@@ -1642,9 +1663,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                         return (
                                                             <td key={colIdx} className={`${cls}`} >
                                                                 <FontAwesomeIcon
-                                                                    icon={faCirclePlus}
-                                                                    style={{ marginBottom: "0px" }}
-                                                                    className="control-icon-action plus-icon"
+                                                                    icon={faPlusCircle}
+                                                                    style={{ marginBottom: "0px", fontSize: "15px" }}
+                                                                    className="insert-row-button-sig-risk font-fam"
                                                                     title="Add sub & control here"
                                                                     onClick={() => insertMainRow(rowIndex)}
                                                                 />
@@ -1680,6 +1701,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                     return (
                                                                         <div className="ibra-popup-page-select-container" key={hIdx}>
 
+                                                                            {/*
                                                                             <input
                                                                                 type="text"
                                                                                 style={{ color: "black", cursor: "text", marginBottom: "5px", height: "23px" }}
@@ -1702,8 +1724,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                                     handleHazardsFocus(rowIndex, bodyIdx, hIdx);
                                                                                 }}
                                                                             />
-
-                                                                            {/*
+*/}
                                                                             <select
                                                                                 className={`${hObj.hazard === "" ? `jra-popup-page-select-c-blank` : `jra-popup-page-select-c`}`}
                                                                                 style={{ cursor: "text", marginBottom: "5px" }}
@@ -1719,7 +1740,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                                             {option.term}
                                                                                         </option>
                                                                                     ))}
-                                                                            </select>*/}
+                                                                            </select>
                                                                         </div>
                                                                     );
                                                                 })}
@@ -1839,7 +1860,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                                     icon={faCirclePlus}
                                                                                     className="control-icon plus-icon"
                                                                                     title="Add sub & control here"
-                                                                                    onClick={() => insertSubControl(row.id, body.idBody)}
+                                                                                    onClick={() => insertSubControl(row.id, body.idBody, sIdx)}
                                                                                 />
                                                                                 <FontAwesomeIcon
                                                                                     icon={faTrash}
@@ -2158,7 +2179,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
             {helpHazards && (<HazardJRA setClose={closeHazardsHelp} />)}
             {helpResponsible && (<ControlExecution setClose={closeResponsibleHelp} />)}
-            {helpSub && (<CurrentControls setClose={closeSubHelp} />)}
+            {helpSub && (<CurrentControlsJRA setClose={closeSubHelp} />)}
             {helpTaskExecution && (<TaskExecution setClose={closeTaskExecutionHelp} />)}
             {helpUnwantedEvents && (<UnwantedEvent setClose={closeUnwantedEventsHelp} />)}
             {go_noGO && (<Go_Nogo setClose={closeGo_noGo} />)}

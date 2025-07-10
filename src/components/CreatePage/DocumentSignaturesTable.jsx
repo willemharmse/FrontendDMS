@@ -253,25 +253,23 @@ const DocumentSignaturesTable = ({
                     ref={el => (posInputRefs.current[index] = el)}
                   />
                 </td>
-                <td className="procCent action-cell">
+                <td className="procCent action-cell-auth-risk ">
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {
-                      setSelectedNames(s => {
-                        const copy = new Set(s);
-                        copy.delete(row.name);
-                        return copy;
-                      });
                       removeRow(index);
                     }}
+
+                    style={{ fontSize: "14px" }}
                     title="Remove Row"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                   <button
-                    className="insert-row-button-sig font-fam"
+                    className="insert-row-button-sig-risk font-fam"
                     onClick={() => insertRowAt(index + 1)}
-                    title="Add row"
+                    title="Add Row"
+                    style={{ fontSize: "15px" }}
                   >
                     <FontAwesomeIcon icon={faPlusCircle} />
                   </button>

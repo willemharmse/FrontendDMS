@@ -68,7 +68,7 @@ const RiskHomePage = () => {
                     >
                         <>
                             <div className="icon-risk">
-                                <FontAwesomeIcon icon={faTriangleExclamation} alt="Control Attributes" className="icon-risk" />
+                                <img src={`${process.env.PUBLIC_URL}/blra.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
 
                             <h3 className="document-title-risk-home">

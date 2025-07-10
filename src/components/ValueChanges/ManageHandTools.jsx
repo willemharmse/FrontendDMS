@@ -2,12 +2,32 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageHandTools.css";
 
-const ManageHandTools = ({ closePopup, onClose }) => {
+const ManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd, userID }) => {
     const [handTools, setHandTools] = useState([]);
     const [selectedTool, setSelectedTool] = useState("");
     const [toolInp, setToolInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [approver, setApprover] = useState("");
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         fetchHandTools();
@@ -40,32 +60,50 @@ const ManageHandTools = ({ closePopup, onClose }) => {
 
     const handleUpdate = async () => {
         if (!selectedTool) {
-            setError("Please select tool.");
+            setError("Please select a tool.");
             return;
         }
 
+        const data = { tool: toolInp };
+        const type = "Tool";
+        const route = `/api/docCreateVals/draft`;
+
         try {
-            await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/tool/update/${selectedTool}`, {
-                tool: toolInp,
-            }, {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                }
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
             });
 
-            setMessage("Tool updated successfully.");
+            setMessage("Tool update suggested successfully.");
             setError("");
             setSelectedTool("");
             setToolInp("");
+            const newTool = {
+                tool: toolInp.trim() + " *",
+            };
+            setToolData((prevData) => [...prevData, newTool]);
+
+            if (onAdd) onAdd(newTool);
 
             setTimeout(() => {
-                setMessage("");
+                handleClose();
             }, 1000);
-            fetchHandTools();
         } catch (err) {
             setError("Failed to update tool.");
         }
+    };
+
+    const handleClose = () => {
+        setToolInp("");
+        setMessage("");
+        setApprover("");
+        onClose();
     };
 
     return (
@@ -89,6 +127,28 @@ const ManageHandTools = ({ closePopup, onClose }) => {
                 <div className="manTool-popup-group">
                     <label className="manTool-popup-label">New Tool Name</label>
                     <input spellcheck="true" className="manTool-input" placeholder="Insert New Tool Name" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
+                </div>
+
+                <div className="abbr-popup-group">
+                    <label className="abbr-popup-label">Approver:</label>
+                    <div className="abbr-popup-page-select-container">
+                        <select
+                            spellcheck="true"
+                            type="text"
+                            value={approver}
+                            onChange={(e) => setApprover(e.target.value)}
+                            className="abbr-popup-select"
+                            required
+                            placeholder="Select Approver"
+                        >
+                            <option value="">Select Approver</option>
+                            {usersList.map((value, index) => (
+                                <option key={index} value={value.id || value._id || value}>
+                                    {value.username || value.label || value}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {message && <div className="manTool-message-manage">{message}</div>}

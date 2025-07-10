@@ -39,6 +39,44 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
         fetchValues();
     }, []);
 
+    const handleNewPpe = (newPPE) => {
+        const code = newPPE.ppe;
+        // add to the “used” codes array
+        setUsedPPEOptions((prev) => [...prev, code]);
+        setSelectedPPE((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            PPEItems: [...prev.PPEItems, newPPE],
+        }));
+    };
+
+    const handlePpeUpdate = (updatedPPE, oldPPE) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedPPEOptions(prev =>
+            prev.map(code => (code === oldPPE ? updatedPPE.ppe : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedPPE(prev => {
+            const next = new Set(prev);
+            if (next.has(oldPPE)) {
+                next.delete(oldPPE);
+                next.add(updatedPPE.ppe);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            PPEItems: prev.PPEItems.map(row =>
+                row.ppe === oldPPE
+                    ? { ppe: updatedPPE.ppe + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedPPE(new Set(usedPPEOptions));
         if (usedPPEOptions.length > 0) {
@@ -114,13 +152,17 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest PPE" /></button>
                 <PPEPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setPPEData={setPPEData}  // Pass the setter to update PPE options locally
+                    onAdd={handleNewPpe}
                 />
 
-                {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <ManagePPE closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handlePpeUpdate}
+                    userID={userID}
+                    setPPEData={setPPEData}
+                    onAdd={handleNewPpe} />}
 
                 {/* Popup */}
                 {popupVisible && (

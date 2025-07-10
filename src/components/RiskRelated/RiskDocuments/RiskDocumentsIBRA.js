@@ -142,6 +142,10 @@ const RiskDocumentsIBRA = () => {
 
             <div className="main-box-gen-info">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
+
                     <div className="um-input-container">
                         <input
                             className="search-input-um"

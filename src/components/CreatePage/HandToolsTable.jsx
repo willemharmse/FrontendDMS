@@ -43,6 +43,44 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
         fetchValues();
     }, []);
 
+    const handleNewTool = (newTool) => {
+        const code = newTool.tool;
+        // add to the “used” codes array
+        setUsedHandTools((prev) => [...prev, code]);
+        setSelectedTools((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            HandTools: [...prev.HandTools, newTool],
+        }));
+    };
+
+    const handleToolUpdate = (updatedTool, oldTool) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedHandTools(prev =>
+            prev.map(code => (code === oldTool ? updatedTool.tool : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setUsedHandTools(prev => {
+            const next = new Set(prev);
+            if (next.has(oldTool)) {
+                next.delete(oldTool);
+                next.add(updatedTool.tool);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            HandTools: prev.HandTools.map(row =>
+                row.tool === oldTool
+                    ? { tool: updatedTool.tool + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedTools(new Set(usedHandTools));
         if (usedHandTools.length > 0) {
@@ -114,13 +152,17 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Tool" /></button>
                 <ToolPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setToolsData={setToolsData}
+                    onAdd={handleNewTool}
                 />
 
-                {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleToolUpdate}
+                    userID={userID}
+                    setToolData={setToolsData}
+                    onAdd={handleNewTool} />}
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-tool">

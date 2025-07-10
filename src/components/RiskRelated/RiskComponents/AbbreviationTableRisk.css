@@ -269,6 +269,7 @@
     width: 3px;
     height: 9px;
     border: solid white;
+    background-color: #002060;
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);
     /* Rotate to form a checkmark */

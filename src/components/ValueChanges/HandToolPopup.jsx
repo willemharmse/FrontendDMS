@@ -1,13 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./HandToolPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
+const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData, onAdd }) => {
     const [tool, setTool] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);
+    const [approver, setApprover] = useState("");
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     const handleSubmit = async (e) => {
         setLoading(true);
@@ -19,66 +39,43 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
         }
 
         try {
-            const route = role === "admin" ? `/api/docCreateVals/tool/add` : `/api/docCreateVals/draft`;
+            const route = `/api/docCreateVals/draft`;
 
-            if (role === "admin") {
-                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    },
-                    body: JSON.stringify({
-                        tool: tool.trim()
-                    })
-                });
+            const data = { tool: tool };
+            const type = "Tool";
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
+            });
 
-                const data = await response.json();
+            const responseData = await response.json();
 
-                if (!response.ok) {
-                    setLoading(false);
-                    setMessage({ text: data.message, type: "error" });
-                    return;
-                }
-
+            if (!response.ok) {
                 setLoading(false);
-                setMessage({ text: "Tool added successfully!", type: "success" });
-
-                setTimeout(() => {
-                    handleClose();
-                }, 1000);
+                setMessage({ text: responseData.message, type: "error" });
+                return;
             }
-            else {
-                const data = { tool };
-                const type = "Tool";
-                const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    },
-                    body: JSON.stringify({
-                        type, data, userID
-                    })
-                });
 
-                const responseData = await response.json();
+            setLoading(false);
+            setMessage({ text: "Tool added as a suggestion.", type: "success" });
 
-                if (!response.ok) {
-                    setLoading(false);
-                    setMessage({ text: responseData.message, type: "error" });
-                    return;
-                }
+            const newTool = {
+                tool: tool.trim() + " *"
+            };
+            setToolsData((prevData) => [...prevData, newTool]);
 
-                setLoading(false);
-                setMessage({ text: "Tool added as a suggestion.", type: "success" });
+            // 2) let the parent know so it can auto-select
+            if (onAdd) onAdd(newTool);
 
-                setToolsData((prevData) => [...prevData, { tool: tool.trim() + " *" }]);
-
-                setTimeout(() => {
-                    handleClose();
-                }, 1000);
-            }
+            setTimeout(() => {
+                handleClose();
+            }, 1000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding tool:", error);
@@ -88,6 +85,7 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
 
     const handleClose = () => {
         setLoading(false);
+        setApprover("");
         setTool("");
         setMessage({ text: "", type: "" });
         onClose();
@@ -114,6 +112,28 @@ const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData }) => {
                             required
                             placeholder="Insert tool name"
                         />
+                    </div>
+
+                    <div className="abbr-popup-group">
+                        <label className="abbr-popup-label">Approver:</label>
+                        <div className="abbr-popup-page-select-container">
+                            <select
+                                spellcheck="true"
+                                type="text"
+                                value={approver}
+                                onChange={(e) => setApprover(e.target.value)}
+                                className="abbr-popup-select"
+                                required
+                                placeholder="Select Approver"
+                            >
+                                <option value="">Select Approver</option>
+                                {usersList.map((value, index) => (
+                                    <option key={index} value={value.id || value._id || value}>
+                                        {value.username || value.label || value}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     {/* Success/Error Message Box */}

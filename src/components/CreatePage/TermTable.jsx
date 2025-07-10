@@ -46,6 +46,45 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
     fetchValues();
   }, []);
 
+  const handleNewTerm = (newTerm) => {
+    const code = newTerm.term;
+    // add to the “used” codes array
+    setUsedTermCodes((prev) => [...prev, code]);
+    setSelectedTerms((prev) => new Set(prev).add(code));
+    setFormData((prev) => ({
+      ...prev,
+      termRows: [...prev.termRows, newTerm],
+    }));
+  };
+
+
+  const handleTermUpdate = (updatedTerm, oldTerm) => {
+    // 1) Swap out the code in usedAbbrCodes
+    setUsedTermCodes(prev =>
+      prev.map(code => (code === oldTerm ? updatedTerm.term : code))
+    );
+
+    // 2) Update the selectedAbbrs Set
+    setSelectedTerms(prev => {
+      const next = new Set(prev);
+      if (next.has(oldTerm)) {
+        next.delete(oldTerm);
+        next.add(updatedTerm.term);
+      }
+      return next;
+    });
+
+    // 3) Remap the rows in formData.abbrRows
+    setFormData(prev => ({
+      ...prev,
+      termRows: prev.termRows.map(row =>
+        row.term === oldTerm
+          ? { term: updatedTerm.term + " *", definition: updatedTerm.definition }
+          : row
+      ),
+    }));
+  };
+
   const handlePopupToggle = () => {
     setSearchTerm("")
     setPopupVisible(!popupVisible);
@@ -90,13 +129,17 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
         <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Term" /></button>
         <TermPopup
           isOpen={showNewPopup}
-          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          onClose={() => { setShowNewPopup(false); }}
           role={role}
           userID={userID}
           setTermData={setTermData}
+          onAdd={handleNewTerm}
         />
 
-        {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleTermUpdate}
+          userID={userID}
+          setTermData={setTermData}
+          onAdd={handleNewTerm} />}
 
         {popupVisible && (
           <div className="popup-overlay-terms">

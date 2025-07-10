@@ -40,12 +40,17 @@ const AdminApprovalPage = () => {
                 navigate("/403");
             }
         }
-        fetchDrafts();
     }, [navigate]);
+
+    useEffect(() => {
+        if (userID) {
+            fetchDrafts();
+        }
+    }, [userID]);
 
     const fetchDrafts = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/drafts`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/drafts/${userID}`);
             if (!response.ok) throw new Error("Failed to fetch drafts");
             const data = await response.json();
             setDrafts(data.drafts);
@@ -248,36 +253,33 @@ const AdminApprovalPage = () => {
                     </div>
                 </div>
                 <div className="table-container-gen">
-                    <table className="admin-approve-table">
-                        <thead className="admin-approve-head">
-                            <tr className="admin-approve-tr">
-                                <th className="doc-num-filter col admin-approve-th">Nr</th>
-                                <th className="col-name-filter col admin-approve-th">Type</th>
-                                <th className="col-stat-filter col admin-approve-th">Item</th>
-                                <th className="col-stat-filter col admin-approve-th">Description</th>
-                                <th className="col-stat-filter col admin-approve-th">Suggested By</th>
-                                <th className="col-stat-filter col admin-approve-th">Suggested Date</th>
-                                <th className="col-stat-filter col admin-approve-th">Status</th>
-                                <th className="col-stat-filter col admin-approve-th">Review Date</th>
-                                <th className="col-stat-filter col admin-approve-th">Reviewer</th>
-                                <th className="col-stat-filter col admin-approve-th">Comment</th>
+                    <table className="risk-admin-approve-table">
+                        <thead className="risk-admin-approve-head">
+                            <tr className="risk-admin-approve-tr">
+                                <th className="doc-num-filter col risk-admin-approve-th">Nr</th>
+                                <th className="col-name-filter col risk-admin-approve-th">Type</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Item</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Description</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Suggested By</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Suggested Date</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Status</th>
+                                <th className="col-stat-filter col risk-admin-approve-th">Review Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             {drafts.map((draft, index) => (
-                                <tr key={draft._id} onClick={() => handleRowClick(draft)} className={`file-info-row-height admin-approve-tr`}>
-                                    <td className="admin-approve-th-index">{index + 1}</td>
-                                    <td className="col admin-approve-th-type">{formatType(draft.type)}</td>
-                                    <td className="col admin-approve-th-item">{Object.values(draft.data)[0]}</td>
-                                    <td className="col admin-approve-th-desc">
+                                <tr key={draft._id} className={`file-info-row-height risk-admin-approve-tr`}>
+                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-index">{index + 1}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="col risk-admin-approve-th-type">{formatType(draft.type)}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="col risk-admin-approve-th-item">{Object.values(draft.data)[0]}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="col risk-admin-approve-th-desc">
                                         {Object.values(draft.data)[1] ? Object.values(draft.data)[1] : "No description"}
                                     </td>
-                                    <td className="admin-approve-th-user">{draft.suggestedBy ? draft.suggestedBy.username : "Unknown"}</td>
-                                    <td className="admin-approve-th-date">{formatDate(draft.suggestedDate)}</td>
-                                    <td className="admin-approve-th-status">{draft.status}</td>
-                                    <td className="admin-approve-th-date">{draft.reviewDate ? formatDate(draft.reviewDate) : "N/A"}</td>
-                                    <td className="admin-approve-th-user">{draft.reviewer ? draft.reviewer : "N/A"}</td>
-                                    <td className="admin-approve-th-comment">{draft.comment ? draft.comment : "N/A"}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-user">{draft.suggestedBy ? draft.suggestedBy.username : "Unknown"}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-date">{formatDate(draft.suggestedDate)}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-status">{draft.status}</td>
+                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-date">{draft.reviewDate ? formatDate(draft.reviewDate) : "N/A"}</td>
+
                                 </tr>
                             ))}
                         </tbody>

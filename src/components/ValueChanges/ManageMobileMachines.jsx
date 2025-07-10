@@ -2,12 +2,32 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageMobileMachines.css";
 
-const ManageMobileMachines = ({ closePopup, onClose }) => {
+const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, onAdd, userID }) => {
     const [machines, setMachines] = useState([]);
     const [selectedMachine, setSelectedMachine] = useState("");
     const [macInp, setMacInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [approver, setApprover] = useState("");
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         fetchMachines();
@@ -44,28 +64,46 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
             return;
         }
 
+        const data = { machine: macInp };
+        const type = "Mobile";
+        const route = `/api/docCreateVals/draft`;
+
         try {
-            await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/mac/update/${selectedMachine}`, {
-                machine: macInp,
-            }, {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                }
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
             });
 
-            setMessage("Machine updated successfully.");
+            setMessage("Machine update suggested successfully.");
             setError("");
             setSelectedMachine("");
             setMacInp("");
+            const newMac = {
+                mac: macInp.trim() + " *",
+            };
+            setMachineData((prevData) => [...prevData, newMac]);
+
+            if (onAdd) onAdd(newMac);
 
             setTimeout(() => {
-                setMessage("");
+                handleClose();
             }, 1000);
-            fetchMachines();
         } catch (err) {
             setError("Failed to update machine.");
         }
+    };
+
+    const handleClose = () => {
+        setMacInp("");
+        setMessage("");
+        setApprover("");
+        onClose();
     };
 
     return (
@@ -89,6 +127,28 @@ const ManageMobileMachines = ({ closePopup, onClose }) => {
                 <div className="manMac-popup-group">
                     <label className="manMac-popup-label">New Machine Name</label>
                     <input spellcheck="true" className="manMac-input" placeholder="Insert New Machine Name" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
+                </div>
+
+                <div className="abbr-popup-group">
+                    <label className="abbr-popup-label">Approver:</label>
+                    <div className="abbr-popup-page-select-container">
+                        <select
+                            spellcheck="true"
+                            type="text"
+                            value={approver}
+                            onChange={(e) => setApprover(e.target.value)}
+                            className="abbr-popup-select"
+                            required
+                            placeholder="Select Approver"
+                        >
+                            <option value="">Select Approver</option>
+                            {usersList.map((value, index) => (
+                                <option key={index} value={value.id || value._id || value}>
+                                    {value.username || value.label || value}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {message && <div className="manMac-message-manage">{message}</div>}

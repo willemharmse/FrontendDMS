@@ -43,6 +43,44 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
         fetchValues();
     }, []);
 
+    const handleNewMat = (newMat) => {
+        const code = newMat.mat;
+        // add to the “used” codes array
+        setUsedMaterials((prev) => [...prev, code]);
+        setSelectedMaterials((prev) => new Set(prev).add(code));
+        setFormData((prev) => ({
+            ...prev,
+            Materials: [...prev.Materials, newMat],
+        }));
+    };
+
+    const handleMatUpdate = (updatedMat, oldMat) => {
+        // 1) Swap out the code in usedAbbrCodes
+        setUsedMaterials(prev =>
+            prev.map(code => (code === oldMat ? updatedMat.mat : code))
+        );
+
+        // 2) Update the selectedAbbrs Set
+        setSelectedMaterials(prev => {
+            const next = new Set(prev);
+            if (next.has(oldMat)) {
+                next.delete(oldMat);
+                next.add(updatedMat.mat);
+            }
+            return next;
+        });
+
+        // 3) Remap the rows in formData.abbrRows
+        setFormData(prev => ({
+            ...prev,
+            Materials: prev.Materials.map(row =>
+                row.mat === oldMat
+                    ? { mat: updatedMat.mat + " *" }
+                    : row
+            ),
+        }));
+    };
+
     useEffect(() => {
         setSelectedMaterials(new Set(usedMaterials));
         if (usedMaterials.length > 0) {
@@ -114,13 +152,17 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Material" /></button>
                 <MaterialPopup
                     isOpen={showNewPopup}
-                    onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+                    onClose={() => { setShowNewPopup(false); }}
                     role={role}
                     userID={userID}
                     setMatsData={setMatsData}
+                    onAdd={handleNewMat}
                 />
 
-                {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} />}
+                {isManageOpen && <ManageMaterial closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleMatUpdate}
+                    userID={userID}
+                    setMatData={setMatsData}
+                    onAdd={handleNewMat} />}
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-mat">

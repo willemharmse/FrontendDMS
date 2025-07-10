@@ -18,6 +18,17 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
     setSelectedAbbrs(new Set(usedAbbrCodes));
   }, [usedAbbrCodes]);
 
+  const handleNewAbbreviation = (newAbbr) => {
+    const code = newAbbr.abbr;
+    // add to the “used” codes array
+    setUsedAbbrCodes((prev) => [...prev, code]);
+    setSelectedAbbrs((prev) => new Set(prev).add(code));
+    setFormData((prev) => ({
+      ...prev,
+      abbrRows: [...prev.abbrRows, newAbbr],
+    }));
+  };
+
   const fetchValues = async () => {
     const route = risk ? `/api/riskInfo/abbr/` : "/api/docCreateVals/abbr";
     try {
@@ -50,6 +61,33 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   const handlePopupToggle = () => {
     setSearchTerm("")
     setPopupVisible(!popupVisible);
+  };
+
+  const handleAbbreviationUpdate = (updatedAbbr, oldAbbr) => {
+    // 1) Swap out the code in usedAbbrCodes
+    setUsedAbbrCodes(prev =>
+      prev.map(code => (code === oldAbbr ? updatedAbbr.abbr : code))
+    );
+
+    // 2) Update the selectedAbbrs Set
+    setSelectedAbbrs(prev => {
+      const next = new Set(prev);
+      if (next.has(oldAbbr)) {
+        next.delete(oldAbbr);
+        next.add(updatedAbbr.abbr);
+      }
+      return next;
+    });
+
+    // 3) Remap the rows in formData.abbrRows
+    setFormData(prev => ({
+      ...prev,
+      abbrRows: prev.abbrRows.map(row =>
+        row.abbr === oldAbbr
+          ? { abbr: updatedAbbr.abbr + " *", meaning: updatedAbbr.meaning }
+          : row
+      ),
+    }));
   };
 
   const handleCheckboxChange = (abbr) => {
@@ -91,13 +129,17 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
         <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Abbreviation" /></button>
         <AbbreviationPopup
           isOpen={showNewPopup}
-          onClose={() => { setShowNewPopup(false); if (role === "admin") fetchValues(); }}
+          onClose={() => { setShowNewPopup(false); }}
           role={role}
           userID={userID}
           setAbbrData={setAbbrData}
+          onAdd={handleNewAbbreviation}
         />
 
-        {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={fetchValues} />}
+        {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleAbbreviationUpdate} userID={userID}
+          setAbbrData={setAbbrData}
+          onAdd={handleNewAbbreviation}
+        />}
         {/* Popup */}
         {popupVisible && (
           <div className="popup-overlay-abbr">

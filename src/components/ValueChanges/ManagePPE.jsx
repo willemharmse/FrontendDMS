@@ -2,12 +2,32 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManagePPE.css";
 
-const ManagePPE = ({ closePopup, onClose }) => {
+const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID }) => {
     const [ppes, setPpes] = useState([]);
     const [selectedPPE, setSelectedPPE] = useState("");
     const [ppeInp, setPpeInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [approver, setApprover] = useState("");
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        // Function to fetch users
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+                const data = await response.json();
+
+                setUsersList(data.users);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         fetchPPE();
@@ -44,28 +64,46 @@ const ManagePPE = ({ closePopup, onClose }) => {
             return;
         }
 
+        const data = { ppe: ppeInp };
+        const type = "PPE";
+        const route = `/api/docCreateVals/draft`;
+
         try {
-            await axios.put(`${process.env.REACT_APP_URL}/api/docCreateVals/ppe/update/${selectedPPE}`, {
-                ppe: ppeInp,
-            }, {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                }
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    type, data, userID, approver
+                })
             });
 
-            setMessage("PPE updated successfully.");
+            setMessage("PPE update suggested successfully.");
             setError("");
             setSelectedPPE("");
             setPpeInp("");
+            const newPpe = {
+                ppe: ppeInp.trim() + " *",
+            };
+            setPPEData((prevData) => [...prevData, newPpe]);
+
+            if (onAdd) onAdd(newPpe);
 
             setTimeout(() => {
-                setMessage("");
+                handleClose();
             }, 1000);
-            fetchPPE();
         } catch (err) {
-            setError("Failed to update PPE.");
+            setError("Failed to update ppe.");
         }
+    };
+
+    const handleClose = () => {
+        setPpeInp("");
+        setMessage("");
+        setApprover("");
+        onClose();
     };
 
     return (
@@ -89,6 +127,28 @@ const ManagePPE = ({ closePopup, onClose }) => {
                 <div className="manPPE-popup-group">
                     <label className="manPPE-popup-label">New PPE Name</label>
                     <input spellcheck="true" className="manPPE-input" placeholder="Insert New PPE Name" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
+                </div>
+
+                <div className="abbr-popup-group">
+                    <label className="abbr-popup-label">Approver:</label>
+                    <div className="abbr-popup-page-select-container">
+                        <select
+                            spellcheck="true"
+                            type="text"
+                            value={approver}
+                            onChange={(e) => setApprover(e.target.value)}
+                            className="abbr-popup-select"
+                            required
+                            placeholder="Select Approver"
+                        >
+                            <option value="">Select Approver</option>
+                            {usersList.map((value, index) => (
+                                <option key={index} value={value.id || value._id || value}>
+                                    {value.username || value.label || value}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {message && <div className="manPPE-message-manage">{message}</div>}
