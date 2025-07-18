@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import "./DCHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight, faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "./Notifications/TopBar";
 
@@ -26,7 +26,7 @@ const DCHomePage = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -36,8 +36,10 @@ const DCHomePage = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
             <div className="main-box-dc">
@@ -54,7 +56,7 @@ const DCHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-dc-home">
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/constructionDDS/Policy")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateProc/Procedure")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/proceduresDMS.svg`} className={"icon-dc"} />

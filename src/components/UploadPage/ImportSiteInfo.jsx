@@ -80,7 +80,7 @@ const ImportSiteInfo = ({ onClose }) => {
 
                 onClose(); // Close the popup after successful upload
             } else {
-                toast.error(`Error: ${result.error}`, {
+                toast.error(`Excel document formatting modified. Refer to template or contact administrator.`, {
                     closeButton: false,
                     autoClose: 800,
                     style: {
@@ -92,7 +92,7 @@ const ImportSiteInfo = ({ onClose }) => {
             setLoading(false);
         } catch (error) {
             setLoading(false);
-            toast.error("Error has occured", {
+            toast.error("Excel document formatting modified. Refer to template or contact administrator.", {
                 closeButton: false,
                 autoClose: 800,
                 style: {

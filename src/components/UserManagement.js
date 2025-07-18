@@ -7,7 +7,7 @@ import EditUserModal from './UserManagement/EditUserModal';
 import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
 import TopBar from "./Notifications/TopBar";
 
@@ -222,7 +222,7 @@ const UserManagement = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -254,13 +254,19 @@ const UserManagement = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
 
             <div className="main-box-user">
                 <div className="top-section-um">
+                    <div className="burger-menu-icon-um">
+                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    </div>
+
                     <div className="um-input-container">
                         <input
                             className="search-input-um"

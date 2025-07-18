@@ -270,9 +270,40 @@
 /* Style for the N/A checkbox container */
 /* Style for the N/A checkbox container */
 .na-checkbox-tool {
+    /* Remove the browser’s default checkbox */
+    appearance: none;
+    -webkit-appearance: none;
+    /* size & spacing */
     width: 20px;
     height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+    /* un-checked look */
+    background-color: #ffffff;
+    border: 2px solid black;
+    border-radius: 4px;
+    position: relative;
     cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.na-checkbox-tool:checked {
+    /* filled dark blue when checked */
+    background-color: #002060;
+    border-color: #002060;
+}
+
+.na-checkbox-tool:checked::after {
+    /* white checkmark */
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 
 .tool-input-container {

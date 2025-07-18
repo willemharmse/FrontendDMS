@@ -97,7 +97,7 @@ const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) =
 
     return (
         <>
-            {(["IBRA", "JRA"].includes(formData.documentType)) && (
+            {(["IBRA", "BLRA"].includes(formData.documentType)) && (
                 <div className="input-row-risk-create">
                     <div className={`input-box-aim-risk-scope ${error ? "error-create" : ""}`}>
                         <button

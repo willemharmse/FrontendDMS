@@ -669,9 +669,22 @@
 
 .type-risk-create {
     margin-left: 11px;
+    display: block;
     margin-right: 6px;
     text-align: right;
     font-size: 14px;
+}
+
+.type-risk-create-JRA {
+    margin-left: 11px;
+    display: block;
+    margin-right: 6px;
+    text-align: right;
+    font-size: 14px;
+    white-space: nowrap;
+    /* Prevents the text from wrapping onto multiple lines */
+    overflow: hidden;
+    min-width: 85px;
 }
 
 .input-group-risk-create .document-type-input {

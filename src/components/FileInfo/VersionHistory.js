@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faDownload, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faDownload, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import DownloadPopup from "../FileInfo/DownloadPopup";
 import { jwtDecode } from 'jwt-decode';
@@ -141,7 +141,7 @@ const VersionHistory = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -151,8 +151,10 @@ const VersionHistory = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
             <div className="main-box-version-history-file">

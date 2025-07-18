@@ -22,7 +22,7 @@ const OtherTeam = ({ formData }) => {
 
                             <label className="other-team__info">
                                 <strong>
-                                    The following team members were also involved in this task:
+                                    The following team members were involved in this task:
                                 </strong>
                             </label>
 

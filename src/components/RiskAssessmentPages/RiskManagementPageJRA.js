@@ -10,7 +10,8 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -648,7 +649,7 @@ const RiskManagementPageJRA = () => {
     // Function to save to history with a limit
     const saveToHistory = useCallback(() => {
         const currentState = {
-            formData,
+            formData: JSON.parse(JSON.stringify(formData)),
             usedAbbrCodes,
             usedTermCodes,
             usedPPEOptions,
@@ -970,7 +971,7 @@ const RiskManagementPageJRA = () => {
             formData: formData,
         };
 
-        const documentName = (formData.title) + ' ' + formData.documentType;
+        const documentName = (formData.title) + ' ' + formData.documentType + " and PTO";
 
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/t/generate-jra-sheet1`, {
@@ -1071,7 +1072,8 @@ const RiskManagementPageJRA = () => {
             usedPPEOptions,
             formData,
             userID,
-            azureFN: ""
+            azureFN: "",
+            draftID: loadedIDRef.current,
         };
 
         setLoading(true);
@@ -1097,6 +1099,10 @@ const RiskManagementPageJRA = () => {
             });
 
             setLoading(false);
+
+            setTimeout(() => {
+                navigate('/FrontendDMS/generatedJRADocs'); // Redirect to the generated file info page
+            }, 1000);
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1108,7 +1114,7 @@ const RiskManagementPageJRA = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -1118,7 +1124,15 @@ const RiskManagementPageJRA = () => {
                     <div className="button-container-create">
                         <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faArrowUp}
+                                    transform="shrink-2 up-8 left-20"
+                                    color="#002060"   /* or whatever contrast you need */
+                                    fontSize={"16px"}
+                                />
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
@@ -1138,8 +1152,10 @@ const RiskManagementPageJRA = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
 
@@ -1201,7 +1217,7 @@ const RiskManagementPageJRA = () => {
                             <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
                             <div className="input-group-risk-create">
                                 <input
-                                    spellcheck="true"
+                                    spellCheck="true"
                                     type="text"
                                     name="title"
                                     className="font-fam title-input"
@@ -1209,7 +1225,7 @@ const RiskManagementPageJRA = () => {
                                     onChange={handleInputChange}
                                     placeholder="Insert the Risk Assessment Title (E.g. Perform Earth Leakage Test on Electrical Circuits)"
                                 />
-                                <span className="type-risk-create">{formData.documentType}</span>
+                                <span className="type-risk-create-JRA">{formData.documentType + " and PTO"}</span>
                             </div>
                         </div>
                     </div>

@@ -539,7 +539,7 @@ body {
 }
 
 .required-field {
-    color: red;
+    color: #CB6F6F;
     font-weight: bold;
 }
 

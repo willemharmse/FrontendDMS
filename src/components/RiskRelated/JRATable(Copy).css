@@ -431,10 +431,6 @@ td.jraStatus {
 
 .test-jra {
     align-content: center;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    width: 100%;
-    border-bottom: #CCC 1px solid;
 }
 
 .delete-mainrow-button {
@@ -457,8 +453,8 @@ td.jraStatus {
     /* float on top */
 }
 
-.delete-mainrow-icon:hover {
-    color: #CB6F6F;
+.delete-mainrow-button:hover {
+    background: #f8f8f8;
 }
 
 .main-cell:hover .delete-mainrow-button {

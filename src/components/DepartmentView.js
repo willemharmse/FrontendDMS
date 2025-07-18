@@ -5,7 +5,7 @@ import "./UserManagement.css";
 import "./DepartmentView.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faCirclePlus, faCalculator, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faCirclePlus, faCalculator, faTrash, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import TeamTable from "./UserManagement/TeamTable";
 import AddMembersDept from "./UserManagement/AddMembersDept";
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
@@ -223,7 +223,7 @@ const DepartmentView = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -249,8 +249,10 @@ const DepartmentView = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
 

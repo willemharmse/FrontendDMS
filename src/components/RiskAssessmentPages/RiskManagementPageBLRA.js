@@ -10,7 +10,8 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretRight, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
 import DocumentSignaturesRiskTable from "../RiskRelated/DocumentSignaturesRiskTable";
@@ -25,6 +26,7 @@ import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
 import PicturesTable from "../CreatePage/PicturesTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
+import BLRATable from "../RiskRelated/BLRAComponents/BLRATable";
 
 const RiskManagementPageBLRA = () => {
     const navigate = useNavigate();
@@ -122,9 +124,7 @@ const RiskManagementPageBLRA = () => {
     const handleSave = () => {
         if (formData.title !== "") {
             if (loadedIDRef.current === '') {
-                if (riskType === "IBRA") {
-                    saveData();
-                }
+                saveData();
 
                 toast.dismiss();
                 toast.clearWaitingQueue();
@@ -137,9 +137,7 @@ const RiskManagementPageBLRA = () => {
                 });
             }
             else if (loadedIDRef.current !== '') {
-                if (riskType === "IBRA") {
-                    updateData(userIDsRef.current);
-                }
+                updateData(userIDsRef.current);
 
                 toast.dismiss();
                 toast.clearWaitingQueue();
@@ -218,7 +216,7 @@ const RiskManagementPageBLRA = () => {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/safe`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/safe`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -249,7 +247,7 @@ const RiskManagementPageBLRA = () => {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/modifySafe/${loadedIDRef.current}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/modifySafe/${loadedIDRef.current}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -307,7 +305,7 @@ const RiskManagementPageBLRA = () => {
             toast.dismiss();
             toast.success("Draft saved");
 
-            await handleGenerateIBRADocument();
+            await handleGenerateBLRADocument();
 
         } catch (err) {
             toast.error("Could not save draft, generation aborted.");
@@ -342,9 +340,7 @@ const RiskManagementPageBLRA = () => {
                 }
             });
         } else {
-            if (riskType === "IBRA") {
-                handleIBRAPublish();  // Call your function when the form is valid
-            }
+            handleBLRAPublish();  // Call your function when the form is valid
         }
     };
 
@@ -524,7 +520,7 @@ const RiskManagementPageBLRA = () => {
 
     const loadData = async (loadID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/getDraft/${loadID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/getDraft/${loadID}`);
             const storedData = await response.json();
             // Update your states as needed:
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -1272,7 +1268,7 @@ const RiskManagementPageBLRA = () => {
     };
 
     // Send data to backend to generate a Word document
-    const handleGenerateIBRADocument = async () => {
+    const handleGenerateBLRADocument = async () => {
         const dataToStore = {
             formData,
         };
@@ -1281,7 +1277,7 @@ const RiskManagementPageBLRA = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-ibra`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-blra`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1401,19 +1397,20 @@ const RiskManagementPageBLRA = () => {
         }
     };
 
-    const handleIBRAPublish = async () => {
+    const handleBLRAPublish = async () => {
         const dataToStore = {
             usedAbbrCodes,       // your current state values
             usedTermCodes,
             formData,
             userID,
-            azureFN: ""
+            azureFN: "",
+            draftID: loadedIDRef.current,
         };
 
         setLoading(true);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/publish-ibra`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/publish-blra`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1433,6 +1430,10 @@ const RiskManagementPageBLRA = () => {
             });
 
             setLoading(false);
+
+            setTimeout(() => {
+                navigate('/FrontendDMS/generatedBLRADocs'); // Redirect to the generated file info page
+            }, 1000);
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1578,7 +1579,7 @@ const RiskManagementPageBLRA = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -1588,7 +1589,15 @@ const RiskManagementPageBLRA = () => {
                     <div className="button-container-create">
                         <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faArrowUp}
+                                    transform="shrink-2 up-8 left-20"
+                                    color="#002060"   /* or whatever contrast you need */
+                                    fontSize={"16px"}
+                                />
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
@@ -1608,8 +1617,10 @@ const RiskManagementPageBLRA = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
 
@@ -1881,7 +1892,7 @@ const RiskManagementPageBLRA = () => {
                     <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    {formData.documentType === "BLRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
+                    {formData.documentType === "BLRA" && (<BLRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
                     {(["BLRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
@@ -1893,7 +1904,6 @@ const RiskManagementPageBLRA = () => {
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            disabled={useParams().type !== "IBRA"}
                             onClick={handleClick3}
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}

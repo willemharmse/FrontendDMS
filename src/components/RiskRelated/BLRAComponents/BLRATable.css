@@ -191,7 +191,6 @@ td.ibraCon {
 .ibraStatus {
     min-width: 200px !important;
     max-width: 200px !important;
-    width: 200px !important;
     background-color: #CB6F6F !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;
@@ -203,8 +202,8 @@ td.ibraCon {
 }
 
 td.ibraStatus {
-    min-width: 150px !important;
-    max-width: 150px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
     background-color: white !important;
     border-left: solid 2px #CB6F6F !important;
     border-right: solid 2px #CB6F6F !important;

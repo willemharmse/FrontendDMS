@@ -42,7 +42,7 @@ const SaveAsPopup = ({ onClose, saveAs, current }) => {
                     <span className="saveAs-date-label-tc">
                         Insert the title that should be used for the new draft that will be saved.
                     </span>
-                    <input
+                    <textarea
                         type="text"
                         value={title}
                         onChange={handleTitleChange}

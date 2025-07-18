@@ -19,7 +19,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
@@ -27,6 +28,7 @@ import SaveAsPopup from "../Popups/SaveAsPopup";
 
 const CreatePage = () => {
   const navigate = useNavigate();
+  const type = useParams().type;
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
@@ -952,7 +954,8 @@ const CreatePage = () => {
       usedMaterials,
       formData,
       userID,
-      azureFN: ""
+      azureFN: "",
+      draftID: loadedIDRef.current
     };
 
     setLoading(true);
@@ -978,6 +981,10 @@ const CreatePage = () => {
       });
 
       setLoading(false);
+
+      setTimeout(() => {
+        navigate('/FrontendDMS/generatedFileInfo'); // Redirect to the generated file info page
+      }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -989,7 +996,7 @@ const CreatePage = () => {
       {isSidebarVisible && (
         <div className="sidebar-um">
           <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-            <FontAwesomeIcon icon={faChevronLeft} />
+            <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -999,7 +1006,15 @@ const CreatePage = () => {
           <div className="button-container-create">
             <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
               <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                {/* base floppy-disk, full size */}
+                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
+                {/* pen, shrunk & nudged down/right into corner */}
+                <FontAwesomeIcon
+                  icon={faArrowUp}
+                  transform="shrink-2 up-8 left-20"
+                  color="#002060"   /* or whatever contrast you need */
+                  fontSize={"16px"}
+                />
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
@@ -1010,12 +1025,19 @@ const CreatePage = () => {
               </div>
             </button>
           </div>
+
+          <div className="sidebar-logo-dm-fi">
+            <img src={`${process.env.PUBLIC_URL}/proceduresDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">{type}</p>
+          </div>
         </div>
       )}
 
       {!isSidebarVisible && (
-        <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-          <FontAwesomeIcon icon={faChevronRight} />
+        <div className="sidebar-hidden">
+          <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+            <FontAwesomeIcon icon={faCaretRight} />
+          </div>
         </div>
       )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}

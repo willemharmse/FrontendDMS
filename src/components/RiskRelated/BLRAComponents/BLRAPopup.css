@@ -1,0 +1,689 @@
+.ibra-popup-page-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+.ibra-popup-page-consequence-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
+.ibra-popup-label-icon-wrapper {
+    position: relative;
+}
+
+.ibra-popup-label-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    color: #495057;
+}
+
+.inline-field {
+    display: flex;
+    align-items: center;
+}
+
+.inline-field label {
+    /* override the default block/center styling */
+    display: block;
+    margin: 0px 10px 0px 0px;
+    margin-bottom: 0px !important;
+    /* right-gap to the select */
+    text-align: left;
+    font-weight: 500;
+    /* match existing weight */
+}
+
+.inline-field .ibra-popup-page-select-container {
+    flex: 1;
+    /* let the select fill remaining space */
+    margin: 0;
+    /* reset any unintended margins */
+}
+
+.ibra-popup-page-label-cell {
+    width: 300px;
+    padding-right: 8px;
+}
+
+.ibra-popup-page-select-cell {
+    width: calc(100% - 60px);
+}
+
+.ibra-popup-page-label-box {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    border-radius: 4px;
+    height: 28px;
+    padding-left: 10px;
+
+    font-weight: bold;
+}
+
+.ibra-popup-page-row-actions {
+    display: flex;
+    align-items: center;
+}
+
+.ibra-popup-page-row-input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.ibra-popup-page-action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ibra-popup-page-action-button:hover {
+    color: #dc3545;
+}
+
+.ibra-popup-page-info-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ibra-popup-page-info-button:hover {
+    color: #002060;
+}
+
+.ibra-popup-page-add-row-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    height: 30px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(+20%);
+}
+
+.ibra-popup-page-add-row-button:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.ibra-popup-page-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+.ibra-popup-text {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.ibra-popup-page-popup-right {
+    background: #f2f2f2;
+    padding: 20px;
+    border-radius: 5px;
+    width: 100%;
+    height: 100%;
+    max-width: 1100px;
+    max-height: 630px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.ibra-popup-page-popup-header-right {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-top: 10px;
+}
+
+.ibra-popup-page-form-group-main-container {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ibra-popup-page-form-group-main-container-2 {
+    background-color: #f8f8f8;
+    padding: 15px;
+    padding-bottom: 0px;
+    border-radius: 8px;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+}
+
+.ibra-popup-page-popup-header-right-2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-top: 5px;
+}
+
+.text-unwanted {
+    margin: 0;
+    font-size: 18px !important;
+    color: #333;
+    text-align: center;
+}
+
+.ibra-popup-page-component-wrapper {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e8e8e8;
+}
+
+.ibra-popup-page-component-wrapper label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 15px;
+}
+
+.ibra-popup-page-scroll-box {
+    overflow-y: auto;
+    height: 100%;
+    padding-right: 2px;
+}
+
+.ibra-popup-page-scroll-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ibra-popup-page-scroll-box::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.ibra-popup-page-scroll-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ibra-popup-page-popup-header-right h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.ibra-popup-page-close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+
+.ibra-popup-page-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.ibra-popup-page-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.ibra-popup-page-additional-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.ibra-popup-page-additional-row-2 {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 0px;
+    width: 100%;
+}
+
+.ibra-popup-page-column-half {
+    flex: 1;
+    width: 50%;
+}
+
+.ibra-popup-page-textarea {
+    width: calc(100% - 20px);
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+.ibra-popup-page-textarea-2 {
+    width: calc(100% - 20px);
+    min-width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+.ibra-popup-page-textarea-full {
+    width: calc(100% - 20px);
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+.ibra-popup-page-form-row-2 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.ibra-popup-page-form-group {
+    flex: 1;
+    min-width: 0;
+}
+
+.ibra-popup-page-form-group label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* center horizontally */
+    gap: 8px;
+    /* spacing between icon and text */
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    text-align: center;
+}
+
+.ibra-popup-page-required {
+    color: red;
+    margin-left: 2px;
+}
+
+.ibra-popup-page-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.ibra-popup-page-select {
+    width: 100%;
+    padding: 10px;
+    height: 45px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+}
+
+.ibra-popup-page-select-c {
+    width: 100%;
+    padding: 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+}
+
+.ibra-popup-page-input-table {
+    width: calc(100% - 25px);
+    padding: 10px;
+    height: 19px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+}
+
+.ibra-popup-page-input-table-2 {
+    width: calc(100% - 25px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+    max-height: 78px;
+    min-height: 20px;
+    resize: vertical;
+    field-sizing: content;
+}
+
+.ibra-popup-page-select-container::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.ibra-popup-page-form-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.create-user-buttons {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.ibra-popup-page-upload-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    min-width: 200px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.ibra-popup-page-upload-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.error-upload-required-up label {
+    color: #CB6F6F;
+}
+
+.error-upload-required-up .ibra-popup-page-select,
+.error-upload-required-up .ibra-popup-page-date {
+    border-color: #CB6F6F;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ibra-popup-page-form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ibra-popup-page-popup-right {
+        max-width: 95%;
+        padding: 15px;
+    }
+}
+
+.ibra-popup-hazard-table-container {
+    height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 10px;
+}
+
+.ibra-popup-hazard-title {
+    margin: 0 0 12px;
+    /* 12px gap below title */
+    font-size: 16px;
+    color: white;
+}
+
+.ibra-popup-dropdown {
+    width: 60%;
+    max-width: 180px;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+.ibra-popup-hazard-info-icon {
+    position: absolute;
+    top: 70px;
+    /* just above the h3 at 100px */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.ibra-popup-hazard-circle-container {
+    height: 291px;
+    /* match the table height exactly */
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.ibra-popup-hazard-circle {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background-color: #CB6F6F;
+    display: block;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.ibra-popup-hazard-circle .ibra-popup-hazard-title {
+    position: absolute;
+    top: 100px;
+    /* distance from top edge */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    /* kill any default margins */
+    z-index: 1;
+}
+
+.ibra-popup-hazard-circle .ibra-popup-dropdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -15px;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.ibra-popup-page-input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    height: 23px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+}
+
+.ibra-popup-page-additional-row-3 {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    flex-wrap: nowrap;
+    /* prevent wrapping */
+}
+
+/* A “third-width” column — exactly one-third of the container */
+.ibra-popup-page-column-third {
+    flex: 0 0 32.5%;
+    /* fixed one-third width */
+    max-width: 32.5%;
+    min-width: 0;
+    /* allow proper flex shrinking */
+}
+
+.ibra-popup-page-label-output {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    box-sizing: border-box;
+    /* ensures padding doesn’t break the width */
+}
+
+.ibra-popup-page-input-green {
+    background-color: #7EAC87 !important;
+    color: white !important;
+}
+
+.ibra-popup-page-input-yellow {
+    background-color: #FFFF89 !important;
+    color: black !important;
+}
+
+.ibra-popup-page-input-red {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.ibra-popup-page-input-orange {
+    background-color: #FFC000 !important;
+    color: black !important;
+}
+
+.ibra-popup-page-component-wrapper-circle {
+    background-color: transparent;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.ibra-popup-page-component-wrapper-special {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e8e8e8;
+}
+
+.ibra-popup-page-component-wrapper-special label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 15px;
+}
+
+.ibra-popup-page-component-wrapper-special2 {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e8e8e8;
+}
+
+.ibra-popup-page-component-wrapper-special2 label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 15px;
+}

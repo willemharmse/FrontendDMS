@@ -74,6 +74,10 @@
     border-radius: 6px;
     box-sizing: border-box;
     text-align: center;
+    font-family: Arial;
+    text-align: left;
+    field-sizing: content;
+    resize: none;
 }
 
 .saveAs-date-label {

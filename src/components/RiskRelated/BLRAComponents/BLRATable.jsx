@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import './IBRATable.css';
+import '../IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy } from '@fortawesome/free-solid-svg-icons';
-import IBRAPopup from "./IBRAPopup";
-import IbraNote from "./RiskInfo/IbraNote";
-import UnwantedEvent from "./RiskInfo/UnwantedEvent";
+import BLRAPopup from "./BLRAPopup";
+import IbraNote from "../RiskInfo/IbraNote";
+import UnwantedEvent from "../RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
-import axios from "axios";
 
-const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error }) => {
+const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error }) => {
     const ibraBoxRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
@@ -19,34 +18,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const [armedDragRow, setArmedDragRow] = useState(null);
     const [draggedRowIndex, setDraggedRowIndex] = useState(null);
     const [dragOverRowIndex, setDragOverRowIndex] = useState(null);
-    const [filteredExe, setFilteredExe] = useState([]);
-    const [showExeDropdown, setShowExeDropdown] = useState(false);
-    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-    const [posLists, setPosLists] = useState([]);
-    const [activeSubCell, setActiveSubCell] = useState(null);
-    const responsibleInputRefs = useRef({});
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axios.get(`${process.env.REACT_APP_URL}/api/riskInfo/desgntions`);
-                const data = res.data.designations;
-
-                const positions = Array.from(new Set(data.map(d => d.person))).sort();
-
-                setPosLists(positions);
-
-                console.log(positions);
-            } catch (error) {
-                console.log(error)
-            }
-        };
-        fetchData();
-    }, []);
-
-    const closeAllDropdowns = () => {
-        setShowExeDropdown(null);
-    };
 
     const handleDragStart = (e, rowIndex) => {
         setDraggedRowIndex(rowIndex);
@@ -234,55 +205,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         updateRow(newRows);
     };
 
-    const handleResponsibleInput = (rowIndex, possIndex, responsibleIndex, value) => {
-        closeAllDropdowns();
-        handleResponsibleChange(rowIndex, possIndex, responsibleIndex, value);
-        const matches = posLists
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
-        setFilteredExe(matches);
-        setShowExeDropdown(true);
-        setActiveSubCell({ rowIndex: rowIndex, possIndex: possIndex, responsibleIndex: responsibleIndex });
-
-        const key = `${rowIndex}-${possIndex}-${responsibleIndex}`;
-
-        const el = responsibleInputRefs.current[key];
-        if (el) {
-            const rect = el.getBoundingClientRect();
-            setDropdownPosition({
-                top: rect.bottom + window.scrollY + 5,
-                left: rect.left + window.scrollX,
-                width: rect.width
-            });
-        }
-    };
-
-    const handleResponsibleFocus = (rowIndex, possIndex, responsibleIndex, value) => {
-        setActiveSubCell({ rowIndex: rowIndex, possIndex: possIndex, responsibleIndex: responsibleIndex });
-
-        const matches = posLists
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
-        setFilteredExe(matches);
-        setShowExeDropdown(true);
-
-        const key = `${rowIndex}-${possIndex}-${responsibleIndex}`;
-
-        const el = responsibleInputRefs.current[key];
-        if (el) {
-            const rect = el.getBoundingClientRect();
-            setDropdownPosition({
-                top: rect.bottom + window.scrollY + 5,
-                left: rect.left + window.scrollX,
-                width: rect.width
-            });
-        }
-    };
-
-    const selectResponsibleSuggestion = (suggestion) => {
-        const { rowIndex, possIndex, responsibleIndex } = activeSubCell;
-        handleResponsibleChange(rowIndex, possIndex, responsibleIndex, suggestion);
-        setShowExeDropdown(false);
-    };
-
     const handleResponsibleChange = (rowIndex, possIndex, responsibleIndex, value) => {
         const newRows = [...rows];
         newRows[rowIndex].possible[possIndex].responsible[responsibleIndex].person = value;
@@ -431,7 +353,6 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
         const closeDropdowns = () => {
             setShowColumnSelector(null);
-            setShowExeDropdown(null);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -443,7 +364,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             document.removeEventListener('touchstart', handleClickOutside);
             window.removeEventListener('scroll', handleScroll, true);
         };
-    }, [showColumnSelector, showExeDropdown]);
+    }, [showColumnSelector]);
 
     const insertRowAt = (insertIndex) => {
         // copy existing rows
@@ -514,7 +435,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
-                <h3 className="font-fam-labels">Issue Based Risk Assessment (IBRA)</h3>
+                <h3 className="font-fam-labels">Baseline Risk Assessment (BLRA)</h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -721,16 +642,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                     <input
                                                                         type="text"
                                                                         value={d.person}
-                                                                        ref={el => {
-                                                                            const key = `${rowIndex}-${pi}-${di}`;
-                                                                            if (el) {
-                                                                                responsibleInputRefs.current[key] = el;
-                                                                            } else {
-                                                                                delete responsibleInputRefs.current[key];
-                                                                            }
-                                                                        }}
-                                                                        onChange={e => handleResponsibleInput(rowIndex, pi, di, e.target.value)}
-                                                                        onFocus={e => handleResponsibleFocus(rowIndex, pi, di, e.target.value)}
+                                                                        onChange={e => handleResponsibleChange(rowIndex, pi, di, e.target.value)}
                                                                         className="ibra-textarea-PI"
                                                                         style={{ fontSize: "14px" }}
                                                                         placeholder="Insert or Select Responsible Person"
@@ -869,7 +781,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             className={colClass}
                                                             rowSpan={possibilities.length}
-                                                            style={{ alignItems: 'center', gap: '0px' }}
+                                                            style={{ alignItems: 'center', gap: '4px' }}
                                                         >
                                                             <span>{cellData}</span>
                                                             <FontAwesomeIcon
@@ -957,31 +869,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 </button>
             </div>
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
-            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} />)}
-
-            {showExeDropdown && filteredExe.length > 0 && (
-                <ul
-                    className="floating-dropdown"
-                    style={{
-                        position: 'fixed',
-                        top: dropdownPosition.top,
-                        left: dropdownPosition.left,
-                        width: dropdownPosition.width,
-                        zIndex: 1000
-                    }}
-                >
-                    {filteredExe.sort().filter(term => term && term.trim() !== "").map((term, i) => (
-                        <li
-                            key={i}
-                            onMouseDown={() => selectResponsibleSuggestion(term)}
-                        >
-                            {term}
-                        </li>
-                    ))}
-                </ul>
-            )}
+            {ibraPopup && (<BLRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} />)}
         </div>
     );
 };
 
-export default IBRATable;
+export default BLRATable;

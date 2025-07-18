@@ -422,12 +422,12 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                                         title="Drag to reorder"
                                                         onMouseDown={() => setArmedDragRow(rowIndex)}
                                                         onMouseUp={() => setArmedDragRow(null)}
-                                                        style={{ cursor: 'grab', marginRight: "1px", marginLeft: "3px", fontSize: "14px", fontWeight: "normal" }}
+                                                        style={{ cursor: 'grab', marginRight: "2px", marginLeft: "4px" }}
                                                     />
                                                     <FontAwesomeIcon
                                                         icon={faArrowUpRightFromSquare}
+                                                        style={{ fontSize: "14px", marginLeft: "2px", color: "black" }}
                                                         className="ue-popup-icon"
-                                                        style={{ marginLeft: "0px", fontSize: "14px" }}
                                                         title="Evaluate Control"
                                                         onClick={() => {
                                                             setSelectedRowData(row);

@@ -12,13 +12,16 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
+import ChapterTable from "../CreatePage/ChapterTable";
 
 const CreatePageStandards = () => {
   const navigate = useNavigate();
+  const type = useParams().type;
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
@@ -929,7 +932,7 @@ const CreatePageStandards = () => {
       {isSidebarVisible && (
         <div className="sidebar-um">
           <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-            <FontAwesomeIcon icon={faChevronLeft} />
+            <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -939,7 +942,15 @@ const CreatePageStandards = () => {
           <div className="button-container-create">
             <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
               <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                {/* base floppy-disk, full size */}
+                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
+                {/* pen, shrunk & nudged down/right into corner */}
+                <FontAwesomeIcon
+                  icon={faArrowUp}
+                  transform="shrink-2 up-8 left-20"
+                  color="#002060"   /* or whatever contrast you need */
+                  fontSize={"16px"}
+                />
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
@@ -950,12 +961,19 @@ const CreatePageStandards = () => {
               </div>
             </button>
           </div>
+
+          <div className="sidebar-logo-dm-fi">
+            <img src={`${process.env.PUBLIC_URL}/standardsDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">{type}</p>
+          </div>
         </div>
       )}
 
       {!isSidebarVisible && (
-        <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-          <FontAwesomeIcon icon={faChevronRight} />
+        <div className="sidebar-hidden">
+          <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+            <FontAwesomeIcon icon={faCaretRight} />
+          </div>
         </div>
       )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
@@ -1052,6 +1070,7 @@ const CreatePageStandards = () => {
 
           <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
+          <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
           <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 

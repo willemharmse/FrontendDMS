@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import "./RiskHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation, faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 
 import TopBar from "../Notifications/TopBar";
 
@@ -25,7 +25,7 @@ const RiskHomePage = () => {
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
-                        <FontAwesomeIcon icon={faChevronLeft} />
+                        <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
                         <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
@@ -35,8 +35,10 @@ const RiskHomePage = () => {
             )}
 
             {!isSidebarVisible && (
-                <div className="sidebar-floating-toggle" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                    <FontAwesomeIcon icon={faChevronRight} />
+                <div className="sidebar-hidden">
+                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                        <FontAwesomeIcon icon={faCaretRight} />
+                    </div>
                 </div>
             )}
 
