@@ -191,6 +191,23 @@
   transition: all 0.2s;
 }
 
+.coming-soon-button {
+  position: fixed;
+  top: 45px;
+  right: 80px;
+  color: white;
+  font-weight: bolder !important;
+  border: none;
+  border-radius: 6px;
+  padding: 15px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 170px;
+  background: transparent;
+  border: solid white 1px;
+}
+
 .admin-page-home-button {
   position: fixed;
   bottom: 45px;

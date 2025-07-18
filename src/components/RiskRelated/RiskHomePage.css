@@ -48,6 +48,55 @@
     cursor: pointer;
 }
 
+.button-container-rm-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    bottom: 20px;
+    /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}
+
+.but-rm-home {
+    background: transparent;
+    border: none;
+    color: white;
+    border: 1px solid white;
+    /* White text for contrast */
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    padding: 15px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    width: 85%;
+    margin: 5px 0;
+    /* Adds spacing between buttons */
+    display: flex;
+    justify-content: center;
+    /* Centers text inside button */
+    align-items: center;
+    /* Centers vertically */
+    font-size: 14px;
+    font-weight: bold;
+    /* Add extra padding on the left to accommodate the icon */
+    padding-right: 20px;
+}
+
+.button-content-rm-home {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
 /* Info */
 .document-info-risk-home {
     margin-top: 1px;

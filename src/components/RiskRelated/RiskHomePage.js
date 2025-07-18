@@ -31,6 +31,14 @@ const RiskHomePage = () => {
                         <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
+
+                    <div className="button-container-rm-home">
+                        <button className="but-rm-home" onClick={() => navigate("/FrontendDMS/futureEnhancementRMS")}>
+                            <div className="button-content">
+                                <span className="button-text">Coming Soon</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             )}
 

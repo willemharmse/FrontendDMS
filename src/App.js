@@ -45,6 +45,8 @@ import CreatePageStandards from './components/DocumentCreationPages/CreatePageSt
 import RiskSIPage from './components/RiskRelated/RiskValueChanges/RiskSIPage';
 import ConstructionJRA from './components/Construction/ConstructionJRA';
 import RiskManagementPageBLRA from './components/RiskAssessmentPages/RiskManagementPageBLRA';
+import FutureEnhancementPage from './components/FutureEnhancementPages/FutureEnhancementPage';
+import FutureEnhancementPageRMS from './components/FutureEnhancementPages/FutureEnhancementPageRMS';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -143,6 +145,8 @@ function App() {
         <Route path='FrontendDMS/generatedJRADocs' element={<RiskDocumentsJRA />} />
         <Route path='FrontendDMS/generatedBLRADocs' element={<RiskDocumentsBLRA />} />
         <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
+        <Route path='FrontendDMS/futureEnhancement' element={<FutureEnhancementPage />} />
+        <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

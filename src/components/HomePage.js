@@ -65,6 +65,7 @@ const HomePage = () => {
       </div>
       {role === "admin" && (<button className="admin-page-home-button" onClick={handleNavigateAdmin}>Admin Page</button>)}
       <button className="logout-button" onClick={handleLogout}>Log Out</button>
+      <button className="coming-soon-button" onClick={() => navigate("/FrontendDMS/futureEnhancement")}>Coming Soon</button>
       <ToastContainer />
     </div>
   );
