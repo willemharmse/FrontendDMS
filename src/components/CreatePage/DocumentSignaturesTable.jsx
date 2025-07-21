@@ -220,16 +220,18 @@ const DocumentSignaturesTable = ({
             {rows.map((row, index) => (
               <tr key={index}>
                 <td>
-                  <select
-                    className="table-control font-fam"
-                    value={row.auth}
-                    style={{ fontSize: "14px" }}
-                    onChange={e => handleRowChange(e, index, "auth")}
-                  >
-                    <option value="Author">Author</option>
-                    <option value="Approver">Approver</option>
-                    <option value="Reviewer">Reviewer</option>
-                  </select>
+                  <div className="jra-info-popup-page-select-container">
+                    <select
+                      className="table-control font-fam remove-default-styling"
+                      value={row.auth}
+                      style={{ fontSize: "14px" }}
+                      onChange={e => handleRowChange(e, index, "auth")}
+                    >
+                      <option value="Author">Author</option>
+                      <option value="Approver">Approver</option>
+                      <option value="Reviewer">Reviewer</option>
+                    </select>
+                  </div>
                 </td>
                 <td>
                   <input

@@ -836,13 +836,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData }) => {
                 <div className="ibra-popup-page-popup-right">
                     <div className="ibra-popup-page-popup-header-right">
                         <h2>Unwanted Event Evaluation</h2>
-                        <button
-                            className="ibra-popup-page-close-button"
-                            onClick={onClose}
-                            title="Close Popup"
-                        >
-                            ×
-                        </button>
+                        <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                     </div>
 
                     <div className="ibra-popup-page-form-group-main-container">

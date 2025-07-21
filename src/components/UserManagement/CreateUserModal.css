@@ -39,6 +39,26 @@
     font-family: Arial;
 }
 
+.uc-info-popup-page-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.uc-info-popup-page-select-container::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    font-family: Arial;
+    transform: translateY(-50%);
+    top: 65%;
+    width: 0px;
+    height: 0px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
 .def-colour {
     color: gray;
 }

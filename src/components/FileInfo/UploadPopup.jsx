@@ -98,6 +98,13 @@ const UploadPopup = ({ onClose }) => {
         return newErrors;
     };
 
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            const newErrors = validateForm();
+            setErrors(newErrors);
+        }
+    }, [selectedFile, discipline, documentType, owner, departmentHead, reviewDate, status, reviewer, approver])
+
     const isFormValid = () => {
         const newErrors = validateForm();
         setErrors(newErrors);
@@ -200,15 +207,9 @@ const UploadPopup = ({ onClose }) => {
         <div className="upload-file-page-container">
             <div className="upload-file-page-overlay">
                 <div className="upload-file-page-popup-right">
-                    <div className="upload-file-page-popup-header-right">
-                        <h2>Upload Document</h2>
-                        <button
-                            className="upload-file-page-close-button"
-                            onClick={onClose}
-                            title="Close Popup"
-                        >
-                            ×
-                        </button>
+                    <div className="review-date-header">
+                        <h2 className="review-date-title">Upload Document</h2>
+                        <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                     </div>
 
                     <div className="upload-file-page-form-group-container">

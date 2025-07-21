@@ -492,11 +492,17 @@ const FileInfo = () => {
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
               {(type === "All Document" || isTrashView) && (
-                <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select" placeholder="All Document Types" />
+                <div className="fi-info-popup-page-select-container">
+                  <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Document Types" />
+                </div>
               )}
-              <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select" placeholder="All Discipline Types" />
+              <div className="fi-info-popup-page-select-container">
+                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Discipline Types" />
+              </div>
               {adminRoles.includes(role) && (
-                <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select" placeholder="All Status Types" />
+                <div className="fi-info-popup-page-select-container">
+                  <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Status Types" />
+                </div>
               )}
             </div>
           </div>

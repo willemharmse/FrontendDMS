@@ -21,7 +21,27 @@
     max-width: 600px;
     width: 90%;
     height: 100%;
-    max-height: 250px;
+    max-height: 440px;
+}
+
+.top-right-button-rsi {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
 }
 
 .import-si-row-height-rows {
@@ -118,7 +138,7 @@
 }
 
 .import-si-file-group {
-    transform: translateY(+0%);
+    transform: translateY(+5%);
     padding: 20px 0;
     margin-bottom: 20px;
     background-color: white;
@@ -276,7 +296,7 @@
     font-family: Arial;
     cursor: pointer;
     border-radius: 5px;
-    transform: translateY(-15%);
+    transform: translateY(+15%);
 }
 
 .import-si-file-text-xlsx {

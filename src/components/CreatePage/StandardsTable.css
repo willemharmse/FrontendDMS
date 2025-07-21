@@ -1,0 +1,575 @@
+.aim-textarea-st {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    min-height: 20px;
+    resize: vertical;
+    field-sizing: content;
+}
+
+.aim-input-pt {
+    width: calc(100% - 10px);
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+}
+
+.insert-row-container {
+    height: 0;
+}
+
+.insert-row-cell {
+    padding: 0 !important;
+    text-align: center;
+    position: relative;
+    height: 0;
+}
+
+.insert-row-button {
+    background-color: #A6A6A6;
+    color: white;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.25;
+    transition: opacity 0.2s ease-in-out;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translate(-50%, -30%);
+}
+
+tr:hover+.insert-row-container .insert-row-button {
+    opacity: 1;
+}
+
+.procCent {
+    text-align: center;
+}
+
+.label-error-pt {
+    color: #CB6F6F !important;
+}
+
+.standAR {
+    width: 15%;
+    background-color: #002060;
+    color: white;
+}
+
+.standPrev {
+    width: 15%;
+    background-color: #002060;
+    color: white;
+}
+
+.standNr {
+    width: 5%;
+    background-color: #002060;
+    color: white;
+}
+
+.standMain {
+    width: 15%;
+    background-color: #002060;
+    color: white;
+}
+
+.standSub {
+    width: 50%;
+    background-color: #002060;
+    color: white;
+}
+
+
+.error-proc {
+    border: 2px solid #CB6F6F;
+    color: #CB6F6F;
+}
+
+.top-right-button-proc {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.floating-dropdown-proc {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    /* 👈 set a wider min-width */
+    width: auto;
+    transform: translateX(-15%);
+}
+
+.floating-dropdown-proc li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.floating-dropdown-proc li:hover {
+    background-color: #f0f0f0;
+}
+
+.top-right-button-proc-2 {
+    position: absolute;
+    top: 15px;
+    right: 120px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.modal-flowchart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.modal-flowchart-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.flowchart-btn-prev,
+.flowchart-btn-next,
+.flowchart-btn-close {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.flowchart-btn-prev:hover,
+.flowchart-btn-next:hover,
+.flowchart-btn-close:hover {
+    background-color: #e0e0e0;
+}
+
+.flowchart-btn-prev:disabled,
+.flowchart-btn-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+
+.top-right-button-proc-3 {
+    position: absolute;
+    top: 15px;
+    right: 73px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.proc-box {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+}
+
+.select-container-proc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    /* Space between the A-label + select and R-label + select */
+}
+
+.select-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    /* Space between label and dropdown */
+}
+
+.select-label-proc {
+    font-weight: bold;
+}
+
+.table-control-proc {
+    width: 100%;
+    padding: 5px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.prev-step-container-ref {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prev-step-input-ref {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prev-step-input-ref input {
+    width: calc(100% - 40px);
+    padding: 6px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.remove-step-button-ref {
+    width: 10px;
+    color: black;
+    border: none;
+    padding: 4px 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    background-color: transparent;
+}
+
+.ai-rewrite-button {
+    background-color: transparent;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+
+.remove-step-button-ref:hover {
+    color: #CB6F6F;
+}
+
+.add-step-button-ref {
+    background: linear-gradient(180deg,
+            #7F7F7F 0%,
+            #A6A6A6 100%);
+    color: white;
+    border: none;
+    padding: 6px 5px;
+    font-family: Arial;
+    font-size: 14px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bolder;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.add-row-button-pred {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    /* Adjust size */
+    height: 25px;
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: black;
+    /* Adjust color */
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: auto;
+    /* Centers the button */
+}
+
+.prev-step-input-ref {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.main-cell-standards {
+    position: relative;
+}
+
+.sub-cell-standards {
+    position: relative;
+}
+
+/* floating “+” button */
+.insert-mainrow-button-standards {
+    position: absolute;
+    left: 24%;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.insert-mainrow-button-standards:hover {
+    background: #f8f8f8;
+}
+
+.main-cell-standards:hover .insert-mainrow-button-standards {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.delete-mainrow-button-standards {
+    position: absolute;
+    left: 44%;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.delete-mainrow-button-standards:hover {
+    background: #f8f8f8;
+}
+
+.main-cell-standards:hover .delete-mainrow-button-standards {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.duplicate-mainrow-button-standards {
+    position: absolute;
+    left: 64%;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.duplicate-mainrow-button-standards:hover {
+    background: #f8f8f8;
+}
+
+.main-cell-standards:hover .duplicate-mainrow-button-standards {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.add-subrow-button-standards {
+    position: absolute;
+    left: 48%;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.add-subrow-button-standards:hover {
+    background: #f8f8f8;
+}
+
+.main-cell-standards:hover .add-subrow-button-standards {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.delete-subrow-button-standards {
+    position: absolute;
+    left: 52%;
+    bottom: -11px;
+    /* tweak to sit on the border/edge
+    background: #fff;
+    /* or match your cell bg */
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 100;
+    /* float on top */
+}
+
+.delete-subrow-button-standards:hover {
+    background: #f8f8f8;
+}
+
+.main-cell-standards:hover .delete-subrow-button-standards {
+    display: flex;
+    /* show it when the cell is hovered */
+}
+
+.standards-class-table-container {
+    position: relative;
+    width: calc(100%);
+}
+
+/* the popup itself */
+.standards-class-filter-popup {
+    position: absolute;
+    box-sizing: border-box;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    width: auto;
+}
+
+/* the input inside the popup */
+.standards-class-filter-input {
+    width: calc(100% - 16px);
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+/* apply and clear buttons */
+.standards-class-filter-btn {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+    cursor: pointer;
+    width: 90%;
+    color: white;
+    background-color: #002060;
+}
+
+.drag-handle-standards {
+    cursor: grab;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.drag-handle-standards:active {
+    cursor: grabbing;
+}
+
+.standards-filter-buttons {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    justify-content: space-evenly;
+}

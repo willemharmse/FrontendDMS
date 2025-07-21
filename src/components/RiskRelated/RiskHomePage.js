@@ -100,14 +100,15 @@ const RiskHomePage = () => {
                             </h3>
                         </>
                     </div>
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskBTA/BTA")}>
-                        <>
-                            <div className="icon-risk">
-                                <img src={`${process.env.PUBLIC_URL}/bta.svg`} alt="Control Attributes" className="icon-risk" />
-                            </div>
-                            <h3 className="document-title-risk-home">IBRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the BTA tool)</span></h3>
-                        </>
-                    </div>
+                    {false &&
+                        (<div className={`document-card-risk-home`} onClick={() => navigate("/riskBTA/BTA")}>
+                            <>
+                                <div className="icon-risk">
+                                    <img src="/bta.svg" alt="Control Attributes" className="icon-risk" />
+                                </div>
+                                <h3 className="document-title-risk-home">IBRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the BTA tool)</span></h3>
+                            </>
+                        </div>)}
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskJRA/JRA")}>
                         <>
                             <div className="icon-risk">

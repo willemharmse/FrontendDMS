@@ -197,16 +197,19 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                     <div className="side-by-side-container">
                         <div className="update-file-group-side">
                             <label className="update-file-label">Document Status</label>
-                            <select
-                                className={status ? "update-file-select-file" : "update-file-select-file def-colour"}
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value)}
-                            >
-                                <option value="" className="def-colour">Select Status</option>
-                                <option value="in_review">In Review</option>
-                                <option value="in_approval">In Approval</option>
-                                <option value="approved">Approved</option>
-                            </select>
+
+                            <div className="uc-info-popup-page-select-container">
+                                <select
+                                    className={`${status ? "update-file-select-file" : "update-file-select-file def-colour"} remove-default-styling`}
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                >
+                                    <option value="" className="def-colour">Select Status</option>
+                                    <option value="in_review">In Review</option>
+                                    <option value="in_approval">In Approval</option>
+                                    <option value="approved">Approved</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div className="update-file-group-side">

@@ -116,12 +116,14 @@ const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, 
 
                 <div className="manMat-popup-group">
                     <label className="manMat-popup-label">Existing Material Name</label>
-                    <select className="manMat-select" value={selectedMaterial} onChange={handleSelectChange}>
-                        <option value="">Select Existing Material Name</option>
-                        {materials.sort((a, b) => a.mat.localeCompare(b.mat)).map((mat) => (
-                            <option key={mat.mat} value={mat.mat}>{mat.mat}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manMat-select remove-default-styling" value={selectedMaterial} onChange={handleSelectChange}>
+                            <option value="">Select Existing Material Name</option>
+                            {materials.sort((a, b) => a.mat.localeCompare(b.mat)).map((mat) => (
+                                <option key={mat.mat} value={mat.mat}>{mat.mat}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manMat-popup-group">

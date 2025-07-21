@@ -9,6 +9,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
     const [isLoading, setIsLoading] = useState(true);
     const [showNoDrafts, setShowNoDrafts] = useState(false);
+    const [author, setAuthor] = useState(false);
     const [deletePopup, setDeletePopup] = useState(false);
     const [title, setTitle] = useState("");
 
@@ -83,9 +84,17 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
         onClose();
     };
 
-    const confirmDelete = (draftId, title) => {
+    const confirmDelete = (draftId, title, creator) => {
         setDeleteConfirm({ open: true, draftId });
         setTitle(title);
+
+        if (creator === userID) {
+            setAuthor(true);
+        }
+        else if (creator !== userID) {
+            setAuthor(false);
+        }
+
         setDeletePopup(true);
     };
 
@@ -106,6 +115,9 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
             }
 
             setDrafts(drafts.filter(draft => draft._id !== draftId));
+            if (drafts.length === 0) {
+                setShowNoDrafts(true);
+            }
         } catch (error) {
             console.error("Failed to delete draft:", error);
         }
@@ -162,7 +174,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                                                 <td className="load-draft-delete">
                                                     <button
                                                         className={"action-button-load-draft delete-button-load-draft"}
-                                                        onClick={() => confirmDelete(item._id, item.formData.title)}
+                                                        onClick={() => confirmDelete(item._id, item.formData.title, item?.creator?._id)}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
                                                     </button>
@@ -192,7 +204,7 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                 </div>
             </div>
 
-            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} />)}
+            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} author={author} />)}
         </div>
     );
 };

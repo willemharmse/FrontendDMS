@@ -1920,7 +1920,7 @@ const RiskManagementPageBLRA = () => {
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
-            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
 
             {showSiteDropdown && filteredSites.length > 0 && (
                 <ul

@@ -7,7 +7,8 @@ const RemoveShareRisk = ({ handleConfirmRemoval, handleCancelRemoval, user, setR
             <div className="delete-popup-content-sr">
                 <div className="delete-file-header-sr">
                     <h2 className="delete-file-title-sr">Remove Share User</h2>
-                    <button className="delete-file-close-sr" onClick={() => setRemove(false)} title="Close Popup">×</button>
+
+                    <button className="review-date-close" onClick={() => setRemove(false)} title="Close Popup">×</button>
                 </div>
 
                 <div className="delete-file-group-sr">

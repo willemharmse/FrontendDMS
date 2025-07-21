@@ -425,6 +425,13 @@ const CreatePage = () => {
     ],
   });
 
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const newErrors = validateForm();
+      setErrors(newErrors);
+    }
+  }, [formData])
+
   const formDataRef = useRef(formData);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
@@ -1041,7 +1048,7 @@ const CreatePage = () => {
         </div>
       )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
+      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} type={type.toLowerCase()} />}
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
@@ -1178,7 +1185,7 @@ const CreatePage = () => {
             </button>
           </div>
         </div>
-        {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
+        {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={true} />)}
       </div>
       <ToastContainer />
     </div>

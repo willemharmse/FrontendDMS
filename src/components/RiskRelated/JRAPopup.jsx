@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import './JRAPopup.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faMagicWandSparkles, faChevronRight, faChevronDown, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faMagicWandSparkles, faChevronRight, faChevronDown, faPlusCircle, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { aiRewrite, aiRewriteWED } from "../../utils/jraAI";
@@ -31,18 +31,69 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
     const responsibleInputRefs = useRef({});
     const controlsInputRefs = useRef({});
     const [loadingWEDKey, setLoadingWEDKey] = useState(false);
+    const [loadingControlKey, setLoadingControlKey] = useState(false);
     const [collapsedControls, setCollapsedControls] = useState({});
+    const controlsScrollRefs = useRef([]);
+    const [wedHistory, setWedHistory] = useState({});
+    const [controlHistory, setControlHistory] = useState({});
 
-    const toggleCollapse = (stepIndex, subIndex) => {
-        const key = `${stepIndex}-${subIndex}`;
-        setCollapsedControls(prev => ({
-            ...prev,
-            [key]: !prev[key],
-        }));
-    };
+    useEffect(() => {
+        // cleanups for each slider
+        const cleanups = controlsScrollRefs.current.map(slider => {
+            if (!slider) return null;
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            const onMouseDown = e => {
+                if (e.target.closest('input, textarea, select, [contenteditable]')) return;
+                isDown = true;
+                slider.classList.add('active');
+                document.body.style.userSelect = 'none';
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            };
+            const onMouseUp = () => {
+                if (!isDown) return;
+                isDown = false;
+                slider.classList.remove('active');
+                document.body.style.userSelect = '';
+            };
+            const onMouseLeave = onMouseUp;
+            const onMouseMove = e => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = x - startX;
+                slider.scrollLeft = scrollLeft - walk;
+            };
+
+            slider.addEventListener('mousedown', onMouseDown);
+            slider.addEventListener('mouseup', onMouseUp);
+            slider.addEventListener('mouseleave', onMouseLeave);
+            slider.addEventListener('mousemove', onMouseMove);
+
+            return () => {
+                slider.removeEventListener('mousedown', onMouseDown);
+                slider.removeEventListener('mouseup', onMouseUp);
+                slider.removeEventListener('mouseleave', onMouseLeave);
+                slider.removeEventListener('mousemove', onMouseMove);
+            };
+        });
+
+        return () => {
+            cleanups.forEach(fn => fn && fn());
+        };
+    }, [jraData.jraBody.length]);
 
     const handleAiWEDCreate = async (stepIndex, subIndex) => {
         const control = jraData.jraBody[stepIndex].sub[subIndex].task;
+        const curVal = jraData.jraBody[stepIndex].controls[subIndex].control;
+        const key = `${stepIndex}-${subIndex}`;
+        setWedHistory(prev => ({
+            ...prev,
+            [key]: [...(prev[key] || []), curVal]
+        }));
         const responsible = jraData.jraBody[stepIndex].taskExecution[subIndex].R;
         setLoadingWEDKey(true);
 
@@ -67,6 +118,104 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
         } finally {
             setLoadingWEDKey(false);
         }
+    };
+
+    const handleAiRewrite = async (stepIndex, subIndex) => {
+        const control = jraData.jraBody[stepIndex].sub[subIndex].task;
+        const key = `${stepIndex}-${subIndex}`;
+        setControlHistory(prev => ({
+            ...prev,
+            [key]: [...(prev[key] || []), control]
+        }));
+        setLoadingControlKey(key);
+
+        try {
+            const newText = await aiRewrite(control, "chatControl/jra");
+            setJraData(prev => ({
+                ...prev,
+                jraBody: prev.jraBody.map((body, bIdx) => {
+                    if (bIdx !== stepIndex) return body;
+                    return {
+                        ...body,
+                        sub: body.sub.map((subObj, sIdx) =>
+                            sIdx === subIndex
+                                ? { ...subObj, task: newText }
+                                : subObj
+                        )
+                    };
+                })
+            }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingControlKey(null);
+        }
+    };
+
+    const handleUndoWED = (stepIndex, subIndex) => {
+        const key = `${stepIndex}-${subIndex}`;
+        const history = wedHistory[key] || [];
+        if (history.length === 0) return;
+
+        const previous = history[history.length - 1];
+
+        // restore the last version
+        setJraData(prev => ({
+            ...prev,
+            jraBody: prev.jraBody.map((body, bIdx) => {
+                if (bIdx !== stepIndex) return body;
+                return {
+                    ...body,
+                    controls: body.controls.map((ctl, cIdx) =>
+                        cIdx === subIndex
+                            ? { ...ctl, control: previous }
+                            : ctl
+                    )
+                };
+            })
+        }));
+
+        // pop from history
+        setWedHistory(prev => {
+            const next = [...history.slice(0, -1)];
+            const out = { ...prev };
+            if (next.length) out[key] = next;
+            else delete out[key];
+            return out;
+        });
+    };
+
+    const handleUndoControl = (stepIndex, subIndex) => {
+        const key = `${stepIndex}-${subIndex}`;
+        const history = controlHistory[key] || [];
+        if (history.length === 0) return;
+
+        const previous = history[history.length - 1];
+
+        // restore the last version
+        setJraData(prev => ({
+            ...prev,
+            jraBody: prev.jraBody.map((body, bIdx) => {
+                if (bIdx !== stepIndex) return body;
+                return {
+                    ...body,
+                    sub: body.sub.map((subObj, sIdx) =>
+                        sIdx === subIndex
+                            ? { ...subObj, task: previous }
+                            : subObj
+                    )
+                };
+            })
+        }));
+
+        // pop from history
+        setControlHistory(prev => {
+            const next = [...history.slice(0, -1)];
+            const out = { ...prev };
+            if (next.length) out[key] = next;
+            else delete out[key];
+            return out;
+        });
     };
 
     const handleDeleteGroup = (stepIndex) => {
@@ -827,13 +976,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                 <div className="jra-popup-page-popup-right">
                     <div className="jra-popup-page-popup-header-right">
                         <h2>Main Step Evaluation</h2>
-                        <button
-                            className="jra-popup-page-close-button"
-                            onClick={onClose}
-                            title="Close Popup"
-                        >
-                            ×
-                        </button>
+                        <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                     </div>
 
                     <div className="jra-popup-page-form-group-main-container">
@@ -945,7 +1088,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                             <div className="text-unwanted" style={{ marginBottom: "10px" }}>
                                                 Control Evaluation
                                             </div>
-                                            <div className="jra-popup-page-form-group-main-container-sub-controls">
+                                            <div className="jra-popup-page-form-group-main-container-sub-controls" ref={el => controlsScrollRefs.current[si] = el}>
                                                 {step.sub.map((subItem, idx) => {
                                                     const key = `${si}-${idx}`;
                                                     const isCollapsed = !!collapsedControls[key];
@@ -962,10 +1105,10 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                             {idx === 0 && (<label style={{ marginTop: "10px" }}>Control / Sub Task Step</label>)}
 
                                                                             <div className="jra-popup-page-main-container">
-                                                                                <div className={`ibra-popup-page-select-container`}>
+                                                                                <div className={"jra-popup-page-control-container"}>
                                                                                     <textarea
                                                                                         type="text"
-                                                                                        style={{ color: "black", cursor: "text", fieldsizing: "content", minHeight: "19px" }}
+                                                                                        style={{ color: "black", cursor: "text", fieldsizing: "content", minHeight: "19px", paddingRight: controlHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "" }}
                                                                                         ref={el => {
                                                                                             const key = `${si}-${idx}`;
                                                                                             if (el) {
@@ -974,12 +1117,18 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                                 delete controlsInputRefs.current[key];
                                                                                             }
                                                                                         }}
-                                                                                        className="jra-popup-page-input-sub-row jra-popup-page-row-input"
+                                                                                        className={`${!allSubStepOptions.includes(subItem.task) ? `jra-popup-page-control-table` : `jra-popup-page-control-table-2`} jra-popup-page-row-input`}
                                                                                         placeholder="Insert Sub Task Step"
                                                                                         value={subItem.task}
                                                                                         onChange={(e) => handleSubStepInput(si, idx, e.target.value)}
                                                                                         onFocus={(e) => handleSubStepFocus(si, idx, e.target.value)}
                                                                                     />
+
+                                                                                    {loadingControlKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
+
+                                                                                    {controlHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoControl(si, idx)} />)}
+                                                                                    {!loadingControlKey && !allSubStepOptions.includes(subItem.task) && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiRewrite(si, idx)} />)}
+
                                                                                 </div>
                                                                                 <button
                                                                                     type="button"
@@ -1036,14 +1185,16 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                             <div className="jra-popup-page-control-container">
                                                                                 <textarea
                                                                                     type="text"
-                                                                                    style={{ color: "black", cursor: "text" }}
+                                                                                    style={{ color: "black", cursor: "text", paddingRight: wedHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "40px" }}
                                                                                     ref={ownersInputRef}
                                                                                     className="jra-popup-page-control-table jra-popup-page-row-input"
                                                                                     placeholder="Insert WED Question"
                                                                                     value={controlItem.control || ''}
                                                                                     onChange={(e) => handleControlChange(si, idx, e.target.value)}
                                                                                 />
-                                                                                {loadingWEDKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon spin-animation" />)}
+                                                                                {loadingWEDKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
+
+                                                                                {wedHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoWED(si, idx)} />)}
                                                                                 {!loadingWEDKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiWEDCreate(si, idx)} />)}
                                                                             </div>
                                                                         </div>

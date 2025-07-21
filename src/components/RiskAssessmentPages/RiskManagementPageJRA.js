@@ -1291,7 +1291,7 @@ const RiskManagementPageJRA = () => {
             </div>
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
-            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} />)}
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
             <ToastContainer />
 
             {showSiteDropdown && filteredSites.length > 0 && (

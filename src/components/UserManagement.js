@@ -231,15 +231,17 @@ const UserManagement = () => {
 
                     <div className="filter-um">
                         <p className="filter-text-um">Filter</p>
-                        <select className="select-filter-um" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
-                            <option value="">Role</option>
-                            {roles
-                                .map((role, index) => (
-                                    <option key={index} value={role}>
-                                        {formatRole(role)}
-                                    </option>
-                                ))}
-                        </select>
+                        <div className="um-info-popup-page-select-container">
+                            <select className="select-filter-um remove-default-styling" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
+                                <option value="">Role</option>
+                                {roles
+                                    .map((role, index) => (
+                                        <option key={index} value={role}>
+                                            {formatRole(role)}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="button-container-um">

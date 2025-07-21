@@ -38,8 +38,8 @@ const HomePage = () => {
     { title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManageHome" },
     { title: "Document Development", src: "DC.png", icon: faFileSignature, path: "/FrontendDMS/documentCreateHome" },
     { title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/riskHome" },
-    { title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/constructionTM" },
-    { title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/constructionCM" },
+    //{ title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/constructionTM" },
+    //{ title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/constructionCM" },
   ];
 
   return (

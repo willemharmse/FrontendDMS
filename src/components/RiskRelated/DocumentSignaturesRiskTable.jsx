@@ -219,17 +219,20 @@ const DocumentSignaturesRiskTable = ({
             {rows.map((row, idx) => (
               <tr key={idx}>
                 <td>
-                  <select
-                    className="table-control font-fam"
-                    value={row.auth}
-                    onChange={e => handleRowChange(e, idx, "auth")}
-                    style={{ fontSize: "14px" }}
-                  >
-                    <option value="Approver">Approver</option>
-                    <option value="Facilitator">Facilitator</option>
-                    <option value="Owner">Owner</option>
-                    <option value="Reviewer">Reviewer</option>
-                  </select>
+
+                  <div className="jra-info-popup-page-select-container">
+                    <select
+                      className="table-control font-fam remove-default-styling"
+                      value={row.auth}
+                      onChange={e => handleRowChange(e, idx, "auth")}
+                      style={{ fontSize: "14px" }}
+                    >
+                      <option value="Approver">Approver</option>
+                      <option value="Facilitator">Facilitator</option>
+                      <option value="Owner">Owner</option>
+                      <option value="Reviewer">Reviewer</option>
+                    </select>
+                  </div>
                 </td>
                 <td>
                   <input

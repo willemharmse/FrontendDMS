@@ -35,6 +35,10 @@
     margin: 0;
 }
 
+.remove-default-styling {
+    appearance: none;
+}
+
 .add-row-button-ds-risk {
     display: flex;
     justify-content: center;

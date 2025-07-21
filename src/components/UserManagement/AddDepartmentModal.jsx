@@ -137,19 +137,22 @@ const AddDepartmentModal = ({ show, onClose }) => {
 
                     <div className="create-dept-group">
                         <label className="create-dept-label" htmlFor="role">Department Icon</label>
-                        <select
-                            className={icon === "" ? `create-dept-select def-colour` : `create-dept-select`}
-                            id="role"
-                            value={icon}
-                            onChange={(e) => setIcon(e.target.value)}
-                        >
-                            <option value="" className="def-colour">Select Icon</option>
-                            {Object.keys(iconMap).map((key) => (
-                                <option key={key} value={key}>
-                                    {key.replace("fa", "").replace(/([A-Z])/g, " $1").trim()} {/* Format icon name */}
-                                </option>
-                            ))}
-                        </select>
+
+                        <div className="uc-info-popup-page-select-container">
+                            <select
+                                className={icon === "" ? `create-dept-select def-colour` : `create-dept-select`}
+                                id="role"
+                                value={icon}
+                                onChange={(e) => setIcon(e.target.value)}
+                            >
+                                <option value="" className="def-colour">Select Icon</option>
+                                {Object.keys(iconMap).map((key) => (
+                                    <option key={key} value={key}>
+                                        {key.replace("fa", "").replace(/([A-Z])/g, " $1").trim()} {/* Format icon name */}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>a
                         <div className="dept-icon">
                             <div className="dept-icon-style">
                                 <FontAwesomeIcon icon={iconMap[icon] || faBuilding} alt="Logo" className="fa-icon" />

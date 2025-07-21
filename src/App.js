@@ -47,6 +47,7 @@ import ConstructionJRA from './components/Construction/ConstructionJRA';
 import RiskManagementPageBLRA from './components/RiskAssessmentPages/RiskManagementPageBLRA';
 import FutureEnhancementPage from './components/FutureEnhancementPages/FutureEnhancementPage';
 import FutureEnhancementPageRMS from './components/FutureEnhancementPages/FutureEnhancementPageRMS';
+import CreatePageSI from './components/DocumentCreationPages/CreatePageSI';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -112,6 +113,7 @@ function App() {
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
         <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
         <Route path="FrontendDMS/documentCreateStand/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageStandards />} />
+        <Route path="FrontendDMS/documentCreateSI/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageSI />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
         <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />

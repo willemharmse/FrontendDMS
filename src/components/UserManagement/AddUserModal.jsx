@@ -44,20 +44,23 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
 
                     <div className="create-user-group">
                         <label className="create-user-label" htmlFor="role">Role</label>
-                        <select
-                            id="role"
-                            className={newUser.role === "" ? `create-user-select def-colour` : `create-user-select`}
-                            value={newUser.role}
-                            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                        >
-                            <option value="" className="def-colour">Select Role</option>
-                            {role === "admin" && <option value="admin" className="norm-colour">Admin</option>}
-                            <option value="auditor" className="norm-colour">Auditor</option>
-                            {role === "admin" && <option value="developer" className="norm-colour">Developer</option>}
-                            <option value="guest" className="norm-colour">Guest</option>
-                            <option value="standarduser" className="norm-colour">Standard User</option>
-                            {role === "admin" && <option value="teamleader" className="norm-colour">Team Leader</option>}
-                        </select>
+
+                        <div className="uc-info-popup-page-select-container">
+                            <select
+                                id="role"
+                                className={newUser.role === "" ? `create-user-select def-colour` : `create-user-select`}
+                                value={newUser.role}
+                                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                            >
+                                <option value="" className="def-colour">Select Role</option>
+                                {role === "admin" && <option value="admin" className="norm-colour">Admin</option>}
+                                <option value="auditor" className="norm-colour">Auditor</option>
+                                {role === "admin" && <option value="developer" className="norm-colour">Developer</option>}
+                                <option value="guest" className="norm-colour">Guest</option>
+                                <option value="standarduser" className="norm-colour">Standard User</option>
+                                {role === "admin" && <option value="teamleader" className="norm-colour">Team Leader</option>}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="create-user-buttons">

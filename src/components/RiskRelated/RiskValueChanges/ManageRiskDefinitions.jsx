@@ -122,12 +122,14 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
 
                 <div className="manDefs-popup-group">
                     <label className="manDefs-popup-label">Existing Term</label>
-                    <select className="manDefs-select" value={selectedDefinition} onChange={handleSelectChange}>
-                        <option value="">Select Existing Term</option>
-                        {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
-                            <option key={term.term} value={term.term}>{term.term}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manDefs-select remove-default-styling" value={selectedDefinition} onChange={handleSelectChange}>
+                            <option value="">Select Existing Term</option>
+                            {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
+                                <option key={term.term} value={term.term}>{term.term}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manDefs-popup-group">

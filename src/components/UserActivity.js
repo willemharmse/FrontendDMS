@@ -51,7 +51,7 @@ const UserActivity = () => {
             }
             const data = await response.json();
 
-            setActivity(data.activities);
+            setActivity(data.activities.reverse());
         } catch (error) {
             setError(error.message);
         }

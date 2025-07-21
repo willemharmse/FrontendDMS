@@ -1,6 +1,6 @@
 import "./DeleteDraftPopup.css";
 
-const DeleteDraftPopup = ({ closeModal, deleteDraft, draftName }) => {
+const DeleteDraftPopup = ({ closeModal, deleteDraft, draftName, author = false }) => {
     return (
         <div className="delete-draft-popup-overlay">
             <div className="delete-draft-popup-content">
@@ -10,16 +10,16 @@ const DeleteDraftPopup = ({ closeModal, deleteDraft, draftName }) => {
                 </div>
 
                 <div className="delete-draft-group">
-                    <div className="delete-draft-text">{"Are you sure you want to delete this draft?"}</div>
+                    <div className="delete-draft-text">{author ? "Are you sure you want to delete this draft?" : "Are you sure you want to stop collaborating on this draft?"}</div>
                     <div>{draftName}</div>
                 </div>
 
                 <div className="delete-draft-buttons">
                     <button className="delete-draft-button-delete" onClick={deleteDraft}>
-                        {'Delete'}
+                        {author ? 'Delete' : "Remove"}
                     </button>
                     <button className="delete-draft-button-cancel" onClick={closeModal}>
-                        Keep
+                        {"Keep"}
                     </button>
                 </div>
             </div>

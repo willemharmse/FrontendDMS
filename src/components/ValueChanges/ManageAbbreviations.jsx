@@ -122,12 +122,14 @@ const ManageAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, onAdd
 
                 <div className="manAbbr-popup-group">
                     <label className="manAbbr-popup-label">Existing Abbreviation</label>
-                    <select className="manAbbr-select" value={selectedAbbreviation} onChange={handleSelectChange}>
-                        <option value="">Select Existing Abbreviation</option>
-                        {abbreviations.sort((a, b) => a.abbr.localeCompare(b.abbr)).map((abbr) => (
-                            <option key={abbr.abbr} value={abbr.abbr}>{abbr.abbr}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manAbbr-select remove-default-styling" value={selectedAbbreviation} onChange={handleSelectChange}>
+                            <option value="">Select Existing Abbreviation</option>
+                            {abbreviations.sort((a, b) => a.abbr.localeCompare(b.abbr)).map((abbr) => (
+                                <option key={abbr.abbr} value={abbr.abbr}>{abbr.abbr}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manAbbr-popup-group">

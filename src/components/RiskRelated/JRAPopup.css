@@ -111,6 +111,14 @@
     position: relative;
 }
 
+.jra-popup-page-form-group-main-container-sub-controls {
+    cursor: grab;
+}
+
+.jra-popup-page-form-group-main-container-sub-controls.active {
+    cursor: grabbing;
+}
+
 .jra-popup-page-component-wrapper {
     position: relative;
     background-color: #ffffff;
@@ -663,6 +671,22 @@
     margin: 0;
 }
 
+.jra-popup-page-control-table-2 {
+    width: 100%;
+    padding: 10px;
+    min-height: 41px !important;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+    field-sizing: content;
+    box-sizing: border-box;
+    margin: 0;
+}
+
 .jra-popup-page-control-container {
     width: calc(100% - 3px);
     position: relative;
@@ -680,12 +704,38 @@
     padding: 0px;
 }
 
+.jra-popup-page-control-icon-spin {
+    position: absolute;
+    /* new */
+    top: 35%;
+    /* vertically center */
+    right: 12px;
+    /* perfect centering */
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+}
+
 .jra-popup-page-control-icon {
     position: absolute;
     /* new */
     top: 50%;
     /* vertically center */
     right: 12px;
+    /* distance from right edge */
+    transform: translateY(-50%);
+    /* perfect centering */
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.jra-popup-page-control-icon-2 {
+    position: absolute;
+    /* new */
+    top: 50%;
+    /* vertically center */
+    right: 40px;
     /* distance from right edge */
     transform: translateY(-50%);
     /* perfect centering */

@@ -4,12 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import DeleteDraftPopup from "../Popups/DeleteDraftPopup";
 
-const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
+const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }) => {
     const [drafts, setDrafts] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
     const [isLoading, setIsLoading] = useState(true);
     const [showNoDrafts, setShowNoDrafts] = useState(false);
     const [deletePopup, setDeletePopup] = useState(false);
+    const [author, setAuthor] = useState(false);
     const [title, setTitle] = useState("");
 
     const closeDelete = () => {
@@ -21,9 +22,19 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         const getDraftDocuments = async () => {
             setIsLoading(true);
             setShowNoDrafts(false);
+            let route;
+            switch (type) {
+                case "procedure":
+                    route = `${process.env.REACT_APP_URL}/api/draft/drafts/${userID}`
+                    break;
+
+                case "standard":
+                    route = `${process.env.REACT_APP_URL}/api/draft/standards/drafts/${userID}`
+                    break;
+            }
 
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/drafts/${userID}`, {
+                const response = await fetch(route, {
                     method: "GET",
                 });
 
@@ -44,6 +55,15 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
 
         getDraftDocuments();
     }, [userID]);
+
+    useEffect(() => {
+        if (!isLoading && drafts.length === 0) {
+            const timer = setTimeout(() => setShowNoDrafts(true), 1000);
+            return () => clearTimeout(timer);
+        } else {
+            setShowNoDrafts(false);
+        }
+    }, [isLoading, drafts]);
 
     const formatDateTime = (dateString) => {
         const date = new Date(dateString);
@@ -72,9 +92,17 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
         onClose();
     };
 
-    const confirmDelete = (draftId, title) => {
+    const confirmDelete = (draftId, title, creator) => {
         setDeleteConfirm({ open: true, draftId });
         setTitle(title);
+
+        if (creator === userID) {
+            setAuthor(true);
+        }
+        else if (creator !== userID) {
+            setAuthor(false);
+        }
+
         setDeletePopup(true);
     };
 
@@ -95,6 +123,10 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
             }
 
             setDrafts(drafts.filter(draft => draft._id !== draftId));
+
+            if (drafts.length === 0) {
+                setShowNoDrafts(true);
+            }
         } catch (error) {
             console.error("Failed to delete draft:", error);
         }
@@ -151,7 +183,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                                                 <td className="load-draft-delete">
                                                     <button
                                                         className={"action-button-load-draft delete-button-load-draft"}
-                                                        onClick={() => confirmDelete(item._id, item.formData.title)}
+                                                        onClick={() => confirmDelete(item._id, item.formData.title, item?.creator?._id)}
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
                                                     </button>
@@ -181,7 +213,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID }) => {
                 </div>
             </div>
 
-            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} />)}
+            {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} author={author} />)}
         </div>
     );
 };

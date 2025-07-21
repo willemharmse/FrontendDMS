@@ -116,12 +116,14 @@ const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID })
 
                 <div className="manPPE-popup-group">
                     <label className="manPPE-popup-label">Existing PPE Name</label>
-                    <select className="manPPE-select" value={selectedPPE} onChange={handleSelectChange}>
-                        <option value="">Select Existing PPE Name</option>
-                        {ppes.sort((a, b) => a.ppe.localeCompare(b.ppe)).map((ppe) => (
-                            <option key={ppe.ppe} value={ppe.ppe}>{ppe.ppe}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manPPE-select remove-default-styling" value={selectedPPE} onChange={handleSelectChange}>
+                            <option value="">Select Existing PPE Name</option>
+                            {ppes.sort((a, b) => a.ppe.localeCompare(b.ppe)).map((ppe) => (
+                                <option key={ppe.ppe} value={ppe.ppe}>{ppe.ppe}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manPPE-popup-group">

@@ -34,6 +34,26 @@ body {
   font-weight: bolder;
 }
 
+.fi-info-popup-page-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.fi-info-popup-page-select-container::after {
+  content: '';
+  position: absolute;
+  right: 11px;
+  font-family: Arial;
+  top: 55%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #777;
+  pointer-events: none;
+}
+
 .doc-num {
   word-wrap: break-word;
   /* Allows long words to break and wrap to the next line */

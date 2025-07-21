@@ -2,8 +2,33 @@ import React, { useEffect, useState } from "react";
 import "./SaveAsPopup.css"; // Import a separate CSS file for styling
 import { toast } from "react-toastify";
 
-const SaveAsPopup = ({ onClose, saveAs, current }) => {
+const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create }) => {
     const [title, setTitle] = useState(current);
+    const [drafts, setDrafts] = useState([]);
+
+    // 1) Fetch whenever the inputs that drive your route change
+    useEffect(() => {
+        let isMounted = true;
+        async function loadDrafts() {
+            const route = create
+                ? `draft/drafts/${userID}`
+                : `riskDraft/${type.toLowerCase()}/drafts/${userID}`;
+
+            try {
+                const res = await fetch(
+                    `${process.env.REACT_APP_URL}/api/${route}`
+                );
+                if (!res.ok) throw new Error(res.statusText);
+                const data = await res.json();
+                if (isMounted) setDrafts(data);
+            } catch (err) {
+                console.error("Fetch drafts failed:", err);
+                toast.error("Could not load existing drafts.");
+            }
+        }
+        loadDrafts();
+        return () => { isMounted = false; };
+    }, [userID, type, create]);
 
     const handleTitleChange = (e) => {
         const value = e.target.value;
@@ -11,23 +36,28 @@ const SaveAsPopup = ({ onClose, saveAs, current }) => {
     };
 
     const handleSave = () => {
-        if (title === current) {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.error("Draft cannot have the same name as previous draft.", {
-                closeButton: true,
-                style: {
-                    textAlign: 'center'
-                },
-                autoClose: 800
-            });
 
-            return;
+        // 2) Compute existing titles right here
+        const existingTitles = drafts.map(d => d.formData?.title ?? "");
+        console.log("▶ title:", title);
+        console.log("▶ existingTitles:", existingTitles);
+        let finalTitle = title;
+        if (existingTitles.includes(title)) {
+            let counter = 1;
+            let candidate = `${title} (${counter})`;
+            while (existingTitles.includes(candidate)) {
+                counter += 1;
+                candidate = `${title} (${counter})`;
+            }
+            finalTitle = candidate;
         }
-        else {
-            saveAs(title);
-        }
-    }
+
+        // 3) Fire your save callback
+        saveAs(finalTitle);
+
+        // 4) Close the popup if that’s desirable
+        onClose();
+    };
 
     return (
         <div className="saveAs-popup-overlay">

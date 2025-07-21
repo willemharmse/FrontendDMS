@@ -19,9 +19,8 @@ import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
 import ChapterTable from "../CreatePage/ChapterTable";
-import StandardsTable from "../CreatePage/StandardsTable";
 
-const CreatePageStandards = () => {
+const CreatePageSI = () => {
   const navigate = useNavigate();
   const type = useParams().type;
   const [isOpenMenu, setIsOpenMenu] = useState(false);
@@ -192,7 +191,7 @@ const CreatePageStandards = () => {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/standards/safe`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +230,7 @@ const CreatePageStandards = () => {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/standards/modifySafe/${loadedIDRef.current}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -300,7 +299,7 @@ const CreatePageStandards = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/standards/getDraft/${loadID}`);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
       const storedData = await response.json();
       // Update your states as needed:
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -350,7 +349,7 @@ const CreatePageStandards = () => {
       { auth: "Approver", name: "", pos: "", num: 3 },
     ],
     standard: [{
-      id: uuidv4(), nr: 4.1, mainSection: "", details: [{ id: uuidv4(), nr: "4.1.1", minRequirement: "", reference: "", notes: "" }]
+      id: uuidv4(), nr: 4.1, mainSection: "", details: [{ id: uuidv4(), nr: "", minRequirement: "", reference: "", notes: "" }]
     }],
     abbrRows: [],
     termRows: [],
@@ -640,7 +639,7 @@ const CreatePageStandards = () => {
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
       if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/FrontendDMS/403");
+        navigate("/403");
       }
 
       setUserID(decodedToken.userId);
@@ -854,7 +853,7 @@ const CreatePageStandards = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-standard`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -866,7 +865,7 @@ const CreatePageStandards = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docx`);
+      saveAs(blob, `${documentName}.docm`);
       setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
@@ -931,7 +930,7 @@ const CreatePageStandards = () => {
           </div>
 
           <div className="button-container-create">
-            <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
+            <button className="but-um" onClick={() => setLoadPopupOpen(true)} disabled>
               <div className="button-content">
                 {/* base floppy-disk, full size */}
                 <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
@@ -945,7 +944,7 @@ const CreatePageStandards = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')} disabled>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                 <span className="button-text">Published Documents</span>
@@ -954,7 +953,7 @@ const CreatePageStandards = () => {
           </div>
 
           <div className="sidebar-logo-dm-fi">
-            <img src={`${process.env.PUBLIC_URL}/standardsDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+            <img src={`${process.env.PUBLIC_URL}/specialInstInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{type}</p>
           </div>
         </div>
@@ -968,7 +967,7 @@ const CreatePageStandards = () => {
         </div>
       )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} type={type.toLowerCase()} />}
+      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
@@ -977,7 +976,7 @@ const CreatePageStandards = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+              <FontAwesomeIcon icon={faFloppyDisk} title="Save" />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
@@ -1002,11 +1001,11 @@ const CreatePageStandards = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+              <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>
           </div>
 
@@ -1058,7 +1057,6 @@ const CreatePageStandards = () => {
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
           <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
-          <StandardsTable formData={formData} setFormData={setFormData} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1080,6 +1078,7 @@ const CreatePageStandards = () => {
               className="generate-button font-fam"
               onClick={handleClick}
               title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
+              disabled
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
@@ -1097,4 +1096,4 @@ const CreatePageStandards = () => {
   );
 };
 
-export default CreatePageStandards;
+export default CreatePageSI;

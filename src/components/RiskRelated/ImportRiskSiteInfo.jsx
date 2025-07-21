@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ImportRiskSiteInfo.css";
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faDownLong, faSpinner, faTableColumns, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from "axios";
 
@@ -13,6 +13,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
     const [errors, setErrors] = useState([]);
     const [userID, setUserID] = useState('');
     const [loading, setLoading] = useState(false);
+    const [info, setInfo] = useState({});
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -20,7 +21,65 @@ const ImportRiskSiteInfo = ({ onClose }) => {
             const decodedToken = jwtDecode(storedToken);
 
             setUserID(decodedToken.userId);
+            console.log(userID);
         }
+    }, []);
+
+    const downloadFile = async () => {
+        try {
+            setLoading(true);
+
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/download/RMS`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to download the file');
+            }
+
+            // Confirm the response is a Blob
+            const blob = await response.blob();
+
+            // Create a URL and download the file
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', info?.fileName || 'document.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            alert('Error downloading the file. Please try again.');
+        } finally {
+            setLoading(false); // Reset loading state after response
+        }
+    };
+
+    useEffect(() => {
+        console.log("📝 getDraftDocuments effect running");
+        const getDraftDocuments = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/site-info/RMS`, {
+                    method: "GET",
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch drafts");
+                }
+
+                const data = await response.json();
+                console.log(data);
+                setInfo(data.siteInfo[0]);
+            } catch (error) {
+                console.error("Failed to fetch drafts:", error);
+            }
+        };
+
+        getDraftDocuments();
     }, []);
 
     const handleClick = () => {
@@ -102,9 +161,17 @@ const ImportRiskSiteInfo = ({ onClose }) => {
         }
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString); // Convert to Date object
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
+        return `${year}-${month}-${day}`;
+    };
+
     return (
         <div className="import-si-popup-overlay">
-            <div className="import-si-popup-content">
+            <div className="import-rsi-popup-content">
                 <div className="import-si-file-header">
                     <h2 className="import-si-file-title">Import Risk Management Site Information</h2>
                     <button className="import-si-file-close" onClick={onClose} title="Close Popup">×</button>
@@ -124,6 +191,20 @@ const ImportRiskSiteInfo = ({ onClose }) => {
                             />
                         </label>
                     </div>
+                </div>
+
+                <div className="import-si-file-group" style={{ position: "relative" }}>
+                    <button
+                        className="top-right-button-rsi"
+                        title="Download SID"
+                        onClick={() => downloadFile()}
+                    >
+                        <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                    </button>
+                    <div className="import-si-file-text">Current Risk Site Information</div>
+                    <div className="import-si-file-text-xlsx">Title: {info?.fileName || "N/A"}</div>
+                    <div className="import-si-file-text-xlsx">Uploader: {info?.uploader?.username || "N/A"}</div>
+                    <div className="import-si-file-text-xlsx">Date Uploaded: {info?.uploadDate ? formatDate(info.uploadDate) : "N/A"}</div>
                 </div>
 
                 <div className="import-si-file-buttons">

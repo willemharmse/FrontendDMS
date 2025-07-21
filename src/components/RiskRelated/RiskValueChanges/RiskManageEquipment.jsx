@@ -116,12 +116,14 @@ const RiskManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd,
 
                 <div className="manEqp-popup-group">
                     <label className="manEqp-popup-label">Existing Equipment Name</label>
-                    <select className="manEqp-select" value={selectedEquipment} onChange={handleSelectChange}>
-                        <option value="">Select Existing Equipment Name</option>
-                        {equipment.sort((a, b) => a.eqp.localeCompare(b.eqp)).map((eqp) => (
-                            <option key={eqp.eqp} value={eqp.eqp}>{eqp.eqp}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manEqp-select  remove-default-styling" value={selectedEquipment} onChange={handleSelectChange}>
+                            <option value="">Select Existing Equipment Name</option>
+                            {equipment.sort((a, b) => a.eqp.localeCompare(b.eqp)).map((eqp) => (
+                                <option key={eqp.eqp} value={eqp.eqp}>{eqp.eqp}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manEqp-popup-group">

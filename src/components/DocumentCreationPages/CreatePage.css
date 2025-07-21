@@ -23,7 +23,7 @@ body {
 }
 
 .Toastify__toast--success .Toastify__close-button {
-  color: white;
+  color: black;
   opacity: 0.7;
   background-color: #7EAC89;
   border-radius: 10px;
@@ -73,7 +73,7 @@ body {
 }
 
 .Toastify__toast--error .Toastify__close-button {
-  color: white;
+  color: black;
   opacity: 0.7;
   background-color: #CB6F6F;
   border-radius: 10px;

@@ -116,12 +116,14 @@ const ManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd, us
 
                 <div className="manTool-popup-group">
                     <label className="manTool-popup-label">Existing Tool Name</label>
-                    <select className="manTool-select" value={selectedTool} onChange={handleSelectChange}>
-                        <option value="">Select Existing Tool Name</option>
-                        {handTools.sort((a, b) => a.tool.localeCompare(b.tool)).map((tool) => (
-                            <option key={tool.tool} value={tool.tool}>{tool.tool}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manTool-select remove-default-styling" value={selectedTool} onChange={handleSelectChange}>
+                            <option value="">Select Existing Tool Name</option>
+                            {handTools.sort((a, b) => a.tool.localeCompare(b.tool)).map((tool) => (
+                                <option key={tool.tool} value={tool.tool}>{tool.tool}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manTool-popup-group">

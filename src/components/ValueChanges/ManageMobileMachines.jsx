@@ -116,12 +116,14 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
 
                 <div className="manMac-popup-group">
                     <label className="manMac-popup-label">Existing Machine Name</label>
-                    <select className="manMac-select" value={selectedMachine} onChange={handleSelectChange}>
-                        <option value="">Select Existing Machine Name</option>
-                        {machines.sort((a, b) => a.machine.localeCompare(b.machine)).map((machine) => (
-                            <option key={machine.machine} value={machine.machine}>{machine.machine}</option>
-                        ))}
-                    </select>
+                    <div className="abbr-popup-page-select-container">
+                        <select className="manMac-select remove-default-styling" value={selectedMachine} onChange={handleSelectChange}>
+                            <option value="">Select Existing Machine Name</option>
+                            {machines.sort((a, b) => a.machine.localeCompare(b.machine)).map((machine) => (
+                                <option key={machine.machine} value={machine.machine}>{machine.machine}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="manMac-popup-group">
