@@ -652,7 +652,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     return (
         <div className="input-row-risk-ibra">
             <div className="ibra-box" ref={ibraBoxRef}>
-                <h3 className="font-fam-labels">Job Risk Assessment (JRA) <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">Job Risk Assessment (JRA)</h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -952,7 +952,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                         <div className="select-wrapper" style={{ marginBottom: "5px" }}>
                                                                             <label className={`select-label-proc`}>R:</label>
 
-                                                                            <div>{teObj.R}</div>
+                                                                            <div className="jra-te-label">{teObj.R}</div>
                                                                         </div>
                                                                     </div>
                                                                 ))}

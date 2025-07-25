@@ -33,7 +33,7 @@ import SavePopup from "../Popups/SavePopup";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
-const RiskManagementPageJRA = () => {
+const RiskReviewPageJRA = () => {
     const navigate = useNavigate();
     const riskType = useParams().type;
     const [share, setShare] = useState(false);
@@ -64,6 +64,9 @@ const RiskManagementPageJRA = () => {
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
     const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [generatePopup, setGeneratePopup] = useState(false);
+    const [azureFN, setAzureFN] = useState("");
+    const fileID = useParams().fileId;
+    const [change, setChange] = useState("");
 
     const closeHelpRA = () => {
         setHelpRA(false);
@@ -73,53 +76,19 @@ const RiskManagementPageJRA = () => {
         setHelpScope(false);
     };
 
-    const openShare = () => {
-        if (loadedID) {
-            setShare(true);
-        } else {
+    const handleSave = (fileID) => {
+        if (formData.title !== "") {
+            saveData(fileID);
+
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.warn("Please save a draft before sharing.", {
+            toast.success("Draft has been successfully saved", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
             });
-        }
-    };
-    const closeShare = () => { setShare(false); };
-    const openLoadPopup = () => setLoadPopupOpen(true);
-    const closeLoadPopup = () => setLoadPopupOpen(false);
-
-    const handleSave = () => {
-        if (formData.title !== "") {
-            if (loadedIDRef.current === '') {
-                saveData();
-
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully saved", {
-                    closeButton: false,
-                    autoClose: 1500, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
-            else if (loadedIDRef.current !== '') {
-                updateData(userIDsRef.current);
-
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully updated", {
-                    closeButton: false,
-                    autoClose: 800, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
         }
         else {
             toast.dismiss();
@@ -134,65 +103,6 @@ const RiskManagementPageJRA = () => {
         }
     };
 
-    const openSaveAs = () => {
-        if (!titleSet) {
-            toast.warn("Please fill in at least the title field before saving.", {
-                closeButton: false,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-            return;
-        }
-        setIsSaveAsModalOpen(true);
-    };
-
-    const confirmSaveAs = (newTitle) => {
-        // apply the new title, clear loadedID, then save
-        const me = userIDRef.current;
-        const newFormData = {
-            ...formDataRef.current,        // your current formData
-            title: newTitle,             // override title
-        };
-
-        setFormData(newFormData);
-        formDataRef.current = newFormData;
-
-        setUserIDs([me]);
-        userIDsRef.current = [me];
-
-        loadedIDRef.current = '';
-        setLoadedID('');
-
-        handleSave();
-        loadData(loadedIDRef.current);
-
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("New Draft Successfully Loaded", {
-            closeButton: false,
-            autoClose: 1500, // 1.5 seconds
-            style: {
-                textAlign: 'center'
-            }
-        });
-
-        setIsSaveAsModalOpen(false);
-    };
-
-    const closeSaveAs = () => {
-        setIsSaveAsModalOpen(false);
-    };
-
-    const openSaveMenu = () => {
-        setIsSaveMenuOpen(true);
-    };
-
-    const closeSaveMenu = () => {
-        setIsSaveMenuOpen(false);
-    };
-
     const saveData = async () => {
         const dataToStore = {
             usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
@@ -202,15 +112,11 @@ const RiskManagementPageJRA = () => {
             usedHandTools: usedHandToolsRef.current,
             usedMaterials: usedMaterialsRef.current,
             usedMobileMachine: usedMobileMachineRef.current,
-            formData: formDataRef.current,
-            userIDs: userIDsRef.current,
-            creator: userIDRef.current,
-            updater: null,
-            dateUpdated: null
+            formData: formDataRef.current
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/safe`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/jra/save/${fileID}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -219,46 +125,6 @@ const RiskManagementPageJRA = () => {
                 body: JSON.stringify(dataToStore),
             });
             const result = await response.json();
-            setOfflineDraft(false);
-            localStorage.removeItem("draftData");
-
-            if (result.id) {  // Ensure we receive an ID from the backend
-                setLoadedID(result.id);  // Update loadedID to track the saved document
-                loadedIDRef.current = result.id;
-            }
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    };
-
-    const updateData = async (selectedUserIDs) => {
-        const dataToStore = {
-            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
-            usedTermCodes: usedTermCodesRef.current,
-            usedPPEOptions: usedPPEOptionsRef.current,
-            usedEquipment: usedEquipmentRef.current,
-            usedHandTools: usedHandToolsRef.current,
-            usedMaterials: usedMaterialsRef.current,
-            usedMobileMachine: usedMobileMachineRef.current,
-            formData: formDataRef.current,
-            userIDs: selectedUserIDs,
-            updater: userIDRef.current,
-            dateUpdated: new Date().toISOString(),
-            userID
-        };
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/modifySafe/${loadedIDRef.current}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(dataToStore),
-            });
-            const result = await response.json();
-
-            console.log(result.message);
         } catch (error) {
             console.error('Error saving data:', error);
         }
@@ -278,81 +144,35 @@ const RiskManagementPageJRA = () => {
         }
     };
 
-    const saveDraft = async () => {
-        if (!loadedIDRef.current) {
-            await saveData();
-        } else {
-            await updateData(userIDsRef.current);
-        }
-    }
-
     const handleClick3 = async () => {
-        const newErrors = validateForm();
-        if (Object.keys(newErrors).length > 0) {
-            if (titleSet)
-                setGeneratePopup(true);
-
-            if (!titleSet) {
-                toast.error("Please fill in a title", {
-                    closeButton: true,
-                    autoClose: 800, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
-
-            return;
-        }
-
         try {
-            toast.info("Saving draft…", { autoClose: false });
-            await saveDraft();
-            toast.dismiss();
-            toast.success("Draft saved");
-
-            await handleGenerateJRADocument();
-
+            await handleGeneratePublish();
         } catch (err) {
-            toast.error("Could not save draft, generation aborted.");
-            console.error(err);
+            toast.error("Could not save draft, generation aborted." + err);
         }
-
     };
 
-    const cancelGenerate = () => {
-        const newErrors = validateForm();
-        setErrors(newErrors);
-        setGeneratePopup(false);
-    }
-
-    const closeGenerate = () => {
-        setGeneratePopup(false);
-    }
-
-    const handlePubClick = () => {
-        if (loadedIDRef.current === '') {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.warn("Please load a draft before publishing.", {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-
-            return;
+    useEffect(() => {
+        if (fileID) {
+            loadData(fileID);
         }
+    }, [fileID]);
 
-        handleJRAPublish();
-    }
-
-    const loadData = async (loadID) => {
+    const getNewAzureFileName = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/getDraft/${loadID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/jra/getFile/${fileID}`);
             const storedData = await response.json();
-            // Update your states as needed:
+            setAzureFN(storedData.files.azureFileName || "");
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    };
+
+    const loadData = async (fileID) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/jra/getFile/${fileID}`);
+            const data = await response.json();
+            const storedData = data.files;
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
             setUsedPPEOptions(storedData.usedPPEOptions || []);
@@ -360,22 +180,14 @@ const RiskManagementPageJRA = () => {
             setUsedEquipment(storedData.usedEquipment || []);
             setUsedMobileMachines(storedData.usedMobileMachine || []);
             setUsedMaterials(storedData.usedMaterials || []);
-            setUserIDs(storedData.userIDs || []);
             setFormData(storedData.formData || {});
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
-            loadedIDRef.current = loadID;
+            setAzureFN(storedData.azureFileName || "");
         } catch (error) {
             console.error('Error loading data:', error);
         }
     };
-
-    const capitalizeWords = (text) =>
-        text
-            .toLowerCase()
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
 
     const updateRefRow = (index, field, value) => {
         const updatedRefRows = [...formData.references];
@@ -443,12 +255,6 @@ const RiskManagementPageJRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
 
     const fetchSites = async () => {
         try {
@@ -573,16 +379,6 @@ const RiskManagementPageJRA = () => {
     const usedEquipmentRef = useRef(usedEquipment);
     const usedMobileMachineRef = useRef(usedMobileMachine);
     const usedMaterialsRef = useRef(usedMaterials);
-    const userIDsRef = useRef(userIDs);
-    const userIDRef = useRef(userID);
-
-    useEffect(() => {
-        userIDRef.current = userID;
-    }, [userID]);
-
-    useEffect(() => {
-        userIDsRef.current = userIDs;
-    }, [userIDs]);
 
     useEffect(() => {
         usedAbbrCodesRef.current = usedAbbrCodes;
@@ -639,30 +435,7 @@ const RiskManagementPageJRA = () => {
 
     const autoSaveDraft = () => {
         if (formData.title.trim() === "") return; // Don't save without a valid title
-
-        if (loadedIDRef.current === '') {
-            saveData();
-            console.log("📝 autoSaveDraft() triggered 1");
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Draft has been auto-saved", {
-                closeButton: true,
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        } else {
-            updateData(userIDsRef.current);
-            console.log("📝 autoSaveDraft() triggered 2");
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Draft has been auto-saved", {
-                closeButton: true,
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        }
+        saveData(fileID);
     };
 
     const [history, setHistory] = useState([]);
@@ -785,7 +558,7 @@ const RiskManagementPageJRA = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -977,19 +750,50 @@ const RiskManagementPageJRA = () => {
         });
     };
 
-    // Send data to backend to generate a Word document
-    const handleGenerateJRADocument = async () => {
-        const dataToStore = {
-            formData: formData,
+    const handleGeneratePublish = async () => {
+        const documentName = `${formData.title} ${formData.documentType}`;
+
+        // 1) Build the updated changeTable and version from the latest state
+        const lastCT = formData.changeTable;
+        const lastVersion = parseInt(formData.version, 10);
+        const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
+
+        const newChange = {
+            changeVersion: (lastChangeVer + 1).toString(),
+            change,
+            changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
         };
 
-        if (generatePopup) {
-            setGeneratePopup(false);
+        const updatedFormData = {
+            ...formData,
+            version: (lastVersion + 1).toString(),
+            changeTable: [...lastCT, newChange]
+        };
+
+        setFormData(updatedFormData);
+
+        await sendUpdatedFormData(updatedFormData, documentName);
+    };
+
+    const sendUpdatedFormData = async (formDataToStore, documentName) => {
+        setLoading(true);
+
+        const dataToStore = {
+            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+            usedTermCodes: usedTermCodesRef.current,
+            usedPPEOptions: usedPPEOptionsRef.current,
+            usedEquipment: usedEquipmentRef.current,
+            usedHandTools: usedHandToolsRef.current,
+            usedMaterials: usedMaterialsRef.current,
+            usedMobileMachine: usedMobileMachineRef.current,
+            formData: formDataToStore,
+            userID,
+            azureFN: azureFN,
+            draftID: ""
         }
-        const documentName = (formData.title) + ' ' + formData.documentType + " and PTO";
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/t/generate-jra-sheet1`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/t/publish-jra-sheet1`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -997,13 +801,25 @@ const RiskManagementPageJRA = () => {
                 },
                 body: JSON.stringify(dataToStore),
             });
+            if (response.status === 404) throw new Error("Failed to generate document")
 
             if (!response.ok) throw new Error("Failed to generate document");
 
-            const blob = await response.blob();
-            saveAs(blob, `${documentName}.xlsx`);
+            setLoading(false);
+            getNewAzureFileName();
+
+            toast.success(`Document published`, {
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+
+            setLoading(false);
         } catch (error) {
             console.error("Error generating document:", error);
+            setLoading(false);
         }
     };
 
@@ -1051,7 +867,7 @@ const RiskManagementPageJRA = () => {
             return;
         }
 
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType + " Attendance Register";
+        const documentName = (formData.title) + ' ' + formData.documentType + " Attendance Register";
         setLoading(true);
 
         try {
@@ -1076,54 +892,6 @@ const RiskManagementPageJRA = () => {
         }
     };
 
-    const handleJRAPublish = async () => {
-        const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            usedEquipment,
-            usedHandTools,
-            usedMaterials,
-            usedMobileMachine,
-            usedPPEOptions,
-            formData,
-            userID,
-            azureFN: "",
-            draftID: loadedIDRef.current,
-        };
-
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/t/publish-jra-sheet1`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify(dataToStore),
-            });
-
-            if (!response.ok) throw new Error("Failed to generate document");
-
-            toast.success(`Document published`, {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-
-            setLoading(false);
-
-            setTimeout(() => {
-                navigate('/FrontendDMS/generatedJRADocs'); // Redirect to the generated file info page
-            }, 1000);
-        } catch (error) {
-            console.error("Error generating document:", error);
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="risk-create-container">
             {isSidebarVisible && (
@@ -1136,32 +904,9 @@ const RiskManagementPageJRA = () => {
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
-                    <div className="button-container-create">
-                        <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
-                            <div className="button-content">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                    transform="shrink-2 up-8 left-20"
-                                    color="#002060"   /* or whatever contrast you need */
-                                    fontSize={"16px"}
-                                />
-                                <span className="button-text">Saved Drafts</span>
-                            </div>
-                        </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Documents</span>
-                            </div>
-                        </button>
-                    </div>
-
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/jra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{riskType}</p>
+                        <p className="logo-text-dm-fi">{riskType.toUpperCase()}</p>
                     </div>
                 </div>
             )}
@@ -1174,8 +919,6 @@ const RiskManagementPageJRA = () => {
                 </div>
             )}
 
-            {share && <SharePageRisk closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-            {isLoadPopupOpen && <LoadRiskDraftPopup riskType={riskType} isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
             <div className="main-box-risk-create">
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
@@ -1188,38 +931,14 @@ const RiskManagementPageJRA = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faSave} />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    transform="shrink-6 down-5 right-7"
-                                    color="gray"   /* or whatever contrast you need */
-                                />
-                            </span>
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
                         </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-                        </div>
                     </div>
 
-                    {isSaveMenuOpen && (<SavePopup isOpen={isSaveMenuOpen} closeSaveMenu={closeSaveMenu} save={handleSave} openSaveAs={openSaveAs} />)}
-
-                    {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
@@ -1246,7 +965,7 @@ const RiskManagementPageJRA = () => {
                     </div>
 
                     <div className="input-row-risk-create">
-                        <div className={`input-box-type-risk-create ${errors.site ? "error-create" : ""}`}>
+                        <div className="input-box-type-risk-create">
                             <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
                             <div className="jra-info-popup-page-select-container">
                                 <input
@@ -1260,7 +979,7 @@ const RiskManagementPageJRA = () => {
                                 />
                             </div>
                         </div>
-                        <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
+                        <div className="input-box-type-risk-create-date">
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
                             <input
                                 value={formData.dateConducted}
@@ -1286,7 +1005,20 @@ const RiskManagementPageJRA = () => {
                     <OtherTeam formData={formData} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
-
+                    <div className="input-row">
+                        <div className={`input-box-aim-cp`}>
+                            <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
+                            <textarea
+                                spellcheck="true"
+                                name="aim"
+                                className="aim-textarea font-fam"
+                                value={change}
+                                onChange={(e) => setChange(e.target.value)}
+                                rows="4"   // Adjust the number of rows for initial height
+                                placeholder="Insert the reason for the document update..." // Optional placeholder text
+                            />
+                        </div>
+                    </div>
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}
                         <button
@@ -1306,7 +1038,6 @@ const RiskManagementPageJRA = () => {
             </div>
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
-            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
             <ToastContainer />
 
             {showSiteDropdown && filteredSites.length > 0 && (
@@ -1330,9 +1061,8 @@ const RiskManagementPageJRA = () => {
                     ))}
                 </ul>
             )}
-            {generatePopup && (<GenerateDraftPopup deleteDraft={handleGenerateJRADocument} closeModal={closeGenerate} cancel={cancelGenerate} />)}
         </div>
     );
 };
 
-export default RiskManagementPageJRA;
+export default RiskReviewPageJRA;

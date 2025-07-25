@@ -77,7 +77,7 @@ const DCHomePage = () => {
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/specialInst.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Special Instructions *</h3>
+                            <h3 className="document-title-dc-home">Special Instructions</h3>
                         </>
                     </div>
                 </div>

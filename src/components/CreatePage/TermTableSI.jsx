@@ -5,16 +5,34 @@ import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setErrors, si = false }) => {
+const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setErrors, si = false }) => {
   const [termData, setTermData] = useState([]);
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isNA, setIsNA] = useState(false);
 
   useEffect(() => {
     setSelectedTerms(new Set(usedTermCodes));
+  }, [usedTermCodes]);
+
+  const handleNAToggle = () => {
+    const newValue = !isNA;
+    setIsNA(newValue);
+    if (!newValue) {
+      setSearchTerm(new Set());
+      setUsedTermCodes([]);
+      setFormData({ ...formData, termRows: [] });
+    }
+  };
+
+  useEffect(() => {
+    setSelectedTerms(new Set(usedTermCodes));
+    if (usedTermCodes.length > 0) {
+      setIsNA(true); // Automatically check the box if equipment data exists
+    }
   }, [usedTermCodes]);
 
   useEffect(() => {
@@ -131,7 +149,15 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   return (
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
-        <h3 className="font-fam-labels">Terms & Definitions <span className="required-field">{si ? "" : "*"}</span></h3>
+        <div className="ppe-header">
+          <input
+            type="checkbox"
+            className="na-checkbox-ppe"
+            checked={isNA}
+            onChange={handleNAToggle}
+          />
+          <h3 className="font-fam-labels">Terms & Definitions</h3>
+        </div>
         {role === "admin" && (
           <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
         )}
@@ -264,7 +290,7 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
           </table>
         )}
 
-        {selectedTerms.size === 0 && (
+        {(selectedTerms.size === 0 && isNA) && (
           <button className="add-row-button-terms" onClick={handlePopupToggle}>
             Select
           </button>
@@ -281,4 +307,4 @@ const TermTable = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCode
   );
 };
 
-export default TermTable;
+export default TermTableSI;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { v4 as uuidv4, validate } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretRight, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -26,18 +26,15 @@ import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
 import PicturesTable from "../CreatePage/PicturesTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
-import BLRATable from "../RiskRelated/BLRAComponents/BLRATable";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
-const RiskManagementPageBLRA = () => {
+const RiskReviewPageIBRA = () => {
     const navigate = useNavigate();
     const riskType = useParams().type;
-    const [share, setShare] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [companies, setCompanies] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [role, setRole] = useState("");
-    const [lastAiRewrites, setLastAiRewrites] = useState({});
     const [loadedID, setLoadedID] = useState('');
     const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
     const [titleSet, setTitleSet] = useState(false);
@@ -57,10 +54,10 @@ const RiskManagementPageBLRA = () => {
     const [loadingScope, setLoadingScope] = useState(false);
     const [loadingScopeI, setLoadingScopeI] = useState(false);
     const [loadingScopeE, setLoadingScopeE] = useState(false);
-    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
-    const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
-    const [controls, setControls] = useState([]);
     const [generatePopup, setGeneratePopup] = useState(false);
+    const [azureFN, setAzureFN] = useState("");
+    const fileID = useParams().fileId;
+    const [change, setChange] = useState("");
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -78,79 +75,19 @@ const RiskManagementPageBLRA = () => {
         setHelpScope(false);
     };
 
-    const openSaveAs = () => {
-        if (!titleSet) {
-            toast.warn("Please fill in at least the title field before saving.", {
-                closeButton: false,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-            return;
-        }
-        setIsSaveAsModalOpen(true);
-    };
-
-    const closeSaveAs = () => {
-        setIsSaveAsModalOpen(false);
-    };
-
-    const openSaveMenu = () => {
-        setIsSaveMenuOpen(true);
-    };
-
-    const closeSaveMenu = () => {
-        setIsSaveMenuOpen(false);
-    };
-
-    const openShare = () => {
-        if (loadedID) {
-            setShare(true);
-        } else {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.warn("Please save a draft before sharing.", {
-                closeButton: false,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        }
-    };
-    const closeShare = () => { setShare(false); };
-    const openLoadPopup = () => setLoadPopupOpen(true);
-    const closeLoadPopup = () => setLoadPopupOpen(false);
-
     const handleSave = () => {
         if (formData.title !== "") {
-            if (loadedIDRef.current === '') {
-                saveData();
+            saveData(fileID);
 
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully saved", {
-                    closeButton: false,
-                    autoClose: 1500, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
-            else if (loadedIDRef.current !== '') {
-                updateData(userIDsRef.current);
-
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully updated", {
-                    closeButton: false,
-                    autoClose: 800, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.success("Draft has been successfully saved", {
+                closeButton: false,
+                autoClose: 1500, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
         }
         else {
             toast.dismiss();
@@ -165,60 +102,15 @@ const RiskManagementPageBLRA = () => {
         }
     };
 
-    const saveDraft = async () => {
-        if (!loadedIDRef.current) {
-            await saveData();
-        } else {
-            await updateData(userIDsRef.current);
-        }
-    }
-
-    const confirmSaveAs = (newTitle) => {
-        // apply the new title, clear loadedID, then save
-        const me = userIDRef.current;
-        const newFormData = {
-            ...formDataRef.current,        // your current formData
-            title: newTitle,             // override title
-        };
-
-        setFormData(newFormData);
-        formDataRef.current = newFormData;
-
-        setUserIDs([me]);
-        userIDsRef.current = [me];
-
-        loadedIDRef.current = '';
-        setLoadedID('');
-
-        handleSave();
-        loadData(loadedIDRef.current);
-
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("New Draft Successfully Loaded", {
-            closeButton: false,
-            autoClose: 1500, // 1.5 seconds
-            style: {
-                textAlign: 'center'
-            }
-        });
-
-        setIsSaveAsModalOpen(false);
-    };
-
-    const saveData = async () => {
+    const saveData = async (fileID) => {
         const dataToStore = {
             usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
             usedTermCodes: usedTermCodesRef.current,
-            formData: formDataRef.current,
-            userIDs: userIDsRef.current,
-            creator: userIDRef.current,
-            updater: null,
-            dateUpdated: null
+            formData: formDataRef.current
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/safe`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/ibra/save/${fileID}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -227,39 +119,6 @@ const RiskManagementPageBLRA = () => {
                 body: JSON.stringify(dataToStore),
             });
             const result = await response.json();
-
-            if (result.id) {
-                setLoadedID(result.id);
-                loadedIDRef.current = result.id;
-            }
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    };
-
-    const updateData = async (selectedUserIDs) => {
-        const dataToStore = {
-            usedAbbrCodes: usedAbbrCodesRef.current,
-            usedTermCodes: usedTermCodesRef.current,
-            formData: formDataRef.current,
-            userIDs: selectedUserIDs,
-            updater: userIDRef.current,
-            dateUpdated: new Date().toISOString(),
-            userID
-        };
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/modifySafe/${loadedIDRef.current}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(dataToStore),
-            });
-            const result = await response.json();
-
-            console.log(result.message);
         } catch (error) {
             console.error('Error saving data:', error);
         }
@@ -294,78 +153,10 @@ const RiskManagementPageBLRA = () => {
     };
 
     const handleClick3 = async () => {
-        const newErrors = validateForm();
-        if (Object.keys(newErrors).length > 0) {
-            if (titleSet)
-                setGeneratePopup(true);
-
-            if (!titleSet) {
-                toast.error("Please fill in a title", {
-                    closeButton: true,
-                    autoClose: 800, // 1.5 seconds
-                    style: {
-                        textAlign: 'center'
-                    }
-                });
-            }
-
-            return;
-        }
-
         try {
-            toast.info("Saving draft…", { autoClose: false });
-            await saveDraft();
-            toast.dismiss();
-            toast.success("Draft saved");
-
-            await handleGenerateBLRADocument();
-
+            await handleGeneratePublish();
         } catch (err) {
-            toast.error("Could not save draft, generation aborted.");
-            console.error(err);
-        }
-    };
-
-
-    const cancelGenerate = () => {
-
-        const newErrors = validateForm();
-        setErrors(newErrors);
-        setGeneratePopup(false);
-    }
-
-    const closeGenerate = () => {
-        setGeneratePopup(false);
-    }
-
-    const handlePubClick = () => {
-        const newErrors = validateForm();
-        setErrors(newErrors);
-
-        if (loadedIDRef.current === '') {
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.warn("Please load a draft before publishing.", {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-
-            return;
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            toast.error("Please fill in all required fields marked by a *", {
-                closeButton: true,
-                autoClose: 800, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        } else {
-            handleBLRAPublish();  // Call your function when the form is valid
+            toast.error("Could not save draft, generation aborted." + err);
         }
     };
 
@@ -500,76 +291,39 @@ const RiskManagementPageBLRA = () => {
         }
     }
 
-    function normalizeIbraFormData(formData = {}) {
-        if (!Array.isArray(formData.ibra)) return formData;
-
-        const normalized = {
-            ...formData,
-            ibra: formData.ibra.map(row => {
-                const possible = Array.isArray(row.possible) ? row.possible : [];
-
-                return {
-                    ...row,
-                    possible: possible.map(block => {
-                        const actions = Array.isArray(block.actions) ? block.actions : [];
-                        const count = actions.length;
-
-                        // Ensure exactly `count` responsible entries
-                        const responsible = Array.from({ length: count }, (_, i) =>
-                            (block.responsible && block.responsible[i]) || { person: '' }
-                        );
-
-                        // Ensure exactly `count` dueDate entries
-                        const dueDate = Array.from({ length: count }, (_, i) =>
-                            (block.dueDate && block.dueDate[i]) || { date: '' }
-                        );
-
-                        return { ...block, actions, responsible, dueDate };
-                    })
-                };
-            })
-        };
-
-        // ——— Normalize CEA: just add missing plain fields ———
-        if (Array.isArray(normalized.cea)) {
-            normalized.cea = normalized.cea.map(block => ({
-                ...block,
-                action: block.action !== undefined ? block.action : '',
-                responsible: block.responsible !== undefined ? block.responsible : '',
-                dueDate: block.dueDate !== undefined ? block.dueDate : ''
-            }));
+    useEffect(() => {
+        if (fileID) {
+            loadData(fileID);
         }
+    }, [fileID]);
 
-        return normalized;
-    }
-
-    const loadData = async (loadID) => {
+    const getNewAzureFileName = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/blra/getDraft/${loadID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/ibra/getFile/${fileID}`);
             const storedData = await response.json();
-            // Update your states as needed:
-            setUsedAbbrCodes(storedData.usedAbbrCodes || []);
-            setUsedTermCodes(storedData.usedTermCodes || []);
-            setUserIDs(storedData.userIDs || []);
-
-            const raw = storedData.formData || {};
-            const patched = normalizeIbraFormData(raw);
-            setFormData(patched);
-
-            setFormData(prev => ({ ...prev }));
-            setTitleSet(true);
-            loadedIDRef.current = loadID;
+            setAzureFN(storedData.files.azureFileName || "");
         } catch (error) {
             console.error('Error loading data:', error);
         }
     };
 
-    const capitalizeWords = (text) =>
-        text
-            .toLowerCase()
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
+    const loadData = async (fileID) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/ibra/getFile/${fileID}`);
+            const data = await response.json();
+            const storedData = data.files;
+            // Update your states as needed:
+            setUsedAbbrCodes(storedData.usedAbbrCodes || []);
+            setUsedTermCodes(storedData.usedTermCodes || []);
+
+            setFormData(storedData.formData);
+            setFormData(prev => ({ ...prev }));
+            setTitleSet(true);
+            setAzureFN(storedData.azureFileName || "");
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    };
 
     const updateRefRow = (index, field, value) => {
         const updatedRefRows = [...formData.references];
@@ -677,13 +431,6 @@ const RiskManagementPageBLRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
-
     const fetchSites = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
@@ -733,7 +480,6 @@ const RiskManagementPageBLRA = () => {
         }
     };
 
-    // On focus, show all options
     const handleSiteFocus = () => {
         closeAllDropdowns();
 
@@ -752,7 +498,6 @@ const RiskManagementPageBLRA = () => {
         }
     };
 
-    // When they pick one
     const selectSiteSuggestion = (value) => {
         setFormData(prev => ({
             ...prev,
@@ -826,16 +571,6 @@ const RiskManagementPageBLRA = () => {
     const formDataRef = useRef(formData);
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
     const usedTermCodesRef = useRef(usedTermCodes);
-    const userIDsRef = useRef(userIDs);
-    const userIDRef = useRef(userID);
-
-    useEffect(() => {
-        userIDRef.current = userID;
-    }, [userID]);
-
-    useEffect(() => {
-        userIDsRef.current = userIDs;
-    }, [userIDs]);
 
     useEffect(() => {
         usedAbbrCodesRef.current = usedAbbrCodes;
@@ -872,34 +607,7 @@ const RiskManagementPageBLRA = () => {
 
     const autoSaveDraft = () => {
         if (formData.title.trim() === "") return; // Don't save without a valid title
-
-        if (loadedIDRef.current === '') {
-            if (riskType === "IBRA") {
-                saveData();
-            }
-            console.log("📝 autoSaveDraft() triggered 1");
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Draft has been auto-saved", {
-                closeButton: true,
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        } else {
-            if (riskType === "IBRA") {
-                updateData(userIDsRef.current);
-            }
-            console.log("📝 autoSaveDraft() triggered 2");
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Draft has been auto-saved", {
-                closeButton: true,
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        }
+        saveData(fileID);
     };
 
     const [history, setHistory] = useState([]);
@@ -1299,40 +1007,6 @@ const RiskManagementPageBLRA = () => {
         });
     };
 
-    // Send data to backend to generate a Word document
-    const handleGenerateBLRADocument = async () => {
-        const dataToStore = {
-            formData,
-        };
-
-        if (generatePopup) {
-            setGeneratePopup(false);
-        }
-        const documentName = (formData.title) + ' ' + formData.documentType;
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-blra`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify(dataToStore),
-            });
-
-            if (!response.ok) throw new Error("Failed to generate document");
-
-            const blob = await response.blob();
-            saveAs(blob, `${documentName}.docx`);
-            setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
-        } catch (error) {
-            console.error("Error generating document:", error);
-            setLoading(false);
-        }
-    };
-
     const handleGenerateARegister = async () => {
         const dataToStore = {
             attendance: formData.attendance
@@ -1432,20 +1106,45 @@ const RiskManagementPageBLRA = () => {
         }
     };
 
-    const handleBLRAPublish = async () => {
-        const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            formData,
-            userID,
-            azureFN: "",
-            draftID: loadedIDRef.current,
+    const handleGeneratePublish = async () => {
+        const documentName = `${formData.title} ${formData.documentType}`;
+
+        // 1) Build the updated changeTable and version from the latest state
+        const lastCT = formData.changeTable;
+        const lastVersion = parseInt(formData.version, 10);
+        const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
+
+        const newChange = {
+            changeVersion: (lastChangeVer + 1).toString(),
+            change,
+            changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
         };
 
+        const updatedFormData = {
+            ...formData,
+            version: (lastVersion + 1).toString(),
+            changeTable: [...lastCT, newChange]
+        };
+
+        setFormData(updatedFormData);
+
+        await sendUpdatedFormData(updatedFormData, documentName);
+    };
+
+    const sendUpdatedFormData = async (formDataToStore, documentName) => {
         setLoading(true);
 
+        const dataToStore = {
+            usedAbbrCodes: usedAbbrCodesRef.current,
+            usedTermCodes: usedTermCodesRef.current,
+            formData: formDataToStore,
+            userID,
+            azureFN: azureFN,
+            draftID: ""
+        }
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/publish-blra`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/publish-ibra`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1453,8 +1152,12 @@ const RiskManagementPageBLRA = () => {
                 },
                 body: JSON.stringify(dataToStore),
             });
+            if (response.status === 404) throw new Error("Failed to generate document")
 
             if (!response.ok) throw new Error("Failed to generate document");
+
+            setLoading(false);
+            getNewAzureFileName();
 
             toast.success(`Document published`, {
                 closeButton: true,
@@ -1465,10 +1168,6 @@ const RiskManagementPageBLRA = () => {
             });
 
             setLoading(false);
-
-            setTimeout(() => {
-                navigate('/FrontendDMS/generatedBLRADocs'); // Redirect to the generated file info page
-            }, 1000);
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1621,32 +1320,9 @@ const RiskManagementPageBLRA = () => {
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
-                    <div className="button-container-create">
-                        <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
-                            <div className="button-content">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                    transform="shrink-2 up-8 left-20"
-                                    color="#002060"   /* or whatever contrast you need */
-                                    fontSize={"16px"}
-                                />
-                                <span className="button-text">Saved Drafts</span>
-                            </div>
-                        </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedBLRADocs')}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Documents</span>
-                            </div>
-                        </button>
-                    </div>
-
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/blra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{riskType}</p>
+                        <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{riskType.toUpperCase()}</p>
                     </div>
                 </div>
             )}
@@ -1659,8 +1335,6 @@ const RiskManagementPageBLRA = () => {
                 </div>
             )}
 
-            {share && <SharePageRisk closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-            {isLoadPopupOpen && <LoadRiskDraftPopup riskType={riskType} isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
             <div className="main-box-risk-create">
                 <div className="top-section-risk-create-page">
                     <div className="icons-container-risk-create-page">
@@ -1673,32 +1347,11 @@ const RiskManagementPageBLRA = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
-                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faSave} />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    transform="shrink-6 down-5 right-7"
-                                    color="gray"   /* or whatever contrast you need */
-                                />
-                            </span>
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-                        </div>
-
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
@@ -1721,7 +1374,7 @@ const RiskManagementPageBLRA = () => {
                                     className="font-fam title-input"
                                     value={formData.title}
                                     onChange={handleInputChange}
-                                    placeholder="Insert Risk Assessment Title"
+                                    placeholder="Insert Risk Assessment Title (e.g., Working at Heights)"
                                 />
                                 <span className="type-risk-create">{formData.documentType}</span>
                             </div>
@@ -1927,13 +1580,27 @@ const RiskManagementPageBLRA = () => {
                     <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
                     <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
                     <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    {formData.documentType === "BLRA" && (<BLRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
-                    {(["BLRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
+                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
+                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
                     <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+                    <div className="input-row">
+                        <div className={`input-box-aim-cp`}>
+                            <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
+                            <textarea
+                                spellcheck="true"
+                                name="aim"
+                                className="aim-textarea font-fam"
+                                value={change}
+                                onChange={(e) => setChange(e.target.value)}
+                                rows="4"   // Adjust the number of rows for initial height
+                                placeholder="Insert the reason for the document update..." // Optional placeholder text
+                            />
+                        </div>
+                    </div>
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}
@@ -1955,7 +1622,6 @@ const RiskManagementPageBLRA = () => {
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
-            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
 
             {showSiteDropdown && filteredSites.length > 0 && (
                 <ul
@@ -1978,9 +1644,8 @@ const RiskManagementPageBLRA = () => {
                     ))}
                 </ul>
             )}
-            {generatePopup && (<GenerateDraftPopup deleteDraft={handleGenerateBLRADocument} closeModal={closeGenerate} cancel={cancelGenerate} />)}
         </div>
     );
 };
 
-export default RiskManagementPageBLRA;
+export default RiskReviewPageIBRA;

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, setErrors }) => {
     const [designationOptions, setDesignationOptions] = useState([]);
     const [showARDropdown, setShowARDropdown] = useState({ index: null, field: "" });
     const [dropdownOptions, setDropdownOptions] = useState([]);
@@ -167,6 +167,10 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         }
 
         updateRow(index, field, value);
+        setErrors(prev => ({
+            ...prev,
+            procedureRows: false
+        }));
     };
 
     useEffect(() => {

@@ -6,7 +6,7 @@ import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const DocumentSignaturesTable = ({
+const DocumentSignaturesTableSI = ({
   rows,
   handleRowChange,
   addRow,
@@ -232,28 +232,22 @@ const DocumentSignaturesTable = ({
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
             <tr>
-              <th className="font-fam cent">Authorisation</th>
+              <th className="font-fam cent" style={{ width: "22%" }}>Authorisation</th>
               <th className="font-fam cent">Name</th>
               <th className="font-fam cent">Position</th>
-              <th className="font-fam cent col-sig-act">Action</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => (
               <tr key={index}>
                 <td>
-                  <div className="jra-info-popup-page-select-container">
-                    <select
-                      className="table-control font-fam remove-default-styling"
-                      value={row.auth}
-                      style={{ fontSize: "14px" }}
-                      onChange={e => handleRowChange(e, index, "auth")}
-                    >
-                      <option value="Author">Author</option>
-                      <option value="Approver">Approver</option>
-                      <option value="Reviewer">Reviewer</option>
-                    </select>
-                  </div>
+                  <input
+                    type="text"
+                    className="table-control font-fam"
+                    value={row.auth}
+                    style={{ fontSize: "14px" }}
+                    readOnly
+                  />
                 </td>
                 <td>
                   <input
@@ -276,27 +270,6 @@ const DocumentSignaturesTable = ({
                     onFocus={() => openPosDropdown(index, true)}
                     ref={el => (posInputRefs.current[index] = el)}
                   />
-                </td>
-                <td className="procCent action-cell-auth-risk ">
-                  <button
-                    className="remove-row-button font-fam"
-                    onClick={() => {
-                      removeRow(index);
-                    }}
-
-                    style={{ fontSize: "14px" }}
-                    title="Remove Row"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                  <button
-                    className="insert-row-button-sig-risk font-fam"
-                    onClick={() => insertRowAt(index + 1)}
-                    title="Add Row"
-                    style={{ fontSize: "15px" }}
-                  >
-                    <FontAwesomeIcon icon={faPlusCircle} />
-                  </button>
                 </td>
               </tr>
             ))}
@@ -345,4 +318,4 @@ const DocumentSignaturesTable = ({
   );
 };
 
-export default DocumentSignaturesTable;
+export default DocumentSignaturesTableSI;

@@ -7,7 +7,7 @@ import EditUserModal from './UserManagement/EditUserModal';
 import UserTable from "./UserManagement/UserTable";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
 import TopBar from "./Notifications/TopBar";
 
@@ -40,7 +40,7 @@ const UserManagement = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
+        navigate('/');
     };
 
     useEffect(() => {
@@ -66,7 +66,7 @@ const UserManagement = () => {
             setloggedInUserId(decodedToken.userId);
 
             if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
     }, [navigate]);
@@ -226,11 +226,11 @@ const UserManagement = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">User Management</p>
+                        <p className="logo-text-um">Admin Page</p>
                     </div>
 
                     <div className="filter-um">
-                        <p className="filter-text-um">Filter</p>
+                        <p className="filter-text-um" style={{ marginBottom: "5px" }}>Filter</p>
                         <div className="um-info-popup-page-select-container">
                             <select className="select-filter-um remove-default-styling" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
                                 <option value="">Role</option>
@@ -251,6 +251,11 @@ const UserManagement = () => {
                                 <span className="button-text">Add User</span>
                             </div>
                         </button>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/adminUsersInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{`Manage Users`}</p>
                     </div>
                 </div>
             )}

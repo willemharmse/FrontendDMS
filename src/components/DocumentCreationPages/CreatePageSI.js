@@ -4,36 +4,31 @@ import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { saveAs } from "file-saver";
 import "./CreatePage.css";
-import DocumentSignaturesTable from "../CreatePage/DocumentSignaturesTable";
-import TermTable from "../CreatePage/TermTable";
-import AbbreviationTable from "../CreatePage/AbbreviationTable";
-import ReferenceTable from "../CreatePage/ReferenceTable";
-import PicturesTable from "../CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
-import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
 import ChapterTable from "../CreatePage/ChapterTable";
+import SpecialInstructionsTable from "../CreatePage/SpecialInstructionsTable";
+import SaveAsPopup from "../Popups/SaveAsPopup";
+import ReferenceTableSpecialInstructions from "../CreatePage/ReferenceTableSpecialInstructions";
+import DocumentSignaturesTableSI from "../CreatePage/DocumentSignaturesTableSI";
+import AbbreviationTableSI from "../CreatePage/AbbreviationTableSI";
+import TermTableSI from "../CreatePage/TermTableSI";
+import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
 const CreatePageSI = () => {
   const navigate = useNavigate();
   const type = useParams().type;
-  const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
-  const [usedPPEOptions, setUsedPPEOptions] = useState([]);
   const [role, setRole] = useState("");
-  const [usedHandTools, setUsedHandTools] = useState([]);
-  const [usedEquipment, setUsedEquipment] = useState([]);
-  const [usedMobileMachine, setUsedMobileMachines] = useState([]);
-  const [usedMaterials, setUsedMaterials] = useState([]);
   const [loadedID, setLoadedID] = useState('');
   const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
@@ -45,17 +40,292 @@ const CreatePageSI = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const loadedIDRef = useRef('');
+  const [loadingAim, setLoadingAim] = useState(false);
   const [offlineDraft, setOfflineDraft] = useState(false);
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [filteredSites, setFilteredSites] = useState([]);
+  const [showSiteDropdown, setShowSiteDropdown] = useState(false);
+  const sitesInputRef = useRef(null);
+  const [companies, setCompanies] = useState([]);
+  const [filteredNames, setFilteredNames] = useState([]);
+  const [showNamesDropdown, setShowNamesDropdown] = useState(false);
+  const directeeInputRef = useRef(null);
+  const [directees, setDirectees] = useState([]);
+  const [generatePopup, setGeneratePopup] = useState(false);
 
-  const updateRow = (index, field, value) => {
-    const updatedProcedureRows = formData.procedureRows.map((row, i) =>
-      i === index ? { ...row, [field]: value } : row
-    );
+  const cancelGenerate = () => {
 
-    setFormData(prevFormData => ({
-      ...prevFormData,
-      procedureRows: updatedProcedureRows,
+    const newErrors = validateForm();
+    setErrors(newErrors);
+    setGeneratePopup(false);
+  }
+
+  const closeGenerate = () => {
+    setGeneratePopup(false);
+  }
+
+  const fetchSites = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/sites`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch values");
+      }
+      const data = await response.json();
+      setCompanies(data.sites.map(s => s.site));
+    } catch (error) {
+      console.error("Error fetching designations:", error);
+    }
+  };
+
+  const fetchNames = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch values");
+      }
+      const data = await response.json();
+      const names = data.stakeholders.map(s => s.name);
+      setDirectees(names)
+    } catch (error) {
+      console.error("Error fetching designations:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSites();
+    fetchNames();
+  }, []);
+
+  const closeAllDropdowns = () => {
+    setShowSiteDropdown(null);
+    setShowNamesDropdown(null);
+  };
+
+  const handleSiteInput = (value) => {
+    closeAllDropdowns();
+    setFormData(prev => ({
+      ...prev,
+      site: value
     }));
+
+    const matches = companies
+      .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+    setFilteredSites(matches);
+    setShowSiteDropdown(true);
+
+    const el = sitesInputRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  // On focus, show all options
+  const handleSiteFocus = () => {
+    closeAllDropdowns();
+
+    setErrors(prev => ({
+      ...prev,
+      site: false
+    }))
+
+    const matches = companies;
+    setFilteredSites(matches);
+    setShowSiteDropdown(true);
+
+    const el = sitesInputRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  // When they pick one
+  const selectSiteSuggestion = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      site: value
+    }));
+    setShowSiteDropdown(false);
+  };
+
+  const handleDirecteeInput = (value) => {
+    closeAllDropdowns();
+    setFormData(prev => ({
+      ...prev,
+      directee: value
+    }));
+
+    const matches = directees
+      .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+    setFilteredNames(matches);
+    setShowNamesDropdown(true);
+
+    const el = directeeInputRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  // On focus, show all options
+  const handleDirecteeFocus = () => {
+    closeAllDropdowns();
+
+    setErrors(prev => ({
+      ...prev,
+      directee: false
+    }))
+
+    const matches = directees;
+    setFilteredNames(matches);
+    setShowNamesDropdown(true);
+
+    const el = directeeInputRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  // When they pick one
+  const selectDirecteeSuggestion = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      directee: value
+    }));
+    setShowNamesDropdown(false);
+  };
+
+  useEffect(() => {
+    const popupSelector = '.floating-dropdown';
+
+    const handleClickOutside = (e) => {
+      const outside =
+        !e.target.closest(popupSelector) &&
+        !e.target.closest('input');
+      if (outside) {
+        closeDropdowns();
+      }
+    };
+
+    const handleScroll = (e) => {
+      const isInsidePopup = e.target.closest(popupSelector);
+      if (!isInsidePopup) {
+        closeDropdowns();
+      }
+
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    };
+
+    const closeDropdowns = () => {
+      setShowSiteDropdown(false);
+      setShowNamesDropdown(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [showSiteDropdown, showNamesDropdown]);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    documentType: useParams().type,
+    aim: "",
+    site: "",
+    date: new Date().toLocaleDateString(),
+    version: "1",
+    rows: [
+      { auth: "Owner", name: "", pos: "", num: 1 },
+    ],
+    abbrRows: [],
+    termRows: [],
+    chapters: [],
+    references: [],
+    special: [{ id: uuidv4(), nr: "1", instruction: "" }],
+    changeTable: [
+      { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
+    ],
+    dateConducted: "",
+    expiryDate: "",
+    directed: "",
+    directee: ""
+  });
+
+  const openSaveAs = () => {
+    if (!titleSet) {
+      toast.warn("Please fill in at least the title field before saving.", {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+      return;
+    }
+    setIsSaveAsModalOpen(true);
+  };
+
+  const closeSaveAs = () => {
+    setIsSaveAsModalOpen(false);
+  };
+
+  const confirmSaveAs = (newTitle) => {
+    // apply the new title, clear loadedID, then save
+    const me = userIDRef.current;
+    const newFormData = {
+      ...formDataRef.current,        // your current formData
+      title: newTitle,             // override title
+    };
+
+    setFormData(newFormData);
+    formDataRef.current = newFormData;
+
+    setUserIDs([me]);
+    userIDsRef.current = [me];
+
+    loadedIDRef.current = '';
+    setLoadedID('');
+
+    handleSave();
+    loadData(loadedIDRef.current);
+
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("New Draft Successfully Loaded", {
+      closeButton: false,
+      autoClose: 1500, // 1.5 seconds
+      style: {
+        textAlign: 'center'
+      }
+    });
+
+    setIsSaveAsModalOpen(false);
   };
 
   const openShare = () => {
@@ -76,6 +346,52 @@ const CreatePageSI = () => {
   const closeShare = () => { setShare(false); };
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
+
+  const [rewriteHistory, setRewriteHistory] = useState({
+    aim: [],
+  });
+
+  const pushAiRewriteHistory = (field) => {
+    setRewriteHistory(prev => ({
+      ...prev,
+      [field]: [...prev[field], formData[field]]
+    }));
+  };
+
+  const AiRewriteAim = async () => {
+    try {
+      const prompt = formData.aim;
+
+      pushAiRewriteHistory('aim');
+      setLoadingAim(true);
+
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/special`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const { response: newText } = await response.json();
+      setLoadingAim(false);
+      setFormData(fd => ({ ...fd, aim: newText }));
+    } catch (error) {
+      setLoadingAim(false);
+      console.error('Error saving data:', error);
+    }
+  }
+
+  const undoAiRewrite = (field) => {
+    setRewriteHistory(prev => {
+      const hist = [...prev[field]];
+      if (hist.length === 0) return prev;         // nothing to undo
+      const lastValue = hist.pop();
+      setFormData(fd => ({ ...fd, [field]: lastValue }));
+      return { ...prev, [field]: hist };
+    });
+  };
 
   const handleSave = () => {
     if (formData.title !== "") {
@@ -130,11 +446,6 @@ const CreatePageSI = () => {
 
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
-      setUsedPPEOptions(storedData.usedPPEOptions || []);
-      setUsedHandTools(storedData.usedHandTools || []);
-      setUsedEquipment(storedData.usedEquipment || []);
-      setUsedMobileMachines(storedData.usedMobileMachine || []);
-      setUsedMaterials(storedData.usedMaterials || []);
       setUserIDs(storedData.userIDs || []);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev })); // this line may be redundant
@@ -150,11 +461,6 @@ const CreatePageSI = () => {
     const dataToStore = {
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
-      usedPPEOptions: usedPPEOptionsRef.current,
-      usedHandTools: usedHandToolsRef.current,
-      usedEquipment: usedEquipmentRef.current,
-      usedMobileMachine: usedMobileMachineRef.current,
-      usedMaterials: usedMaterialsRef.current,
       formData: formDataRef.current,
       userIDs: userIDsRef.current,
       creator: userIDRef.current,
@@ -178,11 +484,6 @@ const CreatePageSI = () => {
     const dataToStore = {
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
-      usedPPEOptions: usedPPEOptionsRef.current,
-      usedHandTools: usedHandToolsRef.current,
-      usedEquipment: usedEquipmentRef.current,
-      usedMobileMachine: usedMobileMachineRef.current,
-      usedMaterials: usedMaterialsRef.current,
       formData: formDataRef.current,
       userIDs: userIDsRef.current,
       creator: userIDRef.current,
@@ -191,7 +492,7 @@ const CreatePageSI = () => {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/special/safe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,11 +518,6 @@ const CreatePageSI = () => {
     const dataToStore = {
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
-      usedPPEOptions: usedPPEOptionsRef.current,
-      usedHandTools: usedHandToolsRef.current,
-      usedEquipment: usedEquipmentRef.current,
-      usedMobileMachine: usedMobileMachineRef.current,
-      usedMaterials: usedMaterialsRef.current,
       formData: formDataRef.current,
       userIDs: selectedUserIDs,
       updater: userIDRef.current,
@@ -230,7 +526,7 @@ const CreatePageSI = () => {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/special/modifySafe/${loadedIDRef.current}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -251,16 +547,20 @@ const CreatePageSI = () => {
 
   const handleClick = () => {
     const newErrors = validateForm();
-    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error("Please fill in all required fields marked by a *", {
-        closeButton: true,
-        autoClose: 800, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
+      if (titleSet)
+        setGeneratePopup(true);
+
+      if (!titleSet) {
+        toast.error("Please fill in a title", {
+          closeButton: true,
+          autoClose: 800, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
     } else {
       handleGeneratePDF();  // Call your function when the form is valid
     }
@@ -299,16 +599,11 @@ const CreatePageSI = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/special/getDraft/${loadID}`);
       const storedData = await response.json();
       // Update your states as needed:
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
-      setUsedPPEOptions(storedData.usedPPEOptions || []);
-      setUsedHandTools(storedData.usedHandTools || []);
-      setUsedEquipment(storedData.usedEquipment || []);
-      setUsedMobileMachines(storedData.usedMobileMachine || []);
-      setUsedMaterials(storedData.usedMaterials || []);
       setUserIDs(storedData.userIDs || []);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev }));
@@ -318,13 +613,6 @@ const CreatePageSI = () => {
       console.error('Error loading data:', error);
     }
   };
-
-  const capitalizeWords = (text) =>
-    text
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
 
   const updateRefRow = (index, field, value) => {
     const updatedRefRows = [...formData.references];
@@ -336,45 +624,9 @@ const CreatePageSI = () => {
     });
   };
 
-  const [formData, setFormData] = useState({
-    title: "",
-    documentType: useParams().type,
-    aim: "The aim of the document is ",
-    scope: "",
-    date: new Date().toLocaleDateString(),
-    version: "1",
-    rows: [
-      { auth: "Author", name: "", pos: "", num: 1 },
-      { auth: "Reviewer", name: "", pos: "", num: 2 },
-      { auth: "Approver", name: "", pos: "", num: 3 },
-    ],
-    standard: [{
-      id: uuidv4(), nr: 4.1, mainSection: "", details: [{ id: uuidv4(), nr: "", minRequirement: "", reference: "", notes: "" }]
-    }],
-    abbrRows: [],
-    termRows: [],
-    chapters: [],
-    references: [],
-    PPEItems: [],
-    HandTools: [],
-    Equipment: [],
-    MobileMachine: [],
-    Materials: [],
-    pictures: [],
-    reviewDate: 0,
-    changeTable: [
-      { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
-    ],
-  });
-
   const formDataRef = useRef(formData);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
-  const usedPPEOptionsRef = useRef(usedPPEOptions);
-  const usedHandToolsRef = useRef(usedHandTools);
-  const usedEquipmentRef = useRef(usedEquipment);
-  const usedMobileMachineRef = useRef(usedMobileMachine);
-  const usedMaterialsRef = useRef(usedMaterials);
   const userIDsRef = useRef(userIDs);
   const userIDRef = useRef(userID);
 
@@ -393,26 +645,6 @@ const CreatePageSI = () => {
   useEffect(() => {
     usedTermCodesRef.current = usedTermCodes;
   }, [usedTermCodes]);
-
-  useEffect(() => {
-    usedPPEOptionsRef.current = usedPPEOptions;
-  }, [usedPPEOptions]);
-
-  useEffect(() => {
-    usedHandToolsRef.current = usedHandTools;
-  }, [usedHandTools]);
-
-  useEffect(() => {
-    usedMobileMachineRef.current = usedMobileMachine;
-  }, [usedMobileMachine]);
-
-  useEffect(() => {
-    usedMaterialsRef.current = usedMaterials;
-  }, [usedMaterials]);
-
-  useEffect(() => {
-    usedEquipmentRef.current = usedEquipment;
-  }, [usedEquipment]);
 
   useEffect(() => {
     formDataRef.current = formData;
@@ -467,40 +699,6 @@ const CreatePageSI = () => {
     }
   };
 
-  const addPicRow = () => {
-    setFormData((prevData) => {
-      const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
-
-      return {
-        ...prevData,
-        pictures: [
-          ...prevData.pictures,
-          {
-            pic1: `Figure 1.${totalFigures}: `, // Assign next available number
-            pic2: `Figure 1.${totalFigures + 1}: `
-          }
-        ]
-      };
-    });
-  };
-
-  const updatePicRow = (index, field, value) => {
-    const updatedPicRows = [...formData.pictures];
-    updatedPicRows[index][field] = value;  // Update the specific field in the row
-
-    setFormData({
-      ...formData,
-      pictures: updatedPicRows,  // Update the procedure rows in state
-    });
-  };
-
-  const removePicRow = (indexToRemove) => {
-    setFormData({
-      ...formData,
-      pictures: formData.pictures.filter((_, index) => index !== indexToRemove),
-    });
-  };
-
   const [history, setHistory] = useState([]);
   const timeoutRef = useRef(null);
   const previousFormData = useRef(formData);
@@ -512,11 +710,6 @@ const CreatePageSI = () => {
       formData,
       usedAbbrCodes,
       usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
     };
 
     setHistory((prev) => {
@@ -525,13 +718,13 @@ const CreatePageSI = () => {
       }
       return [...prev, currentState]; // Save the new state
     });
-  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials]);
+  }, [formData, usedAbbrCodes, usedTermCodes]);
 
   // Detects form changes across all components with debounce
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(saveToHistory, 1000); // Only save after 1s of inactivity
-  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials]);
+  }, [formData, usedAbbrCodes, usedTermCodes]);
 
   const undoLastChange = () => {
     if (history.length > 1) {
@@ -542,11 +735,6 @@ const CreatePageSI = () => {
       setFormData(lastState.formData);
       setUsedAbbrCodes(lastState.usedAbbrCodes);
       setUsedTermCodes(lastState.usedTermCodes);
-      setUsedPPEOptions(lastState.usedPPEOptions);
-      setUsedHandTools(lastState.usedHandTools);
-      setUsedEquipment(lastState.usedEquipment);
-      setUsedMobileMachines(lastState.usedMobileMachine);
-      setUsedMaterials(lastState.usedMaterials);
 
       setHistory((prev) => prev.slice(0, -1)); // Remove last history entry
       setRedoHistory((prev) => [...prev, currentState]);
@@ -581,11 +769,6 @@ const CreatePageSI = () => {
       setFormData(nextState.formData);
       setUsedAbbrCodes(nextState.usedAbbrCodes);
       setUsedTermCodes(nextState.usedTermCodes);
-      setUsedPPEOptions(nextState.usedPPEOptions);
-      setUsedHandTools(nextState.usedHandTools);
-      setUsedEquipment(nextState.usedEquipment);
-      setUsedMobileMachines(nextState.usedMobileMachine);
-      setUsedMaterials(nextState.usedMaterials);
 
       // Push back into history
       setHistory((prev) => [...prev, nextState]);
@@ -616,11 +799,12 @@ const CreatePageSI = () => {
     const newErrors = {};
 
     if (!formData.title) newErrors.title = true;
-    if (!formData.documentType) newErrors.documentType = true;
+    if (!formData.site) newErrors.site = true;
+    if (!formData.dateConducted) newErrors.dateConducted = true;
+    if (!formData.expiryDate) newErrors.expiryDate = true;
     if (!formData.aim) newErrors.aim = true;
-    if (!formData.reviewDate) newErrors.reviewDate = true;
-    if (formData.abbrRows.length === 0) newErrors.abbrs = true;
-    if (formData.termRows.length === 0) newErrors.terms = true;
+    if (!formData.directed) newErrors.directed = true;
+    if (!formData.directee) newErrors.directee = true;
 
     if (formData.rows.length === 0) {
       newErrors.signs = true;
@@ -629,6 +813,11 @@ const CreatePageSI = () => {
         if (!row.name) newErrors.signs = true;
       });
     }
+
+
+    formData.special.forEach((row, index) => {
+      if (!row.instruction) newErrors.special = true;
+    });
 
     return newErrors;
   };
@@ -663,25 +852,11 @@ const CreatePageSI = () => {
     const newRows = [...formData.rows];
     const rowToChange = newRows[index];
 
-    // Save the previous value of 'auth' before change for validation
     const previousAuth = rowToChange.auth;
-
-    // Update the field value
     rowToChange[field] = e.target.value;
 
-    // Automatically set num based on the auth type
-    if (rowToChange.auth === "Author") {
-      rowToChange.num = 1;
-    } else if (rowToChange.auth === "Reviewer") {
-      rowToChange.num = 2;
-    } else if (rowToChange.auth === "Approver") {
-      rowToChange.num = 3;
-    }
-
-    // Only perform validation if the 'auth' field was modified
     if (field === "auth") {
-      // Check if the current 'Author', 'Reviewer', or 'Approved By' is being removed or modified
-      const requiredRoles = ["Author", "Reviewer", "Approver"];
+      const requiredRoles = ["Owner"];
 
       // Check if there is at least one row with each required auth type
       const isValid = requiredRoles.every(role => {
@@ -713,66 +888,6 @@ const CreatePageSI = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       rows: newRows,
-    }));
-  };
-
-  // Add a new row to the table
-  const addRow = () => {
-    setFormData({
-      ...formData,
-      rows: [
-        ...formData.rows,
-        { auth: "Author", name: "", pos: "", num: 1 }
-      ]
-    });
-  };
-
-  const addProRow = () => {
-    const lastNr = formData.procedureRows.length > 0 && typeof formData.procedureRows[formData.procedureRows.length - 1].nr === 'number'
-      ? formData.procedureRows[formData.procedureRows.length - 1].nr
-      : 0; // Safely get the last nr value or 0 if no rows exist or nr is not a number
-
-    setFormData({
-      ...formData,
-      procedureRows: [
-        ...formData.procedureRows,
-        {
-          nr: lastNr + 1,
-          mainStep: "",
-          SubStep: "",
-          discipline: "Engineering",       // Default value for discipline
-          accountable: "",      // Default value for accountable
-          responsible: "",
-          prevStep: "-",
-        }
-      ]
-    });
-  };
-
-  const removeProRow = (indexToRemove) => {
-    if (formData.procedureRows.length <= 1) {
-      toast.warn("At least one procedure step is required.", {
-        autoClose: 800,
-        closeButton: true,
-        style: { textAlign: "center" },
-      });
-      return;
-    }
-
-    const newRows = formData.procedureRows
-      .filter((_, index) => index !== indexToRemove)
-      .map((row, idx) => ({ ...row, nr: idx + 1 })); // Renumber after removal
-
-    setFormData({
-      ...formData,
-      procedureRows: newRows,
-    });
-  };
-
-  const updateProcedureRows = (newProcedureRows) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      procedureRows: newProcedureRows, // Update procedureRows with new data
     }));
   };
 
@@ -812,7 +927,7 @@ const CreatePageSI = () => {
     const rowToRemove = formData.rows[indexToRemove];
 
     // Prevent removal of the initial required rows
-    const initialRequiredRows = ["Author", "Reviewer", "Approver"];
+    const initialRequiredRows = ["Owner"];
     if (
       initialRequiredRows.includes(rowToRemove.auth) &&
       formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
@@ -839,21 +954,16 @@ const CreatePageSI = () => {
     const dataToStore = {
       usedAbbrCodes,       // your current state values
       usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
       formData,
       userID,
       azureFN: ""
     };
 
-    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+    const documentName = (formData.title) + ' ' + formData.documentType;
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-special`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -865,7 +975,7 @@ const CreatePageSI = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docm`);
+      saveAs(blob, `${documentName}.docx`);
       setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
@@ -876,22 +986,18 @@ const CreatePageSI = () => {
 
   const handlePublish = async () => {
     const dataToStore = {
-      usedAbbrCodes,       // your current state values
+      usedAbbrCodes,
       usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
       formData,
       userID,
-      azureFN: ""
+      azureFN: "",
+      draftID: loadedIDRef.current
     };
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-document`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-special`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -911,6 +1017,9 @@ const CreatePageSI = () => {
       });
 
       setLoading(false);
+      setTimeout(() => {
+        navigate('/FrontendDMS/generatedSpecialFiles'); // Redirect to the generated file info page
+      }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -930,7 +1039,7 @@ const CreatePageSI = () => {
           </div>
 
           <div className="button-container-create">
-            <button className="but-um" onClick={() => setLoadPopupOpen(true)} disabled>
+            <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
               <div className="button-content">
                 {/* base floppy-disk, full size */}
                 <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
@@ -944,7 +1053,7 @@ const CreatePageSI = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')} disabled>
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedSpecialFiles')}>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                 <span className="button-text">Published Documents</span>
@@ -967,7 +1076,7 @@ const CreatePageSI = () => {
         </div>
       )}
       {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
+      {isLoadPopupOpen && <LoadDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} type={type.toLowerCase()} />}
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
@@ -976,11 +1085,11 @@ const CreatePageSI = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} title="Save" />
+              <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} title="Save As">
+              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
                 {/* base floppy-disk, full size */}
                 <FontAwesomeIcon icon={faSave} />
                 {/* pen, shrunk & nudged down/right into corner */}
@@ -1001,11 +1110,11 @@ const CreatePageSI = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+              <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" onClick={openShare} />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
             </div>
           </div>
 
@@ -1028,49 +1137,167 @@ const CreatePageSI = () => {
                   className="font-fam title-input"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Title of your document (e.g. Working at Heights)"
+                  placeholder="Title of your document (e.g., Surface TMM Pre-Use Checklist)"
                 />
-                <span className="type-create-page">{formData.documentType}</span>
+                <span className="type-create-page" style={{ width: "10%" }}>{formData.documentType}</span>
               </div>
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+          <div className="input-row-special-intruction">
+            <div className={`input-box-type-special-intruction ${errors.site ? "error-create" : ""}`}>
+              <h3 className="font-fam-labels">Operation / Site <span className="required-field">*</span></h3>
+              <div className="special-intruction-select-container">
+                <input
+                  type="text"
+                  name="site"
+                  value={formData.site}
+                  onChange={e => handleSiteInput(e.target.value)}
+                  onFocus={handleSiteFocus}
+                  ref={sitesInputRef}
+                  autoComplete="off"
+                  className="special-intruction-input special-intruction-row-input"
+                  placeholder="Insert or Select Operation/ Site Name"
+                />
+              </div>
+            </div>
+            <div className="input-box-type-special-intruction-date">
+              <div className="input-row-special-intruction-dates">
+                <div className={`input-box-type-special-intruction-date-half ${errors.dateConducted ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">
+                    Implementation Date <span className="required-field">*</span>
+                  </h3>
+                  <input
+                    type="date"
+                    name="dateConducted"
+                    value={formData.dateConducted || ""}
+                    onChange={handleInputChange}
+                    onFocus={() => setErrors(prev => ({
+                      ...prev,
+                      dateConducted: false
+                    }))}
+                    className="special-intruction-input-date-half font-fam"
+                  />
+                </div>
+                <div className={`input-box-type-special-intruction-date-half ${errors.expiryDate ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">
+                    Expiry Date <span className="required-field">*</span>
+                  </h3>
+                  <input
+                    type="date"
+                    name="expiryDate"
+                    min={formData.dateConducted}
+                    value={formData.expiryDate || ""}
+                    onChange={handleInputChange}
+                    onFocus={() => setErrors(prev => ({
+                      ...prev,
+                      expiryDate: false
+                    }))}
+                    className="special-intruction-input-date-half font-fam"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="input-row">
+            <div className={`input-box-special-instruction`}>
+              <strong>Note: </strong> This Special Instruction shall remain in effect from the stated effective date until the specified expiry date and shall take precedence over any previous instructions related to this subject.
+            </div>
+          </div>
+
+          <div className="input-box-type-special-intruction-to-from">
+            <div className="input-row-special-intruction-dates">
+              <div className={`input-box-type-special-intruction-select-half ${errors.directee ? "error-create" : ""}`}>
+                <h3 className="font-fam-labels">
+                  Special Instruction From <span className="required-field">*</span>
+                </h3>
+
+                <div className="special-intruction-select-container-2">
+                  <input
+                    type="text"
+                    name="directee"
+                    value={formData.directee || ""}
+                    onChange={e => handleDirecteeInput(e.target.value)}
+                    onFocus={handleDirecteeFocus}
+                    ref={directeeInputRef}
+                    autoComplete="off"
+                    className="special-intruction-input-select-half font-fam"
+                    placeholder="Insert Person Giving the Special Instruction"
+                  />
+                </div>
+              </div>
+              <div className={`input-box-type-special-intruction-select-half ${errors.directed ? "error-create" : ""}`}>
+                <h3 className="font-fam-labels">
+                  Special Instruction Directed To <span className="required-field">*</span>
+                </h3>
+
+                <input
+                  type="text"
+                  name="directed"
+                  value={formData.directed || ""}
+                  onChange={handleInputChange}
+                  onFocus={() => setErrors(prev => ({
+                    ...prev,
+                    directed: false
+                  }))}
+                  autoComplete="off"
+                  className="special-intruction-input-select-half font-fam"
+                  placeholder="Insert Group or Person Instruction is Directed To"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DocumentSignaturesTableSI rows={formData.rows} handleRowChange={handleRowChange} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+
+          <div className="input-row" style={{ position: 'relative' }}>
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
+              <h3 className="font-fam-labels">Purpose and Background <span className="required-field">*</span></h3>
               <textarea
                 spellcheck="true"
                 name="aim"
-                className="aim-textarea font-fam"
+                className="aim-textarea-si font-fam"
                 value={formData.aim}
                 onChange={handleInputChange}
+                onFocus={() => setErrors(prev => ({
+                  ...prev,
+                  aim: false
+                }))}
                 rows="5"   // Adjust the number of rows for initial height
-                placeholder="Insert the aim of the document here..." // Optional placeholder text
+                placeholder="Insert the purpose of this document and include any relevant background information regarding the topic." // Optional placeholder text
+              />
+
+              {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-si spin-animation" />) : (
+                <FontAwesomeIcon
+                  icon={faMagicWandSparkles}
+                  className="aim-textarea-icon-ibra"
+                  title="AI Rewrite"
+                  style={{ fontSize: "15px" }}
+                  onClick={() => AiRewriteAim()}
+                />
+              )}
+
+              <FontAwesomeIcon
+                icon={faRotateLeft}
+                className="aim-textarea-icon-si-undo"
+                title="Undo AI Rewrite"
+                style={{
+                  marginLeft: '8px',
+                  opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                  cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                  fontSize: "15px"
+                }}
+                onClick={() => undoAiRewrite("aim")}
               />
             </div>
           </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
+          <SpecialInstructionsTable formData={formData} setFormData={setFormData} error={errors.special} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
-          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
-          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
-
-          <div className="input-row">
-            <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-              <input
-                type="number"
-                name="reviewDate"
-                className="aim-textarea cent-create font-fam"
-                value={formData.reviewDate}
-                onChange={handleInputChange}
-                placeholder="Insert the review period in months" // Optional placeholder text
-              />
-            </div>
-          </div>
+          <AbbreviationTableSI formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} si={true} />
+          <TermTableSI formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} si={true} />
+          <ReferenceTableSpecialInstructions formData={formData} setFormData={setFormData} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
 
           <div className="input-row-buttons">
             {/* Generate File Button */}
@@ -1078,7 +1305,6 @@ const CreatePageSI = () => {
               className="generate-button font-fam"
               onClick={handleClick}
               title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
-              disabled
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
@@ -1091,6 +1317,51 @@ const CreatePageSI = () => {
           </div>
         </div>
       </div>
+      {showSiteDropdown && filteredSites.length > 0 && (
+        <ul
+          className="floating-dropdown"
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+            zIndex: 1000
+          }}
+        >
+          {filteredSites.sort().map((term, i) => (
+            <li
+              key={i}
+              onMouseDown={() => selectSiteSuggestion(term)}
+            >
+              {term}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {showNamesDropdown && filteredNames.length > 0 && (
+        <ul
+          className="floating-dropdown"
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+            zIndex: 1000
+          }}
+        >
+          {filteredNames.sort().map((term, i) => (
+            <li
+              key={i}
+              onMouseDown={() => selectDirecteeSuggestion(term)}
+            >
+              {term}
+            </li>
+          ))}
+        </ul>
+      )}
+      {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} special={true} />)}
+      {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
       <ToastContainer />
     </div>
   );

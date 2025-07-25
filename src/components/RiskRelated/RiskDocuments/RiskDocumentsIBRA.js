@@ -39,7 +39,7 @@ const RiskDocumentsIBRA = () => {
             setUserID(decodedToken.userId);
 
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
     }, [navigate]);
@@ -129,7 +129,7 @@ const RiskDocumentsIBRA = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Risk Documents</p>
+                        <p className="logo-text-um">Risk Management</p>
                     </div>
                 </div>
             )}
@@ -192,10 +192,11 @@ const RiskDocumentsIBRA = () => {
                                             {(hoveredFileId === file._id) && (
                                                 <PopupMenuPubFiles
                                                     file={file}
-                                                    type={"dont"}
                                                     isOpen={hoveredFileId === file._id}
                                                     openDownloadModal={downloadFile}
                                                     setHoveredFileId={setHoveredFileId}
+                                                    risk={true}
+                                                    typeDoc={"ibra"}
                                                 />
                                             )}
                                         </div>

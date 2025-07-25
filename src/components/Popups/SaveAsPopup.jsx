@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./SaveAsPopup.css"; // Import a separate CSS file for styling
 import { toast } from "react-toastify";
 
-const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create }) => {
+const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard = false, special = false }) => {
     const [title, setTitle] = useState(current);
     const [drafts, setDrafts] = useState([]);
 
@@ -10,9 +10,18 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create }) => {
     useEffect(() => {
         let isMounted = true;
         async function loadDrafts() {
-            const route = create
-                ? `draft/drafts/${userID}`
-                : `riskDraft/${type.toLowerCase()}/drafts/${userID}`;
+            let route;
+            if (standard) {
+                route = `draft/standards/drafts/${userID}`
+            }
+            else if (special) {
+                route = `draft/special/drafts/${userID}`
+            }
+            else {
+                route = create
+                    ? `draft/drafts/${userID}`
+                    : `riskDraft/${type.toLowerCase()}/drafts/${userID}`;
+            }
 
             try {
                 const res = await fetch(

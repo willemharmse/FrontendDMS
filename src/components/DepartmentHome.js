@@ -76,7 +76,7 @@ const DepartmentHome = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
+        navigate('/');
     };
 
     useEffect(() => {
@@ -186,7 +186,7 @@ const DepartmentHome = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-dept">Department Management</p>
+                        <p className="logo-text-dept">Admin Page</p>
                     </div>
 
                     <div className="filter-fih">
@@ -206,6 +206,11 @@ const DepartmentHome = () => {
                                 </div>
                             </button>
                         </div>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/adminDepartmentsInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{`Manage Departments`}</p>
                     </div>
                 </div>
             )}

@@ -366,6 +366,20 @@ tr:hover+.insert-row-container .insert-row-button {
 
 .sub-cell-standards {
     position: relative;
+    padding-left: 50px !important;
+}
+
+.detail-label {
+    position: absolute;
+    left: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+    /* match your cell bg */
+    padding: 0 4px;
+    font-weight: bold;
+    z-index: 1;
+    pointer-events: none;
+    /* so clicks go to the textarea */
 }
 
 /* floating “+” button */
@@ -480,7 +494,7 @@ tr:hover+.insert-row-container .insert-row-button {
     background: #f8f8f8;
 }
 
-.main-cell-standards:hover .add-subrow-button-standards {
+.sub-cell-standards:hover .add-subrow-button-standards {
     display: flex;
     /* show it when the cell is hovered */
 }
@@ -509,7 +523,7 @@ tr:hover+.insert-row-container .insert-row-button {
     background: #f8f8f8;
 }
 
-.main-cell-standards:hover .delete-subrow-button-standards {
+.sub-cell-standards:hover .delete-subrow-button-standards {
     display: flex;
     /* show it when the cell is hovered */
 }

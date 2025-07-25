@@ -48,6 +48,10 @@ import RiskManagementPageBLRA from './components/RiskAssessmentPages/RiskManagem
 import FutureEnhancementPage from './components/FutureEnhancementPages/FutureEnhancementPage';
 import FutureEnhancementPageRMS from './components/FutureEnhancementPages/FutureEnhancementPageRMS';
 import CreatePageSI from './components/DocumentCreationPages/CreatePageSI';
+import GeneratedStandardsInfo from './components/GeneratedStandardsInfo';
+import RiskReviewPageIBRA from './components/RiskAssessmentPages/RiskReviewPageIBRA';
+import RiskReviewPageJRA from './components/RiskAssessmentPages/RiskReviewPageJRA';
+import GeneratedSpecialInfo from './components/GeneratedSpecialInfo';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -121,8 +125,12 @@ function App() {
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
         <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <VersionControlPage />} />
         <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
+        <Route path='FrontendDMS/generatedSpecialFiles' element={<GeneratedSpecialInfo />} />
+        <Route path='FrontendDMS/generatedStandardFiles' element={<GeneratedStandardsInfo />} />
         <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
         <Route path='FrontendDMS/review/:fileId' element={<ReviewPage />} />
+        <Route path='FrontendDMS/reviewIBRA/:fileId/:type' element={<RiskReviewPageIBRA />} />
+        <Route path='FrontendDMS/reviewJRA/:fileId/:type' element={<RiskReviewPageJRA />} />
         <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />

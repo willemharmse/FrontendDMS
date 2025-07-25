@@ -129,7 +129,7 @@ const RiskDocumentsBLRA = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Risk Documents</p>
+                        <p className="logo-text-um">Risk Management</p>
                     </div>
                 </div>
             )}

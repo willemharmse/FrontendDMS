@@ -31,7 +31,7 @@ body {
     justify-content: center;
     /* Centers buttons vertically */
     position: absolute;
-    bottom: 20px;
+    top: 250px;
     /* Adjust as needed */
     left: 50%;
     transform: translateX(-50%);
@@ -463,7 +463,7 @@ tbody tr:hover {
 
 .select-filter-um {
     width: 100%;
-    height: 40%;
+    height: 30px;
     border-radius: 7px;
     color: gray;
 }
@@ -660,7 +660,6 @@ tbody tr:hover {
 }
 
 .delete-button-user:active {
-    background-color: #CB6F6F;
     transform: scale(0.98);
 }
 

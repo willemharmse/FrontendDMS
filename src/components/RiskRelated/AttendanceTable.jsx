@@ -114,7 +114,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
 
     const fetchAuthors = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/stk`);
             if (!response.ok) {
                 throw new Error("Failed to fetch values");
             }

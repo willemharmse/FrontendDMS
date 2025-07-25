@@ -26,6 +26,7 @@ import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
 import PicturesTable from "../CreatePage/PicturesTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
+import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -58,6 +59,7 @@ const RiskManagementPageIBRA = () => {
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
     const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [controls, setControls] = useState([]);
+    const [generatePopup, setGeneratePopup] = useState(false);
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -296,9 +298,20 @@ const RiskManagementPageIBRA = () => {
 
     const handleClick3 = async () => {
         const newErrors = validateForm();
-        setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) {
-            toast.error("Please fill in all required fields marked by a *");
+            if (titleSet)
+                setGeneratePopup(true);
+
+            if (!titleSet) {
+                toast.error("Please fill in a title", {
+                    closeButton: true,
+                    autoClose: 800, // 1.5 seconds
+                    style: {
+                        textAlign: 'center'
+                    }
+                });
+            }
+
             return;
         }
 
@@ -315,6 +328,18 @@ const RiskManagementPageIBRA = () => {
             console.error(err);
         }
     };
+
+
+    const cancelGenerate = () => {
+
+        const newErrors = validateForm();
+        setErrors(newErrors);
+        setGeneratePopup(false);
+    }
+
+    const closeGenerate = () => {
+        setGeneratePopup(false);
+    }
 
     const handlePubClick = () => {
         const newErrors = validateForm();
@@ -656,6 +681,13 @@ const RiskManagementPageIBRA = () => {
             { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
         ],
     });
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            const newErrors = validateForm();
+            setErrors(newErrors);
+        }
+    }, [formData])
 
     const fetchSites = async () => {
         try {
@@ -1278,6 +1310,9 @@ const RiskManagementPageIBRA = () => {
             formData,
         };
 
+        if (generatePopup) {
+            setGeneratePopup(false);
+        }
         const documentName = (formData.title) + ' ' + formData.documentType;
         setLoading(true);
 
@@ -1949,6 +1984,7 @@ const RiskManagementPageIBRA = () => {
                     ))}
                 </ul>
             )}
+            {generatePopup && (<GenerateDraftPopup deleteDraft={handleGenerateIBRADocument} closeModal={closeGenerate} cancel={cancelGenerate} />)}
         </div>
     );
 };

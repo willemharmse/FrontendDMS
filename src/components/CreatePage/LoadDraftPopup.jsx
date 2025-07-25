@@ -31,6 +31,10 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
                 case "standard":
                     route = `${process.env.REACT_APP_URL}/api/draft/standards/drafts/${userID}`
                     break;
+
+                case "special instruction":
+                    route = `${process.env.REACT_APP_URL}/api/draft/special/drafts/${userID}`
+                    break;
             }
 
             try {
@@ -110,8 +114,23 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
         const { draftId } = deleteConfirm;
         if (!draftId) return;
 
+        let route;
+        switch (type) {
+            case "procedure":
+                route = `${process.env.REACT_APP_URL}/api/draft/delete/${draftId}`
+                break;
+
+            case "standard":
+                route = `${process.env.REACT_APP_URL}/api/draft/standards/delete/${draftId}`
+                break;
+
+            case "special instruction":
+                route = `${process.env.REACT_APP_URL}/api/draft/special/delete/${draftId}`
+                break;
+        }
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/delete/${draftId}`, {
+            const response = await fetch(`${route}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,

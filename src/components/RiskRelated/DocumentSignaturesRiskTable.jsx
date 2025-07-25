@@ -31,7 +31,7 @@ const DocumentSignaturesRiskTable = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_URL}/api/docCreateVals/stk`);
+        const res = await axios.get(`${process.env.REACT_APP_URL}/api/riskInfo/stk`);
         const data = res.data.stakeholders; // [{ name, position }, …]
 
         // build name → position map

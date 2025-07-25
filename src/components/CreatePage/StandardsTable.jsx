@@ -6,13 +6,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faCopy, faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
-const StandardsTable = ({ formData, setFormData, error, title, documentType }) => {
+const StandardsTable = ({ formData, setFormData, error, title, documentType, setErrors }) => {
     const [filters, setFilters] = useState({
         mainSection: '',
         minRequirement: '',
         reference: '',
         notes: '',
     });
+
+    const renumberStandards = (arr) => {
+        arr.forEach((item, idx) => {
+            const mainNr = idx + 1;
+            item.nr = `${mainNr}`;
+            item.details.forEach((d, j) => {
+                d.nr = `${mainNr}.${j + 1}`;
+            });
+        });
+    };
 
     // popup state
     const [filterPopup, setFilterPopup] = useState({
@@ -58,19 +68,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
             const [moved] = newArr.splice(from, 1);
             newArr.splice(to, 0, moved);
 
-            // re-number groups exactly as in add/delete
-            const groups = {};
-            newArr.forEach(item => {
-                const g = Math.floor(item.nr);
-                (groups[g] = groups[g] || []).push(item);
-            });
-            Object.entries(groups).forEach(([g, items]) => {
-                let c = 1;
-                items.forEach(it => {
-                    it.nr = `${g}.${c++}`;
-                });
-            });
-
+            renumberStandards(newArr);
             return { ...prev, standard: newArr };
         });
 
@@ -198,45 +196,22 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
     };
 
     const handleAddMain = (stdId) => {
-        // 1. Clone the array
         const newArr = [...formData.standard];
-
-        // 2. Find the clicked-row’s index by its id
         const idx = newArr.findIndex((s) => s.id === stdId);
-
         if (idx === -1) return;
 
-        // 3. Figure out which “group” you’re in (e.g. all 4.x rows)
-        const groupNum = Math.floor(newArr[idx].nr);
-
-        // 4. Create the new blank standard (nr is placeholder for now)
         const newStd = {
             id: uuidv4(),
-            nr: groupNum,       // we’ll overwrite in step 6
+            nr: "",
             mainSection: "",
             details: [
                 { id: uuidv4(), nr: "", minRequirement: "", reference: "", notes: "" }
             ],
         };
 
-        // 5. **Insert** it immediately after the clicked row
         newArr.splice(idx + 1, 0, newStd);
 
-        // 6. **Re-number** all of the group’s items in order
-        let counter = 1;
-        newArr.forEach(item => {
-            if (Math.floor(item.nr) === groupNum) {
-                // mains: "4.1", "4.2", ..., "4.10", etc.
-                item.nr = `${groupNum}.${counter++}`;
-
-                // now renumber its details: "4.1.1", "4.1.2", ...
-                item.details.forEach((d, i) => {
-                    d.nr = `${item.nr}.${i + 1}`;
-                });
-            }
-        });
-
-        // 7. Push the update back into state
+        renumberStandards(newArr);
         updateRows(newArr);
     };
 
@@ -258,61 +233,34 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
         const newArr = [...formData.standard];
         const idx = newArr.findIndex((s) => s.id === stdId);
         if (idx === -1) return;
-
-        const groupNum = Math.floor(newArr[idx].nr);
         newArr.splice(idx, 1);
-
-        // re-number
-        let counter = 1;
-        newArr.forEach((item) => {
-            if (Math.floor(item.nr) === groupNum) {
-                item.nr = `${groupNum}.${counter}`;
-                counter++;
-            }
-        });
-
+        renumberStandards(newArr);
         updateRows(newArr);
     };
 
-    // DUPLICATE a main row by stdId (deep-clone details), insert below, then re-number
     const handleDuplicateMain = (stdId) => {
-        // 1. Clone the array
         const newArr = [...formData.standard];
-
-        // 2. Find the original’s index
         const idx = newArr.findIndex((s) => s.id === stdId);
         if (idx === -1) return;
 
-        // 3. Grab the original and its group
         const orig = newArr[idx];
-        const groupNum = Math.floor(orig.nr);
 
-        // 4. Build a deep-clone (new ids for main & each detail)
         const copy = {
             id: uuidv4(),
-            nr: groupNum, // placeholder, will renumber next
+            nr: "",
             mainSection: orig.mainSection,
             details: orig.details.map((d) => ({
                 id: uuidv4(),
+                nr: "",
                 minRequirement: d.minRequirement,
                 reference: d.reference,
                 notes: d.notes,
             })),
         };
 
-        // 5. Insert the copy right after the original
         newArr.splice(idx + 1, 0, copy);
 
-        // 6. Re-number the entire group in order
-        let counter = 1;
-        newArr.forEach((item) => {
-            if (Math.floor(item.nr) === groupNum) {
-                item.nr = `${groupNum}.${counter}`;
-                counter++;
-            }
-        });
-
-        // 7. Commit
+        renumberStandards(newArr);
         updateRows(newArr);
     };
 
@@ -389,6 +337,12 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
                 ? { ...item, mainSection: value }
                 : item
         );
+
+        setErrors(prev => ({
+            ...prev,
+            standard: false
+        }));
+
         updateRows(newArr);
     };
 
@@ -403,6 +357,11 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
             );
             return { ...item, details: newDetails };
         });
+        setErrors(prev => ({
+            ...prev,
+            standard: false
+        }));
+
         updateRows(newArr);
     };
 
@@ -411,7 +370,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
     return (
         <div className="input-row">
             <div className={`proc-box ${error ? "error-proc" : ""}`}>
-                <h3 className="font-fam-labels">Standard <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">Standard Requirements <span className="required-field">*</span></h3>
 
                 <div
                     className="standards-class-table-container"
@@ -494,7 +453,8 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
                                             {row.details.length > 0 ? (
                                                 // First detail cell (detail[0])
                                                 <>
-                                                    <td className="main-cell-standards">
+                                                    <td className="sub-cell-standards">
+                                                        <label className="detail-label">{row.details[0].nr}</label>
                                                         <textarea
                                                             name="minRequirement"
                                                             className="aim-textarea-st font-fam"
@@ -552,7 +512,8 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType }) =
                                         {/* — all the remaining detail rows (if any) */}
                                         {row.details.slice(1).map((detail, j) => (
                                             <tr key={j}>
-                                                <td className="main-cell-standards">
+                                                <td className="sub-cell-standards">
+                                                    <label className="detail-label">{row.details[j + 1].nr}</label>
                                                     <textarea
                                                         name="minRequirement"
                                                         className="aim-textarea-st font-fam"

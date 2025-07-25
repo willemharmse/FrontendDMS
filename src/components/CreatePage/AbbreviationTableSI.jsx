@@ -5,7 +5,7 @@ import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setErrors, si = false }) => {
+const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setErrors, si = false }) => {
   const [abbrData, setAbbrData] = useState([]);
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
@@ -13,6 +13,7 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   const [selectedAbbrs, setSelectedAbbrs] = useState(new Set(usedAbbrCodes));
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isNA, setIsNA] = useState(false);
 
   useEffect(() => {
     if (!popupVisible) return;
@@ -22,6 +23,16 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
       abbrs: false
     }));
   }, [popupVisible])
+
+  const handleNAToggle = () => {
+    const newValue = !isNA;
+    setIsNA(newValue);
+    if (!newValue) {
+      setSelectedAbbrs(new Set());
+      setUsedAbbrCodes([]);
+      setFormData({ ...formData, abbrRows: [] });
+    }
+  };
 
   useEffect(() => {
     setSelectedAbbrs(new Set(usedAbbrCodes));
@@ -62,6 +73,13 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   const clearSearch = () => {
     setSearchTerm("");
   };
+
+  useEffect(() => {
+    setSelectedAbbrs(new Set(usedAbbrCodes));
+    if (usedAbbrCodes.length > 0) {
+      setIsNA(true); // Automatically check the box if equipment data exists
+    }
+  }, [usedAbbrCodes]);
 
   useEffect(() => {
     fetchValues();
@@ -131,7 +149,15 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   return (
     <div className="input-row">
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
-        <h3 className="font-fam-labels">Abbreviations  <span className="required-field">{si ? "" : "*"}</span></h3>
+        <div className="ppe-header">
+          <input
+            type="checkbox"
+            className="na-checkbox-ppe"
+            checked={isNA}
+            onChange={handleNAToggle}
+          />
+          <h3 className="font-fam-labels">Abbreviations</h3>
+        </div>
         {role === "admin" && (
           <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Abbreviations" /></button>
         )}
@@ -262,7 +288,7 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
           </table>
         )}
 
-        {selectedAbbrs.size === 0 && (
+        {(selectedAbbrs.size === 0 && isNA) && (
           <button className="add-row-button-abbrs" onClick={handlePopupToggle}>
             Select
           </button>
@@ -278,4 +304,4 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
   );
 };
 
-export default AbbreviationTable;
+export default AbbreviationTableSI;

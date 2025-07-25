@@ -510,7 +510,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     return (
         <div className="input-row">
             <div className="input-box-ref">
-                <h3 className="font-fam-labels">JRA Task Information <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">JRA Task Information</h3>
                 <table className="table-borders-jra-info">
                     <tbody>
                         <tr>
@@ -619,7 +619,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row" className="jra-info-table-header">Person in Charge of this Task</th>
+                            <th scope="row" className="jra-info-table-header">Person in Charge of Work</th>
                             <td>
                                 <div className="jra-info-popup-page-select-container">
                                     <input

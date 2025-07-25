@@ -20,6 +20,9 @@ import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
 import ChapterTable from "../CreatePage/ChapterTable";
 import StandardsTable from "../CreatePage/StandardsTable";
+import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
+import SaveAsPopup from "../Popups/SaveAsPopup";
+import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
 const CreatePageStandards = () => {
   const navigate = useNavigate();
@@ -45,8 +48,10 @@ const CreatePageStandards = () => {
   const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
   const [offlineDraft, setOfflineDraft] = useState(false);
+  const [generatePopup, setGeneratePopup] = useState(false);
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = formData.procedureRows.map((row, i) =>
@@ -57,6 +62,57 @@ const CreatePageStandards = () => {
       ...prevFormData,
       procedureRows: updatedProcedureRows,
     }));
+  };
+
+  const openSaveAs = () => {
+    if (!titleSet) {
+      toast.warn("Please fill in at least the title field before saving.", {
+        closeButton: false,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+      return;
+    }
+    setIsSaveAsModalOpen(true);
+  };
+
+  const closeSaveAs = () => {
+    setIsSaveAsModalOpen(false);
+  };
+
+  const confirmSaveAs = (newTitle) => {
+    // apply the new title, clear loadedID, then save
+    const me = userIDRef.current;
+    const newFormData = {
+      ...formDataRef.current,        // your current formData
+      title: newTitle,             // override title
+    };
+
+    setFormData(newFormData);
+    formDataRef.current = newFormData;
+
+    setUserIDs([me]);
+    userIDsRef.current = [me];
+
+    loadedIDRef.current = '';
+    setLoadedID('');
+
+    handleSave();
+    loadData(loadedIDRef.current);
+
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("New Draft Successfully Loaded", {
+      closeButton: false,
+      autoClose: 1500, // 1.5 seconds
+      style: {
+        textAlign: 'center'
+      }
+    });
+
+    setIsSaveAsModalOpen(false);
   };
 
   const openShare = () => {
@@ -252,20 +308,35 @@ const CreatePageStandards = () => {
 
   const handleClick = () => {
     const newErrors = validateForm();
-    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error("Please fill in all required fields marked by a *", {
-        closeButton: true,
-        autoClose: 800, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
+      if (titleSet)
+        setGeneratePopup(true);
+
+      if (!titleSet) {
+        toast.error("Please fill in a title", {
+          closeButton: true,
+          autoClose: 800, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
     } else {
       handleGeneratePDF();  // Call your function when the form is valid
     }
   };
+
+  const cancelGenerate = () => {
+
+    const newErrors = validateForm();
+    setErrors(newErrors);
+    setGeneratePopup(false);
+  }
+
+  const closeGenerate = () => {
+    setGeneratePopup(false);
+  }
 
   const handlePubClick = () => {
     const newErrors = validateForm();
@@ -341,7 +412,6 @@ const CreatePageStandards = () => {
     title: "",
     documentType: useParams().type,
     aim: "The aim of the document is ",
-    scope: "",
     date: new Date().toLocaleDateString(),
     version: "1",
     rows: [
@@ -350,23 +420,26 @@ const CreatePageStandards = () => {
       { auth: "Approver", name: "", pos: "", num: 3 },
     ],
     standard: [{
-      id: uuidv4(), nr: 4.1, mainSection: "", details: [{ id: uuidv4(), nr: "4.1.1", minRequirement: "", reference: "", notes: "" }]
+      id: uuidv4(), nr: 1, mainSection: "", details: [{ id: uuidv4(), nr: "1.1", minRequirement: "", reference: "", notes: "" }]
     }],
     abbrRows: [],
     termRows: [],
     chapters: [],
     references: [],
-    PPEItems: [],
-    HandTools: [],
-    Equipment: [],
-    MobileMachine: [],
-    Materials: [],
+    supportingDocuments: [],
     pictures: [],
     reviewDate: 0,
     changeTable: [
       { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
     ],
   });
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const newErrors = validateFormRevised();
+      setErrors(newErrors);
+    }
+  }, [formData])
 
   const formDataRef = useRef(formData);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
@@ -623,6 +696,14 @@ const CreatePageStandards = () => {
     if (formData.abbrRows.length === 0) newErrors.abbrs = true;
     if (formData.termRows.length === 0) newErrors.terms = true;
 
+    if (formData.standard.length === 0) {
+      newErrors.standard = true;
+    } else {
+      formData.standard.forEach((row, index) => {
+        if (!row.mainSection) newErrors.standard = true;
+      });
+    }
+
     if (formData.rows.length === 0) {
       newErrors.signs = true;
     } else {
@@ -634,13 +715,21 @@ const CreatePageStandards = () => {
     return newErrors;
   };
 
+  const validateFormRevised = () => {
+    const newErrors = errors;
+    if (!formData.reviewDate) { newErrors.reviewDate = true } else {
+      newErrors.reviewDate = false;
+    };
+    return newErrors;
+  };
+
   // Authentication check
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
       if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/FrontendDMS/403");
+        navigate("/403");
       }
 
       setUserID(decodedToken.userId);
@@ -850,6 +939,9 @@ const CreatePageStandards = () => {
       azureFN: ""
     };
 
+    if (generatePopup) {
+      setGeneratePopup(false);
+    }
     const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
     setLoading(true);
 
@@ -866,7 +958,7 @@ const CreatePageStandards = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docx`);
+      saveAs(blob, `${documentName}.docm`);
       setLoading(false);
       //saveAs(blob, `${documentName}.pdf`);
     } catch (error) {
@@ -877,22 +969,18 @@ const CreatePageStandards = () => {
 
   const handlePublish = async () => {
     const dataToStore = {
-      usedAbbrCodes,       // your current state values
+      usedAbbrCodes,
       usedTermCodes,
-      usedPPEOptions,
-      usedHandTools,
-      usedEquipment,
-      usedMobileMachine,
-      usedMaterials,
       formData,
       userID,
-      azureFN: ""
+      azureFN: "",
+      draftID: loadedIDRef.current
     };
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-document`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/publish-standard`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -912,6 +1000,9 @@ const CreatePageStandards = () => {
       });
 
       setLoading(false);
+      setTimeout(() => {
+        navigate('/FrontendDMS/generatedStandardFiles'); // Redirect to the generated file info page
+      }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -945,7 +1036,7 @@ const CreatePageStandards = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedStandardFiles')}>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                 <span className="button-text">Published Documents</span>
@@ -977,11 +1068,11 @@ const CreatePageStandards = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+              <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} title="Save As">
+              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
                 {/* base floppy-disk, full size */}
                 <FontAwesomeIcon icon={faSave} />
                 {/* pen, shrunk & nudged down/right into corner */}
@@ -1006,7 +1097,7 @@ const CreatePageStandards = () => {
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
             </div>
           </div>
 
@@ -1036,7 +1127,7 @@ const CreatePageStandards = () => {
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -1053,12 +1144,13 @@ const CreatePageStandards = () => {
             </div>
           </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+          <StandardsTable formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+          <SupportingDocumentTable formData={formData} setFormData={setFormData} />
           <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
-          <StandardsTable formData={formData} setFormData={setFormData} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1091,6 +1183,8 @@ const CreatePageStandards = () => {
             </button>
           </div>
         </div>
+        {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
+        {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
       </div>
       <ToastContainer />
     </div>

@@ -681,6 +681,11 @@ td.jraStatus {
     color: #aaa;
 }
 
+.jra-te-label {
+    text-align: left !important;
+    display: block;
+}
+
 .procFineText {
     font-size: 11px;
     font-weight: normal;

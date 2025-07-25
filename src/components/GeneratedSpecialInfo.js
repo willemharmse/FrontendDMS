@@ -10,7 +10,7 @@ import "./GeneratedFileInfo.css";
 import PopupMenuPubFiles from "./PublishedDocuments/PopupMenuPubFiles";
 import TopBar from "./Notifications/TopBar";
 
-const GeneratedFileInfo = () => {
+const GeneratedSpecialInfo = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
@@ -58,7 +58,7 @@ const GeneratedFileInfo = () => {
 
     // Fetch files from the API
     const fetchFiles = async () => {
-        const route = `/api/fileGenDocs/${userID}`;
+        const route = `/api/fileGenDocs/special/${userID}`;
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
                 headers: {
@@ -82,7 +82,7 @@ const GeneratedFileInfo = () => {
         try {
             setLoading(true);
 
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/file//generated/download/${fileId}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/file/generatedSpecial/download/${fileId}`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -193,7 +193,6 @@ const GeneratedFileInfo = () => {
                                 <th className="gen-th">Document Type</th>
                                 <th className="gen-th">Version</th>
                                 <th className="gen-th">Published By</th>
-                                <th className="gen-th">Review Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -209,6 +208,7 @@ const GeneratedFileInfo = () => {
                                             {(hoveredFileId === file._id) && (
                                                 <PopupMenuPubFiles
                                                     file={file}
+                                                    type={"dont"}
                                                     isOpen={hoveredFileId === file._id}
                                                     openDownloadModal={downloadFile}
                                                     setHoveredFileId={setHoveredFileId}
@@ -220,7 +220,6 @@ const GeneratedFileInfo = () => {
                                     <td className="gen-stat  gen-point">{file.formData.documentType}</td>
                                     <td className="gen-ver  gen-point">{file.formData.version}</td>
                                     <td className="gen-pub  gen-point">{file.publisher.username}</td>
-                                    <td className="gen-rev  gen-point">{formatDate(file.reviewDate)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -231,4 +230,4 @@ const GeneratedFileInfo = () => {
     );
 };
 
-export default GeneratedFileInfo;
+export default GeneratedSpecialInfo;

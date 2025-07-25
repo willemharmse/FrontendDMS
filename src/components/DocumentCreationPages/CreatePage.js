@@ -19,12 +19,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faL } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
 import SaveAsPopup from "../Popups/SaveAsPopup";
+import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
+import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ const CreatePage = () => {
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
   const [offlineDraft, setOfflineDraft] = useState(false);
+  const [generatePopup, setGeneratePopup] = useState(false);
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = formData.procedureRows.map((row, i) =>
@@ -309,20 +312,34 @@ const CreatePage = () => {
 
   const handleClick = () => {
     const newErrors = validateForm();
-    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error("Please fill in all required fields marked by a *", {
-        closeButton: true,
-        autoClose: 800, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
+      if (titleSet)
+        setGeneratePopup(true);
+
+      if (!titleSet) {
+        toast.error("Please fill in a title", {
+          closeButton: true,
+          autoClose: 800, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
     } else {
       handleGeneratePDF();  // Call your function when the form is valid
     }
   };
+
+  const cancelGenerate = () => {
+    const newErrors = validateForm();
+    setErrors(newErrors);
+    setGeneratePopup(false);
+  }
+
+  const closeGenerate = () => {
+    setGeneratePopup(false);
+  }
 
   const handlePubClick = () => {
     const newErrors = validateForm();
@@ -368,7 +385,15 @@ const CreatePage = () => {
       setUsedMobileMachines(storedData.usedMobileMachine || []);
       setUsedMaterials(storedData.usedMaterials || []);
       setUserIDs(storedData.userIDs || []);
-      setFormData(storedData.formData || {});
+
+      const rawForm = storedData.formData || {};
+      const normalizedForm = {
+        ...rawForm,
+        supportingDocuments: Array.isArray(rawForm.supportingDocuments)
+          ? rawForm.supportingDocuments
+          : []
+      };
+      setFormData(normalizedForm);
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
@@ -419,6 +444,7 @@ const CreatePage = () => {
     MobileMachine: [],
     Materials: [],
     pictures: [],
+    supportingDocuments: [],
     reviewDate: 0,
     changeTable: [
       { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
@@ -427,7 +453,7 @@ const CreatePage = () => {
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      const newErrors = validateForm();
+      const newErrors = validateFormRevised();
       setErrors(newErrors);
     }
   }, [formData])
@@ -709,6 +735,14 @@ const CreatePage = () => {
     return newErrors;
   };
 
+  const validateFormRevised = () => {
+    const newErrors = errors;
+    if (!formData.reviewDate) { newErrors.reviewDate = true } else {
+      newErrors.reviewDate = false;
+    };
+    return newErrors;
+  };
+
   // Authentication check
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -925,6 +959,9 @@ const CreatePage = () => {
       azureFN: ""
     };
 
+    if (generatePopup) {
+      setGeneratePopup(false);
+    }
     const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
     setLoading(true);
 
@@ -1123,7 +1160,7 @@ const CreatePage = () => {
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -1146,11 +1183,12 @@ const CreatePage = () => {
           <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
           <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
           <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+          <SupportingDocumentTable formData={formData} setFormData={setFormData} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1186,6 +1224,7 @@ const CreatePage = () => {
           </div>
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={true} />)}
+        {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
       </div>
       <ToastContainer />
     </div>

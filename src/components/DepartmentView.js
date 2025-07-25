@@ -60,7 +60,7 @@ const DepartmentView = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
+        navigate('/');
     };
 
     useEffect(() => {
@@ -93,7 +93,7 @@ const DepartmentView = () => {
             setloggedInUserId(decodedToken.userId);
 
             if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
     }, [navigate]);
@@ -227,7 +227,7 @@ const DepartmentView = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-dept">Department Management</p>
+                        <p className="logo-text-dept">Manage Departments</p>
                     </div>
 
                     <div className="filter-fih">

@@ -29,7 +29,7 @@ const ControlAttributes = () => {
             setRole(decodedToken.role);
 
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
     }, [navigate]);
@@ -110,7 +110,11 @@ const ControlAttributes = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Site Controls</p>
+                        <p className="logo-text-um">Risk Management</p>
+                    </div>
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{`Control Management`}</p>
                     </div>
                 </div>
             )}
@@ -136,7 +140,7 @@ const ControlAttributes = () => {
                 </div>
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper">
-                        <label className="risk-control-label">Site Controls and Attributes</label>
+                        <label className="risk-control-label">Control Management</label>
                         <FontAwesomeIcon icon={faSearch} title="Search" className="top-right-button-control-att" onClick={handleSearchClick} />
                         <FontAwesomeIcon icon={faDownload} title="Download Excel" className="top-right-button-control-att-2" onClick={handleDownload} />
                         {searchPopupVisible && (

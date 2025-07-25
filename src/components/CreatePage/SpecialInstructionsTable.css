@@ -1,0 +1,44 @@
+.siNr {
+    width: 5%;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.siMain {
+    width: 90%;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.siSub {
+    width: 5%;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.si-chapter-card {
+    padding: 15px;
+    border-radius: 8px;
+    width: 98%;
+    background: #F2F2F2;
+}
+
+.action-cell-si {
+    display: table-cell !important;
+    vertical-align: middle;
+    /* center the cell’s contents vertically */
+    text-align: center;
+    padding: 7px;
+    /* optional—adds some breathing room */
+    /* if you had a forced border reset */
+}
+
+/* Inner flex container to center the buttons */
+.action-buttons-si {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+    height: 100%;
+    /* fills the full height of the td */
+}

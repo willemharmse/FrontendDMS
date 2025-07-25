@@ -19,8 +19,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "./Notifications/TopBarDD";
+import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
@@ -46,7 +47,40 @@ const ReviewPage = () => {
     const [change, setChange] = useState("");
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
+    const type = useParams().type;
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
+    const [formData, setFormData] = useState({
+        title: "",
+        documentType: type,
+        aim: "The aim of the document is ",
+        scope: "",
+        date: new Date().toLocaleDateString(),
+        version: "1",
+        rows: [
+            { auth: "Author", name: "", pos: "", num: 1 },
+            { auth: "Reviewer", name: "", pos: "", num: 2 },
+            { auth: "Approver", name: "", pos: "", num: 3 },
+        ],
+        procedureRows: [{
+            nr: 1, mainStep: "", SubStep: "", accountable: "", responsible: "", prevStep: "-"
+        }],
+        abbrRows: [],
+        termRows: [],
+        chapters: [],
+        references: [],
+        PPEItems: [],
+        HandTools: [],
+        Equipment: [],
+        MobileMachine: [],
+        Materials: [],
+        pictures: [],
+        supportingDocuments: [],
+        reviewDate: 0,
+        changeTable: [
+            { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
+        ],
+    });
 
     useEffect(() => {
         if (fileID) {
@@ -64,73 +98,30 @@ const ReviewPage = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
-    };
-
     const updateRow = (index, field, value) => {
-        const updatedProcedureRows = [...formData.procedureRows];
-        updatedProcedureRows[index][field] = value;  // Update the specific field in the row
+        const updatedProcedureRows = formData.procedureRows.map((row, i) =>
+            i === index ? { ...row, [field]: value } : row
+        );
 
-        setFormData({
-            ...formData,
-            procedureRows: updatedProcedureRows,  // Update the procedure rows in state
-        });
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            procedureRows: updatedProcedureRows,
+        }));
     };
-
-    useEffect(() => {
-        const scrollableBox = document.querySelector(".scrollable-box");
-
-        const handleScroll = () => {
-            if (scrollableBox.scrollTop > 10) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
-        };
-
-        if (scrollableBox) {
-            scrollableBox.addEventListener("scroll", handleScroll);
-        }
-
-        return () => {
-            if (scrollableBox) {
-                scrollableBox.removeEventListener("scroll", handleScroll);
-            }
-        };
-    }, []);
-
-    const openLoadPopup = () => setLoadPopupOpen(true);
-    const closeLoadPopup = () => setLoadPopupOpen(false);
 
     const handleSave = () => {
         if (formData.title !== "") {
-            if (loadedID === '') {
-                saveData();
+            saveData();
 
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully saved", {
-                    closeButton: false,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-            }
-            else if (loadedID !== '') {
-                updateData();
-
-                toast.dismiss();
-                toast.clearWaitingQueue();
-                toast.success("Draft has been successfully updated", {
-                    closeButton: false,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-            }
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.success("Draft has been successfully saved", {
+                closeButton: false,
+                autoClose: 1500, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
         }
         else {
             toast.dismiss();
@@ -144,16 +135,51 @@ const ReviewPage = () => {
         }
     };
 
+    useEffect(() => {
+        if (!autoSaveInterval.current && formData.title.trim() !== "") {
+            console.log("✅ Auto-save interval set");
+
+            autoSaveInterval.current = setInterval(() => {
+                console.log("⏳ Auto-saving...");
+                autoSaveDraft();
+            }, 120000); // Auto-save every 30 seconds
+        }
+
+        return () => {
+            if (autoSaveInterval.current) {
+                clearInterval(autoSaveInterval.current);
+                autoSaveInterval.current = null;
+                console.log("🧹 Auto-save interval cleared");
+            }
+        };
+    }, [formData.title]);
+
+    const autoSaveDraft = () => {
+        saveData();
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("Draft has been auto-saved", {
+            closeButton: true,
+            style: {
+                textAlign: 'center'
+            }
+        });
+    };
+
     const addPicRow = () => {
-        setFormData({
-            ...formData,
-            pictures: [
-                ...formData.pictures,
-                {
-                    pic1: '',
-                    pic2: ''
-                }
-            ]
+        setFormData((prevData) => {
+            const totalFigures = prevData.pictures.length * 2 + 1; // Count total fields
+
+            return {
+                ...prevData,
+                pictures: [
+                    ...prevData.pictures,
+                    {
+                        pic1: `Figure 1.${totalFigures}: `, // Assign next available number
+                        pic2: `Figure 1.${totalFigures + 1}: `
+                    }
+                ]
+            };
         });
     };
 
@@ -176,53 +202,26 @@ const ReviewPage = () => {
 
     const saveData = async () => {
         const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            usedPPEOptions,
-            usedHandTools,
-            usedEquipment,
-            usedMobileMachine,
-            usedMaterials,
-            formData,
-            userID
+            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+            usedTermCodes: usedTermCodesRef.current,
+            usedPPEOptions: usedPPEOptionsRef.current,
+            usedHandTools: usedHandToolsRef.current,
+            usedEquipment: usedEquipmentRef.current,
+            usedMobileMachine: usedMobileMachineRef.current,
+            usedMaterials: usedMaterialsRef.current,
+            formData: formDataRef.current
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/procedure/save/${fileID}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
                 body: JSON.stringify(dataToStore),
             });
             const result = await response.json();
-
-            if (result.id) {  // Ensure we receive an ID from the backend
-                setLoadedID(result.id);  // Update loadedID to track the saved document
-            }
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    };
-
-    const updateData = async () => {
-        const dataToStore = {
-            usedAbbrCodes,       // your current state values
-            usedTermCodes,
-            usedPPEOptions,
-            usedHandTools,
-            usedEquipment,
-            usedMobileMachine,
-            usedMaterials,
-            formData,
-        };
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/modifySafe/${loadedID}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToStore),
-            });
-            const result = await response.json();
-            console.log(result.message);
         } catch (error) {
             console.error('Error saving data:', error);
         }
@@ -244,32 +243,34 @@ const ReviewPage = () => {
         }
     };
 
-    const loadData = async (fileId) => {
+    const loadData = async (fileID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api//fileGenDocs/getFile/${fileId}`);
-            const storedData = await response.json();
+            const response = await fetch(`${process.env.REACT_APP_URL}/api//fileGenDocs/getFile/${fileID}`);
+            const data = await response.json();
+            const storedData = data.files;
             // Update your states as needed:
-            setUsedAbbrCodes(storedData.files.usedAbbrCodes || []);
-            setUsedTermCodes(storedData.files.usedTermCodes || []);
-            setUsedPPEOptions(storedData.files.usedPPEOptions || []);
-            setUsedHandTools(storedData.files.usedHandTools || []);
-            setUsedEquipment(storedData.files.usedEquipment || []);
-            setUsedMobileMachines(storedData.files.usedMobileMachine || []);
-            setUsedMaterials(storedData.files.usedMaterials || []);
-            setFormData(storedData.files.formData || {});
+            setUsedAbbrCodes(storedData.usedAbbrCodes || []);
+            setUsedTermCodes(storedData.usedTermCodes || []);
+            setUsedPPEOptions(storedData.usedPPEOptions || []);
+            setUsedHandTools(storedData.usedHandTools || []);
+            setUsedEquipment(storedData.usedEquipment || []);
+            setUsedMobileMachines(storedData.usedMobileMachine || []);
+            setUsedMaterials(storedData.usedMaterials || []);
+            const rawForm = storedData.formData || {};
+            const normalizedForm = {
+                ...rawForm,
+                supportingDocuments: Array.isArray(rawForm.supportingDocuments)
+                    ? rawForm.supportingDocuments
+                    : []
+            };
+            setFormData(normalizedForm);
             setFormData(prev => ({ ...prev }));
-            setAzureFN(storedData.files.azureFileName || "");
+            setTitleSet(true);
+            setAzureFN(storedData.azureFileName || "");
         } catch (error) {
             console.error('Error loading data:', error);
         }
     };
-
-    const capitalizeWords = (text) =>
-        text
-            .toLowerCase()
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
 
     const updateRefRow = (index, field, value) => {
         const updatedRefRows = [...formData.references];
@@ -281,39 +282,58 @@ const ReviewPage = () => {
         });
     };
 
-    const [formData, setFormData] = useState({
-        title: "",
-        documentType: "Procedure",
-        aim: "The aim of the document is ",
-        scope: "",
-        date: new Date().toLocaleDateString(),
-        version: "1",
-        rows: [
-            { auth: "Author", name: "", pos: "", num: 1 },
-            { auth: "Reviewer", name: "", pos: "", num: 2 },
-            { auth: "Approver", name: "", pos: "", num: 3 },
-        ],
-        procedureRows: [],
-        abbrRows: [],
-        termRows: [],
-        chapters: [],
-        references: [],
-        PPEItems: [],
-        HandTools: [],
-        Equipment: [],
-        MobileMachine: [],
-        Materials: [],
-        pictures: [],
-        reviewDate: 0,
-        changeTable: [
-            { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
-        ],
-    });
+    const updateRefRows = (newRef) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            references: newRef, // Update procedureRows with new data
+        }));
+    };
 
+    const formDataRef = useRef(formData);
+    const usedAbbrCodesRef = useRef(usedAbbrCodes);
+    const usedTermCodesRef = useRef(usedTermCodes);
+    const usedPPEOptionsRef = useRef(usedPPEOptions);
+    const usedHandToolsRef = useRef(usedHandTools);
+    const usedEquipmentRef = useRef(usedEquipment);
+    const usedMobileMachineRef = useRef(usedMobileMachine);
+    const usedMaterialsRef = useRef(usedMaterials);
+
+    useEffect(() => {
+        usedAbbrCodesRef.current = usedAbbrCodes;
+    }, [usedAbbrCodes]);
+
+    useEffect(() => {
+        usedTermCodesRef.current = usedTermCodes;
+    }, [usedTermCodes]);
+
+    useEffect(() => {
+        usedPPEOptionsRef.current = usedPPEOptions;
+    }, [usedPPEOptions]);
+
+    useEffect(() => {
+        usedHandToolsRef.current = usedHandTools;
+    }, [usedHandTools]);
+
+    useEffect(() => {
+        usedMobileMachineRef.current = usedMobileMachine;
+    }, [usedMobileMachine]);
+
+    useEffect(() => {
+        usedMaterialsRef.current = usedMaterials;
+    }, [usedMaterials]);
+
+    useEffect(() => {
+        usedEquipmentRef.current = usedEquipment;
+    }, [usedEquipment]);
+
+    useEffect(() => {
+        formDataRef.current = formData;
+    }, [formData]);
 
     const [history, setHistory] = useState([]);
     const timeoutRef = useRef(null);
     const previousFormData = useRef(formData);
+    const [redoHistory, setRedoHistory] = useState([]);
 
     // Function to save to history with a limit
     const saveToHistory = useCallback(() => {
@@ -329,7 +349,6 @@ const ReviewPage = () => {
         };
 
         setHistory((prev) => {
-            console.log(JSON.stringify(prev[prev.length - 1]) + "\n\n\n\n\n\n\n\n\n" + JSON.stringify(currentState))
             if (prev.length > 0 && JSON.stringify(prev[prev.length - 1]) === JSON.stringify(currentState)) {
                 return prev; // Prevent duplicate saves
             }
@@ -346,6 +365,8 @@ const ReviewPage = () => {
     const undoLastChange = () => {
         if (history.length > 1) {
             const lastState = history[history.length - 2]; // Get the last valid state
+            const currentState = history[history.length - 1];
+
             // Restore the previous state
             setFormData(lastState.formData);
             setUsedAbbrCodes(lastState.usedAbbrCodes);
@@ -357,23 +378,59 @@ const ReviewPage = () => {
             setUsedMaterials(lastState.usedMaterials);
 
             setHistory((prev) => prev.slice(0, -1)); // Remove last history entry
+            setRedoHistory((prev) => [...prev, currentState]);
+
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.success("Undo successful!", {
-                closeButton: false,
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
         } else {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.warn("No changes to undo.", {
-                closeButton: false,
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
+        }
+    };
+
+    const redoChange = () => {
+        if (redoHistory.length > 0) {
+            const nextState = redoHistory[redoHistory.length - 1];
+
+            // Apply redo state
+            setFormData(nextState.formData);
+            setUsedAbbrCodes(nextState.usedAbbrCodes);
+            setUsedTermCodes(nextState.usedTermCodes);
+            setUsedPPEOptions(nextState.usedPPEOptions);
+            setUsedHandTools(nextState.usedHandTools);
+            setUsedEquipment(nextState.usedEquipment);
+            setUsedMobileMachines(nextState.usedMobileMachine);
+            setUsedMaterials(nextState.usedMaterials);
+
+            // Push back into history
+            setHistory((prev) => [...prev, nextState]);
+            setRedoHistory((prev) => prev.slice(0, -1));
+
+            toast.success("Redo successful!", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
+        } else {
+            toast.warn("Nothing to redo.", {
+                closeButton: true,
+                autoClose: 800,
+                style: { textAlign: 'center' }
+            });
         }
     };
 
@@ -419,7 +476,7 @@ const ReviewPage = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -436,13 +493,6 @@ const ReviewPage = () => {
             setTitleSet(true); // Enable auto-save only after title is entered
         }
     };
-
-    useEffect(() => {
-        if (userID) {
-            console.log("User ID is set:", userID);
-            // Perform actions that depend on userID here
-        }
-    }, [userID]);
 
     // Handle input changes for the table rows
     const handleRowChange = (e, index, field) => {
@@ -476,11 +526,12 @@ const ReviewPage = () => {
 
             if (!isValid) {
                 toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
-                    closeButton: false,
+                    closeButton: true,
+                    autoClose: 800, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
-                })
+                });
 
                 // Revert the change if invalid
                 rowToChange.auth = previousAuth;  // Revert to previous auth
@@ -501,6 +552,12 @@ const ReviewPage = () => {
         }));
     };
 
+    useEffect(() => {
+        if (userID) {
+            console.log("User ID is set:", userID);
+            // Perform actions that depend on userID here
+        }
+    }, [userID]);
 
     // Add a new row to the table
     const addRow = () => {
@@ -528,7 +585,8 @@ const ReviewPage = () => {
                     SubStep: "",
                     discipline: "Engineering",       // Default value for discipline
                     accountable: "",      // Default value for accountable
-                    responsible: ""
+                    responsible: "",
+                    prevStep: "-",
                 }
             ]
         });
@@ -538,7 +596,7 @@ const ReviewPage = () => {
         if (formData.procedureRows.length <= 1) {
             toast.warn("At least one procedure step is required.", {
                 autoClose: 800,
-                closeButton: false,
+                closeButton: true,
                 style: { textAlign: "center" },
             });
             return;
@@ -552,6 +610,21 @@ const ReviewPage = () => {
             ...formData,
             procedureRows: newRows,
         });
+    };
+
+
+    const updateProcedureRows = (newProcedureRows) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            procedureRows: newProcedureRows, // Update procedureRows with new data
+        }));
+    };
+
+    const updateSignatureRows = (newSignatureRows) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            rows: newSignatureRows, // Update procedureRows with new data
+        }));
     };
 
     const addRefRow = () => {
@@ -589,11 +662,12 @@ const ReviewPage = () => {
             formData.rows.filter((row) => row.auth === rowToRemove.auth).length === 1
         ) {
             toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
-                closeButton: false,
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
             return;
         }
 
@@ -606,7 +680,7 @@ const ReviewPage = () => {
 
     // Send data to backend to generate a Word document
     const handleGeneratePDF = async () => {
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+        const documentName = (formData.title) + ' ' + formData.documentType;
 
         const updatedChangeTable = [...formData.changeTable];
 
@@ -682,59 +756,6 @@ const ReviewPage = () => {
         }
     };
 
-    const handleGenerateTex = async () => {
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/doc/generate-latex`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) throw new Error("Failed to generate document");
-
-            const blob = await response.blob();
-            saveAs(blob, `output.pdf`);
-            setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
-        } catch (error) {
-            console.error("Error generating document:", error);
-            setLoading(false);
-        }
-    };
-
-    const updateProcedureRows = (newProcedureRows) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            procedureRows: newProcedureRows, // Update procedureRows with new data
-        }));
-    };
-
-    const handleGeneratePPTX = async () => {
-        const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/ppt/generate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) throw new Error("Failed to generate document");
-
-            const blob = await response.blob();
-            saveAs(blob, `output.png`);
-            setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
-        } catch (error) {
-            console.error("Error generating document:", error);
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="file-create-container">
             {isSidebarVisible && (
@@ -760,8 +781,22 @@ const ReviewPage = () => {
             {/* Main content */}
             <div className="main-box-create">
                 <div className="top-section-create-page">
-                    <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                    <div className="icons-container-risk-create-page">
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                        </div>
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -785,7 +820,7 @@ const ReviewPage = () => {
                         </div>
                     </div>
 
-                    <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} />
+                    <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
                     <div className="input-row">
                         <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -807,11 +842,28 @@ const ReviewPage = () => {
                     <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
                     <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
                     <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
-                    <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-                    <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} />
+                    <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+                    <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+                    <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
                     <ChapterTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <SupportingDocumentTable formData={formData} setFormData={setFormData} />
+
+                    <div className={`input-row`} style={{ marginTop: "10px" }}>
+                        <div className={`input-box-3-review ${errors.reviewDate ? "error-create" : ""}`}>
+                            <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
+                            <input
+                                type="number"
+                                name="reviewDate"
+                                className="aim-textarea cent-create font-fam"
+                                value={formData.reviewDate}
+                                onChange={handleInputChange}
+                                placeholder="Insert the review period in months" // Optional placeholder text
+                            />
+                        </div>
+                    </div>
+
+                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row">
                         <div className={`input-box-aim-cp ${errors.change ? "error-create" : ""}`}>
@@ -827,28 +879,6 @@ const ReviewPage = () => {
                             />
                         </div>
                     </div>
-
-                    <div className={`input-row`}>
-                        <div className={`input-box-3-review ${errors.reviewDate ? "error-create" : ""}`}>
-                            <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-                            <input
-                                type="number"
-                                name="reviewDate"
-                                className="aim-textarea cent-create font-fam"
-                                value={formData.reviewDate}
-                                onChange={handleInputChange}
-                                placeholder="Insert the review period in months" // Optional placeholder text
-                            />
-                        </div>
-                    </div>
-
-                    <div className="input-row">
-                        <div className={`input-box-annexures`}>
-                            <h3 className="font-fam-labels">Appendices</h3>
-                        </div>
-                    </div>
-
-                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons">
                         {/* Generate File Button */}
