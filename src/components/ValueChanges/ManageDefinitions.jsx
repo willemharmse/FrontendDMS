@@ -120,53 +120,54 @@ const ManageDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermData,
                     <button className="manDefs-popup-close" onClick={closeFunction} title="Close Popup">×</button>
                 </div>
 
-                <div className="manDefs-popup-group">
-                    <label className="manDefs-popup-label">Existing Term</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manDefs-select remove-default-styling" value={selectedDefinition} onChange={handleSelectChange}>
-                            <option value="">Select Existing Term</option>
-                            {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
-                                <option key={term.term} value={term.term}>{term.term}</option>
-                            ))}
-                        </select>
+                <div className="term-popup-scrollable">
+                    <div className="manDefs-popup-group">
+                        <label className="manDefs-popup-label">Existing Term</label>
+                        <div className="abbr-popup-page-select-container">
+                            <select className="manDefs-select remove-default-styling" value={selectedDefinition} onChange={handleSelectChange}>
+                                <option value="">Select Existing Term</option>
+                                {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
+                                    <option key={term.term} value={term.term}>{term.term}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <div className="manDefs-popup-group">
-                    <label className="manDefs-popup-label">New Term</label>
-                    <input spellcheck="true" className="manDefs-input" placeholder="Insert New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
-                </div>
-
-                <div className="manDefs-popup-group">
-                    <label className="manDefs-popup-label">New Term Definition</label>
-                    <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
-                </div>
-
-                <div className="abbr-popup-group">
-                    <label className="abbr-popup-label">Approver:</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select
-                            spellcheck="true"
-                            type="text"
-                            value={approver}
-                            onChange={(e) => setApprover(e.target.value)}
-                            className="abbr-popup-select"
-                            required
-                            placeholder="Select Approver"
-                        >
-                            <option value="">Select Approver</option>
-                            {usersList.map((value, index) => (
-                                <option key={index} value={value.id || value._id || value}>
-                                    {value.username || value.label || value}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="manDefs-popup-group">
+                        <label className="manDefs-popup-label">New Term</label>
+                        <input spellcheck="true" className="manDefs-input" placeholder="Insert New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                     </div>
+
+                    <div className="manDefs-popup-group">
+                        <label className="manDefs-popup-label">New Term Definition</label>
+                        <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                    </div>
+
+                    <div className="manDefs-popup-group">
+                        <label className="abbr-popup-label">Approver:</label>
+                        <div className="abbr-popup-page-select-container">
+                            <select
+                                spellcheck="true"
+                                type="text"
+                                value={approver}
+                                onChange={(e) => setApprover(e.target.value)}
+                                className="abbr-popup-select"
+                                required
+                                placeholder="Select Approver"
+                            >
+                                <option value="">Select Approver</option>
+                                {usersList.map((value, index) => (
+                                    <option key={index} value={value.id || value._id || value}>
+                                        {value.username || value.label || value}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {message && <div className="manDefs-message-manage">{message}</div>}
+                    {error && <div className="manDefs-error-message-manage">{error}</div>}
                 </div>
-
-                {message && <div className="manDefs-message-manage">{message}</div>}
-                {error && <div className="manDefs-error-message-manage">{error}</div>}
-
                 <div className="manDefs-buttons">
                     <button className="manDefs-update-button" onClick={handleUpdate}>
                         Update

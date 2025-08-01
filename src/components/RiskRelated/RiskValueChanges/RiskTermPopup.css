@@ -23,6 +23,15 @@
     width: 90%;
 }
 
+.term-popup-scrollable {
+    max-height: 450px;
+    /* adjust as needed */
+    overflow-y: auto;
+    /* gives space for scrollbar */
+    margin-bottom: 15px;
+    padding-top: 10px;
+}
+
 .term-popup-header {
     transform: translateY(-30%);
     display: flex;
@@ -36,7 +45,6 @@
 
 .term-popup-group {
     margin-bottom: 10px;
-    transform: translateY(-4%);
     padding: 20px 0;
     background-color: white;
     border-radius: 5px;
@@ -115,6 +123,8 @@
 .term-popup-text-area {
     width: 89%;
     padding: 0.8rem;
+    field-sizing: content;
+    min-height: 70px;
     border: 2px solid #bdc3c7;
     border-radius: 6px;
     font-size: 14px;

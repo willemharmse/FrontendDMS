@@ -221,8 +221,10 @@
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: auto;
     cursor: grab;
     scrollbar-width: auto !important;
+    max-height: 600px;
     /* Firefox */
 }
 
@@ -230,6 +232,7 @@
     /* show it in Chrome/Safari */
     display: block !important;
     height: 12px;
+    width: 5px;
     /* adjust thickness if you like */
 }
 

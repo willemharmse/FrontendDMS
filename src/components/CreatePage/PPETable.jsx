@@ -3,17 +3,21 @@ import "./PPETable.css"; // Add styling here
 import PPEPopup from "../ValueChanges/PPEPopup.jsx";
 import ManagePPE from "../ValueChanges/ManagePPE.jsx";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedPPE from "../ValueChanges/ModifySuggestedPPE.jsx";
 
 const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [ppeData, setPPEData] = useState([]);
+    const [originalData, setOriginalData] = useState([])
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedPPE, setSelectedPPE] = useState(new Set(usedPPEOptions));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [ppeUpdate, setPPEUpdate] = useState("");
+    const [updatePopup, setUpdatePopup] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -25,6 +29,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             const data = await response.json();
 
             setPPEData(data.ppe);
+            setOriginalData(data.ppe);
             localStorage.setItem('cachedPpeOptions', JSON.stringify(data.ppe));
         } catch (error) {
             console.error("Error fetching equipment:", error);
@@ -76,6 +81,48 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
             ),
         }));
     };
+
+    const handleUpdatePPE = (newPPEObj, oldPPE) => {
+        const updatedCode = newPPEObj.ppe;
+
+        // 1. Remove the old abbreviation from usedAbbrCodes
+        setUsedPPEOptions(prev =>
+            prev.filter(code => code !== oldPPE)
+        );
+
+        // 2. Remove from selectedAbbrs and add the new one
+        setSelectedPPE(prev => {
+            const updated = new Set(prev);
+            updated.delete(oldPPE);
+            updated.add(updatedCode);
+            return updated;
+        });
+
+        // 3. Replace the old row in abbrRows with the updated one
+        setFormData(prev => ({
+            ...prev,
+            PPEItems: prev.PPEItems.map(row =>
+                row.ppe === oldPPE
+                    ? newPPEObj
+                    : row
+            ),
+        }));
+
+        // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+        setUsedPPEOptions(prev => [...prev, updatedCode]);
+    };
+
+    const openUpdate = (ppe) => {
+        setPPEUpdate(ppe);
+
+        setUpdatePopup(true);
+    }
+
+    const closeUpdate = () => {
+        setPPEUpdate("");
+
+        setUpdatePopup(false);
+    }
 
     useEffect(() => {
         setSelectedPPE(new Set(usedPPEOptions));
@@ -215,7 +262,7 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                                                                     onChange={() => handleCheckboxChange(item.ppe)}
                                                                 />
                                                             </td>
-                                                            <td>{item.ppe}</td>
+                                                            <td style={{ whiteSpace: "pre-wrap" }}>{item.ppe}</td>
                                                         </tr>
                                                     ))
                                             ) : (
@@ -239,35 +286,50 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     <table className="vcr-table font-fam table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="col-ppe-ppe">PPE</th>
-                                <th className="col-ppe-act">Action</th>
+                                <th className="col-ppe-ppe" style={{ textAlign: "center" }}>PPE</th>
+                                <th className="col-ppe-act" style={{ textAlign: "center" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.PPEItems?.map((row, index) => (
                                 <tr key={index}>
-                                    <td style={{ fontSize: "14px" }}>{row.ppe}</td>
+                                    <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.ppe}</td>
                                     <td className="procCent">
-                                        <button
-                                            className="remove-row-button"
-                                            onClick={() => {
-                                                // Remove abbreviation from table and the selected abbreviations set
-                                                setFormData({
-                                                    ...formData,
-                                                    PPEItems: formData.PPEItems.filter((_, i) => i !== index),
-                                                });
-                                                setUsedPPEOptions(
-                                                    usedPPEOptions.filter((ppe) => ppe !== row.ppe)
-                                                );
+                                        <div className="term-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                style={{ paddingRight: "6px" }}
+                                                onClick={() => {
+                                                    // Remove abbreviation from table and the selected abbreviations set
+                                                    setFormData({
+                                                        ...formData,
+                                                        PPEItems: formData.PPEItems.filter((_, i) => i !== index),
+                                                    });
+                                                    setUsedPPEOptions(
+                                                        usedPPEOptions.filter((ppe) => ppe !== row.ppe)
+                                                    );
 
-                                                // Update the selectedAbbrs state to reflect the removal
-                                                const newSelectedPPE = new Set(selectedPPE);
-                                                newSelectedPPE.delete(row.ppe);
-                                                setSelectedPPE(newSelectedPPE);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                                    // Update the selectedAbbrs state to reflect the removal
+                                                    const newSelectedPPE = new Set(selectedPPE);
+                                                    newSelectedPPE.delete(row.ppe);
+                                                    setSelectedPPE(newSelectedPPE);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                            </button>
+                                            <button
+                                                className="edit-terms-row-button"
+                                                disabled={
+                                                    originalData.some(item => item.ppe === row.ppe)
+                                                }
+                                                style={{ color: originalData.some(item => item.ppe === row.ppe) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                onClick={() => {
+                                                    openUpdate(row.ppe)
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} title="Modify PPE" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -287,6 +349,8 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                     </button>
                 )}
             </div>
+
+            {updatePopup && (<ModifySuggestedPPE ppe={ppeUpdate} closePopup={closeUpdate} onAdd={handleUpdatePPE} setPPEData={setPPEData} />)}
         </div>
     );
 };

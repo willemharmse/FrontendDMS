@@ -18,8 +18,9 @@ import PicturesTable from "./CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
+import SaveAsPopup from "./Popups/SaveAsPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight, faSave, faPen, faUpload } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "./Notifications/TopBarDD";
 import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
 
@@ -31,6 +32,7 @@ const ReviewPage = () => {
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [usedPPEOptions, setUsedPPEOptions] = useState([]);
     const [role, setRole] = useState("");
+    const [userIDs, setUserIDs] = useState([]);
     const [usedHandTools, setUsedHandTools] = useState([]);
     const [usedEquipment, setUsedEquipment] = useState([]);
     const [usedMobileMachine, setUsedMobileMachines] = useState([]);
@@ -44,11 +46,63 @@ const ReviewPage = () => {
     const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
+    const loadedIDRef = useRef('');
     const [change, setChange] = useState("");
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
     const type = useParams().type;
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+
+    const openSaveAs = () => {
+        if (!titleSet) {
+            toast.warn("Please fill in at least the title field before saving.", {
+                closeButton: false,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+        setIsSaveAsModalOpen(true);
+    };
+
+    const closeSaveAs = () => {
+        setIsSaveAsModalOpen(false);
+    };
+
+    const confirmSaveAs = (newTitle) => {
+        // apply the new title, clear loadedID, then save
+        const me = userIDRef.current;
+        const newFormData = {
+            ...formDataRef.current,        // your current formData
+            title: newTitle,             // override title
+        };
+
+        setFormData(newFormData);
+        formDataRef.current = newFormData;
+
+        setUserIDs([me]);
+        userIDsRef.current = [me];
+
+        loadedIDRef.current = '';
+        setLoadedID('');
+
+        saveAsData();
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("New Draft Successfully Saved", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
+        setIsSaveAsModalOpen(false);
+    };
 
     const [formData, setFormData] = useState({
         title: "",
@@ -111,7 +165,7 @@ const ReviewPage = () => {
 
     const handleSave = () => {
         if (formData.title !== "") {
-            saveData();
+            saveData(fileID);
 
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -155,7 +209,7 @@ const ReviewPage = () => {
     }, [formData.title]);
 
     const autoSaveDraft = () => {
-        saveData();
+        saveData(fileID);
         toast.dismiss();
         toast.clearWaitingQueue();
         toast.success("Draft has been auto-saved", {
@@ -200,7 +254,43 @@ const ReviewPage = () => {
         });
     };
 
-    const saveData = async () => {
+    const saveAsData = async () => {
+        const dataToStore = {
+            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+            usedTermCodes: usedTermCodesRef.current,
+            usedPPEOptions: usedPPEOptionsRef.current,
+            usedHandTools: usedHandToolsRef.current,
+            usedEquipment: usedEquipmentRef.current,
+            usedMobileMachine: usedMobileMachineRef.current,
+            usedMaterials: usedMaterialsRef.current,
+            formData: formDataRef.current,
+            userIDs: userIDsRef.current,
+            creator: userIDRef.current,
+            updater: null,
+            dateUpdated: null
+        };
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/safe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+            const result = await response.json();
+
+            if (result.id) {  // Ensure we receive an ID from the backend
+                setLoadedID(result.id);  // Update loadedID to track the saved document
+                loadedIDRef.current = result.id;
+            }
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    };
+
+    const saveData = async (fileID) => {
         const dataToStore = {
             usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
             usedTermCodes: usedTermCodesRef.current,
@@ -245,7 +335,7 @@ const ReviewPage = () => {
 
     const loadData = async (fileID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api//fileGenDocs/getFile/${fileID}`);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/getFile/${fileID}`);
             const data = await response.json();
             const storedData = data.files;
             // Update your states as needed:
@@ -297,6 +387,16 @@ const ReviewPage = () => {
     const usedEquipmentRef = useRef(usedEquipment);
     const usedMobileMachineRef = useRef(usedMobileMachine);
     const usedMaterialsRef = useRef(usedMaterials);
+    const userIDsRef = useRef(userIDs);
+    const userIDRef = useRef(userID);
+
+    useEffect(() => {
+        userIDRef.current = userID;
+    }, [userID]);
+
+    useEffect(() => {
+        userIDs.current = userIDs;
+    }, [userIDs]);
 
     useEffect(() => {
         usedAbbrCodesRef.current = usedAbbrCodes;
@@ -731,14 +831,7 @@ const ReviewPage = () => {
                 body: JSON.stringify(dataToStore), // Now sending the correct dataToStore
             });
             if (response.status === 404) throw new Error("Failed to generate document")
-            {
-                toast.success("File has been reviewed.", {
-                    closeButton: false,
-                    style: {
-                        textAlign: 'center'
-                    }
-                })
-            }
+
             if (!response.ok) throw new Error("Failed to generate document");
 
             setLoading(false);
@@ -750,6 +843,57 @@ const ReviewPage = () => {
                     textAlign: 'center'
                 }
             })
+        } catch (error) {
+            console.error("Error generating document:", error);
+            setLoading(false);
+        }
+    };
+
+    const handleGenerateDocument = async () => {
+        // 1) Build the updated changeTable and version from the latest state
+        const lastCT = formData.changeTable;
+        const lastVersion = parseInt(formData.version, 10);
+        const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
+
+        const newChange = {
+            changeVersion: (lastChangeVer + 1).toString(),
+            change,
+            changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        };
+
+        const updatedFormData = {
+            ...formData,
+            version: (lastVersion + 1).toString(),
+            changeTable: [...lastCT, newChange]
+        };
+
+        await handleGenerateProcedureDocument(updatedFormData);
+    };
+
+    const handleGenerateProcedureDocument = async (generateData) => {
+        const dataToStore = {
+            formData: generateData,
+        };
+
+        const documentName = (formData.title) + ' ' + formData.documentType;
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.docm`);
+            setLoading(false);
+            //saveAs(blob, `${documentName}.pdf`);
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -791,11 +935,28 @@ const ReviewPage = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
+                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faSave} />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    transform="shrink-6 down-5 right-7"
+                                    color="gray"   /* or whatever contrast you need */
+                                />
+                            </span>
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faUpload} onClick={handleClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
                     {/* This div creates the space in the middle */}
@@ -884,7 +1045,7 @@ const ReviewPage = () => {
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            onClick={handleClick}
+                            onClick={handleGenerateDocument}
                             title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Review Document'}
@@ -896,6 +1057,7 @@ const ReviewPage = () => {
                             Generate PDF
                         </button>
                     </div>
+                    {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={true} />)}
                 </div>
             </div>
             <ToastContainer />

@@ -3,7 +3,7 @@ import './StandardsTable.css';
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faCopy, faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faCopy, faArrowsUpDown, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
 const StandardsTable = ({ formData, setFormData, error, title, documentType, setErrors }) => {
@@ -380,14 +380,22 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="procCent standNr">Nr</th>
-                                <th className="procCent standMain"
-                                    onClick={(e) => handleHeaderClick('mainSection', e)}>Main Section</th>
-                                <th className="procCent standSub"
-                                    onClick={(e) => handleHeaderClick('minRequirement', e)}>Minimum Requirement Description / Details</th>
-                                <th className="procCent standPrev"
-                                    onClick={(e) => handleHeaderClick('reference', e)}>Reference / Source<br />(Where Applicable)</th>
-                                <th className="procCent standAR"
-                                    onClick={(e) => handleHeaderClick('notes', e)}>Additional Notes</th>
+                                <th className={`procCent standMain ${filters['mainSection'] ? 'jra-filter-active' : ''}`}
+                                    onClick={(e) => handleHeaderClick('mainSection', e)}>Main Section{filters['mainSection'] && (
+                                        <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                    )}</th>
+                                <th className={`procCent standSub ${filters['minRequirement'] ? 'jra-filter-active' : ''}`}
+                                    onClick={(e) => handleHeaderClick('minRequirement', e)}>Minimum Requirement Description / Details{filters['minRequirement'] && (
+                                        <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                    )}</th>
+                                <th className={`procCent standPrev ${filters['reference'] ? 'jra-filter-active' : ''}`}
+                                    onClick={(e) => handleHeaderClick('reference', e)}>Reference / Source<br />(Where Applicable){filters['reference'] && (
+                                        <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                    )}</th>
+                                <th className={`procCent standAR ${filters['notes'] ? 'jra-filter-active' : ''}`}
+                                    onClick={(e) => handleHeaderClick('notes', e)}>Additional Notes{filters['notes'] && (
+                                        <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                    )}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -397,6 +405,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                 return (
                                     <React.Fragment key={index}>
                                         <tr key={index}
+                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''}`}
                                             draggable={armedDragRow === row.id}
                                             onDragStart={armedDragRow === row.id ? e => handleDragStart(e, row.id) : undefined}
                                             onDragOver={e => handleDragOver(e, row.id)}
@@ -404,7 +413,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                             onDrop={e => handleDrop(e, row.id)}
                                             onDragEnd={handleDragEnd}
                                         >
-                                            <td className="procCent" style={{ fontSize: "14px", backgroundColor: "lightgray" }} rowSpan={spanCount}>
+                                            <td className="procCent" style={{ fontSize: "14px" }} rowSpan={spanCount}>
                                                 {row.nr}
                                                 <FontAwesomeIcon
                                                     icon={faArrowsUpDown}
@@ -413,7 +422,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                     onMouseUp={() => setArmedDragRow(null)}
                                                 />
                                             </td>
-                                            <td rowSpan={spanCount} className="main-cell-standards" style={{ backgroundColor: "lightgray" }}>
+                                            <td rowSpan={spanCount} className="main-cell-standards" style={{}}>
                                                 <textarea
                                                     name="mainSection"
                                                     className="aim-textarea-st font-fam"
@@ -511,7 +520,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
 
                                         {/* — all the remaining detail rows (if any) */}
                                         {row.details.slice(1).map((detail, j) => (
-                                            <tr key={j}>
+                                            <tr key={j} className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''}`}>
                                                 <td className="sub-cell-standards">
                                                     <label className="detail-label">{row.details[j + 1].nr}</label>
                                                     <textarea

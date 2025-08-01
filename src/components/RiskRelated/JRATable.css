@@ -694,11 +694,13 @@ td.jraStatus {
 .table-wrapper-jra {
     width: 100%;
     max-width: 100%;
+    overflow-y: auto;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     cursor: grab;
     scrollbar-width: none;
     padding-bottom: 8px;
+    max-height: 600px;
     /* Firefox */
 }
 

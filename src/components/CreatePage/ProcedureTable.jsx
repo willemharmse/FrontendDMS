@@ -3,17 +3,124 @@ import './ProcedureTable.css';
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faArrowsUpDown, faCopy, faUndo } from '@fortawesome/free-solid-svg-icons';
 import FlowchartRenderer from "./FlowchartRenderer";
+import { aiRewrite } from "../../utils/jraAI";
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, setErrors }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, setErrors, setFormData, formData }) => {
     const [designationOptions, setDesignationOptions] = useState([]);
     const [showARDropdown, setShowARDropdown] = useState({ index: null, field: "" });
     const [dropdownOptions, setDropdownOptions] = useState([]);
     const [activeRewriteIndex, setActiveRewriteIndex] = useState(null);
-
     const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
     const inputRefs = useRef([]);
+    const [mainHistory, setMainHistory] = useState({});
+    const [subHistory, setSubHistory] = useState({});
+    const [loadingMainKey, setLoadingMainKey] = useState(false);
+    const [loadingSubKey, setLoadingSubKey] = useState(false);
+    const mainInputRefs = useRef({});
+    const subInputRefs = useRef({});
+
+    const [armedDragRow, setArmedDragRow] = useState(null);
+    const [draggedRowNr, setDraggedRowNr] = useState(null);
+    const [dragOverRowNr, setDragOverRowNr] = useState(null);
+    const draggedElRef = useRef(null);
+
+    const handleAiRewriteMain = async (idx) => {
+        const control = procedureRows[idx].mainStep;
+        const key = `${idx}`;
+        setMainHistory(prev => ({
+            ...prev,
+            [key]: [...(prev[key] || []), control]
+        }));
+        setLoadingMainKey(key);
+
+        try {
+            const newText = await aiRewrite(control, "chatProcedure/main");
+            setFormData(prev => ({
+                ...prev,
+                procedureRows: prev.procedureRows.map((row, i) =>
+                    i === idx ? { ...row, mainStep: newText } : row
+                )
+            }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingMainKey(null);
+        }
+    };
+
+    const handleAiRewriteSub = async (idx) => {
+        const control = procedureRows[idx].SubStep;
+        const key = `${idx}`;
+        setSubHistory(prev => ({
+            ...prev,
+            [key]: [...(prev[key] || []), control]
+        }));
+        setLoadingSubKey(key);
+
+        try {
+            const newText = await aiRewrite(control, "chatProcedure/sub");
+            setFormData(prev => ({
+                ...prev,
+                procedureRows: prev.procedureRows.map((row, i) =>
+                    i === idx ? { ...row, SubStep: newText } : row
+                )
+            }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingSubKey(null);
+        }
+    };
+
+    const handleUndoMain = (idx) => {
+        const key = `${idx}`;
+        const history = mainHistory[key] || [];
+        if (history.length === 0) return;
+
+        const previousMainStep = history[history.length - 1];
+
+        setFormData(prev => ({
+            ...prev,
+            procedureRows: prev.procedureRows.map((row, i) =>
+                i === idx ? { ...row, mainStep: previousMainStep } : row
+            )
+        }));
+
+        // pop from history
+        setMainHistory(prev => {
+            const next = [...history.slice(0, -1)];
+            const out = { ...prev };
+            if (next.length) out[key] = next;
+            else delete out[key];
+            return out;
+        });
+    };
+
+    const handleUndoSub = (idx) => {
+        const key = `${idx}`;
+        const history = subHistory[key] || [];
+        if (history.length === 0) return;
+
+        const previousSubStep = history[history.length - 1];
+
+        setFormData(prev => ({
+            ...prev,
+            procedureRows: prev.procedureRows.map((row, i) =>
+                i === idx ? { ...row, SubStep: previousSubStep } : row
+            )
+        }));
+
+        // pop from history
+        setSubHistory(prev => {
+            const next = [...history.slice(0, -1)];
+            const out = { ...prev };
+            if (next.length) out[key] = next;
+            else delete out[key];
+            return out;
+        });
+    };
 
     useEffect(() => {
         const fetchDesignations = async () => {
@@ -36,7 +143,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
     }, []);
 
     const accountableOptions = designationOptions;
-
     const responsibleOptions = designationOptions;
 
     const [invalidRows, setInvalidRows] = useState([]);
@@ -102,6 +208,85 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         }
     };
 
+    const handleDuplicateRow = (index) => {
+        const newArr = [...formData.procedureRows];
+        const idx = newArr.findIndex((s) => s.nr === index);
+        if (idx === -1) return;
+
+        const orig = newArr[idx];
+
+        const copy = {
+            nr: idx + 1,
+            mainStep: orig.mainStep,
+            SubStep: orig.SubStep,
+            accountable: orig.accountable,
+            responsible: orig.responsible,
+            prevStep: orig.prevStep
+        };
+
+        newArr.splice(idx + 1, 0, copy);
+
+        renumberProcedure(newArr);
+        setFormData((prev) => ({
+            ...prev,
+            procedureRows: newArr,
+        }));
+    };
+
+    const renumberProcedure = (arr) => {
+        arr.forEach((item, idx) => {
+            const mainNr = idx + 1;
+            item.nr = `${mainNr}`;
+        });
+    };
+
+    const handleDragStart = (e, rowNr) => {
+        setDraggedRowNr(rowNr);
+        draggedElRef.current = e.currentTarget;
+        e.dataTransfer.effectAllowed = 'move';
+        e.currentTarget.style.opacity = '0.5';
+    };
+
+    const handleDragOver = (e, rowNr) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOverRowNr(rowNr);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverRowNr(null);
+    };
+
+    const handleDrop = (e, dropRowNr) => {
+        e.preventDefault();
+        if (!draggedRowNr || draggedRowNr === dropRowNr) {
+            return handleDragEnd();
+        }
+
+        setFormData(prev => {
+            const newArr = [...prev.procedureRows];
+            const from = newArr.findIndex(s => s.nr === draggedRowNr);
+            const to = newArr.findIndex(s => s.nr === dropRowNr);
+            const [moved] = newArr.splice(from, 1);
+            newArr.splice(to, 0, moved);
+
+            renumberProcedure(newArr);
+            return { ...prev, procedureRows: newArr };
+        });
+
+        return handleDragEnd();
+    };
+
+    const handleDragEnd = () => {
+        if (draggedElRef.current) {
+            draggedElRef.current.style.opacity = '';
+            draggedElRef.current = null;
+        }
+        setDraggedRowNr(null);
+        setDragOverRowNr(null);
+        setArmedDragRow(null);
+    };
+
     const insertRowAt = (insertIndex) => {
         const newProcedureRows = [...procedureRows];
 
@@ -129,32 +314,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
     };
 
     const add = () => {
-        const incompleteIndices = procedureRows
-            .map((row, index) => (!row.responsible || !row.accountable ? index : null))
-            .filter(index => index !== null);
-
-        if (incompleteIndices.length > 0) {
-            setInvalidRows(incompleteIndices); // mark invalid rows to highlight labels
-            toast.warn("Please fill in both 'Responsible' and 'Accountable' before adding a new row.", {
-                autoClose: 800,
-                closeButton: true,
-                style: { textAlign: 'center' }
-            });
-            return;
-        }
-
         setInvalidRows([]); // clear any previous flags
         addRow();
     };
-
-    useEffect(() => {
-        // Automatically resize all loaded textareas (mainStep and SubStep)
-        const textareas = document.querySelectorAll(".aim-textarea-pt");
-        textareas.forEach(textarea => {
-            textarea.style.height = 'auto'; // Reset first
-            textarea.style.height = `${textarea.scrollHeight}px`; // Then expand
-        });
-    }, [procedureRows]);
 
     const handleInputChange = (index, field, value) => {
         const updatedRow = { ...procedureRows[index], [field]: value };
@@ -174,7 +336,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
     };
 
     useEffect(() => {
-        const popupSelector = '.floating-dropdown-proc';
+        const popupSelector = '.floating-dropdown';
 
         const handleClickOutside = (e) => {
             const outside =
@@ -215,55 +377,89 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         <div className="input-row">
             <div className={`proc-box ${error ? "error-proc" : ""}`}>
                 <h3 className="font-fam-labels">Procedure <span className="required-field">*</span></h3>
-                <FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />
+                {true && (<FlowchartRenderer procedureRows={procedureRows} title={title} documentType={documentType} />)}
 
                 {procedureRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="procCent procNr">Nr</th>
-                                <th className="procCent procMain">Procedure Main Steps</th>
-                                <th className="procCent procSub">Procedure Sub Steps</th>
-                                <th className="procCent procPrev">Predecessor<div className="procFineText">(Immediate Prior Steps)</div></th>
-                                <th className="procCent procAR">Responsible and Accountable</th>
-                                <th className="procCent procAct">Action</th>
+                                <th className="procCent procNr" style={{ backgroundColor: "#002060", color: "white" }}>Nr</th>
+                                <th className="procCent procMain" style={{ backgroundColor: "#002060", color: "white" }}>Procedure Main Steps</th>
+                                <th className="procCent procSub" style={{ backgroundColor: "#002060", color: "white" }}>Procedure Sub Steps</th>
+                                <th className="procCent procPrev" style={{ backgroundColor: "#002060", color: "white" }}>Predecessor<div className="procFineText" style={{ color: "white" }}>(Immediate Prior Steps)</div></th>
+                                <th className="procCent procAR" style={{ backgroundColor: "#002060", color: "white" }}>Responsible and Accountable</th>
+                                <th className="procCent procAct" style={{ backgroundColor: "#002060", color: "white" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {procedureRows.map((row, index) => (
                                 <React.Fragment key={index}>
                                     {/* Insert button above each row except the first */}
-                                    <tr key={index}>
+                                    <tr key={index}
+                                        draggable={armedDragRow === row.nr}
+                                        onDragStart={armedDragRow === row.nr ? e => handleDragStart(e, row.nr) : undefined}
+                                        onDragOver={e => handleDragOver(e, row.nr)}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={e => handleDrop(e, row.nr)}
+                                        onDragEnd={handleDragEnd}
+                                        className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''}`}
+                                    >
                                         <td className="procCent" style={{ fontSize: "14px" }}>
                                             {row.nr}
-                                        </td>
-                                        <td>
-                                            <textarea
-                                                name="mainStep"
-                                                className="aim-textarea-pt font-fam"
-                                                value={row.mainStep}
-                                                style={{ fontSize: "14px" }}
-                                                onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
-                                                onInput={(e) => {
-                                                    e.target.style.height = 'auto'; // Reset
-                                                    e.target.style.height = e.target.scrollHeight + 'px'; // Expand dynamically
-                                                }}
-                                                placeholder="Insert the main step of the procedure here..." // Optional placeholder text
+                                            <FontAwesomeIcon
+                                                icon={faArrowsUpDown}
+                                                className="drag-handle-standards"
+                                                onMouseDown={() => setArmedDragRow(row.nr)}
+                                                onMouseUp={() => setArmedDragRow(null)}
                                             />
                                         </td>
                                         <td>
-                                            <textarea
-                                                name="SubStep"
-                                                className="aim-textarea-pt font-fam"
-                                                value={row.SubStep}
-                                                onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
-                                                style={{ fontSize: "14px" }}
-                                                onInput={(e) => {
-                                                    e.target.style.height = 'auto'; // Reset
-                                                    e.target.style.height = e.target.scrollHeight + 'px'; // Expand dynamically
-                                                }}
-                                                placeholder="Insert the sub steps of the procedure here..." // Optional placeholder text
-                                            />
+                                            <div className="textarea-wrapper-proc">
+                                                <textarea
+                                                    name="mainStep"
+                                                    className={`${mainHistory[`${index}`]?.length > 0 ? `aim-textarea-pt-2` : `aim-textarea-pt`} font-fam`}
+                                                    value={row.mainStep}
+                                                    ref={el => {
+                                                        const key = `${index}`;
+                                                        if (el) {
+                                                            mainInputRefs.current[key] = el;
+                                                        } else {
+                                                            delete mainInputRefs.current[key];
+                                                        }
+                                                    }}
+                                                    style={{ fontSize: "14px" }}
+                                                    onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
+                                                    placeholder="Insert the main step of the procedure here..." // Optional placeholder text
+                                                />
+                                                {loadingMainKey && (<FontAwesomeIcon icon={faSpinner} spin className="textarea-icon-proc-spin-main spin-animation-proc" />)}
+                                                {mainHistory[`${index}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"Undo AI Rewrite"} className="textarea-icon-proc-2" onClick={() => handleUndoMain(index)} />)}
+                                                {!loadingMainKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Main Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteMain(index)} />)}
+
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="textarea-wrapper-proc">
+                                                <textarea
+                                                    name="SubStep"
+                                                    className={`${subHistory[`${index}`]?.length > 0 ? `aim-textarea-pt-2` : `aim-textarea-pt`} font-fam`}
+                                                    value={row.SubStep}
+                                                    ref={el => {
+                                                        const key = `${index}`;
+                                                        if (el) {
+                                                            subInputRefs.current[key] = el;
+                                                        } else {
+                                                            delete subInputRefs.current[key];
+                                                        }
+                                                    }}
+                                                    onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
+                                                    style={{ fontSize: "14px" }}
+                                                    placeholder="Insert the sub steps of the procedure here..." // Optional placeholder text
+                                                />
+                                                {loadingSubKey && (<FontAwesomeIcon icon={faSpinner} spin className="textarea-icon-proc-spin spin-animation-proc" />)}
+                                                {subHistory[`${index}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"Undo AI Rewrite"} className="textarea-icon-proc-2" onClick={() => handleUndoSub(index)} />)}
+                                                {!loadingSubKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Sub Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteSub(index)} />)}
+
+                                            </div>
                                         </td>
                                         <td>
                                             <div className="prev-step-container-ref">
@@ -294,7 +490,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                                 if (updatedSteps.length > 1) {
                                                                     updateRow(index, "prevStep", updatedSteps.filter((_, i) => i !== stepIndex).join(";"));
                                                                 } else {
-                                                                    toast.warn("At least one predecessor is required.", { autoClose: 800, closeButton: true });
+                                                                    toast.warn("At least one predecessor is required.", { autoClose: 1000, closeButton: true });
                                                                 }
                                                             }}
                                                         >
@@ -303,6 +499,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                         {stepIndex === arr.length - 1 && (
                                                             <button
                                                                 className="add-row-button-pred"
+                                                                style={{ fontSize: "15px" }}
                                                                 onClick={() => {
                                                                     const updatedSteps = row.prevStep ? row.prevStep.split(";") : [""];
                                                                     updatedSteps.push("");
@@ -373,19 +570,6 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         </td>
                                         <td className="procCent">
                                             <button
-                                                className="ai-rewrite-button"
-                                                onClick={() => {
-                                                    setActiveRewriteIndex(index);
-                                                    rewriteAI(index, procedureRows, updateProcRows, setLoading);
-                                                }}
-                                                title="AI Rewrite Step"
-                                            >
-                                                {activeRewriteIndex === index
-                                                    ? <FontAwesomeIcon icon={faSpinner} spin />
-                                                    : <FontAwesomeIcon icon={faMagicWandSparkles} />
-                                                }
-                                            </button>
-                                            <button
                                                 className="remove-row-button"
                                                 onClick={() => removeRow(index)}
                                                 title="Delete step"
@@ -396,11 +580,20 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                 <button
                                                     className="insert-row-button-sig"
                                                     onClick={() => insertRowAt(index + 1)} // Insert below
+                                                    style={{ fontSize: "15px" }}
                                                     title="Insert step"
                                                 >
                                                     <FontAwesomeIcon icon={faPlusCircle} />
                                                 </button>
                                             )}
+                                            {true && (<button
+                                                className="remove-row-button"
+                                                onClick={() => handleDuplicateRow(row.nr)}
+                                                title="Duplicate step"
+                                            >
+                                                <FontAwesomeIcon icon={faCopy} title="Duplicate Row" />
+                                            </button>)}
+
                                         </td>
                                     </tr>
                                 </React.Fragment>
@@ -416,7 +609,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
 
             {showARDropdown.index !== null && dropdownOptions.length > 0 && (
                 <ul
-                    className="floating-dropdown-proc"
+                    className="floating-dropdown"
                     style={{
                         position: "fixed",
                         top: dropdownPos.top,

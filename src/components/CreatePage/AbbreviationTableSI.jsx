@@ -3,10 +3,12 @@ import "./AbbreviationTable.css"; // Add styling here
 import AbbreviationPopup from "../ValueChanges/AbbreviationPopup";
 import ManageAbbreviations from "../ValueChanges/ManageAbbreviations";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedAbbreviations from "../ValueChanges/ModifySuggestedAbbreviations";
 
 const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setErrors, si = false }) => {
   const [abbrData, setAbbrData] = useState([]);
+  const [originalData, setOriginalData] = useState([])
   // State to control the popup and selected abbreviations
   const [popupVisible, setPopupVisible] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
@@ -14,6 +16,9 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isNA, setIsNA] = useState(false);
+  const [abbrUpdate, setAbbrUpdate] = useState("");
+  const [meanUpdate, setMeanUpdate] = useState("");
+  const [updatePopup, setUpdatePopup] = useState(false);
 
   useEffect(() => {
     if (!popupVisible) return;
@@ -60,6 +65,7 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
       const data = await response.json();
 
       setAbbrData(data.abbrs);
+      setOriginalData(data.abbrs)
       localStorage.setItem('cachedAbbrOptions', JSON.stringify(data.abbrs));
     } catch (error) {
       console.log(error);
@@ -69,6 +75,50 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
       }
     }
   };
+
+  const handleUpdateAbbreviation = (newAbbrObj, oldAbbr, oldMeaning) => {
+    const updatedCode = newAbbrObj.abbr;
+
+    // 1. Remove the old abbreviation from usedAbbrCodes
+    setUsedAbbrCodes(prev =>
+      prev.filter(code => code !== oldAbbr)
+    );
+
+    // 2. Remove from selectedAbbrs and add the new one
+    setSelectedAbbrs(prev => {
+      const updated = new Set(prev);
+      updated.delete(oldAbbr);
+      updated.add(updatedCode);
+      return updated;
+    });
+
+    // 3. Replace the old row in abbrRows with the updated one
+    setFormData(prev => ({
+      ...prev,
+      abbrRows: prev.abbrRows.map(row =>
+        row.abbr === oldAbbr && row.meaning === oldMeaning
+          ? newAbbrObj
+          : row
+      ),
+    }));
+
+    // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+    setUsedAbbrCodes(prev => [...prev, updatedCode]);
+  };
+
+  const openUpdate = (abbr, meaning) => {
+    setAbbrUpdate(abbr);
+    setMeanUpdate(meaning);
+
+    setUpdatePopup(true);
+  }
+
+  const closeUpdate = () => {
+    setAbbrUpdate("");
+    setMeanUpdate("");
+
+    setUpdatePopup(false);
+  }
 
   const clearSearch = () => {
     setSearchTerm("");
@@ -226,7 +276,7 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
                                 />
                               </td>
                               <td>{item.abbr}</td>
-                              <td>{item.meaning}</td>
+                              <td style={{ whiteSpace: "pre-wrap" }}>{item.meaning}</td>
                             </tr>
                           ))
                       ) : (
@@ -250,37 +300,52 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
           <table className="font-fam table-borders">
             <thead className="cp-table-header">
               <tr>
-                <th className="col-abbr-abbr">Abbreviations</th>
-                <th className="col-abbr-desc">Description</th>
-                <th className="col-abbr-act">Action</th>
+                <th className="col-abbr-abbr" style={{ textAlign: "center" }}>Abbreviations</th>
+                <th className="col-abbr-desc" style={{ textAlign: "center" }}>Description</th>
+                <th className="col-abbr-act" style={{ textAlign: "center" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {formData.abbrRows.map((row, index) => (
                 <tr key={index}>
                   <td style={{ fontSize: "14px" }}>{row.abbr}</td>
-                  <td style={{ fontSize: "14px" }}>{row.meaning}</td>
+                  <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.meaning}</td>
                   <td className="procCent">
-                    <button
-                      className="remove-row-button"
-                      onClick={() => {
-                        // Remove abbreviation from table and the selected abbreviations set
-                        setFormData({
-                          ...formData,
-                          abbrRows: formData.abbrRows.filter((_, i) => i !== index),
-                        });
-                        setUsedAbbrCodes(
-                          usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
-                        );
+                    <div className="term-action-buttons">
+                      <button
+                        className="remove-row-button"
+                        style={{ paddingRight: "6px" }}
+                        onClick={() => {
+                          // Remove abbreviation from table and the selected abbreviations set
+                          setFormData({
+                            ...formData,
+                            abbrRows: formData.abbrRows.filter((_, i) => i !== index),
+                          });
+                          setUsedAbbrCodes(
+                            usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
+                          );
 
-                        // Update the selectedAbbrs state to reflect the removal
-                        const newSelectedAbbrs = new Set(selectedAbbrs);
-                        newSelectedAbbrs.delete(row.abbr);
-                        setSelectedAbbrs(newSelectedAbbrs);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                    </button>
+                          // Update the selectedAbbrs state to reflect the removal
+                          const newSelectedAbbrs = new Set(selectedAbbrs);
+                          newSelectedAbbrs.delete(row.abbr);
+                          setSelectedAbbrs(newSelectedAbbrs);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                      </button>
+                      <button
+                        className="edit-terms-row-button"
+                        disabled={
+                          originalData.some(item => item.abbr === row.abbr && item.meaning === row.meaning)
+                        }
+                        style={{ color: originalData.some(item => item.abbr === row.abbr && item.meaning === row.meaning) ? "lightgray" : "", paddingLeft: "6px" }}
+                        onClick={() => {
+                          openUpdate(row.abbr, row.meaning)
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEdit} title="Modify Abbreviation" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -300,6 +365,8 @@ const AbbreviationTableSI = ({ risk, formData, setFormData, usedAbbrCodes, setUs
           </button>
         )}
       </div>
+
+      {updatePopup && (<ModifySuggestedAbbreviations abbr={abbrUpdate} meaning={meanUpdate} closePopup={closeUpdate} onAdd={handleUpdateAbbreviation} setAbbrData={setAbbrData} />)}
     </div>
   );
 };

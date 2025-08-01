@@ -85,11 +85,16 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
             setSelectedMachine("");
             setMacInp("");
             const newMac = {
-                mac: macInp.trim() + " *",
+                machine: macInp.trim() + " *"
             };
+
+            const newMacAdd = {
+                mac: macInp.trim() + " *"
+            };
+
             setMachineData((prevData) => [...prevData, newMac]);
 
-            if (onAdd) onAdd(newMac);
+            if (onAdd) onAdd(newMac, newMacAdd);
 
             setTimeout(() => {
                 handleClose();

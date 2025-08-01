@@ -3,16 +3,21 @@ import "./TermTable.css"; // Add styling here
 import TermPopup from "../ValueChanges/TermPopup";
 import ManageDefinitions from "../ValueChanges/ManageDefinitions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedDefinitions from "../ValueChanges/ModifySuggestedDefinitions";
 
 const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setErrors, si = false }) => {
   const [termData, setTermData] = useState([]);
+  const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isNA, setIsNA] = useState(false);
+  const [termUpdate, setTermUpdate] = useState("");
+  const [defUpdate, setDefUpdate] = useState("");
+  const [updatePopup, setUpdatePopup] = useState(false);
 
   useEffect(() => {
     setSelectedTerms(new Set(usedTermCodes));
@@ -55,6 +60,7 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
       const data = await response.json();
 
       setTermData(data.defs);
+      setOriginalData(data.defs);
       localStorage.setItem('cachedTermOptions', JSON.stringify(data.defs));
     } catch (error) {
       console.log(error);
@@ -72,6 +78,50 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
   useEffect(() => {
     fetchValues();
   }, []);
+
+  const handleUpdateTerm = (newTermObj, oldTerm, oldDef) => {
+    const updatedCode = newTermObj.term;
+
+    // 1. Remove the old abbreviation from usedAbbrCodes
+    setUsedTermCodes(prev =>
+      prev.filter(code => code !== oldTerm)
+    );
+
+    // 2. Remove from selectedAbbrs and add the new one
+    setSelectedTerms(prev => {
+      const updated = new Set(prev);
+      updated.delete(oldTerm);
+      updated.add(updatedCode);
+      return updated;
+    });
+
+    // 3. Replace the old row in abbrRows with the updated one
+    setFormData(prev => ({
+      ...prev,
+      termRows: prev.termRows.map(row =>
+        row.term === oldTerm && row.definition === oldDef
+          ? newTermObj
+          : row
+      ),
+    }));
+
+    // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+    setUsedTermCodes(prev => [...prev, updatedCode]);
+  };
+
+  const openUpdate = (term, definition) => {
+    setTermUpdate(term);
+    setDefUpdate(definition);
+
+    setUpdatePopup(true);
+  }
+
+  const closeUpdate = () => {
+    setTermUpdate("");
+    setDefUpdate("");
+
+    setUpdatePopup(false);
+  }
 
   const handleNewTerm = (newTerm) => {
     const code = newTerm.term;
@@ -229,8 +279,8 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
                                   onChange={() => handleCheckboxChange(item.term)}
                                 />
                               </td>
-                              <td>{item.term}</td>
-                              <td>{item.definition}</td>
+                              <td style={{ whiteSpace: "pre-wrap" }}>{item.term}</td>
+                              <td style={{ whiteSpace: "pre-wrap" }}>{item.definition}</td>
                             </tr>
                           ))) : (
                         <tr>
@@ -260,29 +310,44 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
             <tbody>
               {formData.termRows.map((row, index) => (
                 <tr key={index}>
-                  <td style={{ fontSize: "14px" }}>{row.term}</td>
-                  <td style={{ fontSize: "14px" }}>{row.definition}</td>
-                  <td className="procCent">
-                    <button
-                      className="remove-row-button"
-                      onClick={() => {
-                        // Remove abbreviation from table and the selected abbreviations set
-                        setFormData({
-                          ...formData,
-                          termRows: formData.termRows.filter((_, i) => i !== index),
-                        });
-                        setUsedTermCodes(
-                          usedTermCodes.filter((term) => term !== row.term)
-                        );
+                  <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.term}</td>
+                  <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.definition}</td>
+                  <td className="procCent " style={{ paddingBottom: "10px" }}>
+                    <div className="term-action-buttons">
+                      <button
+                        className="remove-row-button"
+                        style={{ paddingRight: "6px" }}
+                        onClick={() => {
+                          // Remove abbreviation from table and the selected abbreviations set
+                          setFormData({
+                            ...formData,
+                            termRows: formData.termRows.filter((_, i) => i !== index),
+                          });
+                          setUsedTermCodes(
+                            usedTermCodes.filter((term) => term !== row.term)
+                          );
 
-                        // Update the selectedAbbrs state to reflect the removal
-                        const newSelectedTerms = new Set(selectedTerms);
-                        newSelectedTerms.delete(row.term);
-                        setSelectedTerms(newSelectedTerms);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                    </button>
+                          // Update the selectedAbbrs state to reflect the removal
+                          const newSelectedTerms = new Set(selectedTerms);
+                          newSelectedTerms.delete(row.term);
+                          setSelectedTerms(newSelectedTerms);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                      </button>
+                      <button
+                        className="edit-terms-row-button"
+                        disabled={
+                          originalData.some(item => item.term === row.term && item.definition === row.definition)
+                        }
+                        style={{ color: originalData.some(item => item.term === row.term && item.definition === row.definition) ? "lightgray" : "", paddingLeft: "6px" }}
+                        onClick={() => {
+                          openUpdate(row.term, row.definition)
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEdit} title="Modify Term" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -303,6 +368,8 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
         )}
 
       </div>
+
+      {updatePopup && (<ModifySuggestedDefinitions term={termUpdate} definition={defUpdate} closePopup={closeUpdate} onAdd={handleUpdateTerm} setTermData={setTermData} />)}
     </div>
   );
 };

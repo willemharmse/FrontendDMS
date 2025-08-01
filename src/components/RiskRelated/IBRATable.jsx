@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
@@ -16,15 +16,121 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const [noteText, setNoteText] = useState("");
     const [showNote, setShowNote] = useState(false);
     const savedWidthRef = useRef(null);
+    const [filters, setFilters] = useState({});
     const [armedDragRow, setArmedDragRow] = useState(null);
-    const [draggedRowIndex, setDraggedRowIndex] = useState(null);
-    const [dragOverRowIndex, setDragOverRowIndex] = useState(null);
+    const [draggedRowId, setDraggedRowId] = useState(null);
+    const [dragOverRowId, setDragOverRowId] = useState(null);
     const [filteredExe, setFilteredExe] = useState([]);
     const [showExeDropdown, setShowExeDropdown] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const [posLists, setPosLists] = useState([]);
     const [activeSubCell, setActiveSubCell] = useState(null);
     const responsibleInputRefs = useRef({});
+
+    const excludedColumns = ["UE", "S", "H", "E", "C", "LR", "M", "R", "actions", "responsible", "dueDate"];
+
+    const findRowAndPossibleById = (rowId, possibleId) => {
+        const rowIndex = rows.findIndex(r => r.id === rowId);
+        if (rowIndex === -1) return {};
+        const row = rows[rowIndex];
+        const possibleIndex = row.possible?.findIndex(p => p.id === possibleId);
+        return { rowIndex, possibleIndex };
+    };
+
+    const [filterPopup, setFilterPopup] = useState({
+        visible: false,
+        column: null,
+        pos: { top: 0, left: 0, width: 0 }
+    });
+
+    const filteredRows = useMemo(() => {
+        return rows.filter(row => {
+            for (const [col, value] of Object.entries(filters)) {
+                const text = value.toLowerCase();
+                if (col === 'main') {
+                    if (!row.main.toLowerCase().includes(text)) return false;
+                } else if (col === 'sub') {
+                    if (!row.sub.toLowerCase().includes(text)) return false;
+                } else if (col === 'owner') {
+                    if (!row.owner.toLowerCase().includes(text)) return false;
+                } else if (col === 'odds') {
+                    if (!row.odds.toLowerCase().includes(text)) return false;
+                } else if (col === 'riskRank') {
+                    if (!row.riskRank.toLowerCase().includes(text)) return false;
+                } else if (col === 'hazards') {
+                    if (!row.hazards?.some(h => {
+                        if (typeof h === 'string') return h.toLowerCase().includes(text);
+                        if (typeof h === 'object' && h.hazard) return h.hazard.toLowerCase().includes(text);
+                        return false;
+                    })) return false;
+                } else if (col === 'controls') {
+                    if (!row.controls?.some(c => {
+                        if (typeof c === 'string') return c.toLowerCase().includes(text);
+                        if (typeof c === 'object' && c.control) return c.control.toLowerCase().includes(text);
+                        return false;
+                    })) return false;
+                } else if (['S', 'H', 'E', 'C', 'LR', 'M', 'R'].includes(col)) {
+                    if (!String(row[col]).toLowerCase().includes(text)) return false;
+                } else if (col === 'source') {
+                    if (!row.source.toLowerCase().includes(text)) return false;
+                } else if (col === 'material') {
+                    if (!row.material.toLowerCase().includes(text)) return false;
+                } else if (col === 'priority') {
+                    if (!row.priority.toLowerCase().includes(text)) return false;
+                } else if (col === 'UE') {
+                    if (!row.UE.toLowerCase().includes(text)) return false;
+                } else if (col === 'additional') {
+                    if (!row.additional.toLowerCase().includes(text)) return false;
+                } else if (col === 'maxConsequence') {
+                    if (!row.maxConsequence.toLowerCase().includes(text)) return false;
+                } else if (col === 'possibleActions') {
+                    if (!row.possible?.some(p =>
+                        p.actions?.some(a => a.action?.toLowerCase().includes(text))
+                    )) return false;
+                } else if (col === 'possibleResponsible') {
+                    if (!row.possible?.some(p =>
+                        p.responsible?.some(r => r.person?.toLowerCase().includes(text))
+                    )) return false;
+                } else if (col === 'possibleDueDate') {
+                    if (!row.possible?.some(p =>
+                        p.dueDate?.some(d => d.date?.toLowerCase().includes(text))
+                    )) return false;
+                }
+            }
+            return true;
+        });
+    }, [rows, filters]);
+
+    function openFilterPopup(colId, e) {
+        if (colId === "nr" || colId === "action") return;
+        const rect = e.target.getBoundingClientRect();
+        setFilterPopup({
+            visible: true,
+            column: colId,
+            pos: {
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            }
+        });
+    }
+
+    function applyFilter(value) {
+        setFilters(prev => ({
+            ...prev,
+            [filterPopup.column]: value
+        }));
+        setFilterPopup({ visible: false, column: null, pos: {} });
+    }
+
+    function clearFilter() {
+        setFilters(prev => {
+            const next = { ...prev };
+            delete next[filterPopup.column];
+            return next;
+        });
+        setFilterPopup({ visible: false, column: null, pos: {} });
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,71 +154,80 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         setShowExeDropdown(null);
     };
 
-    const handleDragStart = (e, rowIndex) => {
-        setDraggedRowIndex(rowIndex);
+    const handleDragStart = (e, rowId) => {
+        setDraggedRowId(rowId);
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', ''); // Required for Firefox
-
-        // Add visual feedback to the dragged row
+        e.dataTransfer.setData('text/html', '');
         setTimeout(() => {
-            if (e.target.closest('tr')) {
-                e.target.closest('tr').style.opacity = '0.5';
-            }
+            const tr = e.target.closest('tr');
+            if (tr) tr.style.opacity = '0.5';
         }, 0);
     };
 
-    const handleDuplicateRow = (rowIndex) => {
+    const handleDuplicateRow = (rowId) => {
+        const rowIndex = rows.findIndex(r => r.id === rowId);
+        if (rowIndex === -1) return;
+
         const newRows = [...rows];
-        // deep-clone the row
         const rowCopy = JSON.parse(JSON.stringify(newRows[rowIndex]));
         rowCopy.id = uuidv4();
-        // insert it directly below
+
+        // Also regenerate IDs for nested possible/actions/etc
+        rowCopy.possible = rowCopy.possible.map(block => ({
+            ...block,
+            id: uuidv4(),
+            actions: block.actions.map(a => ({ ...a, id: uuidv4() })),
+            responsible: block.responsible.map(r => ({ ...r, id: uuidv4() })),
+            dueDate: block.dueDate.map(d => ({ ...d, id: uuidv4() }))
+        }));
+
         newRows.splice(rowIndex + 1, 0, rowCopy);
-        // re-number every row
         newRows.forEach((r, idx) => { r.nr = idx + 1 });
         updateRow(newRows);
     };
 
-    const handleDragOver = (e, rowIndex) => {
+    const handleDragOver = (e, rowId) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        setDragOverRowIndex(rowIndex);
+        setDragOverRowId(rowId);
     };
 
     const handleDragLeave = () => {
-        setDragOverRowIndex(null);
+        setDragOverRowId(null);
         setArmedDragRow(null);
     };
 
-    const handleDrop = (e, dropRowIndex) => {
+    const handleDrop = (e, dropRowId) => {
         e.preventDefault();
-        if (draggedRowIndex === null || draggedRowIndex === dropRowIndex) {
-            setDraggedRowIndex(null);
-            setDragOverRowIndex(null);
+
+        if (!draggedRowId || draggedRowId === dropRowId) {
+            setDraggedRowId(null);
+            setDragOverRowId(null);
             return;
         }
-        // 1) Remove the dragged row
+
         const newRows = [...rows];
-        const [dragged] = newRows.splice(draggedRowIndex, 1);
-        // 2) Insert it exactly at the drop index
-        newRows.splice(dropRowIndex, 0, dragged);
-        // 3) Renumber
+
+        const fromIndex = newRows.findIndex(r => r.id === draggedRowId);
+        const toIndex = newRows.findIndex(r => r.id === dropRowId);
+
+        if (fromIndex === -1 || toIndex === -1) return;
+
+        const [moved] = newRows.splice(fromIndex, 1);
+        newRows.splice(toIndex, 0, moved);
+
         newRows.forEach((r, idx) => r.nr = idx + 1);
-        // 4) Push back up
+
         updateRow(newRows);
-        setDraggedRowIndex(null);
-        setDragOverRowIndex(null);
-        setArmedDragRow(null);
+
+        setDraggedRowId(null);
+        setDragOverRowId(null);
     };
 
     const handleDragEnd = (e) => {
-        // Reset visual feedback
-        if (e.target.closest('tr')) {
-            e.target.closest('tr').style.opacity = '';
-        }
-        setDraggedRowIndex(null);
-        setDragOverRowIndex(null);
-        setArmedDragRow(null);
+        const tr = e.target.closest('tr');
+        if (tr) tr.style.opacity = '';
+        setDraggedRowId(null);
+        setDragOverRowId(null);
     };
 
     const openNote = (text) => {
@@ -162,88 +277,66 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
     ];
 
-    const handleRemovePossible = (rowIndex, possIndex) => {
-        const newRows = [...rows];
-        const possibilities = newRows[rowIndex].possible;
-        if (possibilities.length > 1) {
-            possibilities.splice(possIndex, 1);
-            updateRow(newRows);
-        }
-    };
-
     // 1) A helper that wraps updateRows but also ensures "possible" is visible
-    const handleSaveWithRiskTreatment = (rowNR, updatedData) => {
+    const handleSaveWithRiskTreatment = (rowId, updatedData) => {
         // 1) Push the new data up to the parent
-        updateRows(rowNR, updatedData);
+        updateRows(rowId, updatedData);
     };
 
     // Remove one action & its matching dueDate, but leave at least one
-    const handleRemoveAction = (rowIndex, possIndex, actionIndex) => {
-        const newRows = [...rows];
-        const block = newRows[rowIndex].possible[possIndex];
-        if (block.actions.length > 1) {
-            block.actions.splice(actionIndex, 1);
-            // also remove the corresponding dueDate
-            if (Array.isArray(block.dueDate) && block.dueDate.length > actionIndex) {
-                block.dueDate.splice(actionIndex, 1);
-            }
+    const handleRemoveAction = (rowId, possibleId, actionId) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
 
-            if (Array.isArray(block.responsible) && block.responsible.length > actionIndex) {
-                block.responsible.splice(actionIndex, 1);
-            }
+        const newRows = [...rows];
+        const block = newRows[rowIndex].possible[possibleIndex];
+
+        const idx = block.actions.findIndex(a => a.id === actionId);
+
+        if (idx !== -1 && block.actions.length > 1) {
+            block.actions.splice(idx, 1);
+            block.responsible.splice(idx, 1);
+            block.dueDate.splice(idx, 1);
             updateRow(newRows);
         }
     };
 
-    const handleAddPossible = (rowIndex, possIndex) => {
+    const handleAddAction = (rowId, possibleId, afterActionId) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
+
         const newRows = [...rows];
-        const targetRow = newRows[rowIndex];
+        const block = newRows[rowIndex].possible[possibleIndex];
 
-        if (!Array.isArray(targetRow.possible)) {
-            targetRow.possible = [];
-        }
+        const insertIndex = block.actions.findIndex(a => a.id === afterActionId);
+        if (insertIndex === -1) return;
 
-        targetRow.possible.splice(
-            possIndex + 1,
-            0,
-            { actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }
-        );
+        const newAction = { id: uuidv4(), action: "" };
+        const newResponsible = { id: uuidv4(), person: "" };
+        const newDueDate = { id: uuidv4(), date: "" };
+
+        block.actions.splice(insertIndex + 1, 0, newAction);
+        block.responsible.splice(insertIndex + 1, 0, newResponsible);
+        block.dueDate.splice(insertIndex + 1, 0, newDueDate);
 
         updateRow(newRows);
     };
 
-    const handleAddAction = (rowIndex, possIndex) => {
-        const newRows = [...rows];
-        const block = newRows[rowIndex].possible[possIndex];
+    const handleResponsibleInput = (rowId, possibleId, responsibleId, value) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
 
-        if (!Array.isArray(block.actions)) {
-            block.actions = [];
-        }
-        block.actions.push({ action: "" });
-
-        if (!Array.isArray(block.responsible)) {
-            block.responsible = [];
-        }
-        block.responsible.push({ person: "" });
-
-        if (!Array.isArray(block.dueDate)) {
-            block.dueDate = [];
-        }
-        block.dueDate.push({ date: "" });
-
-        updateRow(newRows);
-    };
-
-    const handleResponsibleInput = (rowIndex, possIndex, responsibleIndex, value) => {
         closeAllDropdowns();
-        handleResponsibleChange(rowIndex, possIndex, responsibleIndex, value);
+        handleResponsibleChange(rowId, possibleId, responsibleId, value);
+
         const matches = posLists
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+
         setFilteredExe(matches);
         setShowExeDropdown(true);
-        setActiveSubCell({ rowIndex: rowIndex, possIndex: possIndex, responsibleIndex: responsibleIndex });
+        setActiveSubCell({ rowId, possibleId, responsibleId });
 
-        const key = `${rowIndex}-${possIndex}-${responsibleIndex}`;
+        const key = `${rowId}-${possibleId}-${responsibleId}`;
 
         const el = responsibleInputRefs.current[key];
         if (el) {
@@ -256,15 +349,16 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         }
     };
 
-    const handleResponsibleFocus = (rowIndex, possIndex, responsibleIndex, value) => {
-        setActiveSubCell({ rowIndex: rowIndex, possIndex: possIndex, responsibleIndex: responsibleIndex });
+    const handleResponsibleFocus = (rowId, possibleId, responsibleId, value) => {
+        setActiveSubCell({ rowId, possibleId, responsibleId });
 
         const matches = posLists
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+
         setFilteredExe(matches);
         setShowExeDropdown(true);
 
-        const key = `${rowIndex}-${possIndex}-${responsibleIndex}`;
+        const key = `${rowId}-${possibleId}-${responsibleId}`;
 
         const el = responsibleInputRefs.current[key];
         if (el) {
@@ -278,26 +372,47 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     };
 
     const selectResponsibleSuggestion = (suggestion) => {
-        const { rowIndex, possIndex, responsibleIndex } = activeSubCell;
-        handleResponsibleChange(rowIndex, possIndex, responsibleIndex, suggestion);
+        const { rowId, possibleId, responsibleId } = activeSubCell;
+        if (!rowId || !possibleId || !responsibleId) return;
+
+        handleResponsibleChange(rowId, possibleId, responsibleId, suggestion);
         setShowExeDropdown(false);
     };
 
-    const handleResponsibleChange = (rowIndex, possIndex, responsibleIndex, value) => {
+    const handleResponsibleChange = (rowId, possibleId, responsibleId, value) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
+
         const newRows = [...rows];
-        newRows[rowIndex].possible[possIndex].responsible[responsibleIndex].person = value;
+        const block = newRows[rowIndex].possible[possibleIndex];
+        const responsible = block.responsible.find(r => r.id === responsibleId);
+        if (responsible) {
+            responsible.person = value;
+            updateRow(newRows);
+        }
+    };
+
+    const handleActionChange = (rowId, possibleId, actionId, value) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
+
+        const newRows = [...rows];
+        const block = newRows[rowIndex].possible[possibleIndex];
+        const action = block.actions.find(a => a.id === actionId);
+        if (action) action.action = value;
+
         updateRow(newRows);
     };
 
-    const handleActionChange = (rowIndex, possIndex, actionIndex, value) => {
-        const newRows = [...rows];
-        newRows[rowIndex].possible[possIndex].actions[actionIndex].action = value;
-        updateRow(newRows);
-    };
+    const handleDueDateChange = (rowId, possibleId, dueDateId, value) => {
+        const { rowIndex, possibleIndex } = findRowAndPossibleById(rowId, possibleId);
+        if (rowIndex === -1 || possibleIndex === -1) return;
 
-    const handleDueDateChange = (rowIndex, possIndex, dateIndex, value) => {
         const newRows = [...rows];
-        newRows[rowIndex].possible[possIndex].dueDate[dateIndex].date = value;
+        const block = newRows[rowIndex].possible[possibleIndex];
+        const due = block.dueDate.find(d => d.id === dueDateId);
+        if (due) due.date = value;
+
         updateRow(newRows);
     };
 
@@ -445,30 +560,29 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         };
     }, [showColumnSelector, showExeDropdown]);
 
-    const insertRowAt = (insertIndex) => {
-        // copy existing rows
-        const newRows = [...rows];
+    const insertRowAt = (afterRowId) => {
+        const insertIndex = rows.findIndex(r => r.id === afterRowId);
+        if (insertIndex === -1) return;
 
-        // create a fresh new row (nr doesn’t really matter here)
+        const newRows = [...rows];
         const newRow = {
             id: uuidv4(),
             nr: 0,
             main: "", sub: "", owner: "", odds: "", riskRank: "",
             hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
             R: "-", source: "", material: "", priority: "",
-            possible: [{ actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }],
+            possible: [{
+                id: uuidv4(),
+                actions: [{ id: uuidv4(), action: "" }],
+                responsible: [{ id: uuidv4(), person: "" }],
+                dueDate: [{ id: uuidv4(), date: "" }]
+            }],
             UE: "", additional: "", maxConsequence: ""
         };
-
-        // insert it at the desired index
-        newRows.splice(insertIndex, 0, newRow);
-
-        // now renumber *all* rows
+        newRows.splice(insertIndex + 1, 0, newRow);
         newRows.forEach((row, idx) => {
             row.nr = idx + 1;
         });
-
-        // push it back up to your parent
         updateRow(newRows);
     };
 
@@ -605,14 +719,18 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                     const col = availableColumns.find(c => c.id === columnId);
                                     if (col) {
                                         return (
-                                            <th key={idx} className={col.className} rowSpan={2}>
-                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
+                                            <th key={idx} className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`} rowSpan={2}
+                                                onClick={e => openFilterPopup(columnId, e)}>
+                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}{filters[columnId] && (
+                                                    <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
                                             </th>
                                         );
                                     }
                                     // — blanks —
                                     return (
-                                        <th key={idx} className="ibraCent ibraBlank" rowSpan={2} />
+                                        <th key={idx} className="ibraCent ibraBlank" rowSpan={2}
+                                            onClick={e => openFilterPopup(columnId, e)} />
                                     );
                                 })}
                             </tr>
@@ -621,8 +739,11 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                     if (['actions', "responsible", 'dueDate'].includes(columnId)) {
                                         const col = availableColumns.find(c => c.id === columnId);
                                         return (
-                                            <th key={idx} className={col.className}>
-                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
+                                            <th key={idx} className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`}
+                                                onClick={e => openFilterPopup(columnId, e)}>
+                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}{filters[columnId] && (
+                                                    <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
                                             </th>
                                         );
                                     }
@@ -631,7 +752,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                             </tr>
                         </thead>
                         <tbody>
-                            {rows.map((row, rowIndex) => {
+                            {filteredRows.map((row, rowIndex) => {
                                 // 1. fallback to a single empty possibility if none exist
                                 const possibilities = Array.isArray(row.possible) && row.possible.length > 0
                                     ? row.possible
@@ -639,20 +760,20 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                 return possibilities.map((p, pi) => {
                                     const isFirst = pi === 0
-                                    const isDragOver = dragOverRowIndex === rowIndex && isFirst;
+                                    const isDragOver = dragOverRowId === row.id && isFirst;
 
                                     return (
                                         <tr
                                             key={`${row.id}-${pi}`}
                                             className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${isDragOver ? 'drag-over' : ''}`}
-                                            draggable={isFirst && armedDragRow === rowIndex}
-                                            onDragStart={isFirst && armedDragRow === rowIndex
-                                                ? (e) => handleDragStart(e, rowIndex)
+                                            draggable={isFirst && armedDragRow === row.id}
+                                            onDragStart={isFirst && armedDragRow === row.id
+                                                ? (e) => handleDragStart(e, row.id)
                                                 : undefined}
-                                            onDragOver={isFirst ? (e) => handleDragOver(e, rowIndex) : undefined}
+                                            onDragOver={isFirst ? (e) => handleDragOver(e, row.id) : undefined}
                                             onDragLeave={isFirst ? handleDragLeave : undefined}
-                                            onDrop={isFirst ? (e) => handleDrop(e, rowIndex) : undefined}
-                                            onDragEnd={isFirst && armedDragRow === rowIndex ? handleDragEnd : undefined}
+                                            onDrop={isFirst ? (e) => handleDrop(e, row.id) : undefined}
+                                            onDragEnd={isFirst && armedDragRow === row.id ? handleDragEnd : undefined}
                                         >
                                             {displayColumns.map((colId, idx) => {
                                                 const columnMeta = availableColumns.find(c => c.id === colId)
@@ -688,20 +809,20 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                             key={ai}
                                                                             value={a.action}
                                                                             placeholder="Insert Required Action"
-                                                                            onChange={e => handleActionChange(rowIndex, pi, ai, e.target.value)}
+                                                                            onChange={e => handleActionChange(row.id, p.id, a.id, e.target.value)}
                                                                             className="ibra-textarea-PI"
                                                                             style={{ fontSize: "14px" }}
                                                                         />
                                                                         <FontAwesomeIcon
                                                                             icon={faPlusCircle}
-                                                                            onClick={() => handleAddAction(rowIndex, pi)}
+                                                                            onClick={() => handleAddAction(row.id, p.id, a.id)}
                                                                             className="control-icon-add-ibra magic-icon"
                                                                             title="Add action required" />
                                                                         {p.actions.length > 1 && (
                                                                             <FontAwesomeIcon
                                                                                 icon={faTrash}
                                                                                 className="control-icon-remove-ibra magic-icon"
-                                                                                onClick={() => handleRemoveAction(rowIndex, pi, ai)}
+                                                                                onClick={() => handleRemoveAction(row.id, p.id, a.id)}
                                                                                 title="Remove this action"
                                                                             />
                                                                         )}
@@ -722,15 +843,15 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                         type="text"
                                                                         value={d.person}
                                                                         ref={el => {
-                                                                            const key = `${rowIndex}-${pi}-${di}`;
+                                                                            const key = `${row.id}-${p.id}-${d.id}`;
                                                                             if (el) {
                                                                                 responsibleInputRefs.current[key] = el;
                                                                             } else {
                                                                                 delete responsibleInputRefs.current[key];
                                                                             }
                                                                         }}
-                                                                        onChange={e => handleResponsibleInput(rowIndex, pi, di, e.target.value)}
-                                                                        onFocus={e => handleResponsibleFocus(rowIndex, pi, di, e.target.value)}
+                                                                        onChange={e => handleResponsibleInput(row.id, p.id, d.id, e.target.value)}
+                                                                        onFocus={e => handleResponsibleFocus(row.id, p.id, d.id, e.target.value)}
                                                                         className="ibra-textarea-PI"
                                                                         style={{ fontSize: "14px" }}
                                                                         placeholder="Insert or Select Responsible Person"
@@ -750,7 +871,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                         type="date"
                                                                         style={{ fontFamily: "Arial", fontSize: "14px" }}
                                                                         value={d.date}
-                                                                        onChange={e => handleDueDateChange(rowIndex, pi, di, e.target.value)}
+                                                                        onChange={e => handleDueDateChange(row.id, p.id, d.id, e.target.value)}
                                                                         className="ibra-input-date"
                                                                     />
                                                                 </div>
@@ -875,7 +996,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             <FontAwesomeIcon
                                                                 icon={faArrowsUpDown}
                                                                 className="drag-handle"
-                                                                onMouseDown={() => setArmedDragRow(rowIndex)}
+                                                                onMouseDown={() => setArmedDragRow(row.id)}
                                                                 onMouseUp={() => setArmedDragRow(null)}
                                                                 style={{ cursor: 'grab', marginRight: "2px", marginLeft: "4px" }}
                                                             />
@@ -909,14 +1030,14 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                 <button
                                                                     className="ibra-add-row-button"
                                                                     title="Insert row below"
-                                                                    onClick={() => insertRowAt(rowIndex + 1)}
+                                                                    onClick={() => insertRowAt(row.id)}
                                                                 >
                                                                     <FontAwesomeIcon icon={faPlusCircle} />
                                                                 </button>
                                                                 <button
                                                                     className="ibra-add-row-button"
                                                                     title="Duplicate row"
-                                                                    onClick={() => handleDuplicateRow(rowIndex)}
+                                                                    onClick={() => handleDuplicateRow(row.id)}
                                                                     style={{ display: 'block', marginTop: '4px' }}
                                                                 >
                                                                     <FontAwesomeIcon icon={faCopy} />
@@ -979,6 +1100,50 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {filterPopup.visible && (
+                <div
+                    className="jra-filter-popup"
+                    style={{
+                        position: 'fixed',
+                        top: filterPopup.pos.top,
+                        left: filterPopup.pos.left - 10,
+                        width: filterPopup.pos.width,
+                        zIndex: 10000
+                    }}
+                >
+                    <input
+                        className="jra-filter-input"
+                        type="text"
+                        placeholder="Filter..."
+                        defaultValue={filters[filterPopup.column] || ''}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') applyFilter(e.target.value);
+                        }}
+                    />
+                    <div className="jra-filter-buttons">
+                        <button
+                            type="button"
+                            className="jra-filter-apply"
+                            onClick={() => {
+                                const val = document
+                                    .querySelector('.jra-filter-input')
+                                    .value;
+                                applyFilter(val);
+                            }}
+                        >
+                            Apply
+                        </button>
+                        <button
+                            type="button"
+                            className="jra-filter-clear"
+                            onClick={clearFilter}
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

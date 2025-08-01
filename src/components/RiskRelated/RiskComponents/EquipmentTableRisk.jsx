@@ -3,19 +3,23 @@ import "./EquipmentTableRisk.css"; // Add styling here
 import EquipmentPopup from "../../ValueChanges/EquipmentPopup";
 import ManageEquipment from "../../ValueChanges/ManageEquipment";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import RiskEquipmentPopup from "../RiskValueChanges/RiskEquipmentPopup"
 import RiskManageEquipment from "../RiskValueChanges/RiskManageEquipment"
+import ModifySuggestedEquipment from "../../ValueChanges/ModifySuggestedEquipment";
 
 const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [eqpData, setEqpData] = useState([]);
+    const [originalData, setOriginalData] = useState([])
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState(new Set(usedEquipment));
     const [isNA, setIsNA] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [eqpUpdate, setEqpUpdate] = useState("");
+    const [updatePopup, setUpdatePopup] = useState(false);
 
     const handlePopupToggle = () => {
         setSearchTerm("")
@@ -60,6 +64,48 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
         }));
     };
 
+    const handleUpdateEqp = (newEqpObj, oldEqp) => {
+        const updatedCode = newEqpObj.eqp;
+
+        // 1. Remove the old abbreviation from usedAbbrCodes
+        setUsedEquipment(prev =>
+            prev.filter(code => code !== oldEqp)
+        );
+
+        // 2. Remove from selectedAbbrs and add the new one
+        setSelectedEquipment(prev => {
+            const updated = new Set(prev);
+            updated.delete(oldEqp);
+            updated.add(updatedCode);
+            return updated;
+        });
+
+        // 3. Replace the old row in abbrRows with the updated one
+        setFormData(prev => ({
+            ...prev,
+            Equipment: prev.Equipment.map(row =>
+                row.eqp === oldEqp
+                    ? newEqpObj
+                    : row
+            ),
+        }));
+
+        // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+        setUsedEquipment(prev => [...prev, updatedCode]);
+    };
+
+    const openUpdate = (eqp) => {
+        setEqpUpdate(eqp);
+
+        setUpdatePopup(true);
+    }
+
+    const closeUpdate = () => {
+        setEqpUpdate("");
+
+        setUpdatePopup(false);
+    }
+
     useEffect(() => {
         setSelectedEquipment(new Set(usedEquipment));
         if (usedEquipment.length > 0) {
@@ -77,6 +123,7 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
             const data = await response.json();
 
             setEqpData(data.eqps);
+            setOriginalData(data.eqps);
             localStorage.setItem('cachedEqpOptions', JSON.stringify(data.eqps));
         } catch (error) {
             console.log(error);
@@ -219,7 +266,7 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                                                                     onChange={() => handleCheckboxChange(item.eqp)}
                                                                 />
                                                             </td>
-                                                            <td>{item.eqp}</td>
+                                                            <td style={{ whiteSpace: "pre-wrap" }}>{item.eqp}</td>
                                                         </tr>
                                                     ))
                                             ) : (
@@ -243,35 +290,50 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                     <table className="vcr-table font-fam table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="col-eqp-eqp">Equipment</th>
-                                <th className="col-eqp-act">Action</th>
+                                <th className="col-eqp-eqp" style={{ textAlign: "center" }}>Equipment</th>
+                                <th className="col-eqp-act" style={{ textAlign: "center" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.Equipment?.map((row, index) => (
                                 <tr key={index}>
-                                    <td style={{ fontSize: "14px" }}>{row.eqp}</td>
+                                    <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.eqp}</td>
                                     <td className="procCent">
-                                        <button
-                                            className="remove-row-button"
-                                            onClick={() => {
-                                                // Remove abbreviation from table and the selected abbreviations set
-                                                setFormData({
-                                                    ...formData,
-                                                    Equipment: formData.Equipment.filter((_, i) => i !== index),
-                                                });
-                                                setUsedEquipment(
-                                                    usedEquipment.filter((eqp) => eqp !== row.eqp)
-                                                );
+                                        <div className="term-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                style={{ paddingRight: "6px" }}
+                                                onClick={() => {
+                                                    // Remove abbreviation from table and the selected abbreviations set
+                                                    setFormData({
+                                                        ...formData,
+                                                        Equipment: formData.Equipment.filter((_, i) => i !== index),
+                                                    });
+                                                    setUsedEquipment(
+                                                        usedEquipment.filter((eqp) => eqp !== row.eqp)
+                                                    );
 
-                                                // Update the selectedAbbrs state to reflect the removal
-                                                const newSelectedEquipment = new Set(selectedEquipment);
-                                                newSelectedEquipment.delete(row.eqp);
-                                                setSelectedEquipment(newSelectedEquipment);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                                    // Update the selectedAbbrs state to reflect the removal
+                                                    const newSelectedEquipment = new Set(selectedEquipment);
+                                                    newSelectedEquipment.delete(row.eqp);
+                                                    setSelectedEquipment(newSelectedEquipment);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                            </button>
+                                            <button
+                                                className="edit-terms-row-button"
+                                                disabled={
+                                                    originalData.some(item => item.eqp === row.eqp)
+                                                }
+                                                style={{ color: originalData.some(item => item.eqp === row.eqp) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                onClick={() => {
+                                                    openUpdate(row.eqp)
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} title="Modify Equipment" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -291,6 +353,8 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                     </button>
                 )}
             </div>
+
+            {updatePopup && (<ModifySuggestedEquipment eqp={eqpUpdate} closePopup={closeUpdate} onAdd={handleUpdateEqp} setEqpData={setEqpData} />)}
         </div>
     );
 };

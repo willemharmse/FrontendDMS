@@ -68,7 +68,6 @@
 
 .manDefs-popup-group {
     margin-bottom: 10px;
-    transform: translateY(-4%);
     padding: 20px 0;
     background-color: white;
     border-radius: 5px;
@@ -130,6 +129,8 @@
     font-size: 15px;
     box-sizing: border-box;
     font-family: Arial;
+    field-sizing: content;
+    min-height: 100px;
 }
 
 /* Update button styling */

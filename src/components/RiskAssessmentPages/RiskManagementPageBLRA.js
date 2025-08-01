@@ -511,20 +511,35 @@ const RiskManagementPageBLRA = () => {
                 return {
                     ...row,
                     possible: possible.map(block => {
-                        const actions = Array.isArray(block.actions) ? block.actions : [];
-                        const count = actions.length;
+                        const possibleId = block?.id ?? uuidv4();
+                        const count = block?.actions?.length;
 
-                        // Ensure exactly `count` responsible entries
-                        const responsible = Array.from({ length: count }, (_, i) =>
-                            (block.responsible && block.responsible[i]) || { person: '' }
-                        );
+                        const actions = Array.from({ length: count }, (_, i) => {
+                            const a = block?.actions?.[i];
+                            return {
+                                id: a?.id ?? uuidv4(),
+                                action: a?.action ?? ''
+                            };
+                        });
 
-                        // Ensure exactly `count` dueDate entries
-                        const dueDate = Array.from({ length: count }, (_, i) =>
-                            (block.dueDate && block.dueDate[i]) || { date: '' }
-                        );
+                        const responsible = Array.from({ length: count }, (_, i) => {
+                            const r = block?.responsible?.[i];
+                            return {
+                                id: r?.id ?? uuidv4(),
+                                person: r?.person ?? ''
+                            };
+                        });
 
-                        return { ...block, actions, responsible, dueDate };
+                        // Normalize dueDate to match actions count, each with id
+                        const dueDate = Array.from({ length: count }, (_, i) => {
+                            const d = block?.dueDate?.[i];
+                            return {
+                                id: d?.id ?? uuidv4(),
+                                date: d?.date ?? ''
+                            };
+                        });
+
+                        return { ...block, id: possibleId, actions, responsible, dueDate };
                     })
                 };
             })
@@ -581,11 +596,11 @@ const RiskManagementPageBLRA = () => {
         });
     };
 
-    const updateIbraRows = (nrToUpdate, newValues) => {
+    const updateIbraRows = (idToUpdate, newValues) => {
         setFormData(prev => ({
             ...prev,
             ibra: prev.ibra.map(item =>
-                item.nr === nrToUpdate
+                item.id === idToUpdate
                     ? { ...item, ...newValues }
                     : item
             )
@@ -609,9 +624,13 @@ const RiskManagementPageBLRA = () => {
             ibra: [
                 ...prevFormData.ibra,
                 {
-                    id: uuidv4(), nr: prevFormData.ibra.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
-                    hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
-                    R: "-", source: "", material: "", priority: "", possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                    id: uuidv4(),
+                    nr: prevFormData.ibra.length + 1,
+                    main: "", sub: "", owner: "", odds: "", riskRank: "",
+                    hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
+                    R: "-", source: "", material: "", priority: "",
+                    possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
+                    UE: "", additional: "", maxConsequence: ""
                 }
             ]
         }));
@@ -653,7 +672,7 @@ const RiskManagementPageBLRA = () => {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
                 LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
-                possible: [{ actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }], UE: "", additional: "", maxConsequence: ""
             }
         ],
         cea: [

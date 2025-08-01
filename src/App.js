@@ -52,6 +52,21 @@ import GeneratedStandardsInfo from './components/GeneratedStandardsInfo';
 import RiskReviewPageIBRA from './components/RiskAssessmentPages/RiskReviewPageIBRA';
 import RiskReviewPageJRA from './components/RiskAssessmentPages/RiskReviewPageJRA';
 import GeneratedSpecialInfo from './components/GeneratedSpecialInfo';
+import VersionHistoryIBRA from './components/RiskRelated/RiskDocuments/VersionHistoryIBRA';
+import DeletedRiskDocumentsIBRA from './components/RiskRelated/RiskDocuments/DeletedRiskDocumentsIBRA';
+import RiskReviewPageBLRA from './components/RiskAssessmentPages/RiskReviewPageBLRA';
+import CreatePageStandardsReview from './components/DocumentCreationPages/CreatePageStandardsReview';
+import CreatePageSIReview from './components/DocumentCreationPages/CreatePageSIReview';
+import DeletedDocumentsSI from './components/DocumentCreationPages/DeletedDocumentsSI';
+import VersionHistorySI from './components/DocumentCreationPages/VersionHistorySI';
+import VersionHistoryStandard from './components/DocumentCreationPages/VersionHistoryStandard';
+import DeletedDocumentsStandard from './components/DocumentCreationPages/DeletedDocumentsStandard';
+import VersionHistoryBLRA from './components/RiskRelated/RiskDocuments/VersionHistoryBLRA';
+import DeletedRiskDocumentsBLRA from './components/RiskRelated/RiskDocuments/DeletedRiskDocumentsBLRA';
+import VersionHistoryJRA from './components/RiskRelated/RiskDocuments/VersionHistoryJRA';
+import DeletedRiskDocumentsJRA from './components/RiskRelated/RiskDocuments/DeletedRiskDocumentsJRA';
+import VersionHistoryProcedure from './components/DocumentCreationPages/VersionHistoryProcedure';
+import DeletedDocumentsProcedure from './components/DocumentCreationPages/DeletedDocumentsProcedure';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -125,12 +140,18 @@ function App() {
         <Route path='FrontendDMS/forgot' element={isMobile ? <Navigate to="/FrontendDMS/mobileForgot" /> : <ForgotPassword />} />
         <Route path='FrontendDMS/updateFile' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <VersionControlPage />} />
         <Route path='FrontendDMS/generatedFileInfo' element={<GeneratedFileInfo />} />
+        <Route path='FrontendDMS/deletedProcedureDocs' element={<DeletedDocumentsProcedure />} />
         <Route path='FrontendDMS/generatedSpecialFiles' element={<GeneratedSpecialInfo />} />
+        <Route path='FrontendDMS/deletedSIDocs' element={<DeletedDocumentsSI />} />
         <Route path='FrontendDMS/generatedStandardFiles' element={<GeneratedStandardsInfo />} />
+        <Route path='FrontendDMS/deletedStandardDocs' element={<DeletedDocumentsStandard />} />
         <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
         <Route path='FrontendDMS/review/:fileId' element={<ReviewPage />} />
         <Route path='FrontendDMS/reviewIBRA/:fileId/:type' element={<RiskReviewPageIBRA />} />
         <Route path='FrontendDMS/reviewJRA/:fileId/:type' element={<RiskReviewPageJRA />} />
+        <Route path='FrontendDMS/reviewBLRA/:fileId/:type' element={<RiskReviewPageBLRA />} />
+        <Route path='FrontendDMS/reviewStandard/:fileId/:type' element={<CreatePageStandardsReview />} />
+        <Route path='FrontendDMS/reviewSpecial/:fileId/:type' element={<CreatePageSIReview />} />
         <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
@@ -145,6 +166,12 @@ function App() {
         <Route path="FrontendDMS/admin" element={<AdminPage />} />
         <Route path="FrontendDMS/userActivity/:id" element={<UserActivity />} />
         <Route path="FrontendDMS/versionHistory/:id" element={<VersionHistory />} />
+        <Route path="FrontendDMS/versionHistoryIBRA/:id" element={<VersionHistoryIBRA />} />
+        <Route path="FrontendDMS/versionHistorySpecial/:id" element={<VersionHistorySI />} />
+        <Route path="FrontendDMS/versionHistoryStandard/:id" element={<VersionHistoryStandard />} />
+        <Route path="FrontendDMS/versionHistoryProcedure/:id" element={<VersionHistoryProcedure />} />
+        <Route path="FrontendDMS/versionHistoryBLRA/:id" element={<VersionHistoryBLRA />} />
+        <Route path="FrontendDMS/versionHistoryJRA/:id" element={<VersionHistoryJRA />} />
         <Route path='FrontendDMS/riskHome' element={<RiskHomePage />} />
         <Route path="FrontendDMS/riskIBRA/:type" element={<RiskManagementPageIBRA />} />
         <Route path="FrontendDMS/riskJRA/:type" element={<RiskManagementPageJRA />} />
@@ -152,8 +179,11 @@ function App() {
         <Route path="FrontendDMS/riskBLRA/:type" element={<RiskManagementPageBLRA />} />
         <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
         <Route path='FrontendDMS/generatedIBRADocs' element={<RiskDocumentsIBRA />} />
+        <Route path='FrontendDMS/deletedIBRADocs' element={<DeletedRiskDocumentsIBRA />} />
         <Route path='FrontendDMS/generatedJRADocs' element={<RiskDocumentsJRA />} />
+        <Route path='FrontendDMS/deletedJRADocs' element={<DeletedRiskDocumentsJRA />} />
         <Route path='FrontendDMS/generatedBLRADocs' element={<RiskDocumentsBLRA />} />
+        <Route path='FrontendDMS/deletedBLRADocs' element={<DeletedRiskDocumentsBLRA />} />
         <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
         <Route path='FrontendDMS/futureEnhancement' element={<FutureEnhancementPage />} />
         <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />

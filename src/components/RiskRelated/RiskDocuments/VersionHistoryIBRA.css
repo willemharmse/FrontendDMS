@@ -1,0 +1,144 @@
+.ibra-version-history-file-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
+}
+
+.main-box-ibra-version-history-file {
+    flex: 1;
+    width: 100%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* For modern browsers */
+.table-container-ibra-version-history-file::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.table-container-ibra-version-history-file::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.table-container-ibra-version-history-file::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.table-container-ibra-version-history-file::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.table-container-ibra-version-history-file {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.table-container-ibra-version-history-file {
+    height: calc(100% - 50px);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.ibra-version-history-file-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ibra-version-history-file-head {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 1;
+}
+
+.ibra-version-history-file-tr {
+    padding: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.ibra-version-history-file-th {
+    padding: 5px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.ibra-version-history-file-nr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.ibra-version-history-file-fn {
+    width: 65%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.ibra-version-history-file-stat {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.ibra-version-history-file-ver {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.ibra-version-history-file-point {
+    cursor: pointer;
+}
+
+.verion-download-button {
+    top: 15px;
+    right: 25px;
+    z-index: 1;
+    background: transparent;
+    color: #333;
+    font-size: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}

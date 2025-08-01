@@ -102,61 +102,63 @@ const TermPopup = ({ isOpen, onClose, role, userID, setTermData, onAdd }) => {
                     <button className="term-popup-close" onClick={handleClose} title="Close Popup">×</button>
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="term-popup-group">
-                        <label className="term-popup-label">Term</label>
-                        <input
-                            spellcheck="true"
-                            type="text"
-                            value={term}
-                            onChange={(e) => setTerm(e.target.value)}
-                            className="term-popup-input"
-                            required
-                            placeholder="Insert term here"
-                        />
-                    </div>
-                    <div className="term-popup-group">
-                        <label className="term-popup-label">Description</label>
-                        <textarea
-                            rows="4"
-                            spellcheck="true"
-                            type="text"
-                            value={definition}
-                            onChange={(e) => setDefinition(e.target.value)}
-                            className="term-popup-text-area"
-                            required
-                            placeholder="Insert description here"
-                        />
-                    </div>
-
-                    <div className="abbr-popup-group">
-                        <label className="abbr-popup-label">Approver:</label>
-                        <div className="abbr-popup-page-select-container">
-                            <select
+                    <div className="term-popup-scrollable">
+                        <div className="term-popup-group">
+                            <label className="term-popup-label">Term</label>
+                            <input
                                 spellcheck="true"
                                 type="text"
-                                value={approver}
-                                onChange={(e) => setApprover(e.target.value)}
-                                className="abbr-popup-select"
+                                value={term}
+                                onChange={(e) => setTerm(e.target.value)}
+                                className="term-popup-input"
                                 required
-                                placeholder="Select Approver"
-                            >
-                                <option value="">Select Approver</option>
-                                {usersList.map((value, index) => (
-                                    <option key={index} value={value.id || value._id || value}>
-                                        {value.username || value.label || value}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="Insert term here"
+                            />
                         </div>
+                        <div className="term-popup-group">
+                            <label className="term-popup-label">Description</label>
+                            <textarea
+                                rows="4"
+                                spellcheck="true"
+                                type="text"
+                                value={definition}
+                                onChange={(e) => setDefinition(e.target.value)}
+                                className="term-popup-text-area"
+                                required
+                                placeholder="Insert description here"
+                            />
+                        </div>
+
+                        <div className="term-popup-group">
+                            <label className="abbr-popup-label">Approver:</label>
+                            <div className="abbr-popup-page-select-container">
+                                <select
+                                    spellcheck="true"
+                                    type="text"
+                                    value={approver}
+                                    onChange={(e) => setApprover(e.target.value)}
+                                    className="abbr-popup-select"
+                                    required
+                                    placeholder="Select Approver"
+                                >
+                                    <option value="">Select Approver</option>
+                                    {usersList.map((value, index) => (
+                                        <option key={index} value={value.id || value._id || value}>
+                                            {value.username || value.label || value}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Success/Error Message Box */}
+                        {message.text && (
+                            <div className={`term-message ${message.type}`}>
+                                {message.text}
+                            </div>
+                        )}
+
                     </div>
-
-                    {/* Success/Error Message Box */}
-                    {message.text && (
-                        <div className={`term-message ${message.type}`}>
-                            {message.text}
-                        </div>
-                    )}
-
                     <div className="term-popup-buttons">
                         <button type="submit" className="term-popup-button">
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Add'}

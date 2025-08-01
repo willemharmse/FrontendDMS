@@ -3,17 +3,21 @@ import "./MobileMachineTable.css"; // Add styling here
 import MobileMachinePopup from "../ValueChanges/MobileMachinePopup";
 import ManageMobileMachines from "../ValueChanges/ManageMobileMachines";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedMobileMachines from "../ValueChanges/ModifySuggestedMobileMachines";
 
 const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [macData, setMacData] = useState([]);
+    const [originalData, setOriginalData] = useState([])
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMMachine, setSelectedMMachine] = useState(new Set(usedMobileMachine));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [macUpdate, setMacUpdate] = useState("");
+    const [updatePopup, setUpdatePopup] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -25,6 +29,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             const data = await response.json();
 
             setMacData(data.macs);
+            setOriginalData(data.macs);
             localStorage.setItem('cachedMacOptions', JSON.stringify(data.macs));
         } catch (error) {
             console.log(error);
@@ -39,14 +44,14 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
         fetchValues();
     }, []);
 
-    const handleNewMac = (newMac) => {
-        const code = newMac.mac;
+    const handleNewMac = (newMac, newNormal) => {
+        const code = newMac.machine;
         // add to the “used” codes array
         setUsedMobileMachine((prev) => [...prev, code]);
         setSelectedMMachine((prev) => new Set(prev).add(code));
         setFormData((prev) => ({
             ...prev,
-            MobileMachine: [...prev.MobileMachine, newMac],
+            MobileMachine: [...prev.MobileMachine, newNormal],
         }));
     };
 
@@ -61,7 +66,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             const next = new Set(prev);
             if (next.has(oldMac)) {
                 next.delete(oldMac);
-                next.add(updatedMac.mac);
+                next.add(updatedMac.machine);
             }
             return next;
         });
@@ -71,11 +76,53 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
             ...prev,
             MobileMachine: prev.MobileMachine.map(row =>
                 row.mac === oldMac
-                    ? { mac: updatedMac.mac + " *" }
+                    ? { mac: updatedMac.machine + " *" }
                     : row
             ),
         }));
     };
+
+    const handleUpdateMac = (newMacObj, oldMac, newNormal) => {
+        const updatedCode = newMacObj.machine;
+
+        // 1. Remove the old abbreviation from usedAbbrCodes
+        setUsedMobileMachine(prev =>
+            prev.filter(code => code !== oldMac)
+        );
+
+        // 2. Remove from selectedAbbrs and add the new one
+        setSelectedMMachine(prev => {
+            const updated = new Set(prev);
+            updated.delete(oldMac);
+            updated.add(updatedCode);
+            return updated;
+        });
+
+        // 3. Replace the old row in abbrRows with the updated one
+        setFormData(prev => ({
+            ...prev,
+            MobileMachine: prev.MobileMachine.map(row =>
+                row.mac === oldMac
+                    ? newNormal
+                    : row
+            ),
+        }));
+
+        // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+        setUsedMobileMachine(prev => [...prev, updatedCode]);
+    };
+
+    const openUpdate = (mac) => {
+        setMacUpdate(mac);
+
+        setUpdatePopup(true);
+    }
+
+    const closeUpdate = () => {
+        setMacUpdate("");
+
+        setUpdatePopup(false);
+    }
 
     useEffect(() => {
         setSelectedMMachine(new Set(usedMobileMachine));
@@ -216,7 +263,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                                                     onChange={() => handleCheckboxChange(item.machine)}
                                                                 />
                                                             </td>
-                                                            <td>{item.machine}</td>
+                                                            <td style={{ whiteSpace: "pre-wrap" }}>{item.machine}</td>
                                                         </tr>
                                                     ))
                                             ) : (
@@ -240,35 +287,50 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     <table className="vcr-table font-fam table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="col-mac-mac">Mobile Machine</th>
-                                <th className="col-mac-act">Action</th>
+                                <th className="col-mac-mac" style={{ textAlign: "center" }}>Mobile Machine</th>
+                                <th className="col-mac-act" style={{ textAlign: "center" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.MobileMachine?.map((row, index) => (
                                 <tr key={index}>
-                                    <td style={{ fontSize: "14px" }}>{row.mac}</td>
+                                    <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.mac}</td>
                                     <td className="procCent">
-                                        <button
-                                            className="remove-row-button"
-                                            onClick={() => {
-                                                // Remove abbreviation from table and the selected abbreviations set
-                                                setFormData({
-                                                    ...formData,
-                                                    MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
-                                                });
-                                                setUsedMobileMachine(
-                                                    usedMobileMachine.filter((mac) => mac !== row.mac)
-                                                );
+                                        <div className="term-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                style={{ paddingRight: "6px" }}
+                                                onClick={() => {
+                                                    // Remove abbreviation from table and the selected abbreviations set
+                                                    setFormData({
+                                                        ...formData,
+                                                        MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
+                                                    });
+                                                    setUsedMobileMachine(
+                                                        usedMobileMachine.filter((mac) => mac !== row.mac)
+                                                    );
 
-                                                // Update the selectedAbbrs state to reflect the removal
-                                                const newSelectedMachines = new Set(selectedMMachine);
-                                                newSelectedMachines.delete(row.mac);
-                                                setSelectedMMachine(newSelectedMachines);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                                    // Update the selectedAbbrs state to reflect the removal
+                                                    const newSelectedMachines = new Set(selectedMMachine);
+                                                    newSelectedMachines.delete(row.mac);
+                                                    setSelectedMMachine(newSelectedMachines);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                            </button>
+                                            <button
+                                                className="edit-terms-row-button"
+                                                disabled={
+                                                    originalData.some(item => item.machine === row.mac)
+                                                }
+                                                style={{ color: originalData.some(item => item.machine === row.mac) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                onClick={() => {
+                                                    openUpdate(row.mac)
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} title="Modify Mobile Machine" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -288,6 +350,8 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     </button>
                 )}
             </div>
+
+            {updatePopup && (<ModifySuggestedMobileMachines mac={macUpdate} closePopup={closeUpdate} onAdd={handleUpdateMac} setMachineData={setMacData} />)}
         </div>
     );
 };

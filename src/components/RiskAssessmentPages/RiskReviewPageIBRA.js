@@ -58,6 +58,57 @@ const RiskReviewPageIBRA = () => {
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
     const [change, setChange] = useState("");
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+
+    const openSaveAs = () => {
+        if (!titleSet) {
+            toast.warn("Please fill in at least the title field before saving.", {
+                closeButton: false,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+        setIsSaveAsModalOpen(true);
+    };
+
+    const closeSaveAs = () => {
+        setIsSaveAsModalOpen(false);
+    };
+
+    const confirmSaveAs = (newTitle) => {
+        // apply the new title, clear loadedID, then save
+        const me = userIDRef.current;
+        const newFormData = {
+            ...formDataRef.current,        // your current formData
+            title: newTitle,             // override title
+        };
+
+        setFormData(newFormData);
+        formDataRef.current = newFormData;
+
+        setUserIDs([me]);
+        userIDsRef.current = [me];
+
+        loadedIDRef.current = '';
+        setLoadedID('');
+
+        saveAsData();
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("New Draft Successfully Saved", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
+        setIsSaveAsModalOpen(false);
+    };
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -99,6 +150,37 @@ const RiskReviewPageIBRA = () => {
                     textAlign: 'center'
                 }
             });
+        }
+    };
+
+    const saveAsData = async () => {
+        const dataToStore = {
+            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+            usedTermCodes: usedTermCodesRef.current,
+            formData: formDataRef.current,
+            userIDs: userIDsRef.current,
+            creator: userIDRef.current,
+            updater: null,
+            dateUpdated: null
+        };
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/safe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+            const result = await response.json();
+
+            if (result.id) {
+                setLoadedID(result.id);
+                loadedIDRef.current = result.id;
+            }
+        } catch (error) {
+            console.error('Error saving data:', error);
         }
     };
 
@@ -157,6 +239,57 @@ const RiskReviewPageIBRA = () => {
             await handleGeneratePublish();
         } catch (err) {
             toast.error("Could not save draft, generation aborted." + err);
+        }
+    };
+
+    const handleGenerateDocument = async () => {
+        // 1) Build the updated changeTable and version from the latest state
+        const lastCT = formData.changeTable;
+        const lastVersion = parseInt(formData.version, 10);
+        const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
+
+        const newChange = {
+            changeVersion: (lastChangeVer + 1).toString(),
+            change,
+            changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        };
+
+        const updatedFormData = {
+            ...formData,
+            version: (lastVersion + 1).toString(),
+            changeTable: [...lastCT, newChange]
+        };
+
+        await handleGenerateIBRADocument(updatedFormData);
+    };
+
+    const handleGenerateIBRADocument = async (generateData) => {
+        const dataToStore = {
+            formData: generateData,
+        };
+
+        const documentName = (formData.title) + ' ' + formData.documentType;
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-ibra`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.docx`);
+            setLoading(false);
+            //saveAs(blob, `${documentName}.pdf`);
+        } catch (error) {
+            console.error("Error generating document:", error);
+            setLoading(false);
         }
     };
 
@@ -307,6 +440,64 @@ const RiskReviewPageIBRA = () => {
         }
     };
 
+    function normalizeIbraFormData(formData = {}) {
+        if (!Array.isArray(formData.ibra)) return formData;
+
+        const normalized = {
+            ...formData,
+            ibra: formData.ibra.map(row => {
+                const possible = Array.isArray(row.possible) ? row.possible : [];
+
+                return {
+                    ...row,
+                    possible: possible.map(block => {
+                        const possibleId = block?.id ?? uuidv4();
+                        const count = block?.actions?.length;
+
+                        const actions = Array.from({ length: count }, (_, i) => {
+                            const a = block?.actions?.[i];
+                            return {
+                                id: a?.id ?? uuidv4(),
+                                action: a?.action ?? ''
+                            };
+                        });
+
+                        const responsible = Array.from({ length: count }, (_, i) => {
+                            const r = block?.responsible?.[i];
+                            return {
+                                id: r?.id ?? uuidv4(),
+                                person: r?.person ?? ''
+                            };
+                        });
+
+                        // Normalize dueDate to match actions count, each with id
+                        const dueDate = Array.from({ length: count }, (_, i) => {
+                            const d = block?.dueDate?.[i];
+                            return {
+                                id: d?.id ?? uuidv4(),
+                                date: d?.date ?? ''
+                            };
+                        });
+
+                        return { ...block, id: possibleId, actions, responsible, dueDate };
+                    })
+                };
+            })
+        };
+
+        // ——— Normalize CEA: just add missing plain fields ———
+        if (Array.isArray(normalized.cea)) {
+            normalized.cea = normalized.cea.map(block => ({
+                ...block,
+                action: block.action !== undefined ? block.action : '',
+                responsible: block.responsible !== undefined ? block.responsible : '',
+                dueDate: block.dueDate !== undefined ? block.dueDate : ''
+            }));
+        }
+
+        return normalized;
+    }
+
     const loadData = async (fileID) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/ibra/getFile/${fileID}`);
@@ -316,7 +507,10 @@ const RiskReviewPageIBRA = () => {
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
 
-            setFormData(storedData.formData);
+            const raw = storedData.formData || {};
+            const patched = normalizeIbraFormData(raw);
+            setFormData(patched);
+
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
             setAzureFN(storedData.azureFileName || "");
@@ -335,11 +529,11 @@ const RiskReviewPageIBRA = () => {
         });
     };
 
-    const updateIbraRows = (nrToUpdate, newValues) => {
+    const updateIbraRows = (idToUpdate, newValues) => {
         setFormData(prev => ({
             ...prev,
             ibra: prev.ibra.map(item =>
-                item.nr === nrToUpdate
+                item.id === idToUpdate
                     ? { ...item, ...newValues }
                     : item
             )
@@ -363,9 +557,13 @@ const RiskReviewPageIBRA = () => {
             ibra: [
                 ...prevFormData.ibra,
                 {
-                    id: uuidv4(), nr: prevFormData.ibra.length + 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
-                    hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-", LR: "-", M: "-",
-                    R: "-", source: "", material: "", priority: "", possible: [{ possibleI: "", actions: [{ action: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                    id: uuidv4(),
+                    nr: prevFormData.ibra.length + 1,
+                    main: "", sub: "", owner: "", odds: "", riskRank: "",
+                    hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
+                    R: "-", source: "", material: "", priority: "",
+                    possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
+                    UE: "", additional: "", maxConsequence: ""
                 }
             ]
         }));
@@ -407,7 +605,7 @@ const RiskReviewPageIBRA = () => {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
                 LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
-                possible: [{ actions: [{ action: "" }], responsible: [{ person: "" }], dueDate: [{ date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }], UE: "", additional: "", maxConsequence: ""
             }
         ],
         cea: [
@@ -430,6 +628,13 @@ const RiskReviewPageIBRA = () => {
             { changeVersion: "1", change: "New Document.", changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }
         ],
     });
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            const newErrors = validateForm();
+            setErrors(newErrors);
+        }
+    }, [formData])
 
     const fetchSites = async () => {
         try {
@@ -571,6 +776,16 @@ const RiskReviewPageIBRA = () => {
     const formDataRef = useRef(formData);
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
     const usedTermCodesRef = useRef(usedTermCodes);
+    const userIDsRef = useRef(userIDs);
+    const userIDRef = useRef(userID);
+
+    useEffect(() => {
+        userIDRef.current = userID;
+    }, [userID]);
+
+    useEffect(() => {
+        userIDsRef.current = userIDs;
+    }, [userIDs]);
 
     useEffect(() => {
         usedAbbrCodesRef.current = usedAbbrCodes;
@@ -1347,11 +1562,27 @@ const RiskReviewPageIBRA = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
+                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faSave} />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    transform="shrink-6 down-5 right-7"
+                                    color="gray"   /* or whatever contrast you need */
+                                />
+                            </span>
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                        </div>
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
@@ -1587,6 +1818,7 @@ const RiskReviewPageIBRA = () => {
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
                     <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+
                     <div className="input-row">
                         <div className={`input-box-aim-cp`}>
                             <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
@@ -1606,7 +1838,7 @@ const RiskReviewPageIBRA = () => {
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            onClick={handleClick3}
+                            onClick={handleGenerateDocument}
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
@@ -1622,6 +1854,7 @@ const RiskReviewPageIBRA = () => {
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
 
             {showSiteDropdown && filteredSites.length > 0 && (
                 <ul

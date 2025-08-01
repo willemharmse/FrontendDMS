@@ -30,6 +30,18 @@
     background-color: #f0f0f0;
 }
 
+.filtered-header {
+    background-color: #e6f3ff;
+    color: #007bff;
+    position: relative;
+}
+
+.active-filter-icon {
+    font-size: 14px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
 .top-left-button-ibra {
     position: absolute;
     top: 20px;
@@ -534,6 +546,9 @@ td.ibraDeadline {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: auto;
+    /* ADD this to enable vertical scrolling */
+    max-height: 600px;
     cursor: grab;
     scrollbar-width: auto !important;
     /* Firefox */
@@ -542,6 +557,7 @@ td.ibraDeadline {
 .table-wrapper-ibra::-webkit-scrollbar {
     /* show it in Chrome/Safari */
     display: block !important;
+    width: 4px;
     height: 12px;
     /* adjust thickness if you like */
 }

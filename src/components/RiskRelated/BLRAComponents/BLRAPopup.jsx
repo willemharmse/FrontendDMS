@@ -589,7 +589,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
         };
 
         // Call the onSave function with updated data
-        onSave(data.nr, updatedData);
+        onSave(data.id, updatedData);
         onClose();
     };
 

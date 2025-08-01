@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faDownload, faFolderOpen, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
@@ -9,6 +9,7 @@ import { jwtDecode } from 'jwt-decode';
 import "./GeneratedFileInfo.css";
 import PopupMenuPubFiles from "./PublishedDocuments/PopupMenuPubFiles";
 import TopBar from "./Notifications/TopBar";
+import DeletePopup from "./FileInfo/DeletePopup";
 
 const GeneratedStandardsInfo = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
@@ -19,10 +20,47 @@ const GeneratedStandardsInfo = () => {
     const adminRoles = ['admin', 'teamleader', 'developer'];
     const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFileName, setSelectedFileName] = useState();
     const [userID, setUserID] = useState("");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
+    const fileDelete = (id, fileName) => {
+        setFileToDelete(id);
+        setIsModalOpen(true);
+        setSelectedFileName(fileName);
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(null);
+    }
+
+    const deleteFile = async () => {
+        if (!fileToDelete) return;
+        try {
+            setLoading(true);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/fileGenDocs/standard/trashFile/${fileToDelete}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to delete the file');
+
+            setFileToDelete("");
+            setSelectedFileName("");
+            setIsModalOpen(false);
+            fetchFiles();
+        } catch (error) {
+            console.error('Error deleting file:', error);
+        } finally {
+            setLoading(false); // Reset loading state after response
+        }
+    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -32,6 +70,22 @@ const GeneratedStandardsInfo = () => {
 
     const clearSearch = () => {
         setSearchQuery("");
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString); // Convert to Date object
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
+        return `${year}-${month}-${day}`;
+    };
+
+    const getStatusClass = (status) => {
+        switch (status.toLowerCase()) {
+            case 'published': return 'status-approved';
+            case 'in review': return 'status-pending';
+            default: return 'status-default';
+        }
     };
 
     const navigate = useNavigate();
@@ -70,9 +124,7 @@ const GeneratedStandardsInfo = () => {
             }
             const data = await response.json();
 
-            const sortedFiles = data.files.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate));
-
-            setFiles(sortedFiles);
+            setFiles(data.files);
         } catch (error) {
             setError(error.message);
         }
@@ -112,14 +164,6 @@ const GeneratedStandardsInfo = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString); // Convert to Date object
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-        const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
-        return `${year}-${month}-${day}`;
-    };
-
     const removeFileExtension = (fileName) => {
         return fileName.replace(/\.[^/.]+$/, "");
     };
@@ -146,6 +190,19 @@ const GeneratedStandardsInfo = () => {
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Published Documents</p>
+                    </div>
+                    <div className="button-container-create">
+                        <button className="but-um" onClick={() => navigate('/FrontendDMS/deletedStandardDocs')}>
+                            <div className="button-content">
+                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                <span className="button-text">Deleted Documents</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/standardsDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"Standard"}</p>
                     </div>
                 </div>
             )}
@@ -188,44 +245,61 @@ const GeneratedStandardsInfo = () => {
                     <table className="gen-table">
                         <thead className="gen-head">
                             <tr>
-                                <th className="gen-th">Nr</th>
-                                <th className="gen-th">File Name</th>
-                                <th className="gen-th">Document Type</th>
-                                <th className="gen-th">Version</th>
-                                <th className="gen-th">Published By</th>
+                                <th className="gen-th ibraGenNr">Nr</th>
+                                <th className="gen-th ibraGenFN">Document Name</th>
+                                <th className="gen-th ibraGenVer">Version</th>
+                                <th className="gen-th ibraGenStatus">Document Status</th>
+                                <th className="gen-th ibraGenPB">First Published By</th>
+                                <th className="gen-th ibraGenPD">First Published Date</th>
+                                <th className="gen-th ibraGenRB">Last Reviewed By</th>
+                                <th className="gen-th ibraGenRD">Last Review Date</th>
+                                <th className="gen-th ibraGenType">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredFiles.map((file, index) => (
                                 <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="gen-nr gen-point">{index + 1}</td>
-                                    <td className="gen-fn gen-point">
+                                    <td className="cent-values-gen gen-point">{index + 1}</td>
+                                    <td className="gen-point">
                                         <div className="popup-anchor">
                                             <span onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                                                {removeFileExtension(file.fileName)}
+                                                {removeFileExtension(file.formData.title)}
                                             </span>
 
                                             {(hoveredFileId === file._id) && (
                                                 <PopupMenuPubFiles
                                                     file={file}
-                                                    type={"dont"}
+                                                    typeDoc={"standard"}
+                                                    risk={false}
                                                     isOpen={hoveredFileId === file._id}
                                                     openDownloadModal={downloadFile}
                                                     setHoveredFileId={setHoveredFileId}
+                                                    id={file._id}
                                                 />
                                             )}
                                         </div>
                                     </td>
-
-                                    <td className="gen-stat  gen-point">{file.formData.documentType}</td>
-                                    <td className="gen-ver  gen-point">{file.formData.version}</td>
-                                    <td className="gen-pub  gen-point">{file.publisher.username}</td>
+                                    <td className="cent-values-gen gen-point">{file.formData.version}</td>
+                                    <td className={`${getStatusClass(file.documentStatus)} cent-values-gen  gen-point`}>{file.documentStatus}</td>
+                                    <td className="cent-values-gen  gen-point">{file.publisher.username}</td>
+                                    <td className="cent-values-gen  gen-point">{formatDate(file.datePublished)}</td>
+                                    <td className="cent-values-gen  gen-point">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
+                                    <td className="cent-values-gen  gen-point">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
+                                    <td className="cent-values-gen gen-point">
+                                        <button
+                                            className={"delete-button-fi col-but"}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} title="Delete Document" onClick={() => fileDelete(file._id, file.formData.title)} />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} isTrashView={false} loading={loading} selectedFileName={selectedFileName} />)}
         </div >
     );
 };

@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./TermTableRisk.css"; // Add styling here
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import RiskTermPopup from "../RiskValueChanges/RiskTermPopup";
 import ManageRiskDefinitions from "../RiskValueChanges/ManageRiskDefinitions";
+import ModifySuggestedDefinitions from "../../ValueChanges/ModifySuggestedDefinitions";
 
 const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
   const [termData, setTermData] = useState([]);
+  const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [termUpdate, setTermUpdate] = useState("");
+  const [defUpdate, setDefUpdate] = useState("");
+  const [updatePopup, setUpdatePopup] = useState(false);
 
   useEffect(() => {
     setSelectedTerms(new Set(usedTermCodes));
@@ -56,6 +61,50 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
     }));
   };
 
+  const handleUpdateTerm = (newTermObj, oldTerm, oldDef) => {
+    const updatedCode = newTermObj.term;
+
+    // 1. Remove the old abbreviation from usedAbbrCodes
+    setUsedTermCodes(prev =>
+      prev.filter(code => code !== oldTerm)
+    );
+
+    // 2. Remove from selectedAbbrs and add the new one
+    setSelectedTerms(prev => {
+      const updated = new Set(prev);
+      updated.delete(oldTerm);
+      updated.add(updatedCode);
+      return updated;
+    });
+
+    // 3. Replace the old row in abbrRows with the updated one
+    setFormData(prev => ({
+      ...prev,
+      termRows: prev.termRows.map(row =>
+        row.term === oldTerm && row.definition === oldDef
+          ? newTermObj
+          : row
+      ),
+    }));
+
+    // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+    setUsedTermCodes(prev => [...prev, updatedCode]);
+  };
+
+  const openUpdate = (term, definition) => {
+    setTermUpdate(term);
+    setDefUpdate(definition);
+
+    setUpdatePopup(true);
+  }
+
+  const closeUpdate = () => {
+    setTermUpdate("");
+    setDefUpdate("");
+
+    setUpdatePopup(false);
+  }
+
   const fetchValues = async () => {
     const route = `/api/riskInfo/def`;
     try {
@@ -67,6 +116,7 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
       const data = await response.json();
 
       setTermData(data.defs);
+      setOriginalData(data.defs);
       localStorage.setItem('cachedTermOptions', JSON.stringify(data.defs));
     } catch (error) {
       console.log(error);
@@ -194,8 +244,8 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
                                   onChange={() => handleCheckboxChange(item.term)}
                                 />
                               </td>
-                              <td>{item.term}</td>
-                              <td>{item.definition}</td>
+                              <td style={{ whiteSpace: "pre-wrap" }}>{item.term}</td>
+                              <td style={{ whiteSpace: "pre-wrap" }}>{item.definition}</td>
                             </tr>
                           ))) : (
                         <tr>
@@ -217,38 +267,53 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
           <table className="vcr-table table-borders">
             <thead className="cp-table-header">
               <tr>
-                <th className="col-term-term">Term</th>
-                <th className="col-term-desc">Definition</th>
-                <th className="col-term-act">Action</th>
+                <th className="col-term-term" style={{ textAlign: "center" }}>Term</th>
+                <th className="col-term-desc" style={{ textAlign: "center" }}>Definition</th>
+                <th className="col-term-act" style={{ textAlign: "center" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {formData.termRows.map((row, index) => (
                 <tr key={index}>
-                  <td style={{ fontSize: "14px" }}>{row.term}</td>
-                  <td style={{ fontSize: "14px" }}>{row.definition}</td>
-                  <td className="procCent">
-                    <button
-                      className="remove-row-button"
-                      onClick={() => {
-                        const cleanTerm = row.term.replace(/\s*\*$/, "");
-                        // Remove abbreviation from table and the selected abbreviations set
-                        setFormData({
-                          ...formData,
-                          termRows: formData.termRows.filter((_, i) => i !== index),
-                        });
-                        setUsedTermCodes(
-                          usedTermCodes.filter((term) => term !== cleanTerm)
-                        );
+                  <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.term}</td>
+                  <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.definition}</td>
+                  <td className="procCent " style={{ paddingBottom: "10px" }}>
+                    <div className="term-action-buttons">
+                      <button
+                        className="remove-row-button"
+                        style={{ paddingRight: "6px" }}
+                        onClick={() => {
+                          const cleanTerm = row.term.replace(/\s*\*$/, "");
+                          // Remove abbreviation from table and the selected abbreviations set
+                          setFormData({
+                            ...formData,
+                            termRows: formData.termRows.filter((_, i) => i !== index),
+                          });
+                          setUsedTermCodes(
+                            usedTermCodes.filter((term) => term !== cleanTerm)
+                          );
 
-                        // Update the selectedAbbrs state to reflect the removal
-                        const newSelectedTerms = new Set(selectedTerms);
-                        newSelectedTerms.delete(cleanTerm);
-                        setSelectedTerms(newSelectedTerms);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                    </button>
+                          // Update the selectedAbbrs state to reflect the removal
+                          const newSelectedTerms = new Set(selectedTerms);
+                          newSelectedTerms.delete(cleanTerm);
+                          setSelectedTerms(newSelectedTerms);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                      </button>
+                      <button
+                        className="edit-terms-row-button"
+                        disabled={
+                          originalData.some(item => item.term === row.term && item.definition === row.definition)
+                        }
+                        style={{ color: originalData.some(item => item.term === row.term && item.definition === row.definition) ? "lightgray" : "", paddingLeft: "6px" }}
+                        onClick={() => {
+                          openUpdate(row.term, row.definition)
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEdit} title="Modify Term" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -269,6 +334,8 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
         )}
 
       </div>
+
+      {updatePopup && (<ModifySuggestedDefinitions term={termUpdate} definition={defUpdate} closePopup={closeUpdate} onAdd={handleUpdateTerm} setTermData={setTermData} />)}
     </div>
   );
 };

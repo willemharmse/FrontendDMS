@@ -65,11 +65,15 @@ const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData, onAdd }
             setMessage({ text: "Machine added as a suggestion.", type: "success" });
 
             const newMac = {
+                machine: machine.trim() + " *"
+            };
+
+            const newMacAdd = {
                 mac: machine.trim() + " *"
             };
             setMacData((prevData) => [...prevData, newMac]);
 
-            if (onAdd) onAdd(newMac);
+            if (onAdd) onAdd(newMac, newMacAdd);
 
             setTimeout(() => {
                 handleClose();

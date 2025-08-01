@@ -19,7 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faL } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faL, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
@@ -56,6 +56,80 @@ const CreatePage = () => {
   const loadedIDRef = useRef('');
   const [offlineDraft, setOfflineDraft] = useState(false);
   const [generatePopup, setGeneratePopup] = useState(false);
+  const [loadingAim, setLoadingAim] = useState(false);
+  const [loadingScope, setLoadingScope] = useState(false);
+
+  const [rewriteHistory, setRewriteHistory] = useState({
+    aim: [],
+    scope: []
+  });
+
+  const pushAiRewriteHistory = (field) => {
+    setRewriteHistory(prev => ({
+      ...prev,
+      [field]: [...prev[field], formData[field]]
+    }));
+  };
+
+  const undoAiRewrite = (field) => {
+    setRewriteHistory(prev => {
+      const hist = [...prev[field]];
+      if (hist.length === 0) return prev;         // nothing to undo
+      const lastValue = hist.pop();
+      setFormData(fd => ({ ...fd, [field]: lastValue }));
+      return { ...prev, [field]: hist };
+    });
+  };
+
+
+  const AiRewriteAim = async () => {
+    try {
+      const prompt = formData.aim;
+
+      pushAiRewriteHistory('aim');
+      setLoadingAim(true);
+
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const { response: newText } = await response.json();
+      setLoadingAim(false);
+      setFormData(fd => ({ ...fd, aim: newText }));
+    } catch (error) {
+      setLoadingAim(false);
+      console.error('Error saving data:', error);
+    }
+  }
+
+  const AiRewriteScope = async () => {
+    try {
+      const prompt = formData.scope;
+
+      pushAiRewriteHistory('scope');
+      setLoadingScope(true);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/procedure`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const { response: newText } = await response.json();
+      setLoadingScope(false);
+      setFormData(fd => ({ ...fd, scope: newText }));
+    } catch (error) {
+      setLoadingScope(false);
+      console.error('Error saving data:', error);
+    }
+  }
 
   const updateRow = (index, field, value) => {
     const updatedProcedureRows = formData.procedureRows.map((row, i) =>
@@ -452,11 +526,13 @@ const CreatePage = () => {
   });
 
   useEffect(() => {
-    if (Object.keys(errors).length > 0) {
+    const hasActiveError = Object.values(errors).some(val => val === true);
+
+    if (hasActiveError) {
       const newErrors = validateFormRevised();
       setErrors(newErrors);
     }
-  }, [formData])
+  }, [formData]);
 
   const formDataRef = useRef(formData);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
@@ -749,7 +825,7 @@ const CreatePage = () => {
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
       if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/FrontendDMS/403");
+        navigate("/403");
       }
 
       setUserID(decodedToken.userId);
@@ -862,7 +938,7 @@ const CreatePage = () => {
   const removeProRow = (indexToRemove) => {
     if (formData.procedureRows.length <= 1) {
       toast.warn("At least one procedure step is required.", {
-        autoClose: 800,
+        autoClose: 1200,
         closeButton: true,
         style: { textAlign: "center" },
       });
@@ -1169,11 +1245,73 @@ const CreatePage = () => {
                 style={{ fontSize: "14px" }}
                 spellcheck="true"
                 name="aim"
-                className="aim-textarea font-fam"
+                className="aim-textarea font-fam expanding-textarea"
                 value={formData.aim}
                 onChange={handleInputChange}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the aim of the document here..." // Optional placeholder text
+              />
+              {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                <FontAwesomeIcon
+                  icon={faMagicWandSparkles}
+                  className="aim-textarea-icon-ibra"
+                  title="AI Rewrite"
+                  style={{ fontSize: "15px" }}
+                  onClick={() => AiRewriteAim()}
+                />
+              )}
+
+              <FontAwesomeIcon
+                icon={faRotateLeft}
+                className="aim-textarea-icon-ibra-undo"
+                title="Undo AI Rewrite"
+                onClick={() => undoAiRewrite('aim')}
+                style={{
+                  marginLeft: '8px',
+                  opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                  cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                  fontSize: "15px"
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="input-row">
+            <div className={`input-box-aim-cp`}>
+              <h3 className="font-fam-labels">Scope</h3>
+              <textarea
+                style={{ fontSize: "14px" }}
+                spellcheck="true"
+                name="scope"
+                className="aim-textarea font-fam expanding-textarea"
+                value={formData.scope}
+                onChange={handleInputChange}
+                rows="5"   // Adjust the number of rows for initial height
+                placeholder="Insert the scope of the document" // Optional placeholder text
+              />
+
+              {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />)
+                : (
+                  <FontAwesomeIcon
+                    icon={faMagicWandSparkles}
+                    className="aim-textarea-icon-ibra"
+                    title="AI Rewrite"
+                    style={{ fontSize: "15px" }}
+                    onClick={() => AiRewriteScope()}
+                  />
+                )}
+
+              <FontAwesomeIcon
+                icon={faRotateLeft}
+                className="aim-textarea-icon-ibra-undo"
+                title="Undo AI Rewrite"
+                onClick={() => undoAiRewrite('scope')}
+                style={{
+                  marginLeft: '8px',
+                  opacity: rewriteHistory.scope.length ? 1 : 0.3,
+                  cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
+                  fontSize: "15px"
+                }}
               />
             </div>
           </div>
@@ -1185,7 +1323,7 @@ const CreatePage = () => {
           <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
           <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
-          <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
+          <ProcedureTable formData={formData} setFormData={setFormData} procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
           <SupportingDocumentTable formData={formData} setFormData={setFormData} />

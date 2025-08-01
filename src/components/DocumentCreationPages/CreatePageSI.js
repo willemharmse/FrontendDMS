@@ -801,7 +801,6 @@ const CreatePageSI = () => {
     if (!formData.title) newErrors.title = true;
     if (!formData.site) newErrors.site = true;
     if (!formData.dateConducted) newErrors.dateConducted = true;
-    if (!formData.expiryDate) newErrors.expiryDate = true;
     if (!formData.aim) newErrors.aim = true;
     if (!formData.directed) newErrors.directed = true;
     if (!formData.directee) newErrors.directee = true;
@@ -958,7 +957,9 @@ const CreatePageSI = () => {
       userID,
       azureFN: ""
     };
-
+    if (generatePopup) {
+      setGeneratePopup(false);
+    }
     const documentName = (formData.title) + ' ' + formData.documentType;
     setLoading(true);
 
@@ -1179,9 +1180,9 @@ const CreatePageSI = () => {
                     className="special-intruction-input-date-half font-fam"
                   />
                 </div>
-                <div className={`input-box-type-special-intruction-date-half ${errors.expiryDate ? "error-create" : ""}`}>
+                <div className={`input-box-type-special-intruction-date-half`}>
                   <h3 className="font-fam-labels">
-                    Expiry Date <span className="required-field">*</span>
+                    Expiry Date
                   </h3>
                   <input
                     type="date"
@@ -1189,10 +1190,6 @@ const CreatePageSI = () => {
                     min={formData.dateConducted}
                     value={formData.expiryDate || ""}
                     onChange={handleInputChange}
-                    onFocus={() => setErrors(prev => ({
-                      ...prev,
-                      expiryDate: false
-                    }))}
                     className="special-intruction-input-date-half font-fam"
                   />
                 </div>

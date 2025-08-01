@@ -32,7 +32,6 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard 
                 if (isMounted) setDrafts(data);
             } catch (err) {
                 console.error("Fetch drafts failed:", err);
-                toast.error("Could not load existing drafts.");
             }
         }
         loadDrafts();

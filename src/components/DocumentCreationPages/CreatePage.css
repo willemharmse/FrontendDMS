@@ -22,6 +22,27 @@ body {
   font-family: Arial, sans-serif;
 }
 
+.expanding-textarea {
+  field-sizing: content;
+  position: relative;
+  min-height: 100px !important;
+  resize: vertical;
+}
+
+.aim-textarea-icon-create-page {
+  position: absolute;
+  bottom: 25px;
+  /* tweak as needed for vertical offset */
+  right: 25px;
+  /* tweak for horizontal offset */
+  cursor: pointer;
+  font-size: 18px;
+  /* adjust size to suit */
+  color: black;
+  /* light grey by default */
+  transition: color 0.2s;
+}
+
 .Toastify__toast--success .Toastify__close-button {
   color: black;
   opacity: 0.7;
@@ -540,6 +561,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .aim-textarea {
@@ -817,6 +839,22 @@ body {
 
 .remove-row-button:hover {
   color: #CB6F6F;
+}
+
+.edit-terms-row-button {
+  background-color: transparent;
+  color: black;
+  font-weight: bold;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.edit-terms-row-button:hover {
+  color: black;
 }
 
 .cp-table-header {

@@ -34,6 +34,15 @@
     transition: background 0.3s ease;
 }
 
+.term-action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    /* Adjust spacing between buttons */
+    height: 100%;
+}
+
 .add-row-button-terms-plus {
     display: flex;
     justify-content: center;

@@ -76,6 +76,14 @@
     z-index: 1;
 }
 
+.gen-head-del {
+    position: sticky;
+    top: 0;
+    background-color: #cb6f6f;
+    color: white;
+    z-index: 1;
+}
+
 .gen-tr {
     padding: 5px;
     text-align: left;
@@ -143,4 +151,91 @@
 
 .gen-point {
     cursor: pointer;
+}
+
+.cent-values-gen {
+    text-align: center;
+    font-size: 14px;
+}
+
+.ibraGenDelNr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenDelFN {
+    width: 35%;
+}
+
+.ibraGenDelVer {
+    width: 10%;
+}
+
+.ibraGenDelDB {
+    width: 15%;
+}
+
+.ibraGenDelDD {
+    width: 15%;
+}
+
+.ibraGenDelED {
+    width: 15%;
+}
+
+.ibraGenDelAct {
+    width: 5%;
+}
+
+.ibraGenNr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenFN {
+    width: 30%;
+}
+
+.ibraGenType {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenStatus {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenVer {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenPB {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenPD {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenRB {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.ibraGenRD {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
 }

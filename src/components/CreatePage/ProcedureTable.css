@@ -1,16 +1,53 @@
 .aim-textarea-pt {
-    width: calc(100% - 20px);
+    box-sizing: border-box;
+    width: 100%;
     padding: 10px;
+    padding-right: 30px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
     resize: none;
+    field-sizing: content;
+    min-height: 50px;
     overflow: hidden;
-    min-height: calc(1.5em * 4);
-    /* 4 rows initially based on line-height */
-    line-height: 1.5em;
+    overflow-wrap: break-word;
+    /* modern name */
+    word-break: break-word;
+}
+
+.aim-textarea-pt-2 {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    padding-right: 45px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    resize: none;
+    field-sizing: content;
+    min-height: 50px;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* modern name */
+    word-break: break-word;
+}
+
+.spin-animation-proc {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .aim-input-pt {
@@ -360,4 +397,53 @@ tr:hover+.insert-row-container .insert-row-button {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.textarea-wrapper-proc {
+    position: relative;
+    width: 100%;
+}
+
+.textarea-icon-proc {
+    position: absolute;
+    right: 6px;
+    font-size: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+    cursor: pointer;
+    /* prevents interfering with typing */
+}
+
+.textarea-icon-proc-spin {
+    position: absolute;
+    right: 7px;
+    font-size: 14px;
+    top: 46%;
+    transform: translateY(-50%);
+    color: black;
+    cursor: pointer;
+    /* prevents interfering with typing */
+}
+
+.textarea-icon-proc-spin-main {
+    position: absolute;
+    right: 7px;
+    font-size: 14px;
+    top: 39%;
+    transform: translateY(-50%);
+    color: black;
+    cursor: pointer;
+    /* prevents interfering with typing */
+}
+
+.textarea-icon-proc-2 {
+    position: absolute;
+    right: 28px;
+    font-size: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+    cursor: pointer;
+    /* prevents interfering with typing */
 }

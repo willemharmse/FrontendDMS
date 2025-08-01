@@ -3,7 +3,7 @@ import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
 import Hazard from "./RiskInfo/Hazard";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import TaskExecution from "./RiskInfo/TaskExecution";
@@ -734,7 +734,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                     openInfo(column.id);
                                                 }} />
                                             )}
-                                            <div>{column.title.split('(')[0].trim()}</div>
+                                            <div>{column.title.split('(')[0].trim()}{filters[columnId] && (
+                                                <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                            )}</div>
                                             {column.title.includes('(') && (
                                                 <div className="column-subtitle">
                                                     ({column.title.split('(')[1].split(')')[0]})

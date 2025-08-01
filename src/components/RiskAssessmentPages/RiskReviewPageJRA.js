@@ -61,12 +61,62 @@ const RiskReviewPageJRA = () => {
     const [helpRA, setHelpRA] = useState(false);
     const [helpScope, setHelpScope] = useState(false);
     const [companies, setCompanies] = useState([]);
-    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
     const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [generatePopup, setGeneratePopup] = useState(false);
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
     const [change, setChange] = useState("");
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+
+    const openSaveAs = () => {
+        if (!titleSet) {
+            toast.warn("Please fill in at least the title field before saving.", {
+                closeButton: false,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+            return;
+        }
+        setIsSaveAsModalOpen(true);
+    };
+
+    const closeSaveAs = () => {
+        setIsSaveAsModalOpen(false);
+    };
+
+    const confirmSaveAs = (newTitle) => {
+        // apply the new title, clear loadedID, then save
+        const me = userIDRef.current;
+        const newFormData = {
+            ...formDataRef.current,        // your current formData
+            title: newTitle,             // override title
+        };
+
+        setFormData(newFormData);
+        formDataRef.current = newFormData;
+
+        setUserIDs([me]);
+        userIDsRef.current = [me];
+
+        loadedIDRef.current = '';
+        setLoadedID('');
+
+        saveAsData();
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("New Draft Successfully Saved", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
+        setIsSaveAsModalOpen(false);
+    };
 
     const closeHelpRA = () => {
         setHelpRA(false);
@@ -100,6 +150,44 @@ const RiskReviewPageJRA = () => {
                     textAlign: 'center'
                 }
             });
+        }
+    };
+
+    const saveAsData = async () => {
+        const dataToStore = {
+            usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
+            usedTermCodes: usedTermCodesRef.current,
+            usedPPEOptions: usedPPEOptionsRef.current,
+            usedEquipment: usedEquipmentRef.current,
+            usedHandTools: usedHandToolsRef.current,
+            usedMaterials: usedMaterialsRef.current,
+            usedMobileMachine: usedMobileMachineRef.current,
+            formData: formDataRef.current,
+            userIDs: userIDsRef.current,
+            creator: userIDRef.current,
+            updater: null,
+            dateUpdated: null
+        };
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/safe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+            const result = await response.json();
+            setOfflineDraft(false);
+            localStorage.removeItem("draftData");
+
+            if (result.id) {  // Ensure we receive an ID from the backend
+                setLoadedID(result.id);  // Update loadedID to track the saved document
+                loadedIDRef.current = result.id;
+            }
+        } catch (error) {
+            console.error('Error saving data:', error);
         }
     };
 
@@ -149,6 +237,57 @@ const RiskReviewPageJRA = () => {
             await handleGeneratePublish();
         } catch (err) {
             toast.error("Could not save draft, generation aborted." + err);
+        }
+    };
+
+    const handleGenerateDocument = async () => {
+        // 1) Build the updated changeTable and version from the latest state
+        const lastCT = formData.changeTable;
+        const lastVersion = parseInt(formData.version, 10);
+        const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
+
+        const newChange = {
+            changeVersion: (lastChangeVer + 1).toString(),
+            change,
+            changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        };
+
+        const updatedFormData = {
+            ...formData,
+            version: (lastVersion + 1).toString(),
+            changeTable: [...lastCT, newChange]
+        };
+
+        await handleGenerateJRADocument(updatedFormData);
+    };
+
+    const handleGenerateJRADocument = async (generateData) => {
+        const dataToStore = {
+            formData: generateData,
+        };
+
+        const documentName = (formData.title) + ' ' + formData.documentType + " and PTO";
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/t/generate-jra-sheet1`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.xlsx`);
+            setLoading(false);
+            //saveAs(blob, `${documentName}.pdf`);
+        } catch (error) {
+            console.error("Error generating document:", error);
+            setLoading(false);
         }
     };
 
@@ -379,6 +518,16 @@ const RiskReviewPageJRA = () => {
     const usedEquipmentRef = useRef(usedEquipment);
     const usedMobileMachineRef = useRef(usedMobileMachine);
     const usedMaterialsRef = useRef(usedMaterials);
+    const userIDsRef = useRef(userIDs);
+    const userIDRef = useRef(userID);
+
+    useEffect(() => {
+        userIDRef.current = userID;
+    }, [userID]);
+
+    useEffect(() => {
+        userIDsRef.current = userIDs;
+    }, [userIDs]);
 
     useEffect(() => {
         usedAbbrCodesRef.current = usedAbbrCodes;
@@ -931,11 +1080,28 @@ const RiskReviewPageJRA = () => {
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
+                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                {/* base floppy-disk, full size */}
+                                <FontAwesomeIcon icon={faSave} />
+                                {/* pen, shrunk & nudged down/right into corner */}
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    transform="shrink-6 down-5 right-7"
+                                    color="gray"   /* or whatever contrast you need */
+                                />
+                            </span>
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
                         </div>
 
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                        </div>
+
+                        <div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                         </div>
                     </div>
 
@@ -1023,7 +1189,7 @@ const RiskReviewPageJRA = () => {
                         {/* Generate File Button */}
                         <button
                             className="generate-button font-fam"
-                            onClick={handleClick3}
+                            onClick={handleGenerateDocument}
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
@@ -1038,6 +1204,7 @@ const RiskReviewPageJRA = () => {
             </div>
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
+            {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
             <ToastContainer />
 
             {showSiteDropdown && filteredSites.length > 0 && (

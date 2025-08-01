@@ -3,17 +3,21 @@ import "./HandToolsTable.css"; // Add styling here
 import ToolPopup from "../ValueChanges/HandToolPopup";
 import ManageHandTools from "../ValueChanges/ManageHandTools";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedHandTools from "../ValueChanges/ModifySuggestedHandTools";
 
 const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [toolsData, setToolsData] = useState([]);
+    const [originalData, setOriginalData] = useState([])
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedTools, setSelectedTools] = useState(new Set(usedHandTools));
     const [isNA, setIsNA] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [toolUpdate, setToolUpdate] = useState("");
+    const [updatePopup, setUpdatePopup] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -24,6 +28,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
 
             const data = await response.json();
 
+            setOriginalData(data.tools)
             setToolsData(data.tools);
             localStorage.setItem('cachedToolOptions', JSON.stringify(data.tools));
         } catch (error) {
@@ -80,6 +85,48 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
             ),
         }));
     };
+
+    const handleUpdateTool = (newToolObj, oldTool) => {
+        const updatedCode = newToolObj.tool;
+
+        // 1. Remove the old abbreviation from usedAbbrCodes
+        setUsedHandTools(prev =>
+            prev.filter(code => code !== oldTool)
+        );
+
+        // 2. Remove from selectedAbbrs and add the new one
+        setSelectedTools(prev => {
+            const updated = new Set(prev);
+            updated.delete(oldTool);
+            updated.add(updatedCode);
+            return updated;
+        });
+
+        // 3. Replace the old row in abbrRows with the updated one
+        setFormData(prev => ({
+            ...prev,
+            HandTools: prev.HandTools.map(row =>
+                row.tool === oldTool
+                    ? newToolObj
+                    : row
+            ),
+        }));
+
+        // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+        setUsedHandTools(prev => [...prev, updatedCode]);
+    };
+
+    const openUpdate = (tool) => {
+        setToolUpdate(tool);
+
+        setUpdatePopup(true);
+    }
+
+    const closeUpdate = () => {
+        setToolUpdate("");
+
+        setUpdatePopup(false);
+    }
 
     useEffect(() => {
         setSelectedTools(new Set(usedHandTools));
@@ -215,7 +262,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                                                     onChange={() => handleCheckboxChange(item.tool)}
                                                                 />
                                                             </td>
-                                                            <td>{item.tool}</td>
+                                                            <td style={{ whiteSpace: "pre-wrap" }}>{item.tool}</td>
                                                         </tr>
                                                     ))
                                             ) : (
@@ -239,35 +286,50 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     <table className="vcr-table font-fam table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="col-tool-tool">Tool</th>
-                                <th className="col-tool-act">Action</th>
+                                <th className="col-tool-tool" style={{ textAlign: "center" }}>Tool</th>
+                                <th className="col-tool-act" style={{ textAlign: "center" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.HandTools?.map((row, index) => (
                                 <tr key={index}>
-                                    <td style={{ fontSize: "14px" }}>{row.tool}</td>
+                                    <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.tool}</td>
                                     <td className="procCent">
-                                        <button
-                                            className="remove-row-button"
-                                            onClick={() => {
-                                                // Remove abbreviation from table and the selected abbreviations set
-                                                setFormData({
-                                                    ...formData,
-                                                    HandTools: formData.HandTools.filter((_, i) => i !== index),
-                                                });
-                                                setUsedHandTools(
-                                                    usedHandTools.filter((tool) => tool !== row.tool)
-                                                );
+                                        <div className="term-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                style={{ paddingRight: "6px" }}
+                                                onClick={() => {
+                                                    // Remove abbreviation from table and the selected abbreviations set
+                                                    setFormData({
+                                                        ...formData,
+                                                        HandTools: formData.HandTools.filter((_, i) => i !== index),
+                                                    });
+                                                    setUsedHandTools(
+                                                        usedHandTools.filter((tool) => tool !== row.tool)
+                                                    );
 
-                                                // Update the selectedAbbrs state to reflect the removal
-                                                const newSelectedTools = new Set(selectedTools);
-                                                newSelectedTools.delete(row.tool);
-                                                setSelectedTools(newSelectedTools);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                                    // Update the selectedAbbrs state to reflect the removal
+                                                    const newSelectedTools = new Set(selectedTools);
+                                                    newSelectedTools.delete(row.tool);
+                                                    setSelectedTools(newSelectedTools);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                            </button>
+                                            <button
+                                                className="edit-terms-row-button"
+                                                disabled={
+                                                    originalData.some(item => item.tool === row.tool)
+                                                }
+                                                style={{ color: originalData.some(item => item.tool === row.tool) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                onClick={() => {
+                                                    openUpdate(row.tool)
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} title="Modify Hand Tool" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -287,6 +349,8 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     </button>
                 )}
             </div>
+
+            {updatePopup && (<ModifySuggestedHandTools tool={toolUpdate} closePopup={closeUpdate} onAdd={handleUpdateTool} setToolData={setToolsData} />)}
         </div>
     );
 };

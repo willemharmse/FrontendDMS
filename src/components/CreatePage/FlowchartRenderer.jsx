@@ -17,12 +17,14 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
     const [pages, setPages] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const maxNodesPerPage = 14 // Adjust based on your needs
+    const [flowchartReady, setFlowchartReady] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [previewCy, setPreviewCy] = useState(null);
     const [modalSize, setModalSize] = useState({ width: '70%', height: '70%' });
 
-    const openModal = () => {
+    const openModal = async () => {
+        await prepareFlowchartData();
         setIsModalOpen(true);
         setTimeout(() => {
             if (previewCy) {
@@ -317,210 +319,215 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
         }));
     };
 
-    useEffect(() => {
-        if (!procedureRows || procedureRows.length === 0) return;
+    const prepareFlowchartData = async () => {
 
-        const numberedProcedureRows = procedureRows.map((row, index) => ({
-            ...row,
-            mainStep: `${index + 1}. ${row.mainStep.trim()}`, // Add numbering and ensure no extra spaces
-        }));
+        return new Promise((resolve, reject) => {
+            if (!procedureRows || procedureRows.length === 0) return resolve();
 
-        axios.post(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
-            procedureRows: numberedProcedureRows,
-            title: title,
-            documentType: documentType
-        })
-            .then(response => {
-                const { elements } = response.data;
+            const numberedProcedureRows = procedureRows.map((row, index) => ({
+                ...row,
+                mainStep: `${index + 1}. ${row.mainStep.trim()}`, // Add numbering and ensure no extra spaces
+            }));
 
-                // Split the flowchart into pages
-                const paginatedFlowchart = splitFlowchartIntoPages(elements);
-                setPages(paginatedFlowchart);
-                setCurrentPage(0);
+            axios.post(`${process.env.REACT_APP_URL}/api/flowIMG/generate`, {
+                procedureRows: numberedProcedureRows,
+                title: title,
+                documentType: documentType
+            })
+                .then(response => {
+                    const { elements } = response.data;
 
-                // Create a hidden div for rendering the graph
-                const hiddenDiv = document.createElement("div");
-                hiddenDiv.style.width = "1400px";
-                hiddenDiv.style.height = "1000px";
-                hiddenDiv.style.position = "absolute";
-                hiddenDiv.style.left = "-9999px"; // Hide off-screen
-                hiddenDiv.style.backgroundColor = "#fff";
-                document.body.appendChild(hiddenDiv);
+                    // Split the flowchart into pages
+                    const paginatedFlowchart = splitFlowchartIntoPages(elements);
+                    setPages(paginatedFlowchart);
+                    setCurrentPage(0);
 
-                const cyInstance = cytoscape({
-                    container: hiddenDiv,
-                    elements: paginatedFlowchart.length > 0 ? paginatedFlowchart[0].elements : [],
-                    style: [
-                        // Styling for the Document Title Node
-                        {
-                            selector: "[id='DocumentNode']",
-                            style: {
-                                "shape": "rectangle",
-                                "content": "data(label)",
-                                "text-valign": "center",
-                                "text-halign": "center",
+                    // Create a hidden div for rendering the graph
+                    const hiddenDiv = document.createElement("div");
+                    hiddenDiv.style.width = "1400px";
+                    hiddenDiv.style.height = "1000px";
+                    hiddenDiv.style.position = "absolute";
+                    hiddenDiv.style.left = "-9999px"; // Hide off-screen
+                    hiddenDiv.style.backgroundColor = "#fff";
+                    document.body.appendChild(hiddenDiv);
+
+                    const cyInstance = cytoscape({
+                        container: hiddenDiv,
+                        elements: paginatedFlowchart.length > 0 ? paginatedFlowchart[0].elements : [],
+                        style: [
+                            // Styling for the Document Title Node
+                            {
+                                selector: "[id='DocumentNode']",
+                                style: {
+                                    "shape": "rectangle",
+                                    "content": "data(label)",
+                                    "text-valign": "center",
+                                    "text-halign": "center",
+                                    "background-color": "#002060", // Dark blue
+                                    "color": "#fff", // White text
+                                    "border-width": 2,
+                                    "border-color": "#002850",
+                                    "font-weight": "bold",
+                                    "font-size": "18px",
+                                    "width": "300px",
+                                    "height": "60px",
+                                    "font-family": "Arial, sans-serif",
+                                    "text-wrap": "wrap",
+                                }
+                            },
+                            // Styling for Regular Nodes (Steps)
+                            {
+                                selector: "node",
+                                style: {
+                                    "shape": "rectangle",
+                                    "content": "data(label)",
+                                    "text-valign": "center",
+                                    "text-halign": "center",
+                                    "background-color": "#D9D9D9", // Gray background
+                                    "color": "#000",
+                                    "border-width": 2,
+                                    "border-color": "#8a8a8a",
+                                    "font-size": "14px",
+                                    "width": "300px",
+                                    "height": "50px",
+                                    "font-family": "Arial, sans-serif",
+                                    "text-wrap": "wrap",
+                                    "text-max-width": "270px",
+                                    "padding": "5px"
+                                }
+                            },
+                            {
+                                selector: "[id='CompletedNode']",
+                                style: {
+                                    "shape": "rectangle",
+                                    "content": "data(label)",
+                                    "text-valign": "center",
+                                    "text-halign": "center",
+                                    "background-color": "#008000", // Green color
+                                    "color": "#fff", // White text
+                                    "border-width": 2,
+                                    "border-color": "#8a8a8a", // Dark green border
+                                    "font-weight": "bold",
+                                    "font-size": "16px",
+                                    "width": "300px",
+                                    "height": "60px",
+                                    "font-family": "Arial, sans-serif",
+                                    "text-wrap": "wrap",
+                                }
+                            },
+                            // Styling for Continuation Nodes (Circles with Labels)
+                            {
+                                selector: "[id^='continuation-']",
+                                style: {
+                                    "shape": "ellipse",
+                                    "content": "data(continuationLabel)",
+                                    "text-valign": "center",
+                                    "text-halign": "center",
+                                    "background-color": "#D9D9D9",
+                                    "color": "#000",
+                                    "border-width": 2,
+                                    "border-color": "#7F7F7F",
+                                    "font-size": "16px",
+                                    "font-weight": "bold",
+                                    "width": "40px",
+                                    "height": "40px",
+                                }
+                            },
+                            // Keep existing circular node styling
+                            {
+                                selector: "[shape='circle']",
+                                style: {
+                                    "shape": "ellipse",
+                                    "content": "data(continuationLabel)",
+                                    "text-valign": "center",
+                                    "text-halign": "center",
+                                    "background-color": "#D9D9D9",
+                                    "color": "#000",
+                                    "border-width": 2,
+                                    "border-color": "#7F7F7F",
+                                    "font-size": "16px",
+                                    "font-weight": "bold",
+                                    "width": "40px",
+                                    "height": "40px",
+                                }
+                            },
+                            // Styling for Edges (Connections)
+                            {
+                                selector: "edge",
+                                style: {
+                                    "width": 2,
+                                    "line-color": "#555",
+                                    "target-arrow-shape": "triangle",
+                                    "target-arrow-color": "#555",
+                                    "curve-style": "bezier",
+                                }
+                            }
+                        ],
+                        layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
+                        styleEnabled: true,
+                        zoom: 1,
+                        pan: { x: 180, y: 180 },
+                    });
+
+                    setCy(cyInstance);
+
+                    cyInstance.ready(() => {
+                        const documentNode = cyInstance.$("[id='DocumentNode']");
+                        const completedNode = cyInstance.$("[id = 'CompletedNode']");
+
+                        if (documentNode.length > 0) {
+                            documentNode.style({
                                 "background-color": "#002060", // Dark blue
                                 "color": "#fff", // White text
-                                "border-width": 2,
+                                "font-weight": "bold",
                                 "border-color": "#002850",
-                                "font-weight": "bold",
-                                "font-size": "18px",
-                                "width": "300px",
-                                "height": "60px",
-                                "font-family": "Arial, sans-serif",
-                                "text-wrap": "wrap",
-                            }
-                        },
-                        // Styling for Regular Nodes (Steps)
-                        {
-                            selector: "node",
-                            style: {
-                                "shape": "rectangle",
-                                "content": "data(label)",
                                 "text-valign": "center",
                                 "text-halign": "center",
-                                "background-color": "#D9D9D9", // Gray background
-                                "color": "#000",
-                                "border-width": 2,
-                                "border-color": "#8a8a8a",
-                                "font-size": "14px",
-                                "width": "300px",
-                                "height": "50px",
-                                "font-family": "Arial, sans-serif",
-                                "text-wrap": "wrap",
-                                "text-max-width": "270px",
-                                "padding": "5px"
-                            }
-                        },
-                        {
-                            selector: "[id='CompletedNode']",
-                            style: {
-                                "shape": "rectangle",
-                                "content": "data(label)",
-                                "text-valign": "center",
-                                "text-halign": "center",
-                                "background-color": "#008000", // Green color
-                                "color": "#fff", // White text
-                                "border-width": 2,
-                                "border-color": "#8a8a8a", // Dark green border
-                                "font-weight": "bold",
                                 "font-size": "16px",
-                                "width": "300px",
-                                "height": "60px",
-                                "font-family": "Arial, sans-serif",
-                                "text-wrap": "wrap",
-                            }
-                        },
-                        // Styling for Continuation Nodes (Circles with Labels)
-                        {
-                            selector: "[id^='continuation-']",
-                            style: {
-                                "shape": "ellipse",
-                                "content": "data(continuationLabel)",
-                                "text-valign": "center",
-                                "text-halign": "center",
-                                "background-color": "#D9D9D9",
-                                "color": "#000",
-                                "border-width": 2,
-                                "border-color": "#7F7F7F",
-                                "font-size": "16px",
-                                "font-weight": "bold",
-                                "width": "40px",
-                                "height": "40px",
-                            }
-                        },
-                        // Keep existing circular node styling
-                        {
-                            selector: "[shape='circle']",
-                            style: {
-                                "shape": "ellipse",
-                                "content": "data(continuationLabel)",
-                                "text-valign": "center",
-                                "text-halign": "center",
-                                "background-color": "#D9D9D9",
-                                "color": "#000",
-                                "border-width": 2,
-                                "border-color": "#7F7F7F",
-                                "font-size": "16px",
-                                "font-weight": "bold",
-                                "width": "40px",
-                                "height": "40px",
-                            }
-                        },
-                        // Styling for Edges (Connections)
-                        {
-                            selector: "edge",
-                            style: {
-                                "width": 2,
-                                "line-color": "#555",
-                                "target-arrow-shape": "triangle",
-                                "target-arrow-color": "#555",
-                                "curve-style": "bezier",
-                            }
+                                "text-max-width": "300px",
+                            });
+                        } else {
+                            console.error("DocumentNode not found");
                         }
-                    ],
-                    layout: { name: "dagre", rankDir: "TB", nodeSep: 50 },
-                    styleEnabled: true,
-                    zoom: 1,
-                    pan: { x: 180, y: 180 },
-                });
 
-                setCy(cyInstance);
+                        if (completedNode.length > 0) {
+                            completedNode.style({
+                                "background-color": "#7F7F7F", // Dark blue
+                                "color": "#fff", // White text
+                                "font-weight": "bold",
+                                "text-valign": "center",
+                                "text-halign": "center",
+                                "font-size": "16px",
+                                "text-max-width": "300px",
+                                "border-color": "#8a8a8a",
+                            });
+                        } else {
+                            console.error("CompletedNode not found");
+                        }
+                    });
 
-                cyInstance.ready(() => {
-                    const documentNode = cyInstance.$("[id='DocumentNode']");
-                    const completedNode = cyInstance.$("[id = 'CompletedNode']");
+                    // Apply edge styling for continuation nodes
+                    cyInstance.edges().forEach(edge => {
+                        const sourceId = edge.source().id();
+                        const targetId = edge.target().id();
 
-                    if (documentNode.length > 0) {
-                        documentNode.style({
-                            "background-color": "#002060", // Dark blue
-                            "color": "#fff", // White text
-                            "font-weight": "bold",
-                            "border-color": "#002850",
-                            "text-valign": "center",
-                            "text-halign": "center",
-                            "font-size": "16px",
-                            "text-max-width": "300px",
-                        });
-                    } else {
-                        console.error("DocumentNode not found");
-                    }
+                        if (sourceId.startsWith('continuation-') || targetId.startsWith('continuation-')) {
+                            edge.style({
+                                "curve-style": "taxi",
+                                "taxi-direction": "downward",
+                                "line-color": "#000",
+                                "width": 2,
+                                "target-arrow-shape": sourceId.startsWith('continuation-') ? "triangle" : "none",
+                                "target-arrow-color": "#000",
+                            });
+                        }
+                    });
 
-                    if (completedNode.length > 0) {
-                        completedNode.style({
-                            "background-color": "#7F7F7F", // Dark blue
-                            "color": "#fff", // White text
-                            "font-weight": "bold",
-                            "text-valign": "center",
-                            "text-halign": "center",
-                            "font-size": "16px",
-                            "text-max-width": "300px",
-                            "border-color": "#8a8a8a",
-                        });
-                    } else {
-                        console.error("CompletedNode not found");
-                    }
-                });
-
-                // Apply edge styling for continuation nodes
-                cyInstance.edges().forEach(edge => {
-                    const sourceId = edge.source().id();
-                    const targetId = edge.target().id();
-
-                    if (sourceId.startsWith('continuation-') || targetId.startsWith('continuation-')) {
-                        edge.style({
-                            "curve-style": "taxi",
-                            "taxi-direction": "downward",
-                            "line-color": "#000",
-                            "width": 2,
-                            "target-arrow-shape": sourceId.startsWith('continuation-') ? "triangle" : "none",
-                            "target-arrow-color": "#000",
-                        });
-                    }
-                });
-            })
-            .catch(error => console.error("Error fetching flowchart data:", error));
-    }, [procedureRows, maxNodesPerPage]);
+                    resolve();
+                })
+                .catch(error => console.error("Error fetching flowchart data:", error));
+        });
+    };
 
     useEffect(() => {
         if (isModalOpen && pages.length > 0) {
@@ -772,7 +779,7 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
         setCurrentPage(pageIndex);
     };
 
-    const exportImage = () => {
+    const exportImage = async () => {
         if (procedureRows.length < 2) {
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -798,6 +805,8 @@ const FlowchartRenderer = ({ procedureRows, documentType, title }) => {
             });
             return;
         }
+
+        await prepareFlowchartData();
 
         if (cy && pages && pages.length > 0) {
             // If only one page, download directly

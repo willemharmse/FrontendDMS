@@ -3,17 +3,21 @@ import "./MaterialsTable.css"; // Add styling here
 import MaterialPopup from "../ValueChanges/MaterialPopup";
 import ManageMaterial from "../ValueChanges/ManageMaterial";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import ModifySuggestedMaterial from "../ValueChanges/ModifySuggestedMaterial";
 
 const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
     // State to control the popup and selected abbreviations
     const [matsData, setMatsData] = useState([]);
+    const [originalData, setOriginalData] = useState([])
     const [popupVisible, setPopupVisible] = useState(false);
     const [selectedMaterials, setSelectedMaterials] = useState(new Set(usedMaterials));
     const [isNA, setIsNA] = useState(false);
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [showNewPopup, setShowNewPopup] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [matUpdate, setMatUpdate] = useState("");
+    const [updatePopup, setUpdatePopup] = useState(false);
 
     const fetchValues = async () => {
         try {
@@ -25,6 +29,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             const data = await response.json();
 
             setMatsData(data.mats);
+            setOriginalData(data.mats);
             localStorage.setItem('cachedMatOptions', JSON.stringify(data.mats));
         } catch (error) {
             console.log(error);
@@ -34,6 +39,49 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
             }
         }
     };
+
+
+    const handleUpdateMat = (newMatObj, oldMat) => {
+        const updatedCode = newMatObj.mat;
+
+        // 1. Remove the old abbreviation from usedAbbrCodes
+        setUsedMaterials(prev =>
+            prev.filter(code => code !== oldMat)
+        );
+
+        // 2. Remove from selectedAbbrs and add the new one
+        setSelectedMaterials(prev => {
+            const updated = new Set(prev);
+            updated.delete(oldMat);
+            updated.add(updatedCode);
+            return updated;
+        });
+
+        // 3. Replace the old row in abbrRows with the updated one
+        setFormData(prev => ({
+            ...prev,
+            Materials: prev.Materials.map(row =>
+                row.mat === oldMat
+                    ? newMatObj
+                    : row
+            ),
+        }));
+
+        // 4. Optionally add to usedAbbrCodes again if needed (if not already added)
+        setUsedMaterials(prev => [...prev, updatedCode]);
+    };
+
+    const openUpdate = (mat) => {
+        setMatUpdate(mat);
+
+        setUpdatePopup(true);
+    }
+
+    const closeUpdate = () => {
+        setMatUpdate("");
+
+        setUpdatePopup(false);
+    }
 
     const clearSearch = () => {
         setSearchTerm("");
@@ -215,7 +263,7 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                                                                     onChange={() => handleCheckboxChange(item.mat)}
                                                                 />
                                                             </td>
-                                                            <td>{item.mat}</td>
+                                                            <td style={{ whiteSpace: "pre-wrap" }}>{item.mat}</td>
                                                         </tr>
                                                     ))
                                             ) : (
@@ -239,35 +287,50 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     <table className="vcr-table font-fam table-borders">
                         <thead className="cp-table-header">
                             <tr>
-                                <th className="col-mat-mat">Material</th>
-                                <th className="col-mat-act">Action</th>
+                                <th className="col-mat-mat" style={{ textAlign: "center" }}>Material</th>
+                                <th className="col-mat-act" style={{ textAlign: "center" }}>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.Materials?.map((row, index) => (
                                 <tr key={index}>
-                                    <td style={{ fontSize: "14px" }}>{row.mat}</td>
+                                    <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.mat}</td>
                                     <td className="procCent">
-                                        <button
-                                            className="remove-row-button"
-                                            onClick={() => {
-                                                // Remove abbreviation from table and the selected abbreviations set
-                                                setFormData({
-                                                    ...formData,
-                                                    Materials: formData.Materials.filter((_, i) => i !== index),
-                                                });
-                                                setUsedMaterials(
-                                                    usedMaterials.filter((mat) => mat !== row.mat)
-                                                );
+                                        <div className="term-action-buttons">
+                                            <button
+                                                className="remove-row-button"
+                                                style={{ paddingRight: "6px" }}
+                                                onClick={() => {
+                                                    // Remove abbreviation from table and the selected abbreviations set
+                                                    setFormData({
+                                                        ...formData,
+                                                        Materials: formData.Materials.filter((_, i) => i !== index),
+                                                    });
+                                                    setUsedMaterials(
+                                                        usedMaterials.filter((mat) => mat !== row.mat)
+                                                    );
 
-                                                // Update the selectedAbbrs state to reflect the removal
-                                                const newSelectedMaterials = new Set(selectedMaterials);
-                                                newSelectedMaterials.delete(row.mat);
-                                                setSelectedMaterials(newSelectedMaterials);
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                        </button>
+                                                    // Update the selectedAbbrs state to reflect the removal
+                                                    const newSelectedMaterials = new Set(selectedMaterials);
+                                                    newSelectedMaterials.delete(row.mat);
+                                                    setSelectedMaterials(newSelectedMaterials);
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                            </button>
+                                            <button
+                                                className="edit-terms-row-button"
+                                                disabled={
+                                                    originalData.some(item => item.mat === row.mat)
+                                                }
+                                                style={{ color: originalData.some(item => item.mat === row.mat) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                onClick={() => {
+                                                    openUpdate(row.mat)
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} title="Modify Material" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -287,6 +350,8 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                     </button>
                 )}
             </div>
+
+            {updatePopup && (<ModifySuggestedMaterial mat={matUpdate} closePopup={closeUpdate} onAdd={handleUpdateMat} setMatData={setMatsData} />)}
         </div>
     );
 };
