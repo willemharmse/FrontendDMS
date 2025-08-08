@@ -1,0 +1,263 @@
+/* document-workflow.css */
+
+/* — Overlay & overall popup — */
+.popup-overlay-document-workflow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content-document-workflow {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 1000px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 185px;
+    /* Ensure the popup does not stretch vertically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+.popup-title-document-workflow {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.popup-close-document-workflow {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+
+.vertical-header-document-workflow {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+    padding: 10px;
+}
+
+/* — Group box for subtitle, table & notes — */
+.document-workflow-group {
+    background: white;
+    border-radius: 5px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* — Subtitle bar inside the white box — */
+.document-workflow-subtitle {
+    background-color: #d0d2d3;
+    padding: 10px 12px;
+    font-weight: bold;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* — Table wrapper — */
+.popup-table-wrapper-document-workflow {
+    overflow: auto;
+    flex: 1;
+    /* let it grow & scroll if needed */
+    margin-bottom: 12px;
+}
+
+.matrix-table-document-workflow {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.matrix-table-document-workflow th,
+.matrix-table-document-workflow td {
+    padding: 8px;
+}
+
+/* top header */
+.matrix-table-document-workflow thead th {
+    background: #BFBFBF;
+    color: black;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* first column */
+.matrix-table-document-workflow tbody th {
+    background: #f2f2f2;
+    text-align: left;
+    padding-left: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+/* cell colours */
+.low {
+    background: #5fa46c;
+    color: white;
+}
+
+.medium {
+    background: #f7f48b;
+}
+
+.significant {
+    background: #fcbf49;
+}
+
+.high {
+    background: #d16666;
+    color: white;
+}
+
+/* — Notes inside the same white group — */
+.matrix-notes-document-workflow {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.matrix-notes-document-workflow ul {
+    margin: 8px 0 0 16px;
+}
+
+.matrix-notes-document-workflow li {
+    margin-bottom: 4px;
+}
+
+/* New Styles */
+
+.docwf-container {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-bottom: none;
+}
+
+/* Panels */
+.docwf-panel {
+    flex: 1;
+    padding: 15px;
+}
+
+.docwf-left {
+    flex: 0.6;
+    /* Narrower than right */
+    background: #f4f4f4;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    position: relative;
+}
+
+.docwf-left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.docwf-review-flow img {
+    max-width: 70%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.docwf-right {
+    flex: 1.4;
+    /* Wider than left */
+    border-left: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.docwf-panel-title {
+    background-color: #002060;
+    color: white;
+    padding: 10px;
+    margin: -16px -16px 10px -16px;
+    font-size: 16px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+/* Arrow */
+.docwf-arrow {
+    width: 30px;
+    text-align: center;
+    align-self: center;
+    font-size: 24px;
+    color: gray;
+}
+
+/* Review Process */
+.docwf-review {
+    text-align: center;
+    margin: 5px 0;
+}
+
+.docwf-review-title {
+    text-decoration: underline;
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
+
+.docwf-review-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    margin-bottom: 10px;
+}
+
+.docwf-step {
+    text-align: center;
+}
+
+.docwf-icon {
+    width: 40px;
+    height: 40px;
+    display: block;
+    margin: 0 auto 5px;
+}
+
+/* Notes Section */
+.docwf-notes {
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.docwf-notes b {
+    font-weight: bold;
+}

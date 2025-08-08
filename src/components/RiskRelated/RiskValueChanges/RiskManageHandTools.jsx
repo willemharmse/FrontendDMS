@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./RiskManageHandTools.css";
 
-const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd, userID }) => {
+const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd, userID, tool }) => {
     const [handTools, setHandTools] = useState([]);
-    const [selectedTool, setSelectedTool] = useState("");
     const [toolInp, setToolInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -33,6 +32,12 @@ const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd
         fetchHandTools();
     }, []);
 
+    useEffect(() => {
+        if (handTools.length > 0) {
+            handleLoad();
+        }
+    }, [handTools, tool]);
+
     const closeFunction = () => {
         onClose();
         closePopup();
@@ -47,23 +52,18 @@ const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedTool(selected);
-        const tool = handTools.find((tool) => tool.tool === selected);
-        if (tool) {
-            setToolInp(tool.tool || "");
+    const handleLoad = () => {
+        if (!tool || handTools.length === 0) return;
+
+        const toolObj = handTools.find((t) => t.tool === tool);
+        if (toolObj) {
+            setToolInp(toolObj.tool || "");
         } else {
             setToolInp("");
         }
     };
 
     const handleUpdate = async () => {
-        if (!selectedTool) {
-            setError("Please select a tool.");
-            return;
-        }
-
         const data = { tool: toolInp };
         const type = "Tool";
         const route = `/api/riskInfo/draft`;
@@ -82,7 +82,6 @@ const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd
 
             setMessage("Tool update suggested successfully.");
             setError("");
-            setSelectedTool("");
             setToolInp("");
             const newTool = {
                 tool: toolInp.trim() + " *",
@@ -115,19 +114,7 @@ const RiskManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd
                 </div>
 
                 <div className="manTool-popup-group">
-                    <label className="manTool-popup-label">Existing Tool Name</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manTool-select remove-default-styling" value={selectedTool} onChange={handleSelectChange}>
-                            <option value="">Select Existing Tool Name</option>
-                            {handTools.sort((a, b) => a.tool.localeCompare(b.tool)).map((tool) => (
-                                <option key={tool.tool} value={tool.tool}>{tool.tool}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manTool-popup-group">
-                    <label className="manTool-popup-label">New Tool Name</label>
+                    <label className="manTool-popup-label">Tool Name</label>
                     <input spellcheck="true" className="manTool-input" placeholder="Insert New Tool Name" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
                 </div>
 

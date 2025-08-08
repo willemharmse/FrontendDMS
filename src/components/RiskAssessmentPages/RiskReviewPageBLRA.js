@@ -27,6 +27,7 @@ import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
 import BLRATable from "../RiskRelated/BLRAComponents/BLRATable";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
 
 const RiskReviewPageBLRA = () => {
     const navigate = useNavigate();
@@ -61,6 +62,15 @@ const RiskReviewPageBLRA = () => {
     const [azureFN, setAzureFN] = useState("");
     const fileID = useParams().fileId;
     const [change, setChange] = useState("");
+    const [draftNote, setDraftNote] = useState(null);
+
+    const openDraftNote = () => {
+        setDraftNote(true);
+    }
+
+    const closeDraftNote = () => {
+        setDraftNote(false);
+    }
 
     const openSaveAs = () => {
         if (!titleSet) {
@@ -288,7 +298,7 @@ const RiskReviewPageBLRA = () => {
             const blob = await response.blob();
             saveAs(blob, `${documentName}.docx`);
             setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
+            openDraftNote();
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1845,12 +1855,14 @@ const RiskReviewPageBLRA = () => {
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
-                        <button
-                            className="pdf-button font-fam"
-                            disabled
-                        >
-                            Generate PDF
-                        </button>
+                        {false && (
+                            <button
+                                className="pdf-button font-fam"
+                                disabled
+                            >
+                                Generate PDF
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -1858,6 +1870,7 @@ const RiskReviewPageBLRA = () => {
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             <ToastContainer />
             {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
+            {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
 
             {showSiteDropdown && filteredSites.length > 0 && (
                 <ul

@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faHelicopter, faInfo } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -32,6 +32,8 @@ import OtherTeam from "../RiskRelated/OtherTeam";
 import SavePopup from "../Popups/SavePopup";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
+import DocumentWorkflow from "../Popups/DocumentWorkflow";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -64,6 +66,24 @@ const RiskManagementPageJRA = () => {
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
     const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [generatePopup, setGeneratePopup] = useState(false);
+    const [draftNote, setDraftNote] = useState(null);
+    const [showWorkflow, setShowWorkflow] = useState(null);
+
+    const openDraftNote = () => {
+        setDraftNote(true);
+    }
+
+    const closeDraftNote = () => {
+        setDraftNote(false);
+    }
+
+    const openWorkflow = () => {
+        setShowWorkflow(true);
+    }
+
+    const closeWorkflow = () => {
+        setShowWorkflow(false);
+    }
 
     const closeHelpRA = () => {
         setHelpRA(false);
@@ -785,7 +805,7 @@ const RiskManagementPageJRA = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
 
             setUserID(decodedToken.userId);
@@ -1002,6 +1022,7 @@ const RiskManagementPageJRA = () => {
 
             const blob = await response.blob();
             saveAs(blob, `${documentName}.xlsx`);
+            openDraftNote();
         } catch (error) {
             console.error("Error generating document:", error);
         }
@@ -1157,6 +1178,13 @@ const RiskManagementPageJRA = () => {
                                 <span className="button-text">Published Documents</span>
                             </div>
                         </button>
+                        <div className="horizontal-divider-with-icon">
+                            <hr />
+                            <div className="divider-icon">
+                                <FontAwesomeIcon icon={faInfo} onClick={openWorkflow} />
+                            </div>
+                            <hr />
+                        </div>
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
@@ -1295,12 +1323,14 @@ const RiskManagementPageJRA = () => {
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
-                        <button
-                            className="pdf-button font-fam"
-                            disabled
-                        >
-                            Generate PDF
-                        </button>
+                        {false && (
+                            <button
+                                className="pdf-button font-fam"
+                                disabled
+                            >
+                                Generate PDF
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -1331,6 +1361,8 @@ const RiskManagementPageJRA = () => {
                 </ul>
             )}
             {generatePopup && (<GenerateDraftPopup deleteDraft={handleGenerateJRADocument} closeModal={closeGenerate} cancel={cancelGenerate} />)}
+            {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
+            {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
         </div>
     );
 };

@@ -5,11 +5,18 @@ import { faArrowLeft, faBell, faCircleUser, faHome } from "@fortawesome/free-sol
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 
-const TopBar = ({ role, menu, setReset }) => {
+const TopBar = ({ role, menu, setReset, isProfile = false }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [count, setCount] = useState(""); // Placeholder for unread notifications count
+    const [profilePic, setProfilePic] = useState(null);
+
+    useEffect(() => {
+        // Load from sessionStorage on mount
+        const cached = sessionStorage.getItem('profilePic');
+        setProfilePic(cached || null);
+    }, []);
 
     const fetchNotificationCount = async () => {
         const route = `/api/notifications/count`;
@@ -36,18 +43,32 @@ const TopBar = ({ role, menu, setReset }) => {
     return (
         <div className="icons-container">
             <div className="burger-menu-icon-um-home">
-                <FontAwesomeIcon onClick={() => navigate("/home")} icon={faHome} title="Home" />
+                <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faHome} title="Home" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
-                {count != 0 && <div className="notifications-badge">{count}</div>}{/* Replace with unread count from backend later */}
+                {count != 0 && <div className="notifications-badge"></div>}{/* Replace with unread count from backend later */}
             </div>
-            <div className="burger-menu-icon-um">
-                <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
+            <div className="burger-menu-icon-um" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
+                {profilePic ? (
+                    <img
+                        src={profilePic}
+                        alt="Profile"
+                        style={{
+                            width: "28px",          // match icon size
+                            height: "28px",
+                            borderRadius: "50%",    // circle
+                            objectFit: "cover",
+                            display: "block"
+                        }}
+                    />
+                ) : (
+                    <FontAwesomeIcon icon={faCircleUser} />
+                )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} />)}
-            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} />)}
+            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
+            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} />)}
         </div>
     );
 };

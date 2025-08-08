@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageRiskDefinitions.css";
 
-const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermData, onAdd }) => {
+const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermData, onAdd, term }) => {
     const [definitions, setDefinitions] = useState([]);
-    const [selectedDefinition, setSelectedDefinition] = useState("");
     const [approver, setApprover] = useState("");
     const [termInp, setTermInp] = useState("");
     const [definitionInp, setDefinitionInp] = useState("");
@@ -15,6 +14,12 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
     useEffect(() => {
         fetchDefinitions();
     }, []);
+
+    useEffect(() => {
+        if (definitions.length > 0) {
+            handleLoad();
+        }
+    }, [definitions, term]);
 
     useEffect(() => {
         // Function to fetch users
@@ -48,13 +53,13 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedDefinition(selected);
-        const definition = definitions.find((term) => term.term === selected);
-        if (definition) {
-            setTermInp(definition.term || "");
-            setDefinitionInp(definition.definition || "");
+    const handleLoad = () => {
+        if (!term || definitions.length === 0) return;
+
+        const termObj = definitions.find((t) => t.term === term);
+        if (termObj) {
+            setDefinitionInp(termObj.definition || "");
+            setTermInp(termObj.term || "");
         } else {
             setTermInp("");
             setDefinitionInp("");
@@ -62,11 +67,6 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
     };
 
     const handleUpdate = async () => {
-        if (!selectedDefinition) {
-            setError("Please select an definition.");
-            return;
-        }
-
         const route = `/api/riskInfo/draft`;
         const data = { term: termInp, definition: definitionInp };
         const type = "Definition";
@@ -85,7 +85,6 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
 
             setMessage("Term update suggested successfully.");
             setError("");
-            setSelectedDefinition("");
             setDefinitionInp("");
             setTermInp("");
             const newTermArr = {
@@ -122,24 +121,12 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
 
                 <div className="term-popup-scrollable">
                     <div className="manDefs-popup-group">
-                        <label className="manDefs-popup-label">Existing Term</label>
-                        <div className="abbr-popup-page-select-container">
-                            <select className="manDefs-select remove-default-styling" value={selectedDefinition} onChange={handleSelectChange}>
-                                <option value="">Select Existing Term</option>
-                                {definitions.sort((a, b) => a.term.localeCompare(b.term)).map((term) => (
-                                    <option key={term.term} value={term.term}>{term.term}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="manDefs-popup-group">
-                        <label className="manDefs-popup-label">New Term</label>
+                        <label className="manDefs-popup-label">Term</label>
                         <input spellcheck="true" className="manDefs-input" placeholder="Insert New Term" type="text" value={termInp} onChange={(e) => setTermInp(e.target.value)} />
                     </div>
 
                     <div className="manDefs-popup-group">
-                        <label className="manDefs-popup-label">New Term Definition</label>
+                        <label className="manDefs-popup-label">Term Definition</label>
                         <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                     </div>
 

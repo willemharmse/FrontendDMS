@@ -23,6 +23,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight, faSave, faPen, faUpload } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "./Notifications/TopBarDD";
 import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
+import DraftPopup from "./Popups/DraftPopup";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
@@ -53,6 +54,15 @@ const ReviewPage = () => {
     const type = useParams().type;
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [draftNote, setDraftNote] = useState(null);
+
+    const openDraftNote = () => {
+        setDraftNote(true);
+    }
+
+    const closeDraftNote = () => {
+        setDraftNote(false);
+    }
 
     const openSaveAs = () => {
         if (!titleSet) {
@@ -891,9 +901,9 @@ const ReviewPage = () => {
             if (!response.ok) throw new Error("Failed to generate document");
 
             const blob = await response.blob();
-            saveAs(blob, `${documentName}.docm`);
+            saveAs(blob, `${documentName}.docx`);
             setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
+            openDraftNote();
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1048,16 +1058,19 @@ const ReviewPage = () => {
                             onClick={handleGenerateDocument}
                             title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
                         >
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Review Document'}
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
-                        <button
-                            className="pdf-button font-fam"
-                            disabled
-                        >
-                            Generate PDF
-                        </button>
+                        {false && (
+                            <button
+                                className="pdf-button font-fam"
+                                disabled
+                            >
+                                Generate PDF
+                            </button>
+                        )}
                     </div>
                     {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={true} />)}
+                    {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
                 </div>
             </div>
             <ToastContainer />

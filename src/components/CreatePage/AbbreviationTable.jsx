@@ -175,17 +175,25 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
     setPopupVisible(false);
   };
 
-  const openManagePopup = () => setIsManageOpen(true);
-  const closeManagePopup = () => setIsManageOpen(false);
+  const openManagePopup = (abbr) => {
+    setAbbrUpdate(abbr);
+    setIsManageOpen(true);
+  }
+
+  const openAddPopup = () => {
+    handleSaveSelection();
+    setShowNewPopup(true)
+  }
+
+  const closeManagePopup = () => {
+    setAbbrUpdate("");
+    setIsManageOpen(false);
+  }
 
   return (
     <div className="input-row">
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
         <h3 className="font-fam-labels">Abbreviations  <span className="required-field">{si ? "" : "*"}</span></h3>
-        {role === "admin" && (
-          <button className="top-right-button-abbr-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Abbreviations" /></button>
-        )}
-        <button className="top-right-button-abbr" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Abbreviation" /></button>
         <AbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
@@ -198,6 +206,7 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
         {isManageOpen && <ManageAbbreviations closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleAbbreviationUpdate} userID={userID}
           setAbbrData={setAbbrData}
           onAdd={handleNewAbbreviation}
+          abbreviation={abbrUpdate}
         />}
         {/* Popup */}
         {popupVisible && (
@@ -262,8 +271,10 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
                   </table>
                 </div>
               </div>
-              <div className="abbr-buttons">
-                <button onClick={handleSaveSelection} className="abbr-button">Save Selection</button>
+              <div className="abbr-buttons-dual">
+                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
               </div>
             </div>
           </div>
@@ -309,12 +320,13 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
                       </button>
                       <button
                         className="edit-terms-row-button"
-                        disabled={
-                          originalData.some(item => item.abbr === row.abbr && item.meaning === row.meaning)
-                        }
-                        style={{ color: originalData.some(item => item.abbr === row.abbr && item.meaning === row.meaning) ? "lightgray" : "", paddingLeft: "6px" }}
+                        style={{ paddingLeft: "6px" }}
                         onClick={() => {
-                          openUpdate(row.abbr, row.meaning)
+                          if (originalData.some(item => item.abbr === row.abbr && item.meaning === row.meaning)) { openManagePopup(row.abbr) }
+                          else {
+                            openUpdate(row.abbr, row.meaning)
+
+                          }
                         }}
                       >
                         <FontAwesomeIcon icon={faEdit} title="Modify Abbreviation" />

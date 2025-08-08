@@ -29,6 +29,35 @@ const NewLogin = () => {
         setShowPassword((prev) => !prev);
     };
 
+    async function fetchAndCacheProfilePic(userId, token) {
+        try {
+            const resp = await fetch(`${process.env.REACT_APP_URL}/api/user/${userId}/profile-picture`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (resp.status === 200) {
+                const blob = await resp.blob();
+                // Convert Blob -> data URL so we can store it in sessionStorage (strings only)
+                const toDataURL = (blob) =>
+                    new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+
+                const dataUrl = await toDataURL(blob);
+                sessionStorage.setItem('profilePic', dataUrl);
+            } else {
+                // 204 (no content) or 404 -> keep icon
+                sessionStorage.removeItem('profilePic');
+            }
+        } catch {
+            // Network or other error -> fall back to icon
+            sessionStorage.removeItem('profilePic');
+        }
+    }
+
     useEffect(() => {
         const storedRememberMe = localStorage.getItem('rememberMe') === 'true';
         const storedToken = storedRememberMe ? localStorage.getItem('token') : sessionStorage.getItem('token');
@@ -167,7 +196,11 @@ const NewLogin = () => {
                 }
 
                 const decodedToken = jwtDecode(data.token);
-                navigate('/FrontendDMS/home'); // Redirect to home/dashboard
+                const userId = decodedToken.userId;
+
+                await fetchAndCacheProfilePic(userId, data.token);
+
+                navigate('/FrontendDMS/home');
             } else {
                 throw new Error('Invalid login attempt.');
             }

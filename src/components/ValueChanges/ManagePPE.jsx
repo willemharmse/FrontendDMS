@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManagePPE.css";
 
-const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID }) => {
+const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID, ppe }) => {
     const [ppes, setPpes] = useState([]);
     const [selectedPPE, setSelectedPPE] = useState("");
     const [ppeInp, setPpeInp] = useState("");
@@ -33,6 +33,12 @@ const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID })
         fetchPPE();
     }, []);
 
+    useEffect(() => {
+        if (ppes.length > 0) {
+            handleLoad();
+        }
+    }, [ppes, ppe]);
+
     const closeFunction = () => {
         onClose();
         closePopup();
@@ -47,23 +53,18 @@ const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID })
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedPPE(selected);
-        const ppe = ppes.find((ppe) => ppe.ppe === selected);
-        if (ppe) {
-            setPpeInp(ppe.ppe || "");
+    const handleLoad = () => {
+        if (!ppe || ppes.length === 0) return;
+
+        const ppeObj = ppes.find((p) => p.ppe === ppe);
+        if (ppeObj) {
+            setPpeInp(ppeObj.ppe || "");
         } else {
             setPpeInp("");
         }
     };
 
     const handleUpdate = async () => {
-        if (!selectedPPE) {
-            setError("Please select a PPE.");
-            return;
-        }
-
         const data = { ppe: ppeInp };
         const type = "PPE";
         const route = `/api/docCreateVals/draft`;
@@ -82,7 +83,6 @@ const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID })
 
             setMessage("PPE update suggested successfully.");
             setError("");
-            setSelectedPPE("");
             setPpeInp("");
             const newPpe = {
                 ppe: ppeInp.trim() + " *",
@@ -115,19 +115,7 @@ const ManagePPE = ({ closePopup, onClose, onUpdate, setPPEData, onAdd, userID })
                 </div>
 
                 <div className="manPPE-popup-group">
-                    <label className="manPPE-popup-label">Existing PPE Name</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manPPE-select remove-default-styling" value={selectedPPE} onChange={handleSelectChange}>
-                            <option value="">Select Existing PPE Name</option>
-                            {ppes.sort((a, b) => a.ppe.localeCompare(b.ppe)).map((ppe) => (
-                                <option key={ppe.ppe} value={ppe.ppe}>{ppe.ppe}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manPPE-popup-group">
-                    <label className="manPPE-popup-label">New PPE Name</label>
+                    <label className="manPPE-popup-label">PPE Name</label>
                     <input spellcheck="true" className="manPPE-input" placeholder="Insert New PPE Name" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
                 </div>
 

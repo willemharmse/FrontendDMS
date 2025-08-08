@@ -179,8 +179,20 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
         setSearchTerm("");
     };
 
-    const openManagePopup = () => setIsManageOpen(true);
-    const closeManagePopup = () => setIsManageOpen(false);
+    const openManagePopup = (ppe) => {
+        setPPEUpdate(ppe);
+        setIsManageOpen(true);
+    }
+
+    const closeManagePopup = () => {
+        setPPEUpdate("");
+        setIsManageOpen(false);
+    }
+
+    const openAddPopup = () => {
+        handleSaveSelection();
+        setShowNewPopup(true)
+    }
 
     return (
         <div className="input-row">
@@ -194,10 +206,6 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                     />
                     <h3 className="font-fam-labels">PPE</h3>
                 </div>
-                {role === "admin" && (
-                    <button className="top-right-button-ppe-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit PPE" /></button>
-                )}
-                <button className="top-right-button-ppe" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest PPE" /></button>
                 <RiskPPEPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
@@ -210,7 +218,8 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                 {isManageOpen && <RiskManagePPE closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handlePpeUpdate}
                     userID={userID}
                     setPPEData={setPPEData}
-                    onAdd={handleNewPpe} />}
+                    onAdd={handleNewPpe}
+                    ppe={ppeUpdate} />}
 
                 {/* Popup */}
                 {popupVisible && (
@@ -275,8 +284,10 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                                     </table>
                                 </div>
                             </div>
-                            <div className="ppe-buttons">
-                                <button onClick={handleSaveSelection} className="ppe-button">Save Selection</button>
+                            <div className="abbr-buttons-dual">
+                                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                             </div>
                         </div>
                     </div>
@@ -320,12 +331,12 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                                             </button>
                                             <button
                                                 className="edit-terms-row-button"
-                                                disabled={
-                                                    originalData.some(item => item.ppe === row.ppe)
-                                                }
-                                                style={{ color: originalData.some(item => item.ppe === row.ppe) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                style={{ paddingLeft: "6px" }}
                                                 onClick={() => {
-                                                    openUpdate(row.ppe)
+                                                    if (originalData.some(item => item.ppe === row.ppe)) { openManagePopup(row.ppe) }
+                                                    else {
+                                                        openUpdate(row.ppe);
+                                                    }
                                                 }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} title="Modify PPE" />

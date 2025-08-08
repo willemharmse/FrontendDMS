@@ -180,8 +180,20 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
         setPopupVisible(false);
     };
 
-    const openManagePopup = () => setIsManageOpen(true);
-    const closeManagePopup = () => setIsManageOpen(false);
+    const openManagePopup = (eqp) => {
+        setEqpUpdate(eqp);
+        setIsManageOpen(true);
+    }
+
+    const closeManagePopup = () => {
+        setEqpUpdate("");
+        setIsManageOpen(false);
+    }
+
+    const openAddPopup = () => {
+        handleSaveSelection();
+        setShowNewPopup(true)
+    }
 
     return (
         <div className="input-row">
@@ -195,10 +207,6 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                     />
                     <h3 className="font-fam-labels">Equipment</h3>
                 </div>
-                {role === "admin" && (
-                    <button className="top-right-button-eqp-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Equipment" /></button>
-                )}
-                <button className="top-right-button-eqp" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Equipment" /></button>
 
                 <RiskEquipmentPopup
                     isOpen={showNewPopup}
@@ -212,7 +220,8 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                 {isManageOpen && <RiskManageEquipment closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleEqpUpdate}
                     userID={userID}
                     setEqpData={setEqpData}
-                    onAdd={handleNewEqp} />}
+                    onAdd={handleNewEqp}
+                    eqp={eqpUpdate} />}
 
                 {/* Popup */}
                 {popupVisible && (
@@ -278,8 +287,10 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                                     </table>
                                 </div>
                             </div>
-                            <div className="eqp-buttons">
-                                <button onClick={handleSaveSelection} className="eqp-button">Save Selection</button>
+                            <div className="abbr-buttons-dual">
+                                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                             </div>
                         </div>
                     </div>
@@ -323,12 +334,12 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                                             </button>
                                             <button
                                                 className="edit-terms-row-button"
-                                                disabled={
-                                                    originalData.some(item => item.eqp === row.eqp)
-                                                }
-                                                style={{ color: originalData.some(item => item.eqp === row.eqp) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                style={{ paddingLeft: "6px" }}
                                                 onClick={() => {
-                                                    openUpdate(row.eqp)
+                                                    if (originalData.some(item => item.eqp === row.eqp)) { openManagePopup(row.eqp) }
+                                                    else {
+                                                        openUpdate(row.eqp);
+                                                    }
                                                 }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} title="Modify Equipment" />

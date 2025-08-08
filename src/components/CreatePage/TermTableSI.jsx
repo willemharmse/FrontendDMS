@@ -193,8 +193,20 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
     setPopupVisible(false);
   };
 
-  const openManagePopup = () => setIsManageOpen(true);
-  const closeManagePopup = () => setIsManageOpen(false);
+  const openManagePopup = (term) => {
+    setTermUpdate(term);
+    setIsManageOpen(true);
+  }
+
+  const closeManagePopup = () => {
+    setTermUpdate("");
+    setIsManageOpen(false);
+  }
+
+  const openAddPopup = () => {
+    handleSaveSelection();
+    setShowNewPopup(true)
+  }
 
   return (
     <div className="input-row">
@@ -208,10 +220,6 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
           />
           <h3 className="font-fam-labels">Terms & Definitions</h3>
         </div>
-        {role === "admin" && (
-          <button className="top-right-button-term-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Terms" /></button>
-        )}
-        <button className="top-right-button-term" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Term" /></button>
         <TermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
@@ -224,7 +232,8 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
         {isManageOpen && <ManageDefinitions closePopup={closeManagePopup} onClose={closeManagePopup} onUpdate={handleTermUpdate}
           userID={userID}
           setTermData={setTermData}
-          onAdd={handleNewTerm} />}
+          onAdd={handleNewTerm}
+          term={termUpdate} />}
 
         {popupVisible && (
           <div className="popup-overlay-terms">
@@ -291,8 +300,10 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
                   </table>
                 </div>
               </div>
-              <div className="term-buttons">
-                <button onClick={handleSaveSelection} className="term-button">Save Selection</button>
+              <div className="abbr-buttons-dual">
+                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
               </div>
             </div>
           </div>
@@ -337,12 +348,13 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
                       </button>
                       <button
                         className="edit-terms-row-button"
-                        disabled={
-                          originalData.some(item => item.term === row.term && item.definition === row.definition)
-                        }
-                        style={{ color: originalData.some(item => item.term === row.term && item.definition === row.definition) ? "lightgray" : "", paddingLeft: "6px" }}
+                        style={{ paddingLeft: "6px" }}
                         onClick={() => {
-                          openUpdate(row.term, row.definition)
+                          if (originalData.some(item => item.term === row.term && item.definition === row.definition)) { openManagePopup(row.term) }
+                          else {
+                            openUpdate(row.term, row.definition)
+
+                          }
                         }}
                       >
                         <FontAwesomeIcon icon={faEdit} title="Modify Term" />

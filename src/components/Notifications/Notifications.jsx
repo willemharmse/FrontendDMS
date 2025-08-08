@@ -5,6 +5,7 @@ import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-
 
 const Notifications = ({ setClose, getCount }) => {
     const [notifications, setNotifications] = useState([]);
+    const [selectedPill, setSelectedPill] = useState("Actions");
 
     useEffect(() => {
         const getNotifs = async () => {
@@ -128,6 +129,10 @@ const Notifications = ({ setClose, getCount }) => {
         return date.toLocaleString(); // You can customize this format as per your preference
     };
 
+    const filteredNotifications = selectedPill === "All"
+        ? notifications
+        : notifications.filter(n => n.type?.toLowerCase() === selectedPill.toLowerCase());
+
     return (
         <div className="notifications-modal-container" onMouseLeave={() => setClose(false)}>
             <div className="notifications-modal-box">
@@ -148,11 +153,24 @@ const Notifications = ({ setClose, getCount }) => {
                         />
                     </div>
                 </div>
-                {notifications.length === 0 ? (
-                    <div className="notifications-modal-empty">No notifications</div>
+                <div className="notifications-pill-bar">
+                    {["Actions", "Admin", "All"].map((pill, idx) => (
+                        <div
+                            key={idx}
+                            className={`notifications-pill ${selectedPill === pill ? 'active' : ''}`}
+                            onClick={() => setSelectedPill(pill)}
+                        >
+                            {pill}
+                        </div>
+                    ))}
+                </div>
+                {filteredNotifications.length === 0 ? (
+                    <div className="notifications-modal-empty">
+                        {selectedPill === "All" ? "No notifications" : `No notifications of this type`}
+                    </div>
                 ) : (
                     <ul className="notifications-modal-list">
-                        {notifications.map((note) => (
+                        {filteredNotifications.map((note) => (
                             <li
                                 key={note._id}
                                 className={`notifications-modal-item ${note.read ? 'notifications-read' : 'notifications-unread'}`}

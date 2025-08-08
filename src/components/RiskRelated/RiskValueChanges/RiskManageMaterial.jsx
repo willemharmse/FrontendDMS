@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./RiskManageMaterial.css";
 
-const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, userID }) => {
+const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, userID, mat }) => {
     const [materials, setMaterials] = useState([]);
-    const [selectedMaterial, setSelectedMaterial] = useState("");
     const [matInp, setMatInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -33,6 +32,12 @@ const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, 
         fetchMaterials();
     }, []);
 
+    useEffect(() => {
+        if (materials.length > 0) {
+            handleLoad();
+        }
+    }, [materials, mat]);
+
     const closeFunction = () => {
         onClose();
         closePopup();
@@ -47,23 +52,18 @@ const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, 
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedMaterial(selected);
-        const material = materials.find((mat) => mat.mat === selected);
-        if (material) {
-            setMatInp(material.mat || "");
+    const handleLoad = () => {
+        if (!mat || materials.length === 0) return;
+
+        const matObj = materials.find((m) => m.mat === mat);
+        if (matObj) {
+            setMatInp(matObj.mat || "");
         } else {
             setMatInp("");
         }
     };
 
     const handleUpdate = async () => {
-        if (!selectedMaterial) {
-            setError("Please select a material.");
-            return;
-        }
-
         const data = { mat: matInp };
         const type = "Material";
         const route = `/api/riskInfo/draft`;
@@ -82,7 +82,6 @@ const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, 
 
             setMessage("Material update suggested successfully.");
             setError("");
-            setSelectedMaterial("");
             setMatInp("");
             const newMat = {
                 mat: matInp.trim() + " *",
@@ -115,19 +114,7 @@ const RiskManageMaterial = ({ closePopup, onClose, onUpdate, setMatData, onAdd, 
                 </div>
 
                 <div className="manMat-popup-group">
-                    <label className="manMat-popup-label">Existing Material Name</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manMat-select remove-default-styling" value={selectedMaterial} onChange={handleSelectChange}>
-                            <option value="">Select Existing Material Name</option>
-                            {materials.sort((a, b) => a.mat.localeCompare(b.mat)).map((mat) => (
-                                <option key={mat.mat} value={mat.mat}>{mat.mat}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manMat-popup-group">
-                    <label className="manMat-popup-label">New Material Name</label>
+                    <label className="manMat-popup-label">Material Name</label>
                     <input spellcheck="true" className="manMat-input" placeholder="Insert New Material Name" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
                 </div>
 

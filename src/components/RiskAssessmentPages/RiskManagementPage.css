@@ -28,6 +28,38 @@
     margin-bottom: 100px !important;
 }
 
+.horizontal-divider-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 85%;
+    margin-top: 6px;
+}
+
+.horizontal-divider-with-icon hr {
+    flex: 1;
+    border: none;
+    border-top: 1px solid white;
+    /* or your preferred color */
+    margin: 0 8px;
+}
+
+.divider-icon {
+    background: white;
+    border-radius: 50%;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+}
+
+.divider-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
 .other-team__info {
     font-size: 16px;
     text-align: left;

@@ -178,8 +178,20 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
         setPopupVisible(false);
     };
 
-    const openManagePopup = () => setIsManageOpen(true);
-    const closeManagePopup = () => setIsManageOpen(false);
+    const openManagePopup = (mat) => {
+        setMatUpdate(mat);
+        setIsManageOpen(true);
+    }
+
+    const closeManagePopup = () => {
+        setMatUpdate("");
+        setIsManageOpen(false);
+    }
+
+    const openAddPopup = () => {
+        handleSaveSelection();
+        setShowNewPopup(true)
+    }
 
     return (
         <div className="input-row">
@@ -193,10 +205,6 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                     />
                     <h3 className="font-fam-labels">Materials</h3>
                 </div>
-                {role === "admin" && (
-                    <button className="top-right-button-mat-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Materials" /></button>
-                )}
-                <button className="top-right-button-mat" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Material" /></button>
                 <RiskMaterialPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
@@ -209,7 +217,8 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                 {isManageOpen && <RiskManageMaterial closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleMatUpdate}
                     userID={userID}
                     setMatData={setMatsData}
-                    onAdd={handleNewMat} />}
+                    onAdd={handleNewMat}
+                    mat={matUpdate} />}
 
                 {/* Popup */}
                 {popupVisible && (
@@ -275,8 +284,10 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                                     </table>
                                 </div>
                             </div>
-                            <div className="mat-buttons">
-                                <button onClick={handleSaveSelection} className="mat-button">Save Selection</button>
+                            <div className="abbr-buttons-dual">
+                                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                             </div>
                         </div>
                     </div>
@@ -320,12 +331,12 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                                             </button>
                                             <button
                                                 className="edit-terms-row-button"
-                                                disabled={
-                                                    originalData.some(item => item.mat === row.mat)
-                                                }
-                                                style={{ color: originalData.some(item => item.mat === row.mat) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                style={{ paddingLeft: "6px" }}
                                                 onClick={() => {
-                                                    openUpdate(row.mat)
+                                                    if (originalData.some(item => item.mat === row.mat)) { openManagePopup(row.mat) }
+                                                    else {
+                                                        openUpdate(row.mat);
+                                                    }
                                                 }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} title="Modify Material" />

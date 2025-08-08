@@ -23,6 +23,7 @@ import StandardsTable from "../CreatePage/StandardsTable";
 import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
 
 const CreatePageStandardsReview = () => {
   const navigate = useNavigate();
@@ -50,6 +51,15 @@ const CreatePageStandardsReview = () => {
   const [generatePopup, setGeneratePopup] = useState(false);
   const [loadingAim, setLoadingAim] = useState(false);
   const [loadingScope, setLoadingScope] = useState(false);
+  const [draftNote, setDraftNote] = useState(null);
+
+  const openDraftNote = () => {
+    setDraftNote(true);
+  }
+
+  const closeDraftNote = () => {
+    setDraftNote(false);
+  }
 
   const openSaveAs = () => {
     if (!titleSet) {
@@ -831,9 +841,9 @@ const CreatePageStandardsReview = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docm`);
+      saveAs(blob, `${documentName}.docx`);
       setLoading(false);
-      //saveAs(blob, `${documentName}.pdf`);
+      openDraftNote();
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -1054,15 +1064,18 @@ const CreatePageStandardsReview = () => {
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
-            <button
-              className="pdf-button font-fam"
-              disabled
-            >
-              Generate PDF
-            </button>
+            {false && (
+              <button
+                className="pdf-button font-fam"
+                disabled
+              >
+                Generate PDF
+              </button>
+            )}
           </div>
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
+        {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
       </div>
       <ToastContainer />
     </div>

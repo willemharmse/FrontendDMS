@@ -65,7 +65,7 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                     {filteredUsersList.map((user, index) => (
                         <tr key={user._id}>
                             <td className="col-um">{index + 1}</td>
-                            <td className="col-um" onClick={() => navigate(`/FrontendDMS/userActivity/${user._id}`)} style={{ cursor: "pointer" }}>{user.username}</td>
+                            <td className="col-um" onClick={() => navigate(`/userActivity/${user._id}`)} style={{ cursor: "pointer" }}>{user.username}</td>
                             <td className="col-um">{user.email ? user.email : ""}</td>
                             <td className="col-um">{formatRole(user.role)}</td>
                             <td className="col-um">{user.dateAdded ? formatDate(user.dateAdded) : ""}</td>

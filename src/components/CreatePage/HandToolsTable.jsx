@@ -178,8 +178,21 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
         setPopupVisible(false);
     };
 
-    const openManagePopup = () => setIsManageOpen(true);
-    const closeManagePopup = () => setIsManageOpen(false);
+
+    const openManagePopup = (tool) => {
+        setToolUpdate(tool);
+        setIsManageOpen(true);
+    }
+
+    const closeManagePopup = () => {
+        setToolUpdate("");
+        setIsManageOpen(false);
+    }
+
+    const openAddPopup = () => {
+        handleSaveSelection();
+        setShowNewPopup(true)
+    }
 
     return (
         <div className="input-row">
@@ -193,10 +206,6 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     />
                     <h3 className="font-fam-labels">Hand Tools</h3>
                 </div>
-                {role === "admin" && (
-                    <button className="top-right-button-tool-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Tools" /></button>
-                )}
-                <button className="top-right-button-tool" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Tool" /></button>
                 <ToolPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
@@ -209,7 +218,8 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 {isManageOpen && <ManageHandTools closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleToolUpdate}
                     userID={userID}
                     setToolData={setToolsData}
-                    onAdd={handleNewTool} />}
+                    onAdd={handleNewTool}
+                    tool={toolUpdate} />}
                 {/* Popup */}
                 {popupVisible && (
                     <div className="popup-overlay-tool">
@@ -274,8 +284,10 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                     </table>
                                 </div>
                             </div>
-                            <div className="tool-buttons">
-                                <button onClick={handleSaveSelection} className="tool-button">Save Selection</button>
+                            <div className="abbr-buttons-dual">
+                                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                             </div>
                         </div>
                     </div>
@@ -319,12 +331,12 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                                             </button>
                                             <button
                                                 className="edit-terms-row-button"
-                                                disabled={
-                                                    originalData.some(item => item.tool === row.tool)
-                                                }
-                                                style={{ color: originalData.some(item => item.tool === row.tool) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                style={{ paddingLeft: "6px" }}
                                                 onClick={() => {
-                                                    openUpdate(row.tool)
+                                                    if (originalData.some(item => item.tool === row.tool)) { openManagePopup(row.tool) }
+                                                    else {
+                                                        openUpdate(row.tool);
+                                                    }
                                                 }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} title="Modify Hand Tool" />

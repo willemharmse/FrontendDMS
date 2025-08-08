@@ -67,6 +67,14 @@ import VersionHistoryJRA from './components/RiskRelated/RiskDocuments/VersionHis
 import DeletedRiskDocumentsJRA from './components/RiskRelated/RiskDocuments/DeletedRiskDocumentsJRA';
 import VersionHistoryProcedure from './components/DocumentCreationPages/VersionHistoryProcedure';
 import DeletedDocumentsProcedure from './components/DocumentCreationPages/DeletedDocumentsProcedure';
+import UserProfile from './components/UserProfile/UserProfile';
+import CourseHome from './components/TrainingManagement/CourseHome';
+import TMSAdminPage from './components/TMSAdminPage';
+import CourseDetails from './components/TrainingManagement/CourseDetails';
+import TrainersHome from './components/TrainingManagement/TrainerManagement/TrainersHome';
+import TrainerDetails from './components/TrainingManagement/TrainerManagement/TrainerDetails';
+import TraineesHome from './components/TrainingManagement/TraineeMangement/TraineesHome';
+import TraineeDetails from './components/TrainingManagement/TraineeMangement/TraineeDetails';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -187,6 +195,14 @@ function App() {
         <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
         <Route path='FrontendDMS/futureEnhancement' element={<FutureEnhancementPage />} />
         <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />
+        <Route path='FrontendDMS/userProfile' element={<UserProfile />} />
+        <Route path='FrontendDMS/tmsAdmin' element={<TMSAdminPage />} />
+        <Route path='FrontendDMS/courseMangement' element={<CourseHome />} />
+        <Route path='FrontendDMS/courseDetails/:courseCode' element={<CourseDetails />} />
+        <Route path='FrontendDMS/trainerManagement' element={<TrainersHome />} />
+        <Route path='FrontendDMS/trainerDetails/:trainerName' element={<TrainerDetails />} />
+        <Route path='FrontendDMS/traineeManagement' element={<TraineesHome />} />
+        <Route path='FrontendDMS/traineeDetails/:traineeName' element={<TraineeDetails />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

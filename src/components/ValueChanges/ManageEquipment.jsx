@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageEquipment.css";
 
-const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, userID }) => {
+const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, userID, eqp }) => {
     const [equipment, setEquipment] = useState([]);
-    const [selectedEquipment, setSelectedEquipment] = useState("");
     const [eqpInp, setEqpInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -33,6 +32,12 @@ const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, use
         fetchEquipment();
     }, []);
 
+    useEffect(() => {
+        if (equipment.length > 0) {
+            handleLoad();
+        }
+    }, [equipment, eqp]);
+
     const closeFunction = () => {
         onClose();
         closePopup();
@@ -47,23 +52,18 @@ const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, use
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedEquipment(selected);
-        const eqp = equipment.find((eqp) => eqp.eqp === selected);
-        if (eqp) {
-            setEqpInp(eqp.eqp || "");
+    const handleLoad = () => {
+        if (!eqp || equipment.length === 0) return;
+
+        const eqpObj = equipment.find((e) => e.eqp === eqp);
+        if (eqpObj) {
+            setEqpInp(eqpObj.eqp || "");
         } else {
             setEqpInp("");
         }
     };
 
     const handleUpdate = async () => {
-        if (!selectedEquipment) {
-            setError("Please select an equipment.");
-            return;
-        }
-
         const data = { eqp: eqpInp };
         const type = "Equipment";
         const route = `/api/docCreateVals/draft`;
@@ -82,7 +82,6 @@ const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, use
 
             setMessage("Equipment update suggested successfully.");
             setError("");
-            setSelectedEquipment("");
             setEqpInp("");
             const newEqp = {
                 eqp: eqpInp.trim() + " *",
@@ -115,19 +114,7 @@ const ManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd, use
                 </div>
 
                 <div className="manEqp-popup-group">
-                    <label className="manEqp-popup-label">Existing Equipment Name</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manEqp-select remove-default-styling" value={selectedEquipment} onChange={handleSelectChange}>
-                            <option value="">Select Existing Equipment Name</option>
-                            {equipment.sort((a, b) => a.eqp.localeCompare(b.eqp)).map((eqp) => (
-                                <option key={eqp.eqp} value={eqp.eqp}>{eqp.eqp}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manEqp-popup-group">
-                    <label className="manEqp-popup-label">New Equipment Name</label>
+                    <label className="manEqp-popup-label">Equipment Name</label>
                     <input spellcheck="true" className="manEqp-input" placeholder="Insert New Equipment Name" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
                 </div>
 

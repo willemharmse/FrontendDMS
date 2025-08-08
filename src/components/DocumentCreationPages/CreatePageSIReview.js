@@ -20,6 +20,7 @@ import DocumentSignaturesTableSI from "../CreatePage/DocumentSignaturesTableSI";
 import AbbreviationTableSI from "../CreatePage/AbbreviationTableSI";
 import TermTableSI from "../CreatePage/TermTableSI";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
 
 const CreatePageSIReview = () => {
   const navigate = useNavigate();
@@ -55,6 +56,15 @@ const CreatePageSIReview = () => {
   const [change, setChange] = useState("");
   const [azureFN, setAzureFN] = useState("");
   const fileID = useParams().fileId;
+  const [draftNote, setDraftNote] = useState(null);
+
+  const openDraftNote = () => {
+    setDraftNote(true);
+  }
+
+  const closeDraftNote = () => {
+    setDraftNote(false);
+  }
 
   const openSaveAs = () => {
     if (!titleSet) {
@@ -922,7 +932,7 @@ const CreatePageSIReview = () => {
       const blob = await response.blob();
       saveAs(blob, `${documentName}.docx`);
       setLoading(false);
-      //saveAs(blob, `${documentName}.pdf`);
+      openDraftNote();
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -1194,12 +1204,14 @@ const CreatePageSIReview = () => {
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
-            <button
-              className="pdf-button font-fam"
-              disabled
-            >
-              Generate PDF
-            </button>
+            {false && (
+              <button
+                className="pdf-button font-fam"
+                disabled
+              >
+                Generate PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1247,6 +1259,7 @@ const CreatePageSIReview = () => {
         </ul>
       )}
       {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} special={true} />)}
+      {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
       <ToastContainer />
     </div>
   );

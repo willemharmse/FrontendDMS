@@ -58,6 +58,15 @@ const ImportSiteInfo = ({ onClose }) => {
         }
     };
 
+    const downloadTemplate = () => {
+        const link = document.createElement('a');
+        link.href = `${process.env.PUBLIC_URL}/DD_Template.xlsx`; // Adjust path as needed
+        link.setAttribute('download', 'TAU5 - Site Information Document V0.15.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     useEffect(() => {
         console.log("📝 getDraftDocuments effect running");
         const getDraftDocuments = async () => {
@@ -192,19 +201,41 @@ const ImportSiteInfo = ({ onClose }) => {
                     </div>
                 </div>
 
+                <div className="import-si-info-row">
+                    <div className="import-si-file-group" style={{ position: "relative" }}>
+                        <button
+                            className="top-right-button-rsi"
+                            title="Download SID"
+                            onClick={() => downloadTemplate()}
+                        >
+                            <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                        </button>
+                        <div className="import-si-file-text">Site Information Document Template</div>
+                        <div className="import-si-label">Version</div>
+                        <div className="import-si-value">V0.15</div>
+                        <div className="import-si-label">Date Uploaded</div>
+                        <div className="import-si-value">2025-08-08</div>
+                    </div>
 
-                <div className="import-si-file-group" style={{ position: "relative" }}>
-                    <button
-                        className="top-right-button-rsi"
-                        title="Download SID"
-                        onClick={() => downloadFile()}
-                    >
-                        <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
-                    </button>
-                    <div className="import-si-file-text">Current Risk Site Information</div>
-                    <div className="import-si-file-text-xlsx">Title: {info?.fileName || "N/A"}</div>
-                    <div className="import-si-file-text-xlsx">Uploader: {info?.uploader?.username || "N/A"}</div>
-                    <div className="import-si-file-text-xlsx">Date Uploaded: {info?.uploadDate ? formatDate(info.uploadDate) : "N/A"}</div>
+                    <div className="import-si-file-group" style={{ position: "relative" }}>
+                        <button
+                            className="top-right-button-rsi"
+                            title="Download SID"
+                            onClick={() => downloadFile()}
+                        >
+                            <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                        </button>
+                        <div className="import-si-file-text">Current Site Information</div>
+
+                        <div className="import-si-label">Title</div>
+                        <div className="import-si-value">{info?.fileName || "N/A"}</div>
+
+                        <div className="import-si-label">Uploader</div>
+                        <div className="import-si-value">{info?.uploader?.username || "N/A"}</div>
+
+                        <div className="import-si-label">Date Uploaded</div>
+                        <div className="import-si-value">{info?.uploadDate ? formatDate(info.uploadDate) : "N/A"}</div>
+                    </div>
                 </div>
 
                 <div className="import-si-file-buttons">

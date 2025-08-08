@@ -5,13 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const BurgerMenuFI = ({ role, isOpen, setIsOpen, admin, reset, setReset }) => {
+const BurgerMenuFI = ({ role, isOpen, setIsOpen, admin, reset, setReset, isProfile }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/FrontendDMS/");
+        navigate("/");
     };
 
     return (
@@ -19,7 +19,7 @@ const BurgerMenuFI = ({ role, isOpen, setIsOpen, admin, reset, setReset }) => {
             {isOpen && (
                 <div className="menu-content-FI" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        {reset && <li onClick={() => setReset(true)}>Change Password</li>}
+                        {!isProfile && (<li onClick={() => navigate("/userProfile")}>My Profile</li>)}
                         <li onClick={handleLogout}>Logout</li>
 
                     </ul>

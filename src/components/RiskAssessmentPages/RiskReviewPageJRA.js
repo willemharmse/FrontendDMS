@@ -32,6 +32,7 @@ import OtherTeam from "../RiskRelated/OtherTeam";
 import SavePopup from "../Popups/SavePopup";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
 
 const RiskReviewPageJRA = () => {
     const navigate = useNavigate();
@@ -67,6 +68,15 @@ const RiskReviewPageJRA = () => {
     const fileID = useParams().fileId;
     const [change, setChange] = useState("");
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [draftNote, setDraftNote] = useState(null);
+
+    const openDraftNote = () => {
+        setDraftNote(true);
+    }
+
+    const closeDraftNote = () => {
+        setDraftNote(false);
+    }
 
     const openSaveAs = () => {
         if (!titleSet) {
@@ -284,7 +294,7 @@ const RiskReviewPageJRA = () => {
             const blob = await response.blob();
             saveAs(blob, `${documentName}.xlsx`);
             setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
+            openDraftNote();
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1193,18 +1203,21 @@ const RiskReviewPageJRA = () => {
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
-                        <button
-                            className="pdf-button font-fam"
-                            disabled
-                        >
-                            Generate PDF
-                        </button>
+                        {false && (
+                            <button
+                                className="pdf-button font-fam"
+                                disabled
+                            >
+                                Generate PDF
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
             {helpRA && (<RiskAim setClose={closeHelpRA} />)}
             {helpScope && (<RiskScope setClose={closeHelpScope} />)}
             {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={riskType} userID={userID} create={false} />)}
+            {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
             <ToastContainer />
 
             {showSiteDropdown && filteredSites.length > 0 && (

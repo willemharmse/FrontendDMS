@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageRiskAbbreviations.css";
 
-const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, onAdd, userID }) => {
+const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, onAdd, userID, abbreviation }) => {
     const [abbreviations, setAbbreviations] = useState([]);
-    const [selectedAbbreviation, setSelectedAbbreviation] = useState("");
     const [approver, setApprover] = useState("");
     const [abbrInp, setAbbrInp] = useState("");
     const [meanInp, setMeanInp] = useState("");
@@ -15,6 +14,12 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
     useEffect(() => {
         fetchAbbreviations();
     }, []);
+
+    useEffect(() => {
+        if (abbreviations.length > 0) {
+            handleLoad();
+        }
+    }, [abbreviations, abbreviation]);
 
     useEffect(() => {
         // Function to fetch users
@@ -48,13 +53,13 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedAbbreviation(selected);
-        const abbreviation = abbreviations.find((abbr) => abbr.abbr === selected);
-        if (abbreviation) {
-            setAbbrInp(abbreviation.abbr || "");
-            setMeanInp(abbreviation.meaning || "");
+    const handleLoad = () => {
+        if (!abbreviation || abbreviations.length === 0) return;
+
+        const abbrObj = abbreviations.find((a) => a.abbr === abbreviation);
+        if (abbrObj) {
+            setAbbrInp(abbrObj.abbr || "");
+            setMeanInp(abbrObj.meaning || "");
         } else {
             setAbbrInp("");
             setMeanInp("");
@@ -62,11 +67,6 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
     };
 
     const handleUpdate = async () => {
-        if (!selectedAbbreviation) {
-            setError("Please select an abbreviation.");
-            return;
-        }
-
         const data = { abbr: abbrInp, meaning: meanInp };
         const type = "Abbreviation";
         const route = `/api/riskInfo/draft`;
@@ -85,7 +85,6 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
 
             setMessage("Abbreviation update suggested successfully.");
             setError("");
-            setSelectedAbbreviation("");
             setAbbrInp("");
             setMeanInp("");
             const newAbbrObj = {
@@ -121,25 +120,12 @@ const ManageRiskAbbreviations = ({ closePopup, onClose, onUpdate, setAbbrData, o
                 </div>
 
                 <div className="manAbbr-popup-group">
-                    <label className="manAbbr-popup-label">Existing Abbreviation</label>
-
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manAbbr-select remove-default-styling" value={selectedAbbreviation} onChange={handleSelectChange}>
-                            <option value="">Select Existing Abbreviation</option>
-                            {abbreviations.sort((a, b) => a.abbr.localeCompare(b.abbr)).map((abbr) => (
-                                <option key={abbr.abbr} value={abbr.abbr}>{abbr.abbr}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manAbbr-popup-group">
-                    <label className="manAbbr-popup-label">New Abbreviation</label>
+                    <label className="manAbbr-popup-label">Abbreviation</label>
                     <input spellcheck="true" className="manAbbr-input" placeholder="Insert New Abbreviation" type="text" value={abbrInp} onChange={(e) => setAbbrInp(e.target.value)} />
                 </div>
 
                 <div className="manAbbr-popup-group">
-                    <label className="manAbbr-popup-label">New Abbreviation Meaning</label>
+                    <label className="manAbbr-popup-label">Abbreviation Meaning</label>
                     <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Insert new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 

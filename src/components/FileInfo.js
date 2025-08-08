@@ -70,6 +70,13 @@ const FileInfo = () => {
     endDate: ''
   });
   const [count, setCount] = useState(""); // Placeholder for unread notifications count
+  const [profilePic, setProfilePic] = useState(null);
+
+  useEffect(() => {
+    // Load from sessionStorage on mount
+    const cached = sessionStorage.getItem('profilePic');
+    setProfilePic(cached || null);
+  }, []);
 
   const fetchNotificationCount = async () => {
     const route = `/api/notifications/count`;
@@ -570,10 +577,24 @@ const FileInfo = () => {
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
               <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
-              {count != 0 && <div className="notifications-badge">{count}</div>}
+              {count != 0 && <div className="notifications-badge"></div>}
             </div>
-            <div className="burger-menu-icon-um">
-              <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
+            <div className="burger-menu-icon-um" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
+              {profilePic ? (
+                <img
+                  src={profilePic}
+                  alt="Profile"
+                  style={{
+                    width: "28px",          // match icon size
+                    height: "28px",
+                    borderRadius: "50%",    // circle
+                    objectFit: "cover",
+                    display: "block"
+                  }}
+                />
+              ) : (
+                <FontAwesomeIcon icon={faCircleUser} />
+              )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
             {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}

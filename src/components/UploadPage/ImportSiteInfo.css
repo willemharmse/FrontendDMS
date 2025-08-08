@@ -18,10 +18,19 @@
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 600px;
-    width: 90%;
-    height: 100%;
-    max-height: 440px;
+    max-width: 900px;
+    width: 100%;
+    min-height: 440px;
+}
+
+.import-si-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.import-si-info-row .import-si-file-group {
+    flex: 1;
 }
 
 .top-right-button-rsi {
@@ -312,4 +321,20 @@
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 15px;
+}
+
+.import-si-label {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+.import-si-value {
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 10px;
+    word-wrap: break-word;
 }

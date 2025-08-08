@@ -7,7 +7,7 @@ import "./FileInfoHome.css"
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faBookOpen, faBullhorn, faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
 import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import BatchUpload from "./FileInfo/BatchUpload";
 import {
@@ -36,7 +36,7 @@ import ImportSiteInfo from "./UploadPage/ImportSiteInfo";
 import ImportRiskSiteInfo from "./RiskRelated/ImportRiskSiteInfo";
 import TopBar from "./Notifications/TopBar";
 
-const AdminPage = () => {
+const TMSAdminPage = () => {
     const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
@@ -138,8 +138,13 @@ const AdminPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
                         <p className="logo-text-um">Admin Page</p>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <FontAwesomeIcon icon={faPersonChalkboard} alt="Logo" className="logo-img-dept-view" />
+                        <p className="logo-text-dm-fi">{"LMS"}</p>
                     </div>
                 </div>
             )}
@@ -165,53 +170,37 @@ const AdminPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openBatch}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/courseMangement")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
+                                <FontAwesomeIcon icon={faBookOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Upload Batch Documents</h3>
+                            <h3 className="document-title-fi-home">Manage Courses</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`} onClick={openImportSI}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/trainerManagement")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminSIDDS.svg`} className={"icon-dept"} />
+                                <FontAwesomeIcon icon={faPersonChalkboard} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Import Site General Information</h3>
+                            <h3 className="document-title-fi-home">Manage Trainers</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`} onClick={openImportRSI}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/traineeManagement")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminSIRMS.svg`} className={"icon-dept"} />
+                                <FontAwesomeIcon icon={faUser} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Import Site Risk Information</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminUsers.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Manage Users</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/departmentManage")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminDepartments.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Manage Departments</h3>
+                            <h3 className="document-title-fi-home">Manage Trainees</h3>
                         </>
                     </div>
                     {false && (
-                        <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/tmsAdmin")}>
+                        <div className={`document-card-fi-home`}>
                             <>
                                 <div className="icon-dept">
-                                    <FontAwesomeIcon icon={faPersonChalkboard} className={"icon-dept"} />
+                                    <FontAwesomeIcon icon={faBullhorn} className={"icon-dept"} />
                                 </div>
-                                <h3 className="document-title-fi-home">Learning Management System</h3>
+                                <h3 className="document-title-fi-home">Post Announcements</h3>
                             </>
                         </div>
                     )}
@@ -222,4 +211,4 @@ const AdminPage = () => {
     );
 };
 
-export default AdminPage;
+export default TMSAdminPage;

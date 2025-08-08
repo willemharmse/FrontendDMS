@@ -152,7 +152,7 @@ const AddDepartmentModal = ({ show, onClose }) => {
                                     </option>
                                 ))}
                             </select>
-                        </div>a
+                        </div>
                         <div className="dept-icon">
                             <div className="dept-icon-style">
                                 <FontAwesomeIcon icon={iconMap[icon] || faBuilding} alt="Logo" className="fa-icon" />

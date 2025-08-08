@@ -13,7 +13,8 @@
     padding: 0;
     width: 400px;
     font-family: Arial;
-    max-height: 300px;
+    min-height: 130px;
+    max-height: 400px;
     display: flex;
     flex-direction: column;
 }
@@ -26,7 +27,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     font-size: 16px;
     font-weight: bold;
     padding: 10px;
@@ -60,10 +60,53 @@
     color: #333;
 }
 
+.notifications-pill-bar {
+    display: flex;
+    overflow-x: visible;
+    white-space: nowrap;
+    padding: 10px 10px 5px 10px;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #ccc;
+    gap: 10px;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.notifications-pill {
+    flex: 0 0 auto;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    color: black;
+    background-color: rgba(255, 255, 255, 0.3);
+    /* light glass base */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.notifications-pill:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    /* even more see-through */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #000;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.notifications-pill.active {
+    background-color: #002060;
+    color: white;
+    border-color: #002060;
+}
+
 .notifications-badge {
     position: absolute;
     top: 5px;
-    right: -1px;
+    right: 7px;
     background: #e53935;
     color: #fff;
     font-size: 12px;
@@ -72,7 +115,7 @@
     line-height: 1;
     border-radius: 999px;
     /* pill shape */
-    padding: 1px 4px;
+    padding: 6px 6px;
     /* slimmer vertically and less wide */
     white-space: nowrap;
     text-align: center;

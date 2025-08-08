@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faInfo } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -27,6 +27,8 @@ import PicturesTable from "../CreatePage/PicturesTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
+import DocumentWorkflow from "../Popups/DocumentWorkflow";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -60,6 +62,24 @@ const RiskManagementPageIBRA = () => {
     const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
     const [controls, setControls] = useState([]);
     const [generatePopup, setGeneratePopup] = useState(false);
+    const [draftNote, setDraftNote] = useState(null);
+    const [showWorkflow, setShowWorkflow] = useState(null);
+
+    const openWorkflow = () => {
+        setShowWorkflow(true);
+    }
+
+    const closeWorkflow = () => {
+        setShowWorkflow(false);
+    }
+
+    const openDraftNote = () => {
+        setDraftNote(true);
+    }
+
+    const closeDraftNote = () => {
+        setDraftNote(false);
+    }
 
     const openHelpRA = () => {
         setHelpRA(true);
@@ -1350,7 +1370,7 @@ const RiskManagementPageIBRA = () => {
             const blob = await response.blob();
             saveAs(blob, `${documentName}.docx`);
             setLoading(false);
-            //saveAs(blob, `${documentName}.pdf`);
+            openDraftNote();
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
@@ -1666,6 +1686,13 @@ const RiskManagementPageIBRA = () => {
                                 <span className="button-text">Published Documents</span>
                             </div>
                         </button>
+                        <div className="horizontal-divider-with-icon">
+                            <hr />
+                            <div className="divider-icon">
+                                <FontAwesomeIcon icon={faInfo} onClick={openWorkflow} />
+                            </div>
+                            <hr />
+                        </div>
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
@@ -1968,12 +1995,14 @@ const RiskManagementPageIBRA = () => {
                         >
                             {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
                         </button>
-                        <button
-                            className="pdf-button font-fam"
-                            disabled
-                        >
-                            Generate PDF
-                        </button>
+                        {false && (
+                            <button
+                                className="pdf-button font-fam"
+                                disabled
+                            >
+                                Generate PDF
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -2004,6 +2033,8 @@ const RiskManagementPageIBRA = () => {
                 </ul>
             )}
             {generatePopup && (<GenerateDraftPopup deleteDraft={handleGenerateIBRADocument} closeModal={closeGenerate} cancel={cancelGenerate} />)}
+            {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
+            {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
         </div>
     );
 };

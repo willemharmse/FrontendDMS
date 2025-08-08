@@ -18,6 +18,13 @@ const AdminApprovalPage = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedDraft, setSelectedDraft] = useState(null);
     const [comment, setComment] = useState("");
+    const [profilePic, setProfilePic] = useState(null);
+
+    useEffect(() => {
+        // Load from sessionStorage on mount
+        const cached = sessionStorage.getItem('profilePic');
+        setProfilePic(cached || null);
+    }, []);
 
     const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
@@ -248,8 +255,22 @@ const AdminApprovalPage = () => {
                         <div className="burger-menu-icon-um">
                             <FontAwesomeIcon icon={faBell} title="Notifications" />
                         </div>
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
+                        <div className="burger-menu-icon-um" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
+                            {profilePic ? (
+                                <img
+                                    src={profilePic}
+                                    alt="Profile"
+                                    style={{
+                                        width: "28px",          // match icon size
+                                        height: "28px",
+                                        borderRadius: "50%",    // circle
+                                        objectFit: "cover",
+                                        display: "block"
+                                    }}
+                                />
+                            ) : (
+                                <FontAwesomeIcon icon={faCircleUser} />
+                            )}
                         </div>
                         {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>

@@ -124,7 +124,7 @@ const UserActivity = () => {
                                         <td className="user-activity-log-nr">{index + 1}</td>
                                         <td className="user-activity-log-fn">{formatDate(act.timestamp)}</td>
                                         <td className="user-activity-log-stat">{formatTime(act.timestamp)}</td>
-                                        <td className="user-activity-log-ver">{act.action}</td>
+                                        <td className="user-activity-log-ver" style={{ textAlign: "left" }}>{act.action}</td>
                                     </tr>
                                 ))
                             ) : (

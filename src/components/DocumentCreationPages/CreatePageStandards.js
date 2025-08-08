@@ -13,7 +13,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
@@ -23,6 +23,8 @@ import StandardsTable from "../CreatePage/StandardsTable";
 import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
+import DraftPopup from "../Popups/DraftPopup";
+import DocumentWorkflow from "../Popups/DocumentWorkflow";
 
 const CreatePageStandards = () => {
   const navigate = useNavigate();
@@ -54,6 +56,24 @@ const CreatePageStandards = () => {
   const [generatePopup, setGeneratePopup] = useState(false);
   const [loadingAim, setLoadingAim] = useState(false);
   const [loadingScope, setLoadingScope] = useState(false);
+  const [draftNote, setDraftNote] = useState(null);
+  const [showWorkflow, setShowWorkflow] = useState(null);
+
+  const openWorkflow = () => {
+    setShowWorkflow(true);
+  }
+
+  const closeWorkflow = () => {
+    setShowWorkflow(false);
+  }
+
+  const openDraftNote = () => {
+    setDraftNote(true);
+  }
+
+  const closeDraftNote = () => {
+    setDraftNote(false);
+  }
 
   const [rewriteHistory, setRewriteHistory] = useState({
     aim: [],
@@ -1035,9 +1055,9 @@ const CreatePageStandards = () => {
       if (!response.ok) throw new Error("Failed to generate document");
 
       const blob = await response.blob();
-      saveAs(blob, `${documentName}.docm`);
+      saveAs(blob, `${documentName}.docx`);
       setLoading(false);
-      //saveAs(blob, `${documentName}.pdf`);
+      openDraftNote();
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -1119,6 +1139,13 @@ const CreatePageStandards = () => {
                 <span className="button-text">Published Documents</span>
               </div>
             </button>
+            <div className="horizontal-divider-with-icon">
+              <hr />
+              <div className="divider-icon">
+                <FontAwesomeIcon icon={faInfo} onClick={openWorkflow} />
+              </div>
+              <hr />
+            </div>
           </div>
 
           <div className="sidebar-logo-dm-fi">
@@ -1313,16 +1340,20 @@ const CreatePageStandards = () => {
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
             </button>
-            <button
-              className="pdf-button font-fam"
-              disabled
-            >
-              Generate PDF
-            </button>
+            {false && (
+              <button
+                className="pdf-button font-fam"
+                disabled
+              >
+                Generate PDF
+              </button>
+            )}
           </div>
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
         {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
+        {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
+        {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
       </div>
       <ToastContainer />
     </div>

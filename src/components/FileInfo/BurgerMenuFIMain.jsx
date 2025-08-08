@@ -11,7 +11,7 @@ const BurgerMenuFIMain = ({ role, isOpen, setIsOpen, toggleTrashView, isTrashVie
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/FrontendDMS/");
+        navigate("/");
     };
 
     return (
@@ -20,6 +20,7 @@ const BurgerMenuFIMain = ({ role, isOpen, setIsOpen, toggleTrashView, isTrashVie
                 <div className="menu-content-FI-main" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
                         <li onClick={toggleTrashView}>{isTrashView ? "Show All Files" : "Show Trash"}</li>
+                        <li onClick={() => navigate("/userProfile")}>My Profile</li>
                         <li onClick={openRDPopup}>Highlight Review Dates</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>

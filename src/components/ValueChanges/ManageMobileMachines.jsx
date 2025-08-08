@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./ManageMobileMachines.css";
 
-const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, onAdd, userID }) => {
+const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, onAdd, userID, mac }) => {
     const [machines, setMachines] = useState([]);
-    const [selectedMachine, setSelectedMachine] = useState("");
     const [macInp, setMacInp] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -33,6 +32,12 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
         fetchMachines();
     }, []);
 
+    useEffect(() => {
+        if (machines.length > 0) {
+            handleLoad();
+        }
+    }, [machines, mac]);
+
     const closeFunction = () => {
         onClose();
         closePopup();
@@ -47,23 +52,18 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
         }
     };
 
-    const handleSelectChange = (event) => {
-        const selected = event.target.value;
-        setSelectedMachine(selected);
-        const mac = machines.find((machine) => machine.machine === selected);
-        if (mac) {
-            setMacInp(mac.machine || "");
+    const handleLoad = () => {
+        if (!mac || machines.length === 0) return;
+
+        const macObj = machines.find((m) => m.machine === mac);
+        if (macObj) {
+            setMacInp(macObj.machine || "");
         } else {
             setMacInp("");
         }
     };
 
     const handleUpdate = async () => {
-        if (!selectedMachine) {
-            setError("Please select a machine.");
-            return;
-        }
-
         const data = { machine: macInp };
         const type = "Mobile";
         const route = `/api/docCreateVals/draft`;
@@ -82,7 +82,6 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
 
             setMessage("Machine update suggested successfully.");
             setError("");
-            setSelectedMachine("");
             setMacInp("");
             const newMac = {
                 machine: macInp.trim() + " *"
@@ -120,19 +119,7 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
                 </div>
 
                 <div className="manMac-popup-group">
-                    <label className="manMac-popup-label">Existing Machine Name</label>
-                    <div className="abbr-popup-page-select-container">
-                        <select className="manMac-select remove-default-styling" value={selectedMachine} onChange={handleSelectChange}>
-                            <option value="">Select Existing Machine Name</option>
-                            {machines.sort((a, b) => a.machine.localeCompare(b.machine)).map((machine) => (
-                                <option key={machine.machine} value={machine.machine}>{machine.machine}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="manMac-popup-group">
-                    <label className="manMac-popup-label">New Machine Name</label>
+                    <label className="manMac-popup-label">Machine Name</label>
                     <input spellcheck="true" className="manMac-input" placeholder="Insert New Machine Name" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
                 </div>
 

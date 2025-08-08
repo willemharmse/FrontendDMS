@@ -178,8 +178,21 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
         setPopupVisible(false);
     };
 
-    const openManagePopup = () => setIsManageOpen(true);
-    const closeManagePopup = () => setIsManageOpen(false);
+
+    const openManagePopup = (mac) => {
+        setMacUpdate(mac);
+        setIsManageOpen(true);
+    }
+
+    const closeManagePopup = () => {
+        setMacUpdate("");
+        setIsManageOpen(false);
+    }
+
+    const openAddPopup = () => {
+        handleSaveSelection();
+        setShowNewPopup(true)
+    }
 
     return (
         <div className="input-row">
@@ -193,10 +206,6 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     />
                     <h3 className="font-fam-labels">Mobile Machinery</h3>
                 </div>
-                {role === "admin" && (
-                    <button className="top-right-button-mac-2" onClick={openManagePopup}><FontAwesomeIcon icon={faPenToSquare} onClick={clearSearch} className="icon-um-search" title="Edit Mobile Machines" /></button>
-                )}
-                <button className="top-right-button-mac" onClick={() => setShowNewPopup(true)}><FontAwesomeIcon icon={faPlusCircle} onClick={clearSearch} className="icon-um-search" title="Suggest Mobile Machine" /></button>
                 <MobileMachinePopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
@@ -209,7 +218,8 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 {isManageOpen && <ManageMobileMachines closePopup={closeManagePopup} onClose={fetchValues} onUpdate={handleMacUpdate}
                     userID={userID}
                     setMachineData={setMacData}
-                    onAdd={handleNewMac} />}
+                    onAdd={handleNewMac}
+                    mac={macUpdate} />}
 
                 {/* Popup */}
                 {popupVisible && (
@@ -275,8 +285,10 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                     </table>
                                 </div>
                             </div>
-                            <div className="mac-buttons">
-                                <button onClick={handleSaveSelection} className="mac-button">Save Selection</button>
+                            <div className="abbr-buttons-dual">
+                                <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+
+                                <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                             </div>
                         </div>
                     </div>
@@ -320,12 +332,12 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                                             </button>
                                             <button
                                                 className="edit-terms-row-button"
-                                                disabled={
-                                                    originalData.some(item => item.machine === row.mac)
-                                                }
-                                                style={{ color: originalData.some(item => item.machine === row.mac) ? "lightgray" : "", paddingLeft: "6px" }}
+                                                style={{ paddingLeft: "6px" }}
                                                 onClick={() => {
-                                                    openUpdate(row.mac)
+                                                    if (originalData.some(item => item.machine === row.mac)) { openManagePopup(row.mac) }
+                                                    else {
+                                                        openUpdate(row.mac);
+                                                    }
                                                 }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} title="Modify Mobile Machine" />
