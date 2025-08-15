@@ -1,0 +1,40 @@
+.logo-img-dept-view {
+    width: 60px;
+    /* Fixed width */
+    height: 60px;
+    object-fit: contain;
+    cursor: default;
+    display: flex;
+    margin: 0 auto;
+    color: #002060;
+    padding: 15px;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: white;
+
+
+    /* Fixed height */
+
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    /* Ensures all icons are the same size */
+
+
+}
+
+.button-container-dept-2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers buttons horizontally */
+    justify-content: center;
+    /* Centers buttons vertically */
+    position: absolute;
+    /* Adjust as needed */
+    left: 50%;
+    top: 240px;
+    transform: translateX(-50%);
+    /* Centers horizontally */
+    width: 100%;
+}

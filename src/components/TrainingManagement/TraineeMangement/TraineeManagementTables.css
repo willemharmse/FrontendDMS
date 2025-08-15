@@ -1,0 +1,88 @@
+.add-row-button-trainee-table {
+    margin-top: 10px;
+    height: 80%;
+    width: 15%;
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.view-button-trainee-table {
+    height: 5%;
+    width: 80%;
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.col-course-details-nr {
+    width: 5%;
+    text-align: center;
+}
+
+.col-course-details-trainee {
+    width: 55%;
+    text-align: center;
+}
+
+.col-trainee-details-nr {
+    width: 5%;
+    text-align: center;
+}
+
+.col-trainee-details-trainee {
+    width: 75%;
+    text-align: left;
+}
+
+.col-trainee-details-certificates {
+    width: 20%;
+    text-align: center;
+}
+
+.col-course-details-trainee-1 {
+    width: 25%;
+    text-align: center;
+}
+
+.col-course-details-name-1 {
+    width: 30%;
+    text-align: center;
+}
+
+.col-course-details-group {
+    width: 10%;
+    text-align: center;
+}
+
+.col-course-details-comp {
+    width: 30%;
+    text-align: center;
+}
+
+.course-details-input-box {
+    background-color: white;
+    padding: 15px;
+    width: 100%;
+    margin-top: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+}

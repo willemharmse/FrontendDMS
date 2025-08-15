@@ -1,0 +1,201 @@
+.inline-actions-um {
+    display: flex;
+    gap: 5px;
+    justify-content: space-evenly;
+    align-items: center;
+    /* Ensures vertical alignment */
+
+}
+
+.name-menu-course-management {
+    position: absolute;
+    top: 90px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 9999;
+    width: 200px;
+    pointer-events: auto;
+    /* Ensures it can be interacted with */
+}
+
+.role-menu-course-management {
+    position: absolute;
+    top: 90px;
+    /* Adjust to make it appear above the table row */
+    left: 0;
+    transform: translateY(-100%);
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 9999;
+    width: 200px;
+    pointer-events: auto;
+    /* Ensures it can be interacted with */
+}
+
+.courseLow {
+    background-color: #CB6F6F;
+    color: white;
+}
+
+.courseMed {
+    background-color: #FFFF89;
+}
+
+.courseGreen {
+    background-color: #FFC000;
+}
+
+.courseDone {
+    background-color: #7EAC89;
+    color: white;
+}
+
+.filter-input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border-radius: 8px;
+    /* Rounded corners */
+    border: 1px solid #ddd;
+    /* Light gray border */
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    /* Smooth transition on focus */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for a soft effect */
+}
+
+.filter-input:focus {
+    border-color: #7EAC89;
+    /* Change border color on focus */
+    box-shadow: 0px 2px 8px rgba(0, 128, 0, 0.2);
+    /* Glow effect on focus */
+    background-color: #f9f9f9;
+    /* Slight background color change */
+}
+
+.filter-input::placeholder {
+    color: #888;
+    /* Lighter color for the placeholder */
+}
+
+.doc-num-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-code-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-name-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 30%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.doc-dept-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-comp-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 20%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-auth-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-rev-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-name-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 33%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.col-action-course-management {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.table-container-course-management::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    height: 10px;
+}
+
+.table-container-course-management::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.table-container-course-management::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.table-container-course-management::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 8px;
+}
+
+.table-container-course-management {
+    height: calc(100% - 50px);
+    overflow-y: scroll;
+    width: 100%;
+    /* Adjust width to account for margins */
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 0px;
+}

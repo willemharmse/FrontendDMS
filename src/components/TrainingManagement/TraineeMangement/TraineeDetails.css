@@ -1,0 +1,183 @@
+.course-details-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    font-family: Arial;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+}
+
+.main-box-trainee-management {
+    flex: 1;
+    width: 80%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+}
+
+.top-section-trainee-management-page {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    height: 40px;
+}
+
+.icons-container-trainee-management-page {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+    margin-right: 2px;
+}
+
+.burger-menu-icon-trainee-management-page-1 {
+    cursor: pointer;
+    font-size: 24px;
+    padding: 8px 8px;
+    text-align: center;
+    color: gray;
+    border-radius: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* For Webkit browsers (Chrome, Edge, Safari) */
+.scrollable-box-trainee-management::-webkit-scrollbar {
+    width: 8px;
+    /* Width of the scrollbar */
+}
+
+.scrollable-box-trainee-management::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Track color */
+    border-radius: 10px;
+}
+
+.scrollable-box-trainee-management::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* Scrollbar color */
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+    /* Adds padding effect */
+}
+
+.scrollable-box-trainee-management::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker on hover */
+}
+
+.scrollable-box-trainee-management {
+    height: calc(100% - 48px);
+    /* Full height minus 20px margin on top & bottom */
+    width: 100%;
+    /* Ensures even spacing on all sides */
+    overflow-y: auto;
+    /* Enables scrolling inside */
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers content */
+}
+
+.input-row-trainee-management {
+    display: flex;
+    gap: 15px;
+    width: calc(100% - 10px);
+    /* Adjust the spacing as needed */
+    align-items: flex-start;
+    /* optional, align vertically as needed */
+}
+
+.input-box-title-trainee-management {
+    background-color: #b4b4b4;
+    padding: 15px;
+    /* Keeps it aligned */
+    width: 100%;
+    margin-bottom: 10px;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: black;
+}
+
+.font-fam-labels-trainee-management {
+    font-family: Arial;
+    font-size: 20px !important;
+    font-weight: bold;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* === Course Details: Stat Tiles (unique classes) === */
+.trainee-tiles-stats-row {
+    width: calc(100% - 10px);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* always four */
+    gap: 14px;
+    margin-bottom: 14px;
+    min-width: 0;
+    /* allow children to shrink */
+}
+
+.trainee-tiles-stat-tile {
+    background: linear-gradient(90deg, #001339 0%, #002060 100%);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    padding: 16px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    min-width: 0;
+    /* keeps four in one row; content can shrink */
+}
+
+.trainee-tiles-stat-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: clamp(16px, 2.6vw, 28px);
+    /* responsive number */
+    color: #0d3d7a;
+    flex: 0 0 auto;
+}
+
+.trainee-tiles-circle-yellow {
+    background: #f7c948;
+    /* yellow badge for completion */
+    color: #0b2a52;
+}
+
+.trainee-tiles-stat-label {
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.1;
+    font-size: clamp(10px, 1.2vw, 16px);
+    /* shrinks as needed */
+    white-space: nowrap;
+    /* keep label on one line */
+    overflow: hidden;
+    /* crop if ultra-narrow */
+    text-overflow: ellipsis;
+    /* show ellipsis if cropped */
+}
