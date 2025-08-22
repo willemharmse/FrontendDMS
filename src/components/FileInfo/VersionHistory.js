@@ -13,12 +13,9 @@ const VersionHistory = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [loading, setLoading] = useState(false);
-    const [role, setRole] = useState('');
     const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
     const [downloadFileId, setDownloadFileId] = useState(null);
     const [downloadFileName, setDownloadFileName] = useState(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const { id } = useParams(); // Get the user ID from the URL parameters
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
@@ -28,19 +25,14 @@ const VersionHistory = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
-
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
     useEffect(() => {
-        if (token && role) {
+        if (token) {
             fetchActivity();
         }
-    }, [token, role]);
+    }, [token]);
 
     const openDownloadModal = (fileId, fileName) => {
         setDownloadFileId(fileId);
@@ -173,7 +165,7 @@ const VersionHistory = () => {
                         <div className="burger-menu-icon-um">
                             <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
                         </div>
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+                        {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
                 <div className="table-containerversion-history-file-info">

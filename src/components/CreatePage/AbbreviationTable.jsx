@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedAbbreviations from "../ValueChanges/ModifySuggestedAbbreviations";
 
-const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setErrors, si = false }) => {
+const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, error, userID, setErrors, si = false }) => {
   const [abbrData, setAbbrData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   // State to control the popup and selected abbreviations
@@ -210,7 +210,6 @@ const AbbreviationTable = ({ risk, formData, setFormData, usedAbbrCodes, setUsed
         <AbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
-          role={role}
           userID={userID}
           setAbbrData={setAbbrData}
           onAdd={handleNewAbbreviation}

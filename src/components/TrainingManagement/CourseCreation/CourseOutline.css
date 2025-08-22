@@ -1,20 +1,17 @@
-.floating-dropdown {
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    max-height: 150px;
-    overflow-y: auto;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    z-index: 1000;
+.course-outline-row-split {
+    display: flex;
+    gap: 15px;
+    width: calc(100% - 10px);
+    /* Adjust the spacing as needed */
+    align-items: flex-start;
+    /* optional, align vertically as needed */
 }
 
-.input-box-ref {
-    background-color: white;
+.course-outline-type-row {
+    background-color: #F2F2F2;
     padding: 15px;
-    margin-top: 10px;
+    padding-bottom: 17px;
+    margin-bottom: 15px;
     /* Keeps it aligned */
     width: 100%;
     /* Makes the boxes shorter */
@@ -22,96 +19,127 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
-    position: relative;
     flex-direction: column;
     align-items: center;
 }
 
-.top-left-button-refs {
-    position: absolute;
-    top: 20px;
-    left: 25px;
-    z-index: 1;
-    background: transparent;
-    color: #002060;
-    font-size: 30px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    border-radius: 6px;
-    justify-content: center;
-    align-items: center;
-    padding: 0px;
-}
-
-.add-row-button-ref {
-    margin-top: 10px;
-    height: 80%;
-    width: 15%;
-    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
-    color: white;
-    font-weight: bold;
-    padding: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s ease;
-}
-
-.add-row-button-ref-plus {
+.course-outline-type-split-1 {
+    background-color: #F2F2F2;
+    padding: 15px;
+    padding-bottom: 17px;
+    margin-bottom: 15px;
+    /* Keeps it aligned */
+    width: 65%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    width: 30px;
-    /* Adjust size */
-    height: 30px;
-    border-radius: 50%;
-    /* Makes it circular */
-    border: none;
-    background-color: transparent;
-    color: gray;
-    /* Adjust color */
-    font-size: 24px;
-    cursor: pointer;
-    margin: auto;
-    transform: translateY(-54%);
-    /* Centers the button */
 }
 
-.floating-dropdown li {
-    padding: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
+.course-outline-type-split-2 {
+    background-color: #F2F2F2;
+    padding: 15px;
+    padding-bottom: 17px;
+    margin-bottom: 15px;
+    /* Keeps it aligned */
+    width: 35%;
+    /* Makes the boxes shorter */
+    /* Prevents overly long input fields */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.floating-dropdown li:hover {
-    background: #f0f0f0;
+.course-outline-input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    height: 19px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    flex-grow: 1;
 }
 
-.refColCen {
-    text-align: center;
+.course-outline-table-content::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    height: 10px;
 }
 
-.refNum {
+.course-outline-table-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.course-outline-table-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.course-outline-table-content::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 8px;
+}
+
+.course-outline-table-content {
+    height: calc(100% - 50px);
+    overflow-y: auto;
+    width: 100%;
+    /* Adjust width to account for margins */
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 0px;
+}
+
+.col-num-course-outline-data {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
     width: 5%;
-}
-
-.refDocID {
-    width: 25%;
-}
-
-.refRef {
-    width: 67%;
-}
-
-.refBut {
-    width: 3%;
-}
-
-.refCent {
+    font-size: 16px;
     text-align: center;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.col-topic-course-outline-data {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 30%;
+    font-size: 16px;
+    text-align: center;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.col-time-course-outline-data {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 20%;
+    font-size: 16px;
+    text-align: center;
+    background-color: #D9D9D9;
+    color: black;
+}
+
+.col-desc-course-outline-data {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 45%;
+    font-size: 16px;
+    text-align: center;
+    background-color: #D9D9D9;
+    color: black;
 }

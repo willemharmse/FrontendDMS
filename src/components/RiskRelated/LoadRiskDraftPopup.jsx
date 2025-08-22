@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import "./LoadRiskDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate, faMagnifyingGlass, faCircleXmark, faX } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate, faMagnifyingGlass, faCircleXmark, faX, faFilter, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import DeleteDraftPopup from "../Popups/DeleteDraftPopup";
 
 const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, riskType }) => {
@@ -13,6 +13,29 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
     const [author, setAuthor] = useState(false);
     const [deletePopup, setDeletePopup] = useState(false);
     const [title, setTitle] = useState("");
+    const [sortBy, setSortBy] = useState(null);
+    const [sortDir, setSortDir] = useState(null);
+
+    const toggleSort = (field) => {
+        // clicking a different field starts fresh at asc
+        if (sortBy !== field) {
+            setSortBy(field);
+            setSortDir('asc');
+            return;
+        }
+        // cycle asc -> desc -> off
+        if (sortDir === 'asc') { setSortDir('desc'); return; }
+        // turn off
+        setSortBy(null);
+        setSortDir(null);
+    };
+
+    const SortIcon = ({ field }) => {
+        if (sortBy !== field) return null;            // only show when active
+        if (sortDir === 'asc') return <FontAwesomeIcon icon={faSortUp} style={{ marginLeft: 6 }} />;
+        if (sortDir === 'desc') return <FontAwesomeIcon icon={faSortDown} style={{ marginLeft: 6 }} />;
+        return null;
+    };
 
     const filteredDrafts = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -21,6 +44,29 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
             (d?.formData?.title || '').toLowerCase().includes(q)
         );
     }, [drafts, query]);
+
+    const displayDrafts = useMemo(() => {
+        const list = [...filteredDrafts];
+        if (!sortBy || !sortDir) return list;
+
+        const getTime = (d) => {
+            if (sortBy === 'created') return new Date(d.dateCreated).getTime();
+            if (sortBy === 'modified') return d.dateUpdated ? new Date(d.dateUpdated).getTime() : null;
+            return null;
+        };
+
+        return list.sort((a, b) => {
+            const at = getTime(a);
+            const bt = getTime(b);
+
+            // Always push "Not Updated Yet" (null) to the bottom, regardless of direction
+            if (at == null && bt == null) return 0;
+            if (at == null) return 1;
+            if (bt == null) return -1;
+
+            return sortDir === 'asc' ? at - bt : bt - at;
+        });
+    }, [filteredDrafts, sortBy, sortDir]);
 
     const closeDelete = () => {
         setDeletePopup(false);
@@ -176,14 +222,27 @@ const LoadRiskDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, ri
                                 <tr>
                                     <th className="draft-nr">Nr</th>
                                     <th className="draft-name">Draft Document</th>
-                                    <th className="draft-created">Created By</th>
-                                    <th className="draft-updated">Modified By</th>
+                                    <th
+                                        className="draft-created"
+                                        onClick={() => toggleSort('created')}
+                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                    >
+                                        Created By <SortIcon field="created" />
+                                    </th>
+
+                                    <th
+                                        className="draft-updated"
+                                        onClick={() => toggleSort('modified')}
+                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                    >
+                                        Modified By <SortIcon field="modified" />
+                                    </th>
                                     <th className="draft-actions-load">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
-                                    filteredDrafts
+                                    displayDrafts
                                         .map((item, index) => (
                                             <tr key={item._id}>
                                                 <td className="draft-nr">

@@ -5,13 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-const BurgerMenuFIMain = ({ role, isOpen, setIsOpen, toggleTrashView, isTrashView, openRDPopup }) => {
+const BurgerMenuFIMain = ({ isOpen, setIsOpen, toggleTrashView, isTrashView, openRDPopup, canIn, access }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/");
+        navigate("/FrontendDMS/");
     };
 
     return (
@@ -19,9 +19,9 @@ const BurgerMenuFIMain = ({ role, isOpen, setIsOpen, toggleTrashView, isTrashVie
             {isOpen && (
                 <div className="menu-content-FI-main" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        <li onClick={toggleTrashView}>{isTrashView ? "Show All Files" : "Show Trash"}</li>
-                        <li onClick={() => navigate("/userProfile")}>My Profile</li>
-                        <li onClick={openRDPopup}>Highlight Review Dates</li>
+                        {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (<li onClick={toggleTrashView}>{isTrashView ? "Show All Files" : "Show Trash"}</li>)}
+                        <li onClick={() => navigate("/FrontendDMS/userProfile")}>My Profile</li>
+                        {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (<li onClick={openRDPopup}>Highlight Review Dates</li>)}
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

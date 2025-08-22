@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const RiskEquipmentPopup = ({ isOpen, onClose, role, userID, setEqpData, onAdd }) => {
+const RiskEquipmentPopup = ({ isOpen, onClose, userID, setEqpData, onAdd }) => {
     const [eqp, setEqp] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);

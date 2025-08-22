@@ -69,3 +69,84 @@
     color: #888;
     /* Lighter color for the placeholder */
 }
+
+.user-man-num-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-name-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 19%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-email-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-day-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-role-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-rt-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-dept-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-des-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.user-man-action-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}

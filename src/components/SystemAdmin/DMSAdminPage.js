@@ -13,10 +13,7 @@ const DMSAdminPage = () => {
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
     const [batch, setBatch] = useState(false);
-    const leaderRoles = ['teamleader'];
     const navigate = useNavigate();
 
     const openBatch = () => {
@@ -32,7 +29,6 @@ const DMSAdminPage = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             console.log(decodedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
         }
     }, [navigate]);
@@ -96,7 +92,7 @@ const DMSAdminPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-fi-home">

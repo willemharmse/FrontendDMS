@@ -533,7 +533,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         onDragLeave={handleDragLeave}
                                         onDrop={e => handleDrop(e, row.nr)}
                                         onDragEnd={handleDragEnd}
-                                        className={`${(index + 1) % 2 === 0 ? 'evenTRColour' : ''}`}
+                                        className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${dragOverRowNr === row.nr ? 'drag-over-top' : ''}`}
                                     >
                                         <td className="procCent" style={{ fontSize: "14px" }}>
                                             {row.nr}

@@ -21,22 +21,21 @@ import AbbreviationTableSI from "../CreatePage/AbbreviationTableSI";
 import TermTableSI from "../CreatePage/TermTableSI";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const CreatePageSIReview = () => {
   const navigate = useNavigate();
+  const access = getCurrentUser();
   const type = useParams().type;
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
-  const [role, setRole] = useState("");
   const [loadedID, setLoadedID] = useState('');
   const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
-  const adminRoles = ['admin', 'teamleader', 'developer'];
-  const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const loadedIDRef = useRef('');
@@ -699,13 +698,9 @@ const CreatePageSIReview = () => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
-      if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/403");
-      }
 
       setUserID(decodedToken.userId);
       setUserIDs([decodedToken.userId]);
-      setRole(decodedToken.role);
     }
   }, [navigate]);
 
@@ -998,16 +993,18 @@ const CreatePageSIReview = () => {
               <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handleClick} />
-            </div>
+            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handleClick} />
+              </div>
+            )}
           </div>
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD role={role} menu={"1"} create={true} />
+          <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} />
         </div>
 
         <div className={`scrollable-box`}>
@@ -1176,8 +1173,8 @@ const CreatePageSIReview = () => {
 
           <SpecialInstructionsTable formData={formData} setFormData={setFormData} error={errors.special} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
-          <AbbreviationTableSI formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} si={true} />
-          <TermTableSI formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} si={true} />
+          <AbbreviationTableSI formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} si={true} />
+          <TermTableSI formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} si={true} />
           <ReferenceTableSpecialInstructions formData={formData} setFormData={setFormData} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
 
           <div className="input-row">

@@ -17,10 +17,6 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     const [chosenFileName, setChosenFileName] = useState("");
     const [modalHeight, setModalHeight] = useState(400); // Initial modal height, adjust if needed
 
-
-    // Allowed roles
-    const adminRoles = ["admin", "teamleader", "developer"];
-
     const removeFileExtension = (fileName) => {
         return fileName.replace(/\.[^/.]+$/, "");
     };
@@ -41,7 +37,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
             setModalHeight(newHeight);
         }
     }, [isModalOpen, chosenFileName, newFile]);
-    // Check for valid token/role on mount
+
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -49,7 +45,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
             setUserID(decodedToken.userId);
         }
     }, []);
-    // Fetch existing files for the file select dropdown
+
     useEffect(() => {
         const fetchFiles = async () => {
             try {

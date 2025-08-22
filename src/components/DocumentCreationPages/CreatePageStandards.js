@@ -25,17 +25,18 @@ import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
 import DocumentWorkflow from "../Popups/DocumentWorkflow";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const CreatePageStandards = () => {
   const navigate = useNavigate();
   const type = useParams().type;
+  const access = getCurrentUser();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const [usedPPEOptions, setUsedPPEOptions] = useState([]);
-  const [role, setRole] = useState("");
   const [usedHandTools, setUsedHandTools] = useState([]);
   const [usedEquipment, setUsedEquipment] = useState([]);
   const [usedMobileMachine, setUsedMobileMachines] = useState([]);
@@ -46,8 +47,6 @@ const CreatePageStandards = () => {
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
-  const adminRoles = ['admin', 'teamleader', 'developer'];
-  const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
@@ -835,13 +834,9 @@ const CreatePageStandards = () => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
-      if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/403");
-      }
 
       setUserID(decodedToken.userId);
       setUserIDs([decodedToken.userId]);
-      setRole(decodedToken.role);
     }
   }, [navigate]);
 
@@ -1143,12 +1138,14 @@ const CreatePageStandards = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedStandardFiles')}>
-              <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                <span className="button-text">Published Documents</span>
-              </div>
-            </button>
+            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+              <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedStandardFiles')}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                  <span className="button-text">Published Documents</span>
+                </div>
+              </button>
+            )}
             <div className="horizontal-divider-with-icon">
               <hr />
               <div className="divider-icon">
@@ -1210,16 +1207,19 @@ const CreatePageStandards = () => {
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
-            </div>
+            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
+              </div>
+            )}
           </div>
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD role={role} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} />
+          <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} />
+
         </div>
 
         <div className={`scrollable-box`}>
@@ -1282,7 +1282,7 @@ const CreatePageStandards = () => {
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels"> <span className="required-field">*</span></h3>
+              <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
               <textarea
                 spellcheck="true"
                 name="scope"
@@ -1326,8 +1326,8 @@ const CreatePageStandards = () => {
             </div>
           </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
           <StandardsTable formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />

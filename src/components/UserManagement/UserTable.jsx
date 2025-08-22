@@ -45,20 +45,15 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
             <table>
                 <thead>
                     <tr>
-                        <th className="doc-num-user">Nr</th>
-                        <th className="col-name-user">
-                            <div className="name-container-user">
-                                <span className="username-title" onClick={toggleMenuUser}>Username</span>
-                            </div>
-                        </th>
-                        <th className="col-email-user">Email</th>
-                        <th className="col-role-user">
-                            <div className="role-container-user">
-                                <span className="role-title" onClick={toggleMenuRole}>Role</span>
-                            </div>
-                        </th>
-                        <th className="col-day-user">Date Added</th>
-                        <th className="col-action-user">Action</th>
+                        <th className="user-man-num-user">Nr</th>
+                        <th className="user-man-name-user">Username</th>
+                        <th className="user-man-email-user">Email</th>
+                        <th className="user-man-role-user">Role</th>
+                        <th className="user-man-day-user">Date Added</th>
+                        <th className="user-man-rt-user">Reporting To</th>
+                        <th className="user-man-dept-user">Department</th>
+                        <th className="user-man-des-user">Designation</th>
+                        <th className="user-man-action-user">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,6 +64,9 @@ const UserTable = ({ filteredUsers, openEditModal, setUserToDelete, setIsDeleteM
                             <td className="col-um">{user.email ? user.email : ""}</td>
                             <td className="col-um">{formatRole(user.role)}</td>
                             <td className="col-um">{user.dateAdded ? formatDate(user.dateAdded) : ""}</td>
+                            <td className="col-um">{user.reportingTo ? user.reportingTo.username : "N/A"}</td>
+                            <td className="col-um">{user.department ? user.department : "N/A"}</td>
+                            <td className="col-um">{user.designation ? user.designation : "N/A"}</td>
                             <td className="col-um">
                                 <div className='inline-actions-um'>
                                     <button

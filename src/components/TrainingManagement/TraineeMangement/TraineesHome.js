@@ -12,9 +12,6 @@ const TraineesHome = () => {
     const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
 
@@ -38,12 +35,7 @@ const TraineesHome = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
-
-            if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -113,7 +105,7 @@ const TraineesHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <TraineesDetailTable filteredTrainees={trainees} />

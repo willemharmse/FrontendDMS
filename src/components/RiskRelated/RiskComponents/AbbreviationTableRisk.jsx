@@ -6,7 +6,7 @@ import RiskAbbreviationPopup from "../RiskValueChanges/RiskAbbreviationPopup";
 import ManageRiskAbbreviations from "../RiskValueChanges/ManageRiskAbbreviations";
 import ModifySuggestedAbbreviations from "../../ValueChanges/ModifySuggestedAbbreviations";
 
-const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setError }) => {
+const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, error, userID, setError }) => {
   const [abbrData, setAbbrData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   // State to control the popup and selected abbreviations
@@ -205,7 +205,6 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
         <RiskAbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
-          role={role}
           userID={userID}
           setAbbrData={setAbbrData}
           onAdd={handleNewAbbreviation}

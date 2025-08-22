@@ -29,9 +29,11 @@ import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
 import DocumentWorkflow from "../Popups/DocumentWorkflow";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const CreatePage = () => {
   const navigate = useNavigate();
+  const access = getCurrentUser();
   const type = useParams().type;
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
@@ -39,7 +41,6 @@ const CreatePage = () => {
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const [usedPPEOptions, setUsedPPEOptions] = useState([]);
-  const [role, setRole] = useState("");
   const [usedHandTools, setUsedHandTools] = useState([]);
   const [usedEquipment, setUsedEquipment] = useState([]);
   const [usedMobileMachine, setUsedMobileMachines] = useState([]);
@@ -50,8 +51,6 @@ const CreatePage = () => {
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
-  const adminRoles = ['admin', 'teamleader', 'developer'];
-  const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
@@ -854,13 +853,9 @@ const CreatePage = () => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
-      if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/403");
-      }
 
       setUserID(decodedToken.userId);
       setUserIDs([decodedToken.userId]);
-      setRole(decodedToken.role);
     }
   }, [navigate]);
 
@@ -894,9 +889,7 @@ const CreatePage = () => {
       rowToChange.num = 3;
     }
 
-    // Only perform validation if the 'auth' field was modified
     if (field === "auth") {
-      // Check if the current 'Author', 'Reviewer', or 'Approved By' is being removed or modified
       const requiredRoles = ["Author", "Reviewer", "Approver"];
 
       // Check if there is at least one row with each required auth type
@@ -1168,12 +1161,14 @@ const CreatePage = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
-              <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                <span className="button-text">Published Documents</span>
-              </div>
-            </button>
+            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+              <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                  <span className="button-text">Published Documents</span>
+                </div>
+              </button>
+            )}
             <div className="horizontal-divider-with-icon">
               <hr />
               <div className="divider-icon">
@@ -1235,9 +1230,11 @@ const CreatePage = () => {
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-            </div>
+            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+              </div>
+            )}
 
             {(localStorage.getItem("draftData")) && (
               <div className="burger-menu-icon-risk-create-page-1" onClick={() => loadOfflineData()}>
@@ -1250,7 +1247,7 @@ const CreatePage = () => {
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD role={role} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} />
+          <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} />
         </div>
 
         <div className={`scrollable-box`}>
@@ -1359,13 +1356,13 @@ const CreatePage = () => {
             </div>
           </div>
 
-          <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
-          <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
-          <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
-          <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-          <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+          <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
+          <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
+          <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
+          <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
+          <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
           <ProcedureTable formData={formData} setFormData={setFormData} procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />

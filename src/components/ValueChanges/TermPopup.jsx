@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const TermPopup = ({ isOpen, onClose, role, userID, setTermData, onAdd }) => {
+const TermPopup = ({ isOpen, onClose, userID, setTermData, onAdd }) => {
     const [term, setTerm] = useState("");
     const [definition, setDefinition] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });

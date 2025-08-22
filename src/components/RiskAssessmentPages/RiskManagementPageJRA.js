@@ -34,6 +34,7 @@ import SaveAsPopup from "../Popups/SaveAsPopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
 import DocumentWorkflow from "../Popups/DocumentWorkflow";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -42,7 +43,7 @@ const RiskManagementPageJRA = () => {
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [usedPPEOptions, setUsedPPEOptions] = useState([]);
-    const [role, setRole] = useState("");
+    const access = getCurrentUser();
     const [usedHandTools, setUsedHandTools] = useState([]);
     const [usedEquipment, setUsedEquipment] = useState([]);
     const [usedMobileMachine, setUsedMobileMachines] = useState([]);
@@ -53,8 +54,6 @@ const RiskManagementPageJRA = () => {
     const [userID, setUserID] = useState('');
     const [userIDs, setUserIDs] = useState([]);
     const autoSaveInterval = useRef(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const loadedIDRef = useRef('');
@@ -844,13 +843,9 @@ const RiskManagementPageJRA = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
             setUserIDs([decodedToken.userId]);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -1212,12 +1207,16 @@ const RiskManagementPageJRA = () => {
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Documents</span>
-                            </div>
-                        </button>
+
+                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                    <span className="button-text">Published Documents</span>
+                                </div>
+                            </button>
+                        )}
+
                         <div className="horizontal-divider-with-icon">
                             <hr />
                             <div className="divider-icon">
@@ -1280,9 +1279,11 @@ const RiskManagementPageJRA = () => {
                             <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
                         </div>
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-                        </div>
+                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+                            </div>
+                        )}
                     </div>
 
                     {isSaveMenuOpen && (<SavePopup isOpen={isSaveMenuOpen} closeSaveMenu={closeSaveMenu} save={handleSave} openSaveAs={openSaveAs} />)}
@@ -1291,7 +1292,7 @@ const RiskManagementPageJRA = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
@@ -1347,15 +1348,15 @@ const RiskManagementPageJRA = () => {
                     </div>
 
                     <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setError={setErrors} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setError={setErrors} />
+                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setError={setErrors} />
+                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setError={setErrors} />
                     <IntroTaskInfo formData={formData} setFormData={setFormData} error={errors.introInfo} setErrors={setErrors} />
-                    <PPETableRisk formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
-                    <HandToolsTableRisk formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
-                    <MaterialsTableRisk formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
-                    <EquipmentTableRisk formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
-                    <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} setErrors={setErrors} />
+                    <PPETableRisk formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
+                    <HandToolsTableRisk formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
+                    <MaterialsTableRisk formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
+                    <EquipmentTableRisk formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
+                    <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} setErrors={setErrors} />
                     <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} error={errors.jra} setErrors={setErrors} />
                     <OtherTeam formData={formData} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />

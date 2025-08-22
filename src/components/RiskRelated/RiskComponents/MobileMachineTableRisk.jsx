@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedMobileMachines from "../../ValueChanges/ModifySuggestedMobileMachines";
 
-const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
+const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, userID }) => {
     // State to control the popup and selected abbreviations
     const [macData, setMacData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -207,7 +207,6 @@ const MobileMachineTableRisk = ({ formData, setFormData, usedMobileMachine, setU
                 <RiskMobileMachinePopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setMacData={setMacData}
                     onAdd={handleNewMac}

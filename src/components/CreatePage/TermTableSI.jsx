@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedDefinitions from "../ValueChanges/ModifySuggestedDefinitions";
 
-const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setErrors, si = false }) => {
+const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setErrors, si = false }) => {
   const [termData, setTermData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
@@ -236,7 +236,6 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
         <TermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
-          role={role}
           userID={userID}
           setTermData={setTermData}
           onAdd={handleNewTerm}

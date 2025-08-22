@@ -6,7 +6,7 @@ import RiskTermPopup from "../RiskValueChanges/RiskTermPopup";
 import ManageRiskDefinitions from "../RiskValueChanges/ManageRiskDefinitions";
 import ModifySuggestedDefinitions from "../../ValueChanges/ModifySuggestedDefinitions";
 
-const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setError }) => {
+const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setError }) => {
   const [termData, setTermData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
@@ -205,7 +205,6 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
         <RiskTermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}
-          role={role}
           userID={userID}
           setTermData={setTermData}
           onAdd={handleNewTerm}

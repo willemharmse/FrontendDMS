@@ -13,6 +13,11 @@
     field-sizing: content;
 }
 
+.drop-target-top td {
+    border-top: 3px solid #3B3B3B !important;
+    /* grey, 3px */
+}
+
 .aim-input-pt {
     width: calc(100% - 10px);
     padding: 5px;

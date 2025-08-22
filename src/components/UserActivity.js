@@ -10,9 +10,6 @@ const UserActivity = () => {
     const [activity, setActivity] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const { id } = useParams(); // Get the user ID from the URL parameters
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
@@ -23,19 +20,14 @@ const UserActivity = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
-
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
     useEffect(() => {
-        if (token && role) {
+        if (token) {
             fetchActivity();
         }
-    }, [token, role]);
+    }, [token]);
 
     // Fetch files from the API
     const fetchActivity = async () => {
@@ -105,7 +97,7 @@ const UserActivity = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
                 <div className="table-container-user-activity-log">
                     <table className="user-activity-log-table">

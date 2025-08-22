@@ -10,11 +10,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import DeletePopupUM from "./UserManagement/DeletePopupUM";
 import TopBar from "./Notifications/TopBar";
+import { getCurrentUser, can, canIn, isAdmin } from "../utils/auth";
 
 const UserManagement = () => {
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
     const [users, setUsers] = useState([]);
+    const access = getCurrentUser();
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState("");
@@ -22,11 +24,8 @@ const UserManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [userToEdit, setUserToEdit] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [role, setRole] = useState('');
-    const [newUser, setNewUser] = useState({ username: '', password: '', role: '' });
+    const [newUser, setNewUser] = useState({ username: '', email: '', role: '', reportingTo: '', department: '', designation: '' });;
     const [formError, setFormError] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [roles, setRoles] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -62,22 +61,13 @@ const UserManagement = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             console.log(decodedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
-
-            if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
     const roleMapping = {
         standarduser: 'Standard User',
-        teamleader: 'Team Leader',
         admin: 'Admin',
-        guest: 'Guest',
-        auditor: 'Auditor',
-        developer: 'Developer'
     };
 
     const formatRole = (role) => roleMapping[role] || role;
@@ -115,7 +105,7 @@ const UserManagement = () => {
     }, [loggedInUserId]);
 
     const createUser = async () => {
-        if (!newUser.username || !newUser.email || !newUser.role) {
+        if (!newUser.username || !newUser.email || !newUser.role || !newUser.reportingTo || !newUser.department || !newUser.designation) {
             setFormError('All fields are required.');
             return;
         }
@@ -140,7 +130,7 @@ const UserManagement = () => {
             })
 
             setIsModalOpen(false);
-            setNewUser({ username: '', email: '', role: '' });
+            setNewUser({ username: '', email: '', role: '', reportingTo: '', department: '', designation: '' });
             setFormError('');
             fetchUsers();
         } catch (error) {
@@ -176,8 +166,11 @@ const UserManagement = () => {
     };
 
     const updateUser = async () => {
-        if (!userToEdit.username || !userToEdit.role) {
-            setFormError('All fields except password are required.');
+        if (!userToEdit.username || !userToEdit.role || !userToEdit.department || !userToEdit.reportingTo || !userToEdit.designation) {
+            toast.error('All fields are required.', {
+                closeButton: false,
+                autoClose: 800,
+            });
             return;
         }
 
@@ -292,7 +285,7 @@ const UserManagement = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
                 <UserTable
                     filteredUsers={filteredUsers}
@@ -311,7 +304,8 @@ const UserManagement = () => {
                 formError={formError}
                 newUser={newUser}
                 setNewUser={setNewUser}
-                role={role}
+                current={access}
+                isAdmin={isAdmin}
             />
 
             {isDeleteModalOpen && (
@@ -331,6 +325,8 @@ const UserManagement = () => {
                 formError={formError}
                 userToEdit={userToEdit}
                 setUserToEdit={setUserToEdit}
+                current={access}
+                isAdmin={isAdmin}
             />
             <ToastContainer />
         </div>

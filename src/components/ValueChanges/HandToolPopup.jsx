@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const ToolPopup = ({ isOpen, onClose, role, userID, setToolsData, onAdd }) => {
+const ToolPopup = ({ isOpen, onClose, userID, setToolsData, onAdd }) => {
     const [tool, setTool] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);

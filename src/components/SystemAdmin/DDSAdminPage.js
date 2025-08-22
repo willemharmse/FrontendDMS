@@ -12,9 +12,6 @@ const DDSAdminPage = () => {
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,7 +19,6 @@ const DDSAdminPage = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             console.log(decodedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
         }
     }, [navigate]);
@@ -85,7 +81,7 @@ const DDSAdminPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-fi-home">

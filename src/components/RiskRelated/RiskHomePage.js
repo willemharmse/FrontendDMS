@@ -9,14 +9,12 @@ import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, f
 import TopBar from "../Notifications/TopBar";
 
 const RiskHomePage = () => {
-    const [role, setRole] = useState('');
     const navigate = useNavigate();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -60,7 +58,7 @@ const RiskHomePage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-risk-home">

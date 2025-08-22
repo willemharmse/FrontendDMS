@@ -9,25 +9,20 @@ import { faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-
 import TopBarDD from "../../Notifications/TopBarDD";
 import TraineeCompletedCoursesTable from "./TraineeCompletedCoursesTable";
 import TraineeCourseTable from "./TraineeCourseTable";
+import { canIn, getCurrentUser } from "../../../utils/auth";
 
 const TraineeDetails = () => {
     const navigate = useNavigate();
-    const [role, setRole] = useState("");
     const [userID, setUserID] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
+    const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -63,7 +58,7 @@ const TraineeDetails = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-trainee-management`}>

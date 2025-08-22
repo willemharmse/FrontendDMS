@@ -191,7 +191,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         setDragOverRowId(rowId);
     };
 
-    const handleDragLeave = () => {
+    const handleDragLeave = (e) => {
+        const tr = e.target.closest('tr');
+        if (tr) tr.style.opacity = '';
         setDragOverRowId(null);
         setArmedDragRow(null);
     };
@@ -765,13 +767,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                     return (
                                         <tr
                                             key={`${row.id}-${pi}`}
-                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${isDragOver ? 'drag-over' : ''}`}
+                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${isDragOver ? 'drag-over' : ''} ${dragOverRowId === row.id ? "drag-over-top" : ""}`}
                                             draggable={isFirst && armedDragRow === row.id}
                                             onDragStart={isFirst && armedDragRow === row.id
                                                 ? (e) => handleDragStart(e, row.id)
                                                 : undefined}
                                             onDragOver={isFirst ? (e) => handleDragOver(e, row.id) : undefined}
-                                            onDragLeave={isFirst ? handleDragLeave : undefined}
+                                            onDragLeave={isFirst ? (e) => handleDragLeave(e) : undefined}
                                             onDrop={isFirst ? (e) => handleDrop(e, row.id) : undefined}
                                             onDragEnd={isFirst && armedDragRow === row.id ? handleDragEnd : undefined}
                                         >

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import './FilterName.css';
 
-const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) => {
+const FilterFileName = ({ access, canIn, filters, onFilterChange, trashed }) => {
     const [openMenu, setOpenMenu] = useState(null); // Track the currently open menu
 
     const toggleMenu = (menu) => {
@@ -28,7 +28,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) 
                     <span className="fileinfo-title-filter-1">Document Type</span>
                 </div>
             </th>
-            {(adminRoles.includes(role) || role === 'auditor') && (
+            {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
                 <th className="col-stat-filter col">
                     <div className="fileinfo-container-filter-1">
                         <span className="fileinfo-title-filter-1">Status</span>
@@ -213,7 +213,7 @@ const FilterFileName = ({ role, adminRoles, filters, onFilterChange, trashed }) 
                     )}
                 </div>
             </th>
-            {adminRoles.includes(role) && (
+            {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
                 <th className="col-act-filter col">Action</th>
             )}
         </tr>

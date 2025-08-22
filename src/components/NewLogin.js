@@ -9,6 +9,7 @@ import CryptoJS from "crypto-js";
 import AccountLockOut from './AccountLockout/AccountLockOut';
 import { ToastContainer, toast } from 'react-toastify';
 import SplashScreen from './Construction/SplashScreen';
+import { getCurrentUser, can } from "../utils/auth";
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -61,6 +62,7 @@ const NewLogin = () => {
 
                 const dataUrl = await toDataURL(blob);
                 sessionStorage.setItem('profilePic', dataUrl);
+                console.log(getCurrentUser());
             } else {
                 // 204 (no content) or 404 -> keep icon
                 sessionStorage.removeItem('profilePic');

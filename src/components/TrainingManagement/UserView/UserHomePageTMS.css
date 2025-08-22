@@ -1,0 +1,392 @@
+.course-home-info-container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
+}
+
+.main-box-course-home-info {
+    flex: 1;
+    width: 100%;
+    margin-left: 10px;
+    background-color: transparent;
+    border-radius: 3px;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+    display: flex;
+    /* NEW: make this a column */
+    flex-direction: column;
+    /* NEW */
+    min-height: 0;
+    /* IMPORTANT */
+}
+
+/* For modern browsers */
+.table-container-course-home-info::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.table-container-course-home-info::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.table-container-course-home-info::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.table-container-course-home-info::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.table-container-course-home-info {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.table-container-course-home-info {
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.course-home-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* NEW: fill remaining height */
+    min-height: 0;
+    /* IMPORTANT: allow inner scroll area to shrink */
+    /* REMOVE: height/max-height/min-height calcs */
+}
+
+.course-home-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.course-home-info-head {
+    position: sticky;
+    top: 0;
+    background-color: #002060;
+    color: white;
+    z-index: 10;
+}
+
+.button-logo-custom {
+    position: absolute;
+    left: -20px;
+    height: auto;
+    width: 30px;
+    /* Adjust icon size as needed */
+}
+
+.course-home-info-tr {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.course-home-info-num {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    text-align: center;
+}
+
+.course-home-info-code {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    text-align: center;
+}
+
+.course-home-info-name {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 45%;
+    text-align: center;
+}
+
+.course-home-info-progress {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    text-align: center;
+}
+
+.course-home-info-access {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    text-align: center;
+}
+
+.course-home-info-act {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    text-align: center;
+}
+
+/* ===== Header: avatar + welcome ===== */
+.course-home-info-topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px 0 12px;
+    padding-top: 0px;
+}
+
+.course-home-info-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 40px;
+}
+
+.course-home-info-welcome {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111;
+}
+
+/* ===== Controls row: dropdown + search + sort ===== */
+.course-home-info-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+}
+
+.course-home-info-select,
+.course-home-info-search {
+    height: 36px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    padding: 0 10px;
+    outline: none;
+}
+
+.course-home-info-select {
+    min-width: 160px;
+    background: #fff;
+}
+
+.course-home-info-search-wrap {
+    position: relative;
+    flex: 1;
+}
+
+.course-home-info-search-icon-wrap {
+    position: relative;
+    max-width: 20%;
+}
+
+.course-home-info-search {
+    width: 100%;
+    padding-right: 36px;
+}
+
+.course-home-info-search-icon {
+    position: absolute;
+    right: -35px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    pointer-events: none;
+}
+
+.course-home-info-sort {
+    width: 30px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: none;
+    font-size: 25px;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: gray;
+}
+
+/* ===== Table "box" around the scrollable table ===== */
+.course-home-info-tablebox {
+    background: #ffffffcc;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e6e6e6;
+    margin: 0 12px 12px 12px;
+    margin-bottom: 0px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* keep your existing .table-container-course-home-info scroll rules */
+/* we’ll just nest that container inside the “box” */
+.course-home-info-tablebox .table-container-course-home-info {
+    flex: 1;
+    overflow-y: auto;
+    /* scrolls when content exceeds height */
+    height: auto;
+}
+
+/* ===== Progress badges / bars ===== */
+.course-home-info-progress-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.course-home-info-progress-pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    min-width: 100% !important;
+    width: 100%;
+}
+
+.course-home-info-pill-complete {
+    background: #7EAC89;
+    color: #fff;
+}
+
+.course-home-info-pill-progress {
+    background: #FFFF89;
+    color: #333;
+}
+
+.course-home-info-pill-notpassed {
+    background: #FFC000;
+    color: #111;
+}
+
+.course-home-info-pill-overdue {
+    background: #CB6F6F;
+    color: #fff;
+    min-width: 80%;
+}
+
+.course-home-info-bar {
+    width: 120px;
+    height: 10px;
+    border-radius: 20px;
+    background: #ececec;
+    overflow: hidden;
+}
+
+.course-home-info-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.course-home-info-bar-fill.complete {
+    background: #7EAC89;
+}
+
+.course-home-info-bar-fill.progress {
+    background: #FFC000;
+}
+
+.course-home-info-bar-fill.zero {
+    background: #CB6F6F;
+}
+
+.course-home-info-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    margin-top: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* NEW */
+    min-height: 0;
+    /* IMPORTANT */
+    /* REMOVE: height: 100%; max-height: calc(100% - 24px); */
+}
+
+/* Single progress badge that fills behind its own text */
+.course-home-info-progress-badge {
+    position: relative;
+    width: 100%;
+    /* tweak as you like */
+    height: 24px;
+    border-radius: 12px;
+    background: #ececec;
+    /* unfilled track */
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* the actual fill */
+.course-home-info-progress-badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: var(--p, 0%);
+    /* percentage from inline style */
+    background: var(--fill, #FFFF89);
+    transition: width 0.35s ease;
+    z-index: 0;
+}
+
+.course-home-info-progress-badge>.label-course-info {
+    position: relative;
+    z-index: 1;
+    /* text layer */
+}
+
+/* optional semantic color helpers (choose one when rendering) */
+.course-home-info-progress-badge.is-complete {
+    color: white !important;
+}
+
+.course-home-info-progress-badge.is-overdue {
+    color: white;
+}

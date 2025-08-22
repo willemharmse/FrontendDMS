@@ -17,10 +17,7 @@ const CourseHome = () => {
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
-    const [role, setRole] = useState('');
     const [formError, setFormError] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [searchQuery, setSearchQuery] = useState("");
     const [addMembersPopup, setAddMembersPopup] = useState(false);
     const navigate = useNavigate();
@@ -56,12 +53,7 @@ const CourseHome = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
-
-            if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -131,7 +123,7 @@ const CourseHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <CourseTable filteredCourses={courses} />

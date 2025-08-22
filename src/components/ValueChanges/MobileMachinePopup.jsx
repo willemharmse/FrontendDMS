@@ -3,7 +3,7 @@ import "./MobileMachinePopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const MobileMachinePopup = ({ isOpen, onClose, role, userID, setMacData, onAdd }) => {
+const MobileMachinePopup = ({ isOpen, onClose, userID, setMacData, onAdd }) => {
     const [machine, setMachine] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);

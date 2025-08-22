@@ -12,9 +12,6 @@ const TrainingAdminPage = () => {
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
 
@@ -27,7 +24,6 @@ const TrainingAdminPage = () => {
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
             console.log(decodedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
         }
     }, [navigate]);
@@ -53,22 +49,13 @@ const TrainingAdminPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
-                        <p className="logo-text-um">Admin Page</p>
-                    </div>
-
-                    <div className="button-container-create">
-                        <button className="but-um">
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faDownload} className="button-icon" />
-                                <span className="button-text">Templates</span>
-                            </div>
-                        </button>
+                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <p className="logo-text-um">Training Management</p>
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/tmsTrainingAdmin2.svg`} alt="Logo" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Manage Training"}</p>
+                        <img src={`/tmsTrainingAdmin2.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"Manage TMS"}</p>
                     </div>
                 </div>
             )}
@@ -90,11 +77,19 @@ const TrainingAdminPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/courseMangement")}>
+                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/courseCreate")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}//tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Create Course</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/courseMangement")}>
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/tmsAdminAllCourses.svg`} className={"all-icon-fi-home"} />
@@ -102,12 +97,12 @@ const TrainingAdminPage = () => {
                             <h3 className="document-title-fi-home">All Courses</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/courseCreate")}>
+                    <div className={`document-card-fi-home`}>
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Develop Course</h3>
+                            <h3 className="document-title-fi-home">Manage Visitor Trainees</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`}>

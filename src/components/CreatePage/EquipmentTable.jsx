@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedEquipment from "../ValueChanges/ModifySuggestedEquipment";
 
-const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
+const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment, userID }) => {
     // State to control the popup and selected abbreviations
     const [eqpData, setEqpData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -209,7 +209,6 @@ const EquipmentTable = ({ formData, setFormData, usedEquipment, setUsedEquipment
                 <EquipmentPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setEqpData={setEqpData}
                     onAdd={handleNewEqp}

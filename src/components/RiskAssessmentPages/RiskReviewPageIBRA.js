@@ -28,6 +28,7 @@ import SaveAsPopup from "../Popups/SaveAsPopup";
 import SavePopup from "../Popups/SavePopup";
 import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const RiskReviewPageIBRA = () => {
     const navigate = useNavigate();
@@ -35,15 +36,13 @@ const RiskReviewPageIBRA = () => {
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [companies, setCompanies] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
-    const [role, setRole] = useState("");
+    const access = getCurrentUser();
     const [loadedID, setLoadedID] = useState('');
     const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
     const [titleSet, setTitleSet] = useState(false);
     const [userID, setUserID] = useState('');
     const [userIDs, setUserIDs] = useState([]);
     const autoSaveInterval = useRef(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const loadedIDRef = useRef('');
@@ -945,13 +944,9 @@ const RiskReviewPageIBRA = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
             setUserIDs([decodedToken.userId]);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -1597,16 +1592,19 @@ const RiskReviewPageIBRA = () => {
                         <div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
                         </div>
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-                        </div>
+
+                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+                            </div>
+                        )}
                     </div>
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
@@ -1824,9 +1822,9 @@ const RiskReviewPageIBRA = () => {
                         </div>
                     </div>
 
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
+                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} />
+                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} />
                     {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
                     {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 

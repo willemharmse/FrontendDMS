@@ -93,7 +93,7 @@ const CourseContent = ({ formData, setFormData }) => {
 
                             <div className="courseCont-titleRow">
                                 <span className="courseCont-slideLabel">
-                                    {`Slide ${idx + 1} :`}
+                                    {`Topic ${idx + 1} :`}
                                 </span>
                                 <textarea
                                     className="courseCont-titleInput"

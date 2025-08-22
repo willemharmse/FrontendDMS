@@ -9,7 +9,6 @@ import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight
 import TopBar from "./Notifications/TopBar";
 
 const DCHomePage = () => {
-    const [role, setRole] = useState('');
     const navigate = useNavigate();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
@@ -17,7 +16,6 @@ const DCHomePage = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -52,7 +50,7 @@ const DCHomePage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-dc-home">

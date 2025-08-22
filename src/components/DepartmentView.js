@@ -43,10 +43,7 @@ const DepartmentView = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
-    const [role, setRole] = useState('');
     const [formError, setFormError] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [department, setDepartment] = useState([]);
@@ -89,12 +86,7 @@ const DepartmentView = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
-
-            if (!(adminRoles.includes(decodedToken.role)) && !(leaderRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -280,7 +272,7 @@ const DepartmentView = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
                 <TeamTable
                     team={users}

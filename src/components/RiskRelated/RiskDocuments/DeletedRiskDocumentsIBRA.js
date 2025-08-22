@@ -15,10 +15,7 @@ const DeletedRiskDocumentsIBRA = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
-    const [role, setRole] = useState('');
     const [hoveredFileId, setHoveredFileId] = useState(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [userID, setUserID] = useState("");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,12 +95,7 @@ const DeletedRiskDocumentsIBRA = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setUserID(decodedToken.userId);
-
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -116,10 +108,10 @@ const DeletedRiskDocumentsIBRA = () => {
     };
 
     useEffect(() => {
-        if (token && role) {
+        if (token) {
             fetchFiles();
         }
-    }, [token, role]);
+    }, [token]);
 
     // Fetch files from the API
     const fetchFiles = async () => {
@@ -208,7 +200,7 @@ const DeletedRiskDocumentsIBRA = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
                 <div className="table-container-gen">
                     <table className="gen-table">

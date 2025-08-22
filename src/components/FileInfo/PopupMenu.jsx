@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PopupMenu.css";
 
-const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal, file, isActionAvailable, role, openUpdate, openRenameModal }) => {
+const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal, file, isActionAvailable, canIn, access, openUpdate, openRenameModal }) => {
     const navigate = useNavigate();
     const popupRef = useRef(null);
     const [position, setPosition] = useState("below");
@@ -45,10 +45,12 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
                             <li onClick={() => openRenameModal(file.fileName, file._id)}>Rename</li>
                         </ul>
                     )}
-                    {role === "admin" && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
-                    <ul>
-                        <li onClick={() => navigate(`/FrontendDMS/versionHistory/${file.docID}`)}>Version History</li>
-                    </ul>
+                    {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
+                    {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
+                        <ul>
+                            <li onClick={() => navigate(`/FrontendDMS/versionHistory/${file.docID}`)}>Version History</li>
+                        </ul>
+                    )}
                 </div>
             )}
         </div>

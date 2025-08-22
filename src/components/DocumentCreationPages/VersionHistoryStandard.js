@@ -12,12 +12,9 @@ const VersionHistoryStandard = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [loading, setLoading] = useState(false);
-    const [role, setRole] = useState('');
     const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
     const [downloadFileName, setDownloadFileName] = useState(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
     const [displayName, setDisplayName] = useState(null);
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const { id } = useParams();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
@@ -28,11 +25,6 @@ const VersionHistoryStandard = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
-
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -156,7 +148,7 @@ const VersionHistoryStandard = () => {
                         <div className="burger-menu-icon-um">
                             <FontAwesomeIcon icon={faCircleUser} onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" />
                         </div>
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+                        {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
                 <div className="table-containerdc-version-history-file-info">

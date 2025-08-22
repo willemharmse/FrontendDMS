@@ -23,6 +23,7 @@ import SharePageRisk from "../RiskRelated/SharePageRisk";
 import RiskAim from "../RiskRelated/RiskInfo/RiskAim";
 import RiskScope from "../RiskRelated/RiskInfo/RiskScope";
 import ExecutiveSummary from "../RiskRelated/ExecutiveSummary";
+import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 
 const RiskManagementPageBTA = () => {
     const navigate = useNavigate();
@@ -30,15 +31,13 @@ const RiskManagementPageBTA = () => {
     const [share, setShare] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
-    const [role, setRole] = useState("");
+    const access = getCurrentUser();
     const [loadedID, setLoadedID] = useState('');
     const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
     const [titleSet, setTitleSet] = useState(false);
     const [userID, setUserID] = useState('');
     const [userIDs, setUserIDs] = useState([]);
     const autoSaveInterval = useRef(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const loadedIDRef = useRef('');
@@ -592,13 +591,9 @@ const RiskManagementPageBTA = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
             setUserIDs([decodedToken.userId]);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -1165,12 +1160,15 @@ const RiskManagementPageBTA = () => {
                                 <span className="button-text">Saved Drafts</span>
                             </div>
                         </button>
-                        <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                <span className="button-text">Published Documents</span>
-                            </div>
-                        </button>
+
+                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
+                                <div className="button-content">
+                                    <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                    <span className="button-text">Published Documents</span>
+                                </div>
+                            </button>
+                        )}
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
@@ -1227,16 +1225,18 @@ const RiskManagementPageBTA = () => {
                             <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
                         </div>
 
-                        <div className="burger-menu-icon-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-                        </div>
+                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                            <div className="burger-menu-icon-create-page-1">
+                                <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+                            </div>
+                        )}
                     </div>
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
@@ -1365,9 +1365,9 @@ const RiskManagementPageBTA = () => {
                         </div>
                     </div>
 
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
+                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} />
+                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} />
                     {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
                     {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} />)}
 

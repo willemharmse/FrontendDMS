@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedHandTools from "../ValueChanges/ModifySuggestedHandTools";
 
-const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, role, userID }) => {
+const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, userID }) => {
     // State to control the popup and selected abbreviations
     const [toolsData, setToolsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -209,7 +209,6 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                 <ToolPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setToolsData={setToolsData}
                     onAdd={handleNewTool}

@@ -24,6 +24,7 @@ import { faFloppyDisk, faSpinner, faRotateLeft, faArrowLeft, faBell, faCircleUse
 import TopBarDD from "./Notifications/TopBarDD";
 import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
 import DraftPopup from "./Popups/DraftPopup";
+import { getCurrentUser, can, canIn, isAdmin } from "../utils/auth";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
@@ -32,7 +33,7 @@ const ReviewPage = () => {
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
     const [usedPPEOptions, setUsedPPEOptions] = useState([]);
-    const [role, setRole] = useState("");
+    const access = getCurrentUser();
     const [userIDs, setUserIDs] = useState([]);
     const [usedHandTools, setUsedHandTools] = useState([]);
     const [usedEquipment, setUsedEquipment] = useState([]);
@@ -43,8 +44,6 @@ const ReviewPage = () => {
     const [titleSet, setTitleSet] = useState(false);
     const [userID, setUserID] = useState('');
     const autoSaveInterval = useRef(null);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const loadedIDRef = useRef('');
@@ -595,12 +594,8 @@ const ReviewPage = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -975,15 +970,17 @@ const ReviewPage = () => {
                             <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
                         </div>
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faUpload} onClick={handleClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-                        </div>
+                        {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faUpload} onClick={handleClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+                            </div>
+                        )}
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBarDD role={role} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} />
                 </div>
 
                 <div className={`scrollable-box`}>
@@ -1034,13 +1031,13 @@ const ReviewPage = () => {
                         </div>
                     </div>
 
-                    <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
-                    <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
-                    <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
-                    <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-                    <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
-                    <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-                    <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+                    <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
+                    <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
+                    <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
+                    <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
+                    <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
+                    <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+                    <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
                     <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
                     <ChapterTable formData={formData} setFormData={setFormData} />
                     <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />

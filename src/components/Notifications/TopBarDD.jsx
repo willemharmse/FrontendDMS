@@ -6,7 +6,7 @@ import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
 
-const TopBarDD = ({ role, menu, create, loadOfflineDraft, risk = false }) => {
+const TopBarDD = ({ access, canIn, menu, create, loadOfflineDraft, risk = false }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -69,8 +69,8 @@ const TopBarDD = ({ role, menu, create, loadOfflineDraft, risk = false }) => {
             </div>
 
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen && menu != "1") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-            {(isMenuOpen && menu === "1") && (<BurgerMenu role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} risk={risk} />)}
+            {(isMenuOpen && menu != "1") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+            {(isMenuOpen && menu === "1") && (<BurgerMenu access={access} canIn={canIn} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} risk={risk} />)}
         </div>
     );
 };

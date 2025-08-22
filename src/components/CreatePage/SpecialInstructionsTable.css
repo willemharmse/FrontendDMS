@@ -42,3 +42,7 @@
     height: 100%;
     /* fills the full height of the td */
 }
+
+.drag-over-top {
+    border-top: 4px solid #3B3B3B !important;
+}

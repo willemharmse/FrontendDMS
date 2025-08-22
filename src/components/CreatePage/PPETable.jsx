@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedPPE from "../ValueChanges/ModifySuggestedPPE.jsx";
 
-const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, role, userID }) => {
+const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, userID }) => {
     // State to control the popup and selected abbreviations
     const [ppeData, setPPEData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -208,7 +208,6 @@ const PPETable = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, ro
                 <PPEPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setPPEData={setPPEData}  // Pass the setter to update PPE options locally
                     onAdd={handleNewPpe}

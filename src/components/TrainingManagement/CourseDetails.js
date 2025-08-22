@@ -12,10 +12,7 @@ import CourseTrainerTable from "./CourseTrainerTable";
 
 const CourseDetails = () => {
     const navigate = useNavigate();
-    const [role, setRole] = useState("");
     const [userID, setUserID] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -23,12 +20,8 @@ const CourseDetails = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -82,7 +75,7 @@ const CourseDetails = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBarDD role={role} menu={"1"} create={true} risk={true} />
+                    <TopBarDD menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className={`scrollable-box-course-details`}>

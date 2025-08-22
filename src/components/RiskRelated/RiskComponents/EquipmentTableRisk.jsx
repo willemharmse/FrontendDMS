@@ -8,7 +8,7 @@ import RiskEquipmentPopup from "../RiskValueChanges/RiskEquipmentPopup"
 import RiskManageEquipment from "../RiskValueChanges/RiskManageEquipment"
 import ModifySuggestedEquipment from "../../ValueChanges/ModifySuggestedEquipment";
 
-const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, role, userID }) => {
+const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, userID }) => {
     // State to control the popup and selected abbreviations
     const [eqpData, setEqpData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -211,7 +211,6 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                 <RiskEquipmentPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setEqpData={setEqpData}
                     onAdd={handleNewEqp}

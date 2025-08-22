@@ -9,25 +9,19 @@ import { faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-
 import TopBarDD from "../../Notifications/TopBarDD";
 import TrainerCourseTable from "./TrainerCourseTable";
 import TrainerTraineesTable from "./TrainerTraineesTable";
+import TopBar from "../../Notifications/TopBar";
 
 const TrainerDetails = () => {
     const navigate = useNavigate();
-    const [role, setRole] = useState("");
     const [userID, setUserID] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/403");
-            }
 
             setUserID(decodedToken.userId);
-            setRole(decodedToken.role);
         }
     }, [navigate]);
 
@@ -63,7 +57,7 @@ const TrainerDetails = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBarDD role={role} menu={"1"} create={false} risk={false} />
+                    <TopBar />
                 </div>
 
                 <div className={`scrollable-box-trainer-details-management`}>

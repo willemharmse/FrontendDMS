@@ -1,0 +1,202 @@
+.flame-num-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-type-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-ass-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-area-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 13%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-owner-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 18%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-head-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 18%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-status-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 13%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-act-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-sub-date-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 9%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-status-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 7%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-comp-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-head-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-cert-type-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-cert-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-auth-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-owner-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-area-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-ass-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-act-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.status-good {
+    background-color: #7EAC89;
+    /* Bootstrap green */
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.status-worse {
+    background-color: #FFFF89;
+    /* Bootstrap yellow */
+    color: black;
+    font-weight: bold;
+    text-align: center;
+}
+
+.status-worst {
+    background-color: #FFC000;
+    /* Bootstrap orange */
+    color: black;
+    font-weight: bold;
+    text-align: center;
+}
+
+.status-bad {
+    background-color: #CB6F6F;
+    /* Bootstrap red */
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}

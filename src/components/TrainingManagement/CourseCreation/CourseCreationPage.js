@@ -21,6 +21,9 @@ import DocumentWorkflow from "../../Popups/DocumentWorkflow";
 import CourseSummary from "./CourseSummary";
 import CourseOutline from "./CourseOutline";
 import CourseContent from "./CourseContent";
+import { v4 as uuidv4 } from "uuid";
+import CourseAssessment from "./CourseAssessment";
+import { canIn, getCurrentUser } from "../../../utils/auth";
 
 const CourseCreationPage = () => {
   const navigate = useNavigate();
@@ -28,15 +31,13 @@ const CourseCreationPage = () => {
   const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
-  const [role, setRole] = useState("");
+  const access = getCurrentUser();
   const [loadedID, setLoadedID] = useState('');
   const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
-  const adminRoles = ['admin', 'teamleader', 'developer'];
-  const normalRoles = ['guest', 'standarduser', 'auditor'];
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
@@ -348,8 +349,63 @@ const CourseCreationPage = () => {
     courseSummary: "",
     courseOutline: "",
     additionalResources: [],
-    chapters: []
+    chapters: [],
+    summary: "",
+    courseOutline: {
+      department: "",
+      duration: "",
+      audience: "",
+      table: []
+    },
+    assessment: [
+      { id: uuidv4(), question: "", answer: "", options: ["", "", ""] }
+    ]
   });
+
+  const extractTopicsFromCourseContent = (courseContent) => {
+    return (courseContent || [])
+      .map(b => {
+        const title = (b?.title || "").trim();
+        return title ? title : "No Topic Title";
+      })
+      .map(s => s.replace(/\s+/g, " ").trim()) // normalize spaces
+      .filter(Boolean); // remove empty
+  };
+
+  useEffect(() => {
+    const topics = extractTopicsFromCourseContent(formData.courseContent);
+
+    const currentTopics = (formData.courseOutline?.table || []).map(r => r.topic || "");
+
+    const unchanged =
+      topics.length === currentTopics.length &&
+      topics.every((t, i) => t === currentTopics[i]);
+
+    if (unchanged) return;
+
+    setFormData(prev => {
+      const prevRows = prev.courseOutline?.table || [];
+
+      const nextRows = topics.map((topic, i) => {
+        const existing = prevRows[i] || {};
+        return {
+          id: existing.id || uuidv4(),
+          topic,                           // <- authoritative from courseContent
+          // preserve any other columns you render in the outline table:
+          duration: existing.duration || "",
+          description: existing.notes || "",
+        };
+      });
+
+      return {
+        ...prev,
+        courseOutline: {
+          ...(prev.courseOutline || {}),
+          table: nextRows,
+        },
+      };
+    });
+  }, [formData.courseContent]);
 
   useEffect(() => {
     const hasActiveError = Object.values(errors).some(val => val === true);
@@ -581,13 +637,9 @@ const CourseCreationPage = () => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
-      if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/403");
-      }
 
       setUserID(decodedToken.userId);
       setUserIDs([decodedToken.userId]);
-      setRole(decodedToken.role);
     }
   }, [navigate]);
 
@@ -712,8 +764,8 @@ const CourseCreationPage = () => {
             <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
-            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
-            <p className="logo-text-um">Training Management</p>
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <p className="logo-text-um" onClick={() => console.log(formData)}>Training Management</p>
           </div>
 
           <div className="button-container-create">
@@ -729,7 +781,7 @@ const CourseCreationPage = () => {
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
-            <button className="but-um" onClick={() => navigate('/generatedFileInfo')}>
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedFileInfo')}>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
                 <span className="button-text">Published Courses</span>
@@ -803,7 +855,7 @@ const CourseCreationPage = () => {
 
           <div className="spacer"></div>
 
-          <TopBarDD role={role} menu={"1"} create={true} />
+          <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} />
         </div>
 
         <div className={`scrollable-box`}>
@@ -857,21 +909,23 @@ const CourseCreationPage = () => {
             </div>
           </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
           <CourseContent formData={formData} setFormData={setFormData} />
-          <CourseSummary />
-          <CourseOutline />
+          <CourseSummary formData={formData} setFormData={setFormData} />
+          <CourseOutline formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={false} />
-
-          <div className="input-row-buttons">
-            <button
-              className="generate-button font-fam"
-              onClick={handleClick}
-            >
-              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
-            </button>
-          </div>
+          {false && (<CourseAssessment formData={formData} setFormData={setFormData} />)}
+          {false && (
+            <div className="input-row-buttons">
+              <button
+                className="generate-button font-fam"
+                onClick={handleClick}
+              >
+                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
+              </button>
+            </div>
+          )}
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={""} userID={userID} create={true} />)}
         {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}

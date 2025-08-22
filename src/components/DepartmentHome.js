@@ -43,9 +43,6 @@ const DepartmentHome = () => {
     const [token, setToken] = useState('');
     const [departments, setDepartments] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [create, setCreate] = useState(false);
@@ -83,7 +80,6 @@ const DepartmentHome = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
 
         }
@@ -247,7 +243,7 @@ const DepartmentHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-fi-home">

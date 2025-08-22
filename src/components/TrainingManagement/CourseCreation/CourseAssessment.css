@@ -1,0 +1,126 @@
+/* Card */
+.course-ass-file-card {
+    background: #f2f2f2;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+    width: 97%;
+    font-family: Arial;
+}
+
+/* Header */
+.course-ass-file-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-family: Arial;
+}
+
+.course-ass-file-qtitle {
+    font-weight: 600;
+    color: #333;
+    font-family: Arial;
+}
+
+/* Icon buttons (trash / add) */
+.course-ass-file-qactions,
+.course-ass-file-option-actions {
+    display: flex;
+    gap: 8px;
+    font-family: Arial;
+}
+
+.course-ass-file-icon-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 6px;
+    font-family: Arial;
+}
+
+/* Question input */
+.course-ass-file-question-input {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    padding: 10px 12px;
+    background: white;
+    margin-bottom: 12px;
+    max-width: 98%;
+    field-sizing: content;
+    font-family: Arial;
+}
+
+/* Options block */
+.course-ass-file-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: Arial;
+}
+
+/* One option row */
+.course-ass-file-option-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    font-family: Arial;
+}
+
+.course-ass-file-radio-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+}
+
+.course-ass-file-option-input {
+    width: 98%;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    background: white;
+    padding: 10px 12px;
+    font-family: Arial;
+}
+
+/* Left side of header: arrow + title */
+.course-ass-file-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Collapse button (chevron) */
+.course-ass-file-collapse-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Rotate chevron when collapsed (points right) */
+.course-ass-file-is-collapsed .course-ass-file-collapse-btn svg {
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease-in-out;
+}
+
+.course-ass-file-collapse-btn svg {
+    transition: transform 0.15s ease-in-out;
+}
+
+/* Hide only the options area when collapsed */
+.course-ass-file-is-collapsed .course-ass-file-options {
+    display: none;
+}
+
+/* Tighten spacing when collapsed (optional, looks cleaner) */
+.course-ass-file-is-collapsed .course-ass-file-question-input {
+    margin-bottom: 0;
+}

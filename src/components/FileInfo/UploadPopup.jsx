@@ -22,7 +22,6 @@ const UploadPopup = ({ onClose }) => {
     const [deptHeads, setDeptHeads] = useState([]);
     const [docTypes, setDocTypes] = useState([]);
     const [disciplines, setDisciplines] = useState([]);
-    const adminRoles = ['admin', 'teamleader', 'developer'];
     const [loading, setLoading] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [userID, setUserID] = useState('');

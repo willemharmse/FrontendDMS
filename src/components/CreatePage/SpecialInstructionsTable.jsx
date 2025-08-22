@@ -136,9 +136,15 @@ const SpecialInstructionsTable = ({ formData, setFormData, error, title, documen
                                         draggable={armedDragRow === row.id}
                                         onDragStart={armedDragRow === row.id ? e => handleDragStart(e, row.id) : undefined}
                                         onDragOver={e => handleDragOver(e, row.id)}
-                                        onDragLeave={handleDragLeave}
+                                        onDragLeave={e => {
+                                            const rt = e.relatedTarget || e.nativeEvent?.relatedTarget;
+                                            if (rt && e.currentTarget.contains(rt)) return;
+                                            handleDragLeave();
+                                        }}
+
                                         onDrop={e => handleDrop(e, row.id)}
                                         onDragEnd={handleDragEnd}
+                                        className={dragOverRowId === row.id ? "drag-over-top" : ""}
                                     >
                                         <td className="procCent" style={{ fontSize: "14px", color: "black" }}>
                                             {row.nr}

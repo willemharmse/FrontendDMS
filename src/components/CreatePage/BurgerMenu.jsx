@@ -4,14 +4,15 @@ import "./BurgerMenu.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { isAdmin } from "../../utils/auth";
 
-const BurgerMenu = ({ role, isOpen, setIsOpen, risk }) => {
+const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
     const navigate = useNavigate();
     const link = risk ? "/riskApprover" : "/adminApprover";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/FrontendDMS/");
+        navigate("/");
     };
 
     const handleDownload = async () => {
@@ -54,11 +55,19 @@ const BurgerMenu = ({ role, isOpen, setIsOpen, risk }) => {
             {isOpen && (
                 <div className="menu-content" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        {role === "admin" && (
+                        {canIn(access, "RMS", ["systemAdmin"]) && !isAdmin(access) && (
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 
-                        <li onClick={() => navigate("/FrontendDMS/userProfile")}>My Profile</li>
+                        {canIn(access, "DDS", ["systemAdmin"]) && !isAdmin(access) && (
+                            <li onClick={() => navigate(link)}>Suggestions</li>
+                        )}
+
+                        {isAdmin(access) && (
+                            <li onClick={() => navigate(link)}>Suggestions</li>
+                        )}
+
+                        <li onClick={() => navigate("/userProfile")}>My Profile</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

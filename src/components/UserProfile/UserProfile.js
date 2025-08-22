@@ -10,7 +10,6 @@ import TopBar from "../Notifications/TopBar";
 import ChangePassword from "../UserManagement/ChangePassword";
 
 const UserProfile = () => {
-    const [role, setRole] = useState('');
     const navigate = useNavigate();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [profilePic, setProfilePic] = useState(null);
@@ -159,12 +158,10 @@ const UserProfile = () => {
         if (!storedToken) return;
         try {
             const decoded = jwtDecode(storedToken) || {};
-            setRole(decoded?.role || "");
             const id = decoded?.userId || decoded?._id || decoded?.id || decoded?.sub || "";
             setUserID(id || "");
         } catch (e) {
             console.warn("Failed to decode token:", e);
-            setRole("");
             setUserID("");
         }
     }, []);
@@ -263,7 +260,7 @@ const UserProfile = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} isProfile={true} />
+                    <TopBar isProfile={true} />
                 </div>
 
                 <div className="scrollable-box-user-profile-home">
@@ -320,19 +317,19 @@ const UserProfile = () => {
                                         onChange={(e) => setEmail(e.target.value)} />
                                 </div>
 
-                                <div className="up-field readonly">
+                                <div className="up-field">
                                     <label>Reporting To</label>
-                                    <div>Set by Admin</div>
+                                    <div>{user.reportingTo?.username}</div>
                                 </div>
 
-                                <div className="up-field readonly">
+                                <div className="up-field">
                                     <label>Department</label>
-                                    <div>Set by Admin</div>
+                                    <div>{user.department}</div>
                                 </div>
 
-                                <div className="up-field readonly">
+                                <div className="up-field">
                                     <label>Designation</label>
-                                    <div>Set by Admin</div>
+                                    <div>{user.designation}</div>
                                 </div>
                             </div>
                         </div>

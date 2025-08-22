@@ -9,29 +9,9 @@ import "./CourseViewPage.css";
 import TopBar from "../../Notifications/TopBar";
 
 const CourseViewPage = () => {
-    const [drafts, setDrafts] = useState([]);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-    const [error, setError] = useState(null);
     const [token, setToken] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [userID, setUserID] = useState('');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [selectedDraft, setSelectedDraft] = useState(null);
-    const [comment, setComment] = useState("");
-    const [showAbbreviationPopup, setShowAbbreviationPopup] = useState(false);
-    const [showTermPopup, setShowTermPopup] = useState(false);
-    const [selectedData, setSelectedData] = useState("");
-    const [profilePic, setProfilePic] = useState(null);
-
-    useEffect(() => {
-        // Load from sessionStorage on mount
-        const cached = sessionStorage.getItem('profilePic');
-        setProfilePic(cached || null);
-    }, []);
-
-    const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -39,12 +19,7 @@ const CourseViewPage = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setUserID(decodedToken.userId);
-
-            if (!adminRoles.includes(decodedToken.role)) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 

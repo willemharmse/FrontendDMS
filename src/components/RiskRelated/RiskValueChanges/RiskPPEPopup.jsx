@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const RiskPPEPopup = ({ isOpen, onClose, role, userID, setPPEData, onAdd }) => {
+const RiskPPEPopup = ({ isOpen, onClose, userID, setPPEData, onAdd }) => {
     const [ppe, setPPE] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);

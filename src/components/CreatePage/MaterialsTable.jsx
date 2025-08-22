@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedMaterial from "../ValueChanges/ModifySuggestedMaterial";
 
-const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, role, userID }) => {
+const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials, userID }) => {
     // State to control the popup and selected abbreviations
     const [matsData, setMatsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -210,7 +210,6 @@ const MaterialsTable = ({ formData, setFormData, usedMaterials, setUsedMaterials
                 <MaterialPopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setMatsData={setMatsData}
                     onAdd={handleNewMat}

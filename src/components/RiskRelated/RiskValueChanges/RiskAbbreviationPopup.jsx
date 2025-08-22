@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const RiskAbbreviationPopup = ({ isOpen, onClose, role, userID, setAbbrData, onAdd }) => {
+const RiskAbbreviationPopup = ({ isOpen, onClose, userID, setAbbrData, onAdd }) => {
     const [abbreviation, setAbbreviation] = useState("");
     const [meaning, setMeaning] = useState("");
     const [approver, setApprover] = useState("");

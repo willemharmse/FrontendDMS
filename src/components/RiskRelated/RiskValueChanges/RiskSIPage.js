@@ -13,9 +13,6 @@ const RiskSIPage = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'teamleader', 'developer'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [userID, setUserID] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedDraft, setSelectedDraft] = useState(null);
@@ -83,12 +80,7 @@ const RiskSIPage = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
             setUserID(decodedToken.userId);
-
-            if (!adminRoles.includes(decodedToken.role)) {
-                navigate("/403");
-            }
         }
     }, [navigate]);
 
@@ -265,7 +257,7 @@ const RiskSIPage = () => {
                                 <FontAwesomeIcon icon={faCircleUser} />
                             )}
                         </div>
-                        {isMenuOpen && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+                        {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
                     </div>
                 </div>
                 <div className="table-container-gen">

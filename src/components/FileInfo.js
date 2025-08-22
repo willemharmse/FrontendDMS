@@ -21,6 +21,7 @@ import DownloadPopup from "./FileInfo/DownloadPopup";
 import PopupMenu from "./FileInfo/PopupMenu";
 import Notifications from "./Notifications/Notifications";
 import RenameDocument from "./FileInfo/RenameDocument";
+import { getCurrentUser, can, isAdmin, hasRole, canIn } from "../utils/auth";
 
 const FileInfo = () => {
   const { type } = useParams();
@@ -34,7 +35,7 @@ const FileInfo = () => {
   const [selectedType, setSelectedType] = useState([]);
   const [error, setError] = useState(null);
   const [token, setToken] = useState('');
-  const [role, setRole] = useState('');
+  const access = getCurrentUser();
   const [hoveredFileId, setHoveredFileId] = useState(null);
   const [isTrashView, setIsTrashView] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState(null);
@@ -45,9 +46,7 @@ const FileInfo = () => {
   const [downloadFileId, setDownloadFileId] = useState(null);
   const [downloadFileName, setDownloadFileName] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const adminRoles = ['admin', 'teamleader', 'developer'];
-  const normalRoles = ['guest', 'standarduser', 'auditor'];
-  const isActionAvailable = !isTrashView && role !== 'auditor';
+  const isActionAvailable = !isTrashView && canIn(access, "DMS", ["systemAdmin", "contributor"]);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("ascending");
@@ -157,11 +156,6 @@ const FileInfo = () => {
     if (storedToken) {
       setToken(storedToken);
       const decodedToken = jwtDecode(storedToken);
-      setRole(decodedToken.role);
-
-      if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-        navigate("/FrontendDMS/403");
-      }
     }
   }, [navigate]);
 
@@ -183,14 +177,14 @@ const FileInfo = () => {
   }, []);
 
   const handlePreview = (fileId) => {
-    navigate(`/FrontendDMS/preview/${fileId}`);
+    navigate(`/preview/${fileId}`);
   };
 
   useEffect(() => {
-    if (token && role) {
+    if (token && hasRole(access, "DMS")) {
       fetchFiles();
     }
-  }, [token, role]);
+  }, [token]);
 
   useEffect(() => {
     fetchFiles();
@@ -459,7 +453,7 @@ const FileInfo = () => {
       (selectedStatus.length === 0 || selectedStatus.includes(file.status));
 
     const matchesApproval =
-      (normalRoles.includes(role) && role !== 'auditor')
+      (can(access, "DMS", "viewer"))
         ? file.status.toLowerCase() === "approved"
         : true; // Allow all files for auditors
 
@@ -506,14 +500,14 @@ const FileInfo = () => {
               <div className="fi-info-popup-page-select-container">
                 <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Discipline Types" />
               </div>
-              {adminRoles.includes(role) && (
+              {can(access, "DMS", "systemAdmin") && (
                 <div className="fi-info-popup-page-select-container">
                   <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Status Types" />
                 </div>
               )}
             </div>
           </div>
-          {!isTrashView && (
+          {!isTrashView && canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2">
               <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
@@ -597,7 +591,7 @@ const FileInfo = () => {
               )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {isMenuOpen && (<BurgerMenuFIMain role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} />)}
+            {isMenuOpen && (<BurgerMenuFIMain isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} openRDPopup={openRDPopup} canIn={canIn} access={access} />)}
           </div>
         </div>
         {batch && (<BatchUpload onClose={closeBatch} />)}
@@ -606,7 +600,7 @@ const FileInfo = () => {
         <div className="table-container-file">
           <table>
             <thead>
-              <FilterFileName adminRoles={adminRoles} role={role} filters={filters} onFilterChange={handleFilterChange} trashed={isTrashView} />
+              <FilterFileName access={access} canIn={canIn} filters={filters} onFilterChange={handleFilterChange} trashed={isTrashView} />
             </thead>
             <tbody>
               {filteredFiles.map((file, index) => (
@@ -620,12 +614,12 @@ const FileInfo = () => {
                     {removeFileExtension(file.fileName)}
 
                     {(hoveredFileId === file._id && !isTrashView) && (
-                      <PopupMenu file={file} openUpdate={openUpdate} openRenameModal={openRename} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} role={role} />
+                      <PopupMenu file={file} openUpdate={openUpdate} openRenameModal={openRename} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} />
                     )}
 
                   </td>
                   <td className="col">{file.documentType}</td>
-                  {(adminRoles.includes(role) || role === 'auditor') && (
+                  {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
                     <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                   )}
                   <td className="col">
@@ -648,7 +642,7 @@ const FileInfo = () => {
                   <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
                   <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
                   <td className="col">{formatDate(file.uploadDate)}</td>
-                  {adminRoles.includes(role) && (
+                  {canIn(access, "DMS", ["systemAdmin"]) && (
                     <td className={isTrashView ? "col-act trashed" : "col-act"}>
                       <button
                         className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}

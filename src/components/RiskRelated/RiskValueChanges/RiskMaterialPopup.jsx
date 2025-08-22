@@ -3,7 +3,7 @@ import "./RiskMaterialPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const RiskMaterialPopup = ({ isOpen, onClose, role, userID, setMatsData, onAdd }) => {
+const RiskMaterialPopup = ({ isOpen, onClose, userID, setMatsData, onAdd }) => {
     const [mat, setMat] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(false);

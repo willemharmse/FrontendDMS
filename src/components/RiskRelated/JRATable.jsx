@@ -754,7 +754,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
                                     <React.Fragment key={row.id}>
                                         {row.jraBody.map((body, bodyIdx) => (
                                             <tr
-                                                className={`jra-body-row ${row.nr % 2 === 0 ? 'weRow' : ''}`}
+                                                className={`jra-body-row ${row.nr % 2 === 0 ? 'weRow' : ''} ${dragOverRowId === row.id && bodyIdx === 0 ? "drag-over-top" : ""}`}
                                                 data-row-id={row.id}
                                                 key={`${row.id}-${body.idBody}`}
                                                 onMouseEnter={() => setHoveredBody({ rowId: row.id, bodyIdx })}

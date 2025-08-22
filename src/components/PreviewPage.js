@@ -10,9 +10,6 @@ import TopBar from "./Notifications/TopBar";
 
 const PreviewPage = () => {
     const [token, setToken] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'teamleader'];
-    const normalRoles = ['guest', 'standarduser', 'auditor'];
     const { fileId } = useParams();
     const [fileUrl, setFileUrl] = useState("");
     const [iframeHeight, setIframeHeight] = useState("100%");
@@ -31,11 +28,6 @@ const PreviewPage = () => {
         if (storedToken) {
             setToken(storedToken);
             const decodedToken = jwtDecode(storedToken);
-            setRole(decodedToken.role);
-
-            if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
-            }
         }
 
         if (fileId) {
@@ -93,7 +85,7 @@ const PreviewPage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="file-preview-container">

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedMobileMachines from "../ValueChanges/ModifySuggestedMobileMachines";
 
-const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, role, userID }) => {
+const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, userID }) => {
     // State to control the popup and selected abbreviations
     const [macData, setMacData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -209,7 +209,6 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                 <MobileMachinePopup
                     isOpen={showNewPopup}
                     onClose={() => { setShowNewPopup(false); }}
-                    role={role}
                     userID={userID}
                     setMacData={setMacData}
                     onAdd={handleNewMac}

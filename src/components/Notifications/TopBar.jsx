@@ -5,7 +5,7 @@ import { faArrowLeft, faBell, faCircleUser, faHome } from "@fortawesome/free-sol
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 
-const TopBar = ({ role, menu, setReset, isProfile = false }) => {
+const TopBar = ({ menu, setReset, isProfile = false }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,8 +67,8 @@ const TopBar = ({ role, menu, setReset, isProfile = false }) => {
                 )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
-            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI role={role} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} />)}
+            {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
+            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} />)}
         </div>
     );
 };

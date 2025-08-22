@@ -6,20 +6,16 @@ import "./FileInfoHome.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faChevronLeft, faChevronRight, faArrowCircleRight, faArrowsRotate, faClipboardCheck, faBookOpen, faBook, faFileAlt, faHardHat, faScaleBalanced, faDiagramProject, faListCheck, faListOl, faTriangleExclamation, faFileSignature, faCertificate, faChalkboardTeacher, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
-import BatchUpload from "./FileInfo/BatchUpload";
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "./Notifications/TopBar";
 import ChangePassword from "./UserManagement/ChangePassword";
+import { getCurrentUser, can, isAdmin, canIn } from "../utils/auth";
 
 const FileInfoHome = () => {
     const [error, setError] = useState(null);
-    const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
+    const access = getCurrentUser();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [upload, setUpload] = useState(false);
@@ -40,27 +36,10 @@ const FileInfoHome = () => {
         setUpload(!upload);
     };
 
-    const openBatch = () => {
-        setBatch(true);
-    };
-
-    const closeBatch = () => {
-        setBatch(!batch);
-    };
-
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        navigate('/FrontendDMS/');
-    };
-
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             const decodedToken = jwtDecode(storedToken);
-            console.log(decodedToken);
-            setRole(decodedToken.role);
             setloggedInUserId(decodedToken.userId);
 
         }
@@ -82,15 +61,10 @@ const FileInfoHome = () => {
         Permit: "permitsDMS.svg"
     }
 
-    const icon = (type) => {
-        return iconMap[type] || "guide.png"; // Fallback to "default.png" if type is not found
-    };
-
     const fetchCount = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/file/count`, {
                 headers: {
-                    //'Authorization': `Bearer ${token}`
                 }
             });
             if (!response.ok) {
@@ -99,7 +73,6 @@ const FileInfoHome = () => {
             const data = await response.json();
 
             const sortedUsers = data.sort((a, b) => {
-                // Replace 'name' with the property you want to sort by
                 return a._id.localeCompare(b._id);
             });
 
@@ -119,25 +92,15 @@ const FileInfoHome = () => {
 
     const paddedDocs = [...count];
 
-    // Add placeholders if fewer than 12
     while (paddedDocs.length < TOTAL_SLOTS) {
         paddedDocs.push(null);
     }
 
     const filteredDocs = paddedDocs.filter(file => file && file._id && file._id.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const openModal = () => {
-        //setIsModalOpen(true);
-    };
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
     return (
         <div className="user-info-container">
             {upload && (<UploadPopup onClose={closeUpload} />)}
-            {batch && (<BatchUpload onClose={closeBatch} />)}
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
@@ -148,17 +111,32 @@ const FileInfoHome = () => {
                         <p className="logo-text-um">Document Management</p>
                     </div>
 
-                    <div className="filter-fih">
-                        <p className="filter-text-um">Upload</p>
-                        <div className="button-container-fih">
-                            <button className="but-um" onClick={openUpload}>
-                                <div className="button-content">
-                                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                                    <span className="button-text">Single Document</span>
-                                </div>
-                            </button>
+                    {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
+                        <div className="filter-fih">
+                            <p className="filter-text-um">Upload</p>
+                            <div className="button-container-fih">
+                                <button className="but-um" onClick={openUpload}>
+                                    <div className="button-content">
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <span className="button-text">Single Document</span>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {(isAdmin(access) || can(access, "DMS", "systemAdmin")) && (
+                        <div className="sidebar-logo-dm-fi">
+                            <div className="risk-button-container-create-bot">
+                                <button className="but-um" onClick={() => navigate("/FrontendDMS/dmsAdmin")}>
+                                    <div className="button-content">
+                                        <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
+                                        <span className="button-text">Manage DMS</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -193,7 +171,7 @@ const FileInfoHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar role={role} menu={"Admin"} reset={"true"} setReset={setReset} />
+                    <TopBar menu={"Admin"} reset={"true"} setReset={setReset} />
                 </div>
 
                 <div className="scrollable-box-fi-home">

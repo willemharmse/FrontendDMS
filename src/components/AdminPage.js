@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser, can, isAdmin } from "../utils/auth";
 import { jwtDecode } from 'jwt-decode';
 import "./UserManagement.css";
 import "./AdminPage.css";
@@ -37,29 +38,11 @@ import ImportRiskSiteInfo from "./RiskRelated/ImportRiskSiteInfo";
 import TopBar from "./Notifications/TopBar";
 
 const AdminPage = () => {
-    const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-    const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
-    const [loggedInUserId, setloggedInUserId] = useState('');
-    const [role, setRole] = useState('');
-    const adminRoles = ['admin', 'developer'];
-    const leaderRoles = ['teamleader'];
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [upload, setUpload] = useState(false);
-    const [batch, setBatch] = useState(false);
+    const access = getCurrentUser();
     const [importSI, setImportSI] = useState(false);
-    const [importRSI, setImportRSI] = useState(false);
     const navigate = useNavigate();
-
-    const clearSearch = () => {
-        setSearchQuery("");
-    };
-
-    const openUpload = () => {
-        setUpload(true);
-    };
 
     const openImportSI = () => {
         setImportSI(true);
@@ -69,69 +52,17 @@ const AdminPage = () => {
         setImportSI(false);
     };
 
-    const openImportRSI = () => {
-        setImportRSI(true);
-    };
-
-    const closeImportRSI = () => {
-        setImportRSI(false);
-    };
-
-    const closeUpload = () => {
-        setUpload(!upload);
-    };
-
-    const openBatch = () => {
-        setBatch(true);
-    };
-
-    const closeBatch = () => {
-        setBatch(!batch);
-    };
-
-    useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        if (storedToken) {
-            const decodedToken = jwtDecode(storedToken);
-            console.log(decodedToken);
-            setRole(decodedToken.role);
-            setloggedInUserId(decodedToken.userId);
-        }
-    }, [navigate]);
-
-    const imageMap = {
-        "All Document": "All.png",
-        Audit: "audit.png",
-        Guideline: "guide.png",
-        Policy: "policy.png",
-        Procedure: "procedure.png",
-        Standard: "standard.png",
-        "Risk Assessment": "risk.png",
-    };
-
-    const image = (type) => {
-        return imageMap[type]; // Fallback to "default.png" if type is not found
-    };
-
     const TOTAL_SLOTS = 12;
 
     const paddedDocs = [...count];
 
-    // Add placeholders if fewer than 12
     while (paddedDocs.length < TOTAL_SLOTS) {
         paddedDocs.push(null);
     }
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
     return (
         <div className="user-info-container">
-            {upload && (<UploadPopup onClose={closeUpload} />)}
-            {batch && (<BatchUpload onClose={closeBatch} />)}
             {importSI && (<ImportSiteInfo onClose={closeImportSI} />)}
-            {importRSI && (<ImportRiskSiteInfo onClose={closeImportRSI} />)}
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
@@ -157,70 +88,43 @@ const AdminPage = () => {
                     <div className="burger-menu-icon-um">
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                     </div>
-                    {/* This div creates the space in the middle */}
+
                     <div className="spacer"></div>
 
-                    {/* Container for right-aligned icons */}
-                    <TopBar role={role} />
+                    <TopBar />
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home-all`} onClick={openImportSI}>
+                    {(can(access, "RMS", "systemAdmin") || isAdmin(access) || can(access, "DDS", "systemAdmin")) && (
+                        <div className={`document-card-fi-home-all`} onClick={openImportSI}>
+                            <>
+                                <div className="icon-dept">
+                                    <img src={`${process.env.PUBLIC_URL}/importSIDAdmin.svg`} className={"all-icon-fi-home"} />
+                                </div>
+                                <h3 className="document-title-fi-home">Import Site General Information</h3>
+                            </>
+                        </div>
+                    )}
+                    {isAdmin(access) && (
                         <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/importSIDAdmin.svg`} className={"all-icon-fi-home"} />
+                            <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
+                                <>
+                                    <div className="icon-dept">
+                                        <img src={`${process.env.PUBLIC_URL}/adminUsers.svg`} className={"icon-dept"} />
+                                    </div>
+                                    <h3 className="document-title-fi-home">Manage Users</h3>
+                                </>
                             </div>
-                            <h3 className="document-title-fi-home">Import Site General Information</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminUsers.svg`} className={"icon-dept"} />
+                            <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/departmentManage")}>
+                                <>
+                                    <div className="icon-dept">
+                                        <img src={`${process.env.PUBLIC_URL}/adminDepartments.svg`} className={"icon-dept"} />
+                                    </div>
+                                    <h3 className="document-title-fi-home">Manage Departments</h3>
+                                </>
                             </div>
-                            <h3 className="document-title-fi-home">Manage Users</h3>
                         </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/departmentManage")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminDepartments.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Manage Departments</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/dmsAdmin")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Document Management System Admin</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/ddsAdmin")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/ddsAdmin.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Document Development System Admin</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/rmsAdmin")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/rmsAdmin.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Risk Management System Admin</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/tmsAdmin")}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/tmsAdmin.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Training Management System Admin</h3>
-                        </>
-                    </div>
+                    )}
                 </div>
             </div>
             <ToastContainer />

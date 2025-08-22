@@ -401,11 +401,12 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                         <tbody>
                             {visibleRows.map((row, index) => {
                                 const spanCount = Math.max(row.details.length, 1);
+                                const isDropTarget = draggedRowId && dragOverRowId === row.id && draggedRowId !== row.id;
 
                                 return (
                                     <React.Fragment key={index}>
                                         <tr key={index}
-                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''}`}
+                                            className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${isDropTarget ? 'drop-target-top' : ''}`}
                                             draggable={armedDragRow === row.id}
                                             onDragStart={armedDragRow === row.id ? e => handleDragStart(e, row.id) : undefined}
                                             onDragOver={e => handleDragOver(e, row.id)}
