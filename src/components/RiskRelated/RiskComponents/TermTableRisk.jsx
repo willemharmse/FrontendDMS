@@ -6,7 +6,7 @@ import RiskTermPopup from "../RiskValueChanges/RiskTermPopup";
 import ManageRiskDefinitions from "../RiskValueChanges/ManageRiskDefinitions";
 import ModifySuggestedDefinitions from "../../ValueChanges/ModifySuggestedDefinitions";
 
-const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID }) => {
+const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, role, error, userID, setError }) => {
   const [termData, setTermData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
@@ -138,6 +138,10 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
   const handlePopupToggle = () => {
     setSearchTerm("")
     setPopupVisible(!popupVisible);
+
+    if (error) {
+      setError(prev => ({ ...prev, terms: false }));
+    }
   };
 
   const handleCheckboxChange = (term) => {
@@ -150,19 +154,32 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
     setSelectedTerms(newSelectedTerm);
   };
 
+  const norm = (s = "") => s.replace(/\s*\*$/, "").trim();
+
+  // 2) in your save/confirm handler:
   const handleSaveSelection = () => {
-    const selectedTermsArray = [...selectedTerms];
-    setUsedTermCodes(selectedTermsArray);
+    const selectedTermArray = [...selectedTerms]; // whatever you’re tracking in the popup
 
-    const selectedRows = selectedTermsArray.map((term) => {
-      const found = termData.find((item) => item.term === term);
-      return found || { term, definition: "" }; // Fallback if not found
+    // meanings we already have in the draft (includes suggested items with *)
+    const existingDefinitionByCode = new Map(
+      (formData.termRows || []).map(r => [norm(r.term), r.definition])
+    );
+
+    const selectedRows = selectedTermArray.map((code) => {
+      // try master list first (for system abbreviations)
+      const fromMaster = termData.find(item => norm(item.term) === norm(code));
+      if (fromMaster) {
+        return { term: fromMaster.term, definition: fromMaster.definition };
+      }
+
+      // otherwise it's a user-suggested code → keep the meaning we already had
+      const kept = existingDefinitionByCode.get(norm(code)) || "";
+      return { term: `${norm(code)} *`, definition: kept };
     });
 
-    setFormData({
-      ...formData,
-      termRows: selectedRows,
-    });
+    // track usage normalized so CPU and CPU * are the "same" key internally
+    setUsedTermCodes(selectedTermArray.map(norm));
+    setFormData({ ...formData, termRows: selectedRows });
     setPopupVisible(false);
   };
 
@@ -184,7 +201,7 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
   return (
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
-        <h3 className="font-fam-labels">Terms & Definitions</h3>
+        <h3 className="font-fam-labels">Terms & Definitions <span className="required-field">*</span></h3>
         <RiskTermPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}

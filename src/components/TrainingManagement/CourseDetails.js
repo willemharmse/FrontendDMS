@@ -5,7 +5,7 @@ import "./CourseDetails.css";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCaretLeft, faCaretRight, faSearch, faX } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import CourseTraineeTable from "./CourseTraineeTable";
 import CourseTrainerTable from "./CourseTrainerTable";
@@ -17,6 +17,7 @@ const CourseDetails = () => {
     const adminRoles = ['admin', 'teamleader', 'developer'];
     const normalRoles = ['guest', 'standarduser', 'auditor'];
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -30,6 +31,10 @@ const CourseDetails = () => {
             setRole(decodedToken.role);
         }
     }, [navigate]);
+
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
 
     return (
         <div className="course-details-container">
@@ -61,6 +66,20 @@ const CourseDetails = () => {
                         </div>
                     </div>
 
+                    <div className="um-input-container">
+                        <input
+                            className="search-input-um"
+                            type="text"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
+                        {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+                    </div>
+
+                    <div className="info-box-um">Number of Trainees: {"0"}</div>
+
                     <div className="spacer"></div>
 
                     <TopBarDD role={role} menu={"1"} create={true} risk={true} />
@@ -72,31 +91,6 @@ const CourseDetails = () => {
                             <h3 className="font-fam-labels-course-details">Course Code - Course Name</h3>
                         </div>
                     </div>
-
-                    <div className="cd-stats-row">
-                        <div className="cd-stat-tile">
-                            <div className="cd-stat-circle">N/A</div>
-                            <div className="cd-stat-label">Total Trainees</div>
-                        </div>
-
-                        <div className="cd-stat-tile">
-                            <div className="cd-stat-circle">N/A</div>
-                            <div className="cd-stat-label">Total Trainers</div>
-                        </div>
-
-                        <div className="cd-stat-tile">
-                            <div className="cd-stat-circle">N/A</div>
-                            <div className="cd-stat-label">Training Groups</div>
-                        </div>
-
-                        <div className="cd-stat-tile">
-                            {/* Yellow circle variant, if you want the completion “badge” look */}
-                            <div className="cd-stat-circle cd-circle-yellow">75%</div>
-                            <div className="cd-stat-label">Trainee Completion Status</div>
-                        </div>
-                    </div>
-
-                    <CourseTrainerTable />
                     <CourseTraineeTable />
                 </div>
             </div>

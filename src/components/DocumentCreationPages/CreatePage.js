@@ -805,6 +805,7 @@ const CreatePage = () => {
     if (!formData.title) newErrors.title = true;
     if (!formData.documentType) newErrors.documentType = true;
     if (!formData.aim) newErrors.aim = true;
+    if (!formData.scope) newErrors.scope = true;
     if (!formData.reviewDate) newErrors.reviewDate = true;
     if (formData.abbrRows.length === 0) newErrors.abbrs = true;
     if (formData.termRows.length === 0) newErrors.terms = true;
@@ -825,6 +826,15 @@ const CreatePage = () => {
     } else {
       formData.rows.forEach((row, index) => {
         if (!row.name) newErrors.signs = true;
+      });
+    }
+
+    if (formData.references.length === 0) {
+      newErrors.reference = true;
+    } else {
+      formData.references.forEach((row, index) => {
+        if (!row.ref) newErrors.reference = true;
+        if (!row.refDesc) newErrors.reference = true;
       });
     }
 
@@ -1304,8 +1314,8 @@ const CreatePage = () => {
           </div>
 
           <div className="input-row">
-            <div className={`input-box-aim-cp`}>
-              <h3 className="font-fam-labels">Scope</h3>
+            <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
+              <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
               <textarea
                 style={{ fontSize: "14px" }}
                 spellcheck="true"
@@ -1313,6 +1323,12 @@ const CreatePage = () => {
                 className="aim-textarea font-fam expanding-textarea"
                 value={formData.scope}
                 onChange={handleInputChange}
+                onFocus={() => {
+                  setErrors(prev => ({
+                    ...prev,
+                    scope: false
+                  }));
+                }}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the scope of the document" // Optional placeholder text
               />
@@ -1352,7 +1368,7 @@ const CreatePage = () => {
           <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
           <ProcedureTable formData={formData} setFormData={setFormData} procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
           <ChapterTable formData={formData} setFormData={setFormData} />
-          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
           <SupportingDocumentTable formData={formData} setFormData={setFormData} />
 
           <div className="input-row">
@@ -1365,6 +1381,12 @@ const CreatePage = () => {
                 className="aim-textarea cent-create font-fam"
                 value={formData.reviewDate}
                 onChange={handleInputChange}
+                onFocus={() => {
+                  setErrors(prev => ({
+                    ...prev,
+                    reviewDate: false
+                  }))
+                }}
                 placeholder="Insert the review period in months" // Optional placeholder text
               />
             </div>

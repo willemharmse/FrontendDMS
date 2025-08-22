@@ -26,7 +26,7 @@ const UserActivity = () => {
             setRole(decodedToken.role);
 
             if (!(normalRoles.includes(decodedToken.role)) && !(adminRoles.includes(decodedToken.role))) {
-                navigate("/FrontendDMS/403");
+                navigate("/403");
             }
         }
     }, [navigate]);
@@ -112,9 +112,9 @@ const UserActivity = () => {
                         <thead className="user-activity-log-head">
                             <tr>
                                 <th className="user-activity-log-th">Nr</th>
+                                <th className="user-activity-log-th">Action</th>
                                 <th className="user-activity-log-th">Date</th>
                                 <th className="user-activity-log-th">Time</th>
-                                <th className="user-activity-log-th">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -122,9 +122,9 @@ const UserActivity = () => {
                                 activity.map((act, index) => (
                                     <tr key={act._id} className={`file-info-row-height user-activity-log-tr`}>
                                         <td className="user-activity-log-nr">{index + 1}</td>
+                                        <td className="user-activity-log-ver" style={{ textAlign: "left" }}>{act.action}</td>
                                         <td className="user-activity-log-fn">{formatDate(act.timestamp)}</td>
                                         <td className="user-activity-log-stat">{formatTime(act.timestamp)}</td>
-                                        <td className="user-activity-log-ver" style={{ textAlign: "left" }}>{act.action}</td>
                                     </tr>
                                 ))
                             ) : (

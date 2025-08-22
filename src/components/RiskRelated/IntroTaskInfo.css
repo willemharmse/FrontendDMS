@@ -60,6 +60,26 @@
     pointer-events: none;
 }
 
+.jra-intro-info-popup-page-select-container {
+    position: relative;
+    width: calc(100% - 20px);
+}
+
+.jra-intro-info-popup-page-select-container::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    font-family: Arial;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
 .jra-info-popup-page-textarea {
     width: calc(100% - 20px);
     min-width: calc(100% - 20px);
@@ -165,6 +185,25 @@
     background-color: white;
     color: black;
     font-size: 14px;
+}
+
+.jra-intro-info-popup-page-input-table {
+    width: calc(100% - 0px);
+    padding: 10px;
+    min-height: 19px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    field-sizing: content;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* modern name */
+    resize: none;
+    word-break: break-word;
 }
 
 .jra-info-popup-page-row-input {

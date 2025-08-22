@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faInfoCircle, faPlusCircle, faTableColumns, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
 
-const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR }) => {
+const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR, setErrors }) => {
     const [designations, setDesignations] = useState([]);
     const [authors, setAuthors] = useState([]);
     const [companies, setCompanies] = useState([]);
@@ -237,6 +237,9 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     };
 
     const handleFocus = (index, field) => {
+        if (error) {
+            setErrors(prev => ({ ...prev, attend: false })); // Clear attendance error on focus
+        }
         setActiveField(field);
 
         if (field === "name") {
@@ -334,7 +337,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-sign" : ""}`}>
                 <h3 className="font-fam-labels">
-                    Attendance Register
+                    Attendance Register <span className="required-field">*</span>
                 </h3>
                 <button
                     className="top-right-button-ar"

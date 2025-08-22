@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import './CourseTable.css';
+import TrainingPopupMenu from './TrainingPopupMenu';
 
 const CourseTable = ({ filteredCourses }) => {
     const [courseFilter, setCourseFilter] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+    const [hoveredCourseCode, setHoveredCourseCode] = useState(null);
     const navigate = useNavigate();
 
     const handleCourseFilterChange = (e) => {
@@ -25,22 +27,6 @@ const CourseTable = ({ filteredCourses }) => {
         return `${day}.${month}.${year}`;
     };
 
-    const getClass = (val) => {
-        switch (val) {
-            case "0 - 30%":
-                return "courseLow";
-
-            case "31 - 60%":
-                return "courseMed";
-
-            case "61 - 99%":
-                return "courseGreen";
-
-            case "100%":
-                return "courseDone"
-        }
-    };
-
     return (
         <div className="table-container-course-management">
             <table>
@@ -50,7 +36,6 @@ const CourseTable = ({ filteredCourses }) => {
                         <th className="col-code-course-management">Course Code</th>
                         <th className="col-name-course-management">Course Name</th>
                         <th className="col-dept-course-management">Department</th>
-                        <th className="col-comp-course-management">Trainees Completion Status</th>
                         <th className="col-auth-course-management">Author</th>
                         <th className="col-rev-course-management">Review Date</th>
                         <th className="col-action-course-management">Action</th>
@@ -58,12 +43,20 @@ const CourseTable = ({ filteredCourses }) => {
                 </thead>
                 <tbody>
                     {filteredCourseList.map((course, index) => (
-                        <tr key={index} onClick={() => navigate(`/courseDetails/${course.courseCode}`)}>
+                        <tr key={index}>
                             <td className="col-um">{index + 1}</td>
                             <td className="col-um">{course.courseCode}</td>
-                            <td className="col-um">{course.courseName}</td>
+                            <td className="col-um" style={{ textAlign: "left", position: "relative" }}
+                                onClick={() => setHoveredCourseCode(hoveredCourseCode === course.courseCode ? null : course.courseCode)}
+                            >
+                                {course.courseName}
+
+                                {(hoveredCourseCode === course.courseCode) && (
+                                    <TrainingPopupMenu isOpen={hoveredCourseCode === course.courseCode} course={course} setHoveredCourseCode={setHoveredCourseCode} />
+                                )}
+
+                            </td>
                             <td className="col-um">{course.department}</td>
-                            <td className={`col-um ${getClass(course.completion)}`}>{course.completion}</td>
                             <td className="col-um">{course.author}</td>
                             <td className="col-um">{course.reviewDate}</td>
                             <td className="col-um">

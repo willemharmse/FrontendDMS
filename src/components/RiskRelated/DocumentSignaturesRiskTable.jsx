@@ -11,7 +11,8 @@ const DocumentSignaturesRiskTable = ({
   addRow,
   removeRow,
   error,
-  updateRows
+  updateRows,
+  setErrors
 }) => {
   const [nameLists, setNameLists] = useState([]);
   const [posLists, setPosLists] = useState([]);
@@ -98,6 +99,11 @@ const DocumentSignaturesRiskTable = ({
     setFilteredNameOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(nameInputRefs.current[index]);
     setShowNameDropdown(index);
+
+    setErrors(prev => ({
+      ...prev,
+      signs: false
+    }));
   };
 
   const handleNameInputChange = (index, value) => {
@@ -109,6 +115,11 @@ const DocumentSignaturesRiskTable = ({
       index,
       "pos"
     );
+
+    setErrors(prev => ({
+      ...prev,
+      signs: false
+    }));
 
     const opts = nameLists
       .filter(n => n.toLowerCase().includes(value.toLowerCase()));
@@ -138,12 +149,23 @@ const DocumentSignaturesRiskTable = ({
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
+
+    setErrors(prev => ({
+      ...prev,
+      signs: false
+    }));
   };
 
   const handlePosInputChange = (index, value) => {
     handleRowChange({ target: { value } }, index, "pos");
     const opts = posLists
       .filter(p => p.toLowerCase().includes(value.toLowerCase()));
+
+    setErrors(prev => ({
+      ...prev,
+      signs: false
+    }));
+
     setFilteredPosOptions(prev => ({ ...prev, [index]: opts }));
     positionDropdown(posInputRefs.current[index]);
     setShowPosDropdown(index);
@@ -204,7 +226,7 @@ const DocumentSignaturesRiskTable = ({
     <div className="input-row">
       <div className={`input-box-sig-risk ${error ? "error-sign" : ""}`}>
         <h3 className="font-fam-labels">
-          Authorisations
+          Authorisations <span className="required-field">*</span>
         </h3>
         <table className="vcr-table-2 font-fam table-borders">
           <thead className="cp-table-header">
@@ -219,7 +241,6 @@ const DocumentSignaturesRiskTable = ({
             {rows.map((row, idx) => (
               <tr key={idx}>
                 <td>
-
                   <div className="jra-info-popup-page-select-container">
                     <select
                       className="table-control font-fam remove-default-styling"

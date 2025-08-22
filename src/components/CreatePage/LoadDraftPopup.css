@@ -26,6 +26,61 @@
     border-radius: 10px;
 }
 
+/* Search bar above "Select draft to load" */
+.draft-searchbar {
+    position: relative;
+    width: 97%;
+    margin-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.draft-search-input {
+    width: 100%;
+    padding: 10px 74px 10px 12px;
+    /* space on right for icons */
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.draft-search-input:focus {
+    outline: none;
+}
+
+.draft-search-icons {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: #555;
+}
+
+.icon-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    transform: scale(1.05);
+}
+
+.icon-static {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .load-draft-td {
     cursor: pointer;
 }

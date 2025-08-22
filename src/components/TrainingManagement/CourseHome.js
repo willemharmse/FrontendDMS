@@ -93,8 +93,8 @@ const CourseHome = () => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <FontAwesomeIcon icon={faBookOpen} alt="Logo" className="logo-img-dept-view" />
-                        <p className="logo-text-dm-fi">{"Manage Courses"}</p>
+                        <img src={`/tmsAdminAllCourses.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"All Courses"}</p>
                     </div>
                 </div>
             )}

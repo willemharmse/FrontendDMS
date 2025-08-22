@@ -641,13 +641,6 @@ const RiskReviewPageBLRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
-
     const fetchSites = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);

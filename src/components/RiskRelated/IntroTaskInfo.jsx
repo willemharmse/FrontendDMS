@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const IntroTaskInfo = ({ formData, setFormData }) => {
+const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
     const [groupedAreas, setGroupedAreas] = useState({});
     const [mainAreas, setMainAreas] = useState([]);
     const [riskSources, setRiskSources] = useState([]);
@@ -235,6 +235,12 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     // On focus, show all options
     const handleSubAreasFocus = () => {
+
+
+        if (error) {
+            setErrors(prev => ({ ...prev, introInfo: false }));
+        }
+
         closeAllDropdowns();
 
         let matches = [];
@@ -304,6 +310,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     // On focus, show all options
     const handleProcedureFocus = () => {
+
+
+        if (error) {
+            setErrors(prev => ({ ...prev, introInfo: false }));
+        }
         closeAllDropdowns();
 
         const matches = files;
@@ -367,6 +378,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     // On focus, show all options
     const handleMainAreasFocus = () => {
+
+
+        if (error) {
+            setErrors(prev => ({ ...prev, introInfo: false }));
+        }
         closeAllDropdowns();
         const matches = mainAreas;
         setFilteredMainAreas(matches);
@@ -406,7 +422,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
         }));
 
         const matches = functionalOwners
-            .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+            .filter(opt => opt.owner.toLowerCase().includes(value.toLowerCase()));
         setFilteredOwner(matches);
         setShowOwnerDropdown(true);
 
@@ -423,6 +439,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     // On focus, show all options
     const handleOwnerFocus = () => {
+
+
+        if (error) {
+            setErrors(prev => ({ ...prev, introInfo: false }));
+        }
         closeAllDropdowns();
         const matches = functionalOwners;
         setFilteredOwner(matches);
@@ -479,6 +500,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
 
     // On focus, show all options
     const handleLeaderFocus = () => {
+
+
+        if (error) {
+            setErrors(prev => ({ ...prev, introInfo: false }));
+        }
         closeAllDropdowns();
         const matches = posLists;
         setFilteredLeader(matches);
@@ -508,9 +534,9 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
     };
 
     return (
-        <div className="input-row">
-            <div className="input-box-ref">
-                <h3 className="font-fam-labels">JRA Task Information</h3>
+        <div className={`input-row`}>
+            <div className={`input-box-ref ${error ? 'error-create' : ''}`}>
+                <h3 className="font-fam-labels">JRA Task Information  <span className="required-field">*</span></h3>
                 <table className="table-borders-jra-info">
                     <tbody>
                         <tr>
@@ -529,6 +555,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                             }
                                         }))
                                     }
+                                    onFocus={() => {
+                                        if (error) {
+                                            setErrors(prev => ({ ...prev, introInfo: false }));
+                                        }
+                                    }}
                                 />
                             </td>
                         </tr>
@@ -548,6 +579,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                             }
                                         }))
                                     }
+                                    onFocus={() => {
+                                        if (error) {
+                                            setErrors(prev => ({ ...prev, introInfo: false }));
+                                        }
+                                    }}
                                 />
                             </td>
                         </tr>
@@ -567,17 +603,22 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                             }
                                         }))
                                     }
+                                    onFocus={() => {
+                                        if (error) {
+                                            setErrors(prev => ({ ...prev, introInfo: false }));
+                                        }
+                                    }}
                                 />
                             </td>
                         </tr>
                         <tr>
                             <th scope="row" className="jra-info-table-header">Main Operational Area Where Task is Conducted</th>
                             <td>
-                                <div className="jra-info-popup-page-select-container">
-                                    <input
+                                <div className="jra-intro-info-popup-page-select-container">
+                                    <textarea
                                         type="text"
                                         value={formData.introInfo.mainArea}
-                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                        className="jra-intro-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={mainAreasInputRef}
                                         placeholder="Select Main Area"
                                         onChange={e => handleMainAreaInput(e.target.value)}
@@ -589,11 +630,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         <tr>
                             <th scope="row" className="jra-info-table-header">Sub Operational Area Where Task is Conducted</th>
                             <td>
-                                <div className="jra-info-popup-page-select-container">
-                                    <input
+                                <div className="jra-intro-info-popup-page-select-container">
+                                    <textarea
                                         type="text"
                                         value={formData.introInfo.subArea}
-                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                        className="jra-intro-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={subAreasInputRef}
                                         placeholder="Select Sub Area"
                                         onChange={e => handleSubAreaInput(e.target.value)}
@@ -605,11 +646,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         <tr>
                             <th scope="row" className="jra-info-table-header">Functional Ownership</th>
                             <td>
-                                <div className="jra-info-popup-page-select-container">
-                                    <input
+                                <div className="jra-intro-info-popup-page-select-container">
+                                    <textarea
                                         type="text"
                                         value={formData.introInfo.owner}
-                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                        className="jra-intro-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={ownerInputRef}
                                         placeholder="Select Functional Owner"
                                         onChange={e => handleOwnerInput(e.target.value)}
@@ -621,11 +662,11 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                         <tr>
                             <th scope="row" className="jra-info-table-header">Person in Charge of Work</th>
                             <td>
-                                <div className="jra-info-popup-page-select-container">
-                                    <input
+                                <div className="jra-intro-info-popup-page-select-container">
+                                    <textarea
                                         type="text"
                                         value={formData.introInfo.inCharge}
-                                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                                        className="jra-intro-info-popup-page-input-table jra-info-popup-page-row-input"
                                         ref={leaderInputRef}
                                         placeholder="Select Person in Charge"
                                         onChange={e => handleLeaderInput(e.target.value)}
@@ -646,7 +687,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         <input
                                             type="checkbox"
                                             checked={formData.introInfo.otherAffected === 'yes'}
-                                            onChange={() =>
+                                            onChange={() => {
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     introInfo: {
@@ -656,8 +697,12 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                                 ? ''
                                                                 : 'yes'
                                                     }
-                                                }))
-                                            }
+                                                }));
+
+                                                if (error) {
+                                                    setErrors(prev => ({ ...prev, introInfo: false }));
+                                                }
+                                            }}
                                         />
                                         Yes
                                     </label>
@@ -665,7 +710,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         <input
                                             type="checkbox"
                                             checked={formData.introInfo.otherAffected === 'no'}
-                                            onChange={() =>
+                                            onChange={() => {
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     introInfo: {
@@ -676,8 +721,13 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                                 : 'no',
                                                         howAffected: '' // Reset howAffected when switching to 'no'
                                                     }
-                                                }))
-                                            }
+                                                }));
+
+
+                                                if (error) {
+                                                    setErrors(prev => ({ ...prev, introInfo: false }));
+                                                }
+                                            }}
                                         />
                                         No
                                     </label>
@@ -718,7 +768,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         <input
                                             type="checkbox"
                                             checked={formData.introInfo.isProcedure === 'yes'}
-                                            onChange={() =>
+                                            onChange={() => {
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     introInfo: {
@@ -728,8 +778,14 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                                 ? ''
                                                                 : 'yes'
                                                     }
-                                                }))
-                                            }
+                                                }));
+
+
+
+                                                if (error) {
+                                                    setErrors(prev => ({ ...prev, introInfo: false }));
+                                                }
+                                            }}
                                         />
                                         Yes
                                     </label>
@@ -737,7 +793,7 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                         <input
                                             type="checkbox"
                                             checked={formData.introInfo.isProcedure === 'no'}
-                                            onChange={() =>
+                                            onChange={() => {
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     introInfo: {
@@ -747,7 +803,14 @@ const IntroTaskInfo = ({ formData, setFormData }) => {
                                                                 ? ''
                                                                 : 'no',
                                                     }
-                                                }))
+                                                }));
+
+
+
+                                                if (error) {
+                                                    setErrors(prev => ({ ...prev, introInfo: false }));
+                                                }
+                                            }
                                             }
                                         />
                                         No

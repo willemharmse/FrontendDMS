@@ -247,6 +247,18 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         e.currentTarget.style.opacity = '0.5';
     };
 
+    const addDesignationIfNew = (raw) => {
+        const v = (raw || "").trim();
+        if (!v) return;
+
+        setDesignationOptions(prev => {
+            const exists = prev.some(opt => opt.toLowerCase() === v.toLowerCase());
+            if (exists) return prev;
+            const next = [...prev, v].sort((a, b) => a.localeCompare(b));
+            return next;
+        });
+    };
+
     const handleDragOver = (e, rowNr) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
@@ -287,9 +299,38 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
         setArmedDragRow(null);
     };
 
-    const insertRowAt = (insertIndex) => {
-        const newProcedureRows = [...procedureRows];
+    const parsePrevList = (prevStep) => {
+        if (!prevStep || prevStep.trim() === "" || prevStep.trim() === "-") return ["-"];
+        return prevStep
+            .split(";")
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+    };
 
+    const stringifyPrevList = (arr) => {
+        if (!arr || arr.length === 0) return "-";
+        const cleaned = arr.filter(s => s && s !== "-");
+        return cleaned.length ? cleaned.join(";") : "-";
+    };
+
+    const remapPrevForInsert = (prevStep, newNr) => {
+        const preds = parsePrevList(prevStep);
+        if (preds.length === 1 && preds[0] === "-") return "-";
+
+        const predecessor = newNr - 1;
+
+        const mapped = preds.map(token => {
+            const n = Number(token);
+            if (!Number.isFinite(n)) return token;
+            if (n >= newNr) return String(n + 1);
+            if (n === predecessor) return String(newNr);
+            return String(n);
+        });
+
+        return stringifyPrevList(mapped);
+    };
+
+    const insertRowAt = (insertIndex) => {
         const newNr = insertIndex + 1;
 
         const newRow = {
@@ -299,18 +340,108 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
             discipline: "Engineering",
             accountable: "",
             responsible: "",
-            prevStep: "-",
+            prevStep: newNr > 1 ? String(newNr - 1) : "-"
         };
 
-        newProcedureRows.splice(insertIndex, 0, newRow);
+        const withInsert = [
+            ...procedureRows.slice(0, insertIndex),
+            newRow,
+            ...procedureRows.slice(insertIndex),
+        ];
 
-        // Re-number all rows
-        const renumbered = newProcedureRows.map((row, idx) => ({
+        const updatedPrevApplied = withInsert.map((row, idx) => {
+            if (idx === insertIndex) return row;
+
+            return {
+                ...row,
+                prevStep: remapPrevForInsert(row.prevStep, newNr),
+            };
+        });
+
+        const renumbered = updatedPrevApplied.map((row, idx) => ({
             ...row,
             nr: idx + 1,
         }));
 
-        updateProcRows(renumbered); // use your passed-in updateProcRows function
+        updateProcRows(renumbered);
+    };
+
+    const uniqKeepOrder = (arr) => {
+        const seen = new Set();
+        const out = [];
+        for (const x of arr) {
+            if (!seen.has(x)) {
+                seen.add(x);
+                out.push(x);
+            }
+        }
+        return out;
+    };
+
+    const remapPrevForRemoval = (prevStep, removedNr, removedPrevList) => {
+        const preds = parsePrevList(prevStep);
+        if (preds.length === 1 && preds[0] === "-") return "-";
+
+        // Expand removedPrevList but drop "-" placeholders
+        const replacement = (removedPrevList || [])
+            .map(String)
+            .filter(t => t !== "-");
+
+        const remapped = [];
+        for (const token of preds) {
+            const n = Number(token);
+            if (Number.isFinite(n)) {
+                if (n === removedNr) {
+                    // fan-through: splice in the removed step's predecessors
+                    remapped.push(...replacement);
+                } else if (n > removedNr) {
+                    remapped.push(String(n - 1));
+                } else {
+                    remapped.push(String(n));
+                }
+            } else {
+                remapped.push(token); // keep non-numeric as-is
+            }
+        }
+
+        const deduped = uniqKeepOrder(remapped).filter(Boolean);
+        return stringifyPrevList(deduped);
+    };
+
+    // --- replacement for removeProRow ---
+    const removeProRow = (indexToRemove) => {
+        const rows = formData.procedureRows;
+        if (rows.length <= 1) {
+            toast.warn("At least one procedure step is required.", {
+                autoClose: 1200,
+                closeButton: true,
+                style: { textAlign: "center" },
+            });
+            return;
+        }
+
+        // Identify the removed row and its number / predecessors
+        const removedRow = rows[indexToRemove];
+        const removedNr = removedRow.nr ?? (indexToRemove + 1);
+        const removedPrevList = parsePrevList(removedRow.prevStep);
+
+        // 1) Remove the row
+        const withoutRow = rows.filter((_, idx) => idx !== indexToRemove);
+
+        // 2) Update prevStep for every remaining row
+        const prevFixed = withoutRow.map(r => ({
+            ...r,
+            prevStep: remapPrevForRemoval(r.prevStep, removedNr, removedPrevList),
+        }));
+
+        // 3) Renumber nrs to be sequential
+        const renumbered = prevFixed.map((r, idx) => ({ ...r, nr: idx + 1 }));
+
+        // 4) Commit
+        setFormData({
+            ...formData,
+            procedureRows: renumbered,
+        });
     };
 
     const add = () => {
@@ -402,7 +533,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         onDragLeave={handleDragLeave}
                                         onDrop={e => handleDrop(e, row.nr)}
                                         onDragEnd={handleDragEnd}
-                                        className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''}`}
+                                        className={`${(index + 1) % 2 === 0 ? 'evenTRColour' : ''}`}
                                     >
                                         <td className="procCent" style={{ fontSize: "14px" }}>
                                             {row.nr}
@@ -517,9 +648,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                             <div className="select-container-proc">
                                                 <div className="select-wrapper">
                                                     <label className={`select-label-proc ${invalidRows.includes(index) && !row.responsible ? "label-error-pt" : ""}`}>R:</label>
-                                                    <input
+                                                    <textarea
                                                         type="text"
-                                                        className="table-control-proc"
+                                                        className="table-control-proc-text-area-ar"
                                                         value={row.responsible}
                                                         style={{ fontSize: "14px" }}
                                                         placeholder="Select Responsible"
@@ -538,14 +669,18 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.accountable));
                                                             setShowARDropdown({ index, field: "responsible" });
                                                         }}
+                                                        onBlur={(e) => {
+                                                            // Commit free-typed value into options
+                                                            addDesignationIfNew(e.target.value);
+                                                        }}
                                                     />
                                                 </div>
 
                                                 <div className="select-wrapper">
                                                     <label className={`select-label-proc ${invalidRows.includes(index) && !row.accountable ? "label-error-pt" : ""}`}>A:</label>
-                                                    <input
+                                                    <textarea
                                                         type="text"
-                                                        className="table-control-proc"
+                                                        className="table-control-proc-text-area-ar"
                                                         value={row.accountable}
                                                         style={{ fontSize: "14px" }}
                                                         placeholder="Select Accountable"
@@ -564,6 +699,10 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.responsible));
                                                             setShowARDropdown({ index, field: "accountable" });
                                                         }}
+                                                        onBlur={(e) => {
+                                                            // Commit free-typed value into options
+                                                            addDesignationIfNew(e.target.value);
+                                                        }}
                                                     />
                                                 </div>
                                             </div>
@@ -571,7 +710,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                         <td className="procCent">
                                             <button
                                                 className="remove-row-button"
-                                                onClick={() => removeRow(index)}
+                                                onClick={() => removeProRow(index)}
                                                 title="Delete step"
                                             >
                                                 <FontAwesomeIcon icon={faTrash} title="Remove Row" />

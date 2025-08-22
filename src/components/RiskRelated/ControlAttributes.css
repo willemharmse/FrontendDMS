@@ -247,7 +247,7 @@
 }
 
 .risk-control-attributes-perf {
-    width: 12%;
+    width: 10%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -258,7 +258,7 @@
 }
 
 .risk-control-attributes-critcal {
-    width: 3%;
+    width: 2%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -269,7 +269,7 @@
 }
 
 .risk-control-attributes-hiearchy {
-    width: 10%;
+    width: 16%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -279,7 +279,7 @@
 }
 
 .risk-control-attributes-act {
-    width: 6%;
+    width: 5%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;
@@ -299,7 +299,7 @@
 }
 
 .risk-control-attributes-cons {
-    width: 10%;
+    width: 8%;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid #ddd;

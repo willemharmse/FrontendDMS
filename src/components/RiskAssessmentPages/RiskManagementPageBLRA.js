@@ -716,13 +716,6 @@ const RiskManagementPageBLRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
-
     const fetchSites = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
@@ -774,6 +767,11 @@ const RiskManagementPageBLRA = () => {
 
     // On focus, show all options
     const handleSiteFocus = () => {
+
+        setErrors(prev => ({
+            ...prev,
+            site: false
+        }))
         closeAllDropdowns();
 
         const matches = companies;
@@ -1036,6 +1034,49 @@ const RiskManagementPageBLRA = () => {
         if (!formData.title) newErrors.title = true;
         if (!formData.site) newErrors.site = true;
         if (!formData.dateConducted) newErrors.dateConducted = true;
+        if (!formData.aim) newErrors.aim = true;
+        if (!formData.scope) newErrors.scope = true;
+        if (formData.abbrRows.length === 0) newErrors.abbrs = true;
+        if (formData.termRows.length === 0) newErrors.terms = true;
+
+        if (formData.rows.length === 0) {
+            newErrors.signs = true;
+        } else {
+            formData.rows.forEach((row, index) => {
+                if (!row.name) newErrors.signs = true;
+            });
+        }
+
+        if (formData.attendance.length === 0) {
+            newErrors.attend = true;
+        } else {
+            formData.attendance.forEach((row, index) => {
+                if (!row.name) newErrors.attend = true;
+                if (!row.site) newErrors.attend = true;
+                if (!row.designation) newErrors.attend = true;
+            });
+        }
+
+        if (formData.references.length === 0) {
+            newErrors.reference = true;
+        } else {
+            formData.references.forEach((row, index) => {
+                if (!row.ref) newErrors.reference = true;
+                if (!row.refDesc) newErrors.reference = true;
+            });
+        }
+
+        if (formData.ibra.length === 0) {
+            newErrors.ibra = true;
+        } else {
+            formData.ibra.forEach((row, index) => {
+                if (!row.main) newErrors.ibra = true;
+                if (!row.hazards) newErrors.ibra = true;
+                if (!row.controls) newErrors.ibra = true;
+                if (!row.UE) newErrors.ibra = true;
+                if (!row.source) newErrors.ibra = true;
+            });
+        }
 
         return newErrors;
     };
@@ -1797,11 +1838,17 @@ const RiskManagementPageBLRA = () => {
                                 type="date"
                                 name="dateConducted"
                                 onChange={handleInputChange}
+                                onFocus={() => {
+                                    setErrors(prev => ({
+                                        ...prev,
+                                        dateConducted: false
+                                    }))
+                                }}
                             />
                         </div>
                     </div>
 
-                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
                     <div className="input-row-risk-create">
                         <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
@@ -1811,12 +1858,18 @@ const RiskManagementPageBLRA = () => {
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRA} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Aim</h3>
+                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
                             <textarea
                                 spellCheck="true"
                                 name="aim"
                                 className="aim-textarea-risk-create-ibra font-fam"
                                 onChange={handleInputChange}
+                                onFocus={() => {
+                                    setErrors(prev => ({
+                                        ...prev,
+                                        aim: false
+                                    }))
+                                }}
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
                                 placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven." // Optional placeholder text
@@ -1848,14 +1901,14 @@ const RiskManagementPageBLRA = () => {
                     </div>
 
                     <div className="input-row-risk-create">
-                        <div className={`input-box-aim-risk-scope ${errors.aim ? "error-create" : ""}`}>
+                        <div className={`input-box-aim-risk-scope ${errors.scope ? "error-create" : ""}`}>
                             <button
                                 className="top-left-button-refs"
                                 title="Information"
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpScope} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Scope</h3>
+                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
                             <div className="risk-scope-group" style={{ marginBottom: "-10px" }}>
                                 <div className="risk-execSummary-popup-page-additional-row ">
                                     <div className="risk-popup-page-column-half-scope">
@@ -1869,6 +1922,12 @@ const RiskManagementPageBLRA = () => {
                                             value={formData.scope}
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert a brief scope introduction (General scope notes and comments)." // Optional placeholder text
+                                            onFocus={() => {
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    scope: false
+                                                }))
+                                            }}
                                         />
                                         {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
                                             : (
@@ -1908,6 +1967,12 @@ const RiskManagementPageBLRA = () => {
                                             onChange={handleInputChange}
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope inclusions (List the specific items, activities, or areas covered in this risk assessment)."
+                                            onFocus={() => {
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    scope: false
+                                                }))
+                                            }}
                                         />
                                         {loadingScopeI ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
                                             : (<FontAwesomeIcon
@@ -1942,6 +2007,12 @@ const RiskManagementPageBLRA = () => {
                                             onChange={handleInputChange}
                                             rows="5"   // Adjust the number of rows for initial height
                                             placeholder="Insert scope exclusions (List the specific items, activities, or areas not covered in this risk assessment)."
+                                            onFocus={() => {
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    scope: false
+                                                }))
+                                            }}
                                         />
                                         {loadingScopeE ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />) :
                                             (< FontAwesomeIcon
@@ -1970,15 +2041,15 @@ const RiskManagementPageBLRA = () => {
                         </div>
                     </div>
 
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    {formData.documentType === "BLRA" && (<BLRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} />)}
+                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setError={setErrors} />
+                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setError={setErrors} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} setErrors={setErrors} />
+                    {formData.documentType === "BLRA" && (<BLRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} setErrors={setErrors} />)}
                     {(["BLRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
                     <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">

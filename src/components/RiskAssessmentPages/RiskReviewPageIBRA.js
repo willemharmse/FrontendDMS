@@ -639,13 +639,6 @@ const RiskReviewPageIBRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
-
     const fetchSites = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
@@ -696,6 +689,11 @@ const RiskReviewPageIBRA = () => {
     };
 
     const handleSiteFocus = () => {
+        setErrors(prev => ({
+            ...prev,
+            site: false
+        }))
+
         closeAllDropdowns();
 
         const matches = companies;
@@ -930,6 +928,14 @@ const RiskReviewPageIBRA = () => {
         if (!formData.title) newErrors.title = true;
         if (!formData.site) newErrors.site = true;
         if (!formData.dateConducted) newErrors.dateConducted = true;
+
+        if (formData.rows.length === 0) {
+            newErrors.signs = true;
+        } else {
+            formData.rows.forEach((row, index) => {
+                if (!row.name) newErrors.signs = true;
+            });
+        }
 
         return newErrors;
     };
@@ -1649,7 +1655,7 @@ const RiskReviewPageIBRA = () => {
                         </div>
                     </div>
 
-                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
+                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
                     <div className="input-row-risk-create">
                         <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
@@ -1659,7 +1665,7 @@ const RiskReviewPageIBRA = () => {
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRA} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Aim</h3>
+                            <h3 className="font-fam-labels">Aim <span className="required-field">*</span></h3>
                             <textarea
                                 spellCheck="true"
                                 name="aim"
@@ -1703,7 +1709,7 @@ const RiskReviewPageIBRA = () => {
                             >
                                 <FontAwesomeIcon icon={faInfoCircle} onClick={openHelpScope} style={{ cursor: 'pointer' }} className="icon-um-search" />
                             </button>
-                            <h3 className="font-fam-labels">Scope</h3>
+                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
                             <div className="risk-scope-group" style={{ marginBottom: "-10px" }}>
                                 <div className="risk-execSummary-popup-page-additional-row ">
                                     <div className="risk-popup-page-column-half-scope">
@@ -1826,7 +1832,7 @@ const RiskReviewPageIBRA = () => {
 
                     <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
                     <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row">

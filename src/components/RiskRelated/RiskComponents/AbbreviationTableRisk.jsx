@@ -6,7 +6,7 @@ import RiskAbbreviationPopup from "../RiskValueChanges/RiskAbbreviationPopup";
 import ManageRiskAbbreviations from "../RiskValueChanges/ManageRiskAbbreviations";
 import ModifySuggestedAbbreviations from "../../ValueChanges/ModifySuggestedAbbreviations";
 
-const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID }) => {
+const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, role, error, userID, setError }) => {
   const [abbrData, setAbbrData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   // State to control the popup and selected abbreviations
@@ -111,6 +111,10 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
   const handlePopupToggle = () => {
     setSearchTerm("")
     setPopupVisible(!popupVisible);
+
+    if (error) {
+      setError(prev => ({ ...prev, abbrs: false }));
+    }
   };
 
   const handleAbbreviationUpdate = (updatedAbbr, oldAbbr) => {
@@ -150,19 +154,32 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
     setSelectedAbbrs(newSelectedAbbrs);
   };
 
+  const norm = (s = "") => s.replace(/\s*\*$/, "").trim();
+
+  // 2) in your save/confirm handler:
   const handleSaveSelection = () => {
-    const selectedAbbrArray = [...selectedAbbrs];
-    setUsedAbbrCodes(selectedAbbrArray);
+    const selectedAbbrArray = [...selectedAbbrs]; // whatever you’re tracking in the popup
 
-    const selectedRows = selectedAbbrArray.map((abbr) => {
-      const found = abbrData.find((item) => item.abbr === abbr);
-      return found || { abbr, meaning: "" }; // Fallback if not found
+    // meanings we already have in the draft (includes suggested items with *)
+    const existingMeaningByCode = new Map(
+      (formData.abbrRows || []).map(r => [norm(r.abbr), r.meaning])
+    );
+
+    const selectedRows = selectedAbbrArray.map((code) => {
+      // try master list first (for system abbreviations)
+      const fromMaster = abbrData.find(item => norm(item.abbr) === norm(code));
+      if (fromMaster) {
+        return { abbr: fromMaster.abbr, meaning: fromMaster.meaning };
+      }
+
+      // otherwise it's a user-suggested code → keep the meaning we already had
+      const kept = existingMeaningByCode.get(norm(code)) || "";
+      return { abbr: `${norm(code)} *`, meaning: kept };
     });
 
-    setFormData({
-      ...formData,
-      abbrRows: selectedRows,
-    });
+    // track usage normalized so CPU and CPU * are the "same" key internally
+    setUsedAbbrCodes(selectedAbbrArray.map(norm));
+    setFormData({ ...formData, abbrRows: selectedRows });
     setPopupVisible(false);
   };
 
@@ -184,7 +201,7 @@ const AbbreviationTableRisk = ({ risk, formData, setFormData, usedAbbrCodes, set
   return (
     <div className="input-row">
       <div className={`abbr-input-box ${error ? "error-abbr" : ""}`}>
-        <h3 className="font-fam-labels">Abbreviations</h3>
+        <h3 className="font-fam-labels">Abbreviations <span className="required-field">*</span></h3>
         <RiskAbbreviationPopup
           isOpen={showNewPopup}
           onClose={() => { setShowNewPopup(false); }}

@@ -180,7 +180,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
 
     return (
         <div className="import-si-popup-overlay">
-            <div className="import-rsi-popup-content">
+            <div className="import-si-popup-content">
                 <div className="import-si-file-header">
                     <h2 className="import-si-file-title">Import Risk Management Site Information</h2>
                     <button className="import-si-file-close" onClick={onClose} title="Close Popup">×</button>

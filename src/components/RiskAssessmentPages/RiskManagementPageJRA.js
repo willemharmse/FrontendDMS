@@ -463,13 +463,6 @@ const RiskManagementPageJRA = () => {
         ],
     });
 
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            const newErrors = validateForm();
-            setErrors(newErrors);
-        }
-    }, [formData])
-
     const fetchSites = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/sites`);
@@ -521,6 +514,11 @@ const RiskManagementPageJRA = () => {
 
     // On focus, show all options
     const handleSiteFocus = () => {
+
+        setErrors(prev => ({
+            ...prev,
+            site: false
+        }))
         closeAllDropdowns();
 
         const matches = companies;
@@ -794,7 +792,49 @@ const RiskManagementPageJRA = () => {
 
         if (!formData.title) newErrors.title = true;
         if (!formData.site) newErrors.site = true;
-        if (!formData.dateConducted) newErrors.dateConducted = true;
+        if (formData.abbrRows.length === 0) newErrors.abbrs = true;
+        if (formData.termRows.length === 0) newErrors.terms = true;
+
+        if (formData.rows.length === 0) {
+            newErrors.signs = true;
+        } else {
+            formData.rows.forEach((row, index) => {
+                if (!row.name) newErrors.signs = true;
+            });
+        }
+
+        ["description", "start", "end", "mainArea", "subArea", "owner", "inCharge"].forEach(field => {
+            if (!formData.introInfo[field]) {
+                newErrors.introInfo = true;
+            }
+        });
+
+        if (formData.attendance.length === 0) {
+            newErrors.attend = true;
+        } else {
+            formData.attendance.forEach((row, index) => {
+                if (!row.name) newErrors.attend = true;
+                if (!row.site) newErrors.attend = true;
+                if (!row.designation) newErrors.attend = true;
+            });
+        }
+
+        if (formData.references.length === 0) {
+            newErrors.reference = true;
+        } else {
+            formData.references.forEach((row, index) => {
+                if (!row.ref) newErrors.reference = true;
+                if (!row.refDesc) newErrors.reference = true;
+            });
+        }
+
+        if (formData.jra.length === 0) {
+            newErrors.jra = true;
+        } else {
+            formData.jra.forEach((row, index) => {
+                if (!row.main) newErrors.jra = true;
+            });
+        }
 
         return newErrors;
     };
@@ -1296,24 +1336,30 @@ const RiskManagementPageJRA = () => {
                                 type="date"
                                 name="dateConducted"
                                 onChange={handleInputChange}
+                                onFocus={() => {
+                                    setErrors(prev => ({
+                                        ...prev,
+                                        dateConducted: false
+                                    }))
+                                }}
                             />
                         </div>
                     </div>
 
-                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} />
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} />
-                    <IntroTaskInfo formData={formData} setFormData={setFormData} />
+                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} role={role} error={errors.abbrs} userID={userID} setError={setErrors} />
+                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setError={setErrors} />
+                    <IntroTaskInfo formData={formData} setFormData={setFormData} error={errors.introInfo} setErrors={setErrors} />
                     <PPETableRisk formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
                     <HandToolsTableRisk formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
                     <MaterialsTableRisk formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} role={role} userID={userID} />
                     <EquipmentTableRisk formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
                     <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} role={role} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attendance} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} />
-                    <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} />
+                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} role={role} userID={userID} generateAR={handleClick} setErrors={setErrors} />
+                    <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} error={errors.jra} setErrors={setErrors} />
                     <OtherTeam formData={formData} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

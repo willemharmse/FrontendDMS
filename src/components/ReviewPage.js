@@ -550,6 +550,7 @@ const ReviewPage = () => {
         if (!formData.title) newErrors.title = true;
         if (!formData.documentType) newErrors.documentType = true;
         if (!formData.aim) newErrors.aim = true;
+        if (!formData.scope) newErrors.scope = true;
         if (!formData.reviewDate) newErrors.reviewDate = true;
         if (formData.abbrRows.length === 0) newErrors.abbrs = true;
         if (formData.termRows.length === 0) newErrors.terms = true;
@@ -570,6 +571,15 @@ const ReviewPage = () => {
         } else {
             formData.rows.forEach((row, index) => {
                 if (!row.name) newErrors.signs = true;
+            });
+        }
+
+        if (formData.references.length === 0) {
+            newErrors.reference = true;
+        } else {
+            formData.references.forEach((row, index) => {
+                if (!row.ref) newErrors.reference = true;
+                if (!row.refDesc) newErrors.reference = true;
             });
         }
 
@@ -1008,6 +1018,22 @@ const ReviewPage = () => {
                         </div>
                     </div>
 
+                    <div className="input-row">
+                        <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
+                            <h3 className="font-fam-labels">Scope <span className="required-field">*</span></h3>
+                            <textarea
+                                style={{ fontSize: "14px" }}
+                                spellcheck="true"
+                                name="scope"
+                                className="aim-textarea font-fam expanding-textarea"
+                                value={formData.scope}
+                                onChange={handleInputChange}
+                                rows="5"   // Adjust the number of rows for initial height
+                                placeholder="Insert the scope of the document" // Optional placeholder text
+                            />
+                        </div>
+                    </div>
+
                     <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} role={role} userID={userID} />
                     <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} role={role} userID={userID} />
                     <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} role={role} userID={userID} />
@@ -1017,7 +1043,7 @@ const ReviewPage = () => {
                     <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} role={role} error={errors.terms} userID={userID} setErrors={setErrors} />
                     <ProcedureTable procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
                     <ChapterTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
                     <SupportingDocumentTable formData={formData} setFormData={setFormData} />
 
                     <div className={`input-row`} style={{ marginTop: "10px" }}>

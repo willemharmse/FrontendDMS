@@ -16,7 +16,7 @@ import Go_Nogo from "./RiskInfo/Go_Nogo";
 import CurrentControlsJRA from "./RiskInfo/CurrentControlsJRA";
 import JRAPopup from "./JRAPopup";
 
-const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
+const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors }) => {
     const [rowData, setRowData] = useState([]);
     const [showJRAPopup, setShowJRAPopup] = useState(false);
     const ibraBoxRef = useRef(null);
@@ -650,9 +650,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
     }, [showColumnSelector, filterPopup]);
 
     return (
-        <div className="input-row-risk-ibra">
-            <div className="ibra-box" ref={ibraBoxRef}>
-                <h3 className="font-fam-labels">Job Risk Assessment (JRA)</h3>
+        <div className={`input-row-risk-ibra `}>
+            <div className={`ibra-box ${error ? 'error-create' : ''}`} ref={ibraBoxRef}>
+                <h3 className="font-fam-labels">Job Risk Assessment (JRA)  <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -792,6 +792,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                                                                     title="Evaluate Unwanted Event"
                                                                     onClick={() => {
                                                                         openJRAPopup(row.id);
+                                                                        if (error) {
+                                                                            setErrors(prev => ({ ...prev, jra: false }));
+                                                                        }
                                                                     }}
                                                                 />
                                                             </td>

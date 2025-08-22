@@ -8,6 +8,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import CryptoJS from "crypto-js";
 import AccountLockOut from './AccountLockout/AccountLockOut';
 import { ToastContainer, toast } from 'react-toastify';
+import SplashScreen from './Construction/SplashScreen';
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -18,8 +19,20 @@ const NewLogin = () => {
     const [locked, setLocked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [loadingScreen, setLoadingScreen] = useState(true);
 
     const secret = process.env.REACT_APP_SECRET;
+
+    const closeLoading = () => {
+        setLoadingScreen(false);
+        sessionStorage.setItem('splashScreenDone', 'true');
+    }
+
+    useEffect(() => {
+        if (sessionStorage.getItem('splashScreenDone') === 'true') {
+            setLoadingScreen(false);
+        }
+    }, [])
 
     const toggleLocked = () => {
         setLocked(!locked);
@@ -292,6 +305,7 @@ const NewLogin = () => {
             </div>
 
             {locked && (<AccountLockOut toggleLocked={toggleLocked} />)}
+            {loadingScreen && (<SplashScreen logoSrc={`${process.env.PUBLIC_URL}/CH_Logo.svg`} onDone={closeLoading} pingUrl={`${process.env.REACT_APP_URL}/ping`} />)}
             <ToastContainer />
         </div>
     );

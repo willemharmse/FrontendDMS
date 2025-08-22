@@ -304,6 +304,24 @@ tr:hover+.insert-row-container .insert-row-button {
     box-sizing: border-box;
 }
 
+.table-control-proc-text-area-ar {
+    width: 100%;
+    padding: 5px;
+    font-family: Arial;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: none;
+    field-sizing: content;
+    min-height: 15px;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* modern name */
+    resize: none;
+    word-break: break-word;
+}
+
 .prev-step-container-ref {
     display: flex;
     flex-direction: column;

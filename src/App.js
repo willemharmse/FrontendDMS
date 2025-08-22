@@ -69,12 +69,18 @@ import VersionHistoryProcedure from './components/DocumentCreationPages/VersionH
 import DeletedDocumentsProcedure from './components/DocumentCreationPages/DeletedDocumentsProcedure';
 import UserProfile from './components/UserProfile/UserProfile';
 import CourseHome from './components/TrainingManagement/CourseHome';
-import TMSAdminPage from './components/TMSAdminPage';
+import TMSAdminPage from './components/SystemAdmin/TMSAdminPage';
 import CourseDetails from './components/TrainingManagement/CourseDetails';
 import TrainersHome from './components/TrainingManagement/TrainerManagement/TrainersHome';
 import TrainerDetails from './components/TrainingManagement/TrainerManagement/TrainerDetails';
 import TraineesHome from './components/TrainingManagement/TraineeMangement/TraineesHome';
 import TraineeDetails from './components/TrainingManagement/TraineeMangement/TraineeDetails';
+import DMSAdminPage from './components/SystemAdmin/DMSAdminPage';
+import RMSAdminPage from './components/SystemAdmin/RMSAdminPage';
+import DDSAdminPage from './components/SystemAdmin/DDSAdminPage';
+import TrainingAdminPage from './components/SystemAdmin/TrainingAdminPage';
+import CourseCreationPage from './components/TrainingManagement/CourseCreation/CourseCreationPage';
+import CourseViewPage from './components/TrainingManagement/CourseView/CourseViewPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -197,12 +203,18 @@ function App() {
         <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />
         <Route path='FrontendDMS/userProfile' element={<UserProfile />} />
         <Route path='FrontendDMS/tmsAdmin' element={<TMSAdminPage />} />
+        <Route path='FrontendDMS/tmsAdmin/manageTraining' element={<TrainingAdminPage />} />
+        <Route path='FrontendDMS/dmsAdmin' element={<DMSAdminPage />} />
+        <Route path='FrontendDMS/rmsAdmin' element={<RMSAdminPage />} />
+        <Route path='FrontendDMS/ddsAdmin' element={<DDSAdminPage />} />
         <Route path='FrontendDMS/courseMangement' element={<CourseHome />} />
         <Route path='FrontendDMS/courseDetails/:courseCode' element={<CourseDetails />} />
         <Route path='FrontendDMS/trainerManagement' element={<TrainersHome />} />
         <Route path='FrontendDMS/trainerDetails/:trainerName' element={<TrainerDetails />} />
         <Route path='FrontendDMS/traineeManagement' element={<TraineesHome />} />
         <Route path='FrontendDMS/traineeDetails/:traineeName' element={<TraineeDetails />} />
+        <Route path='/courseCreate' element={<CourseCreationPage />} />
+        <Route path='/courseView/:courseCode' element={<CourseViewPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

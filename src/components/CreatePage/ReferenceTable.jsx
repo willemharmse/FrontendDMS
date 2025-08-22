@@ -3,7 +3,7 @@ import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows }) => {
+const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, error = false, required = false, setErrors }) => {
     const [files, setFiles] = useState([]);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
@@ -171,9 +171,8 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
 
     return (
         <div className="input-row">
-            <div className="input-box-ref">
-                <h3 className="font-fam-labels">Site Reference Documents</h3>
-
+            <div className={`input-box-ref ${error ? " error-create" : ""}`}>
+                <h3 className="font-fam-labels">Site Reference Documents <span className="required-field">{required ? "*" : ""}</span></h3>
                 {referenceRows.length > 0 && (
                     <table className="vcr-table table-borders">
                         <thead className="cp-table-header">
@@ -197,6 +196,12 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                             onChange={(e) => handleDescChange(index, "ref", e.target.value)}
                                             onFocus={() => {
                                                 setShowDropdown(index);
+                                                if (error) {
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        reference: false
+                                                    }));
+                                                }
                                                 setFilteredOptions(prev => ({ ...prev, [index]: files }));
                                                 if (inputRefs.current[index]) {
                                                     const rect = inputRefs.current[index].getBoundingClientRect();
@@ -217,6 +222,14 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                             className="table-control"
                                             value={row.refDesc}
                                             onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
+                                            onFocus={() => {
+                                                if (error) {
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        reference: false
+                                                    }))
+                                                }
+                                            }}
                                         />
                                     </td>
                                     <td className="procCent action-cell-auth-risk">

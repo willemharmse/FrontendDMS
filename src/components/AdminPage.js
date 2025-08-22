@@ -165,28 +165,12 @@ const AdminPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openBatch}>
+                    <div className={`document-card-fi-home-all`} onClick={openImportSI}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Upload Batch Documents</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={openImportSI}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminSIDDS.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/importSIDAdmin.svg`} className={"all-icon-fi-home"} />
                             </div>
                             <h3 className="document-title-fi-home">Import Site General Information</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={openImportRSI}>
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminSIRMS.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Import Site Risk Information</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>
@@ -205,16 +189,38 @@ const AdminPage = () => {
                             <h3 className="document-title-fi-home">Manage Departments</h3>
                         </>
                     </div>
-                    {false && (
-                        <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/tmsAdmin")}>
-                            <>
-                                <div className="icon-dept">
-                                    <FontAwesomeIcon icon={faPersonChalkboard} className={"icon-dept"} />
-                                </div>
-                                <h3 className="document-title-fi-home">Learning Management System</h3>
-                            </>
-                        </div>
-                    )}
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/dmsAdmin")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Document Management System Admin</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/ddsAdmin")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/ddsAdmin.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Document Development System Admin</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/rmsAdmin")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/rmsAdmin.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Risk Management System Admin</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/tmsAdmin")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/tmsAdmin.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Training Management System Admin</h3>
+                        </>
+                    </div>
                 </div>
             </div>
             <ToastContainer />

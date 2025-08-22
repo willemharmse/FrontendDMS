@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,7 +15,24 @@ function ForgotPassword() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [step, setStep] = useState(1); // To track the current step
     const [error, setError] = useState('');
+    const [deadlineMs, setDeadlineMs] = useState(null); // absolute end time
+    const [nowMs, setNowMs] = useState(Date.now());
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (step !== 2 || !deadlineMs) return;
+        setNowMs(Date.now());
+        const id = setInterval(() => setNowMs(Date.now()), 100); // smooth countdown
+        return () => clearInterval(id);
+    }, [step, deadlineMs]);
+
+    const msLeft = Math.max(0, (deadlineMs ?? 0) - nowMs);
+    const formatMs = (ms) => {
+        const totalSec = Math.ceil(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -45,6 +62,7 @@ function ForgotPassword() {
                     });
                 }
                 else {
+                    setDeadlineMs(Date.now() + 120000);
                     setStep(2);
                 }
             } catch (err) {
@@ -63,18 +81,29 @@ function ForgotPassword() {
                 });
 
                 if (!response.ok) {
+                    // Try to read the JSON body and grab the message
+                    let errorMessage = 'Something went wrong';
+                    try {
+                        const data = await response.json();
+                        if (data?.message) {
+                            errorMessage = data.message;
+                        }
+                    } catch {
+                        // fallback if response is not JSON
+                        errorMessage = await response.text();
+                    }
+
                     toast.dismiss();
                     toast.clearWaitingQueue();
-                    toast.error('Invalid OTP.', {
+                    toast.error(errorMessage, {
                         closeButton: false,
                         autoClose: 800,
-                        style: {
-                            textAlign: 'center',
-                        },
+                        style: { textAlign: 'center' },
                     });
-                } else {
-                    setStep(3);
+                    return;
                 }
+
+                setStep(3);
             } catch (err) {
                 setError(err.message);
             }
@@ -180,7 +209,19 @@ function ForgotPassword() {
 
                     {step === 2 && (
                         <div className="forgot-password-group">
-                            <label className="forgot-password-label">Insert OTP</label>
+                            <label
+                                className="forgot-password-label"
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}
+                            >
+                                Insert OTP
+                                <span style={{ fontWeight: 500 }}>
+                                    {deadlineMs ? `(Expires in ${formatMs(msLeft)})` : ''}
+                                </span>
+                            </label>
                             <div className="forgot-password-input-container">
                                 <input
                                     type="text"

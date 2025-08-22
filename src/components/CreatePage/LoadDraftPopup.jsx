@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "./LoadDraftPopup.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrash, faCircleLeft, faPenToSquare, faRotateLeft, faArrowsRotate, faMagnifyingGlass, faCircleXmark, faX, faFilter } from '@fortawesome/free-solid-svg-icons';
 import DeleteDraftPopup from "../Popups/DeleteDraftPopup";
 
 const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }) => {
     const [drafts, setDrafts] = useState([]);
+    const [query, setQuery] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, draftId: null });
     const [isLoading, setIsLoading] = useState(true);
     const [showNoDrafts, setShowNoDrafts] = useState(false);
     const [deletePopup, setDeletePopup] = useState(false);
     const [author, setAuthor] = useState(false);
     const [title, setTitle] = useState("");
+
+    const filteredDrafts = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return drafts;
+        return drafts.filter(d =>
+            (d?.formData?.title || '').toLowerCase().includes(q)
+        );
+    }, [drafts, query]);
 
     const closeDelete = () => {
         setDeletePopup(false);
@@ -167,20 +176,42 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
                     <div className="draft-select-header">
                         <div className="draft-select-text">Select draft to load</div>
                     </div>
+                    <div className="draft-searchbar draft-searchbar--full">
+                        <input
+                            type="text"
+                            className="draft-search-input"
+                            placeholder="Search"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Escape') setQuery(''); }}
+                        />
+                        <div className="draft-search-icons">
+                            {query && (
+                                <span className="icon-static" title="Clear Search" onClick={() => setQuery('')}>
+                                    <FontAwesomeIcon icon={faX} />
+                                </span>
+                            )}
+                            {!query && (
+                                <span className="icon-static" title="Search">
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} />
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     <div className="popup-table-wrapper-draft">
                         <table className="popup-table font-fam">
                             <thead className="draft-headers">
                                 <tr>
                                     <th className="draft-nr">Nr</th>
-                                    <th className="draft-name">Draft Document</th>
+                                    <th className="draft-name">Draft Document {query && (<FontAwesomeIcon icon={faFilter} style={{ marginLeft: "10px" }} />)}</th>
                                     <th className="draft-created">Created By</th>
                                     <th className="draft-updated">Modified By</th>
                                     <th className="draft-actions-load">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {!isLoading && drafts.length > 0 && (
-                                    drafts
+                                {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
+                                    filteredDrafts
                                         .map((item, index) => (
                                             <tr key={item._id}>
                                                 <td className="draft-nr">

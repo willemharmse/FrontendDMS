@@ -13,23 +13,33 @@
     transition: background 0.3s ease;
 }
 
-.col-course-details-nr {
+.col-training-course-details-nr {
     width: 5%;
     text-align: center;
 }
 
-.col-course-details-trainee {
+.col-training-course-details-trainee {
     width: 55%;
     text-align: center;
 }
 
-.col-course-details-group {
+.col-training-course-details-group {
     width: 10%;
     text-align: center;
 }
 
-.col-course-details-comp {
-    width: 30%;
+.col-training-course-details-dept {
+    width: 10%;
+    text-align: center;
+}
+
+.col-training-course-details-comp {
+    width: 15%;
+    text-align: center;
+}
+
+.col-training-course-details-action {
+    width: 5%;
     text-align: center;
 }
 
@@ -46,4 +56,13 @@
     flex-direction: column;
     position: relative;
     align-items: center;
+}
+
+.col-training-course-details-inline-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: space-evenly;
+    align-items: center;
+    /* Ensures vertical alignment */
+
 }

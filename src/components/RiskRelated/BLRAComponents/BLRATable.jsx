@@ -8,7 +8,7 @@ import UnwantedEvent from "../RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
 
-const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error }) => {
+const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors }) => {
     const ibraBoxRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
@@ -624,7 +624,7 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
-                <h3 className="font-fam-labels">Baseline Risk Assessment (BLRA)</h3>
+                <h3 className="font-fam-labels">Baseline Risk Assessment (BLRA) <span className="required-field">*</span></h3>
                 <button
                     className="top-right-button-ibra"
                     title="Show / Hide Columns"
@@ -1004,6 +1004,9 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                 onClick={() => {
                                                                     setSelectedRowData(row)
                                                                     setIbraPopup(true)
+                                                                    if (error) {
+                                                                        setErrors(prev => ({ ...prev, ibra: false })); // Clear IBRA error on click
+                                                                    }
                                                                 }}
                                                             />
 

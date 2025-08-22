@@ -1089,6 +1089,34 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                 Control Evaluation
                                             </div>
                                             <div className="jra-popup-page-form-group-main-container-sub-controls" ref={el => controlsScrollRefs.current[si] = el}>
+
+                                                {/* Labels row - separate from controls */}
+                                                <div className="jra-popup-page-form-group" style={{ position: "relative", marginTop: "0px", marginBottom: "5px" }}>
+                                                    <div className="jra-popup-page-additional-row">
+                                                        <div className="jra-popup-page-column-half">
+                                                            <div className="jra-popup-page-additional-row">
+                                                                <div className="jra-popup-page-column-2-1-1">
+                                                                    <label style={{ marginTop: "10px" }}>Control / Sub Task Step</label>
+                                                                </div>
+                                                                <div className="jra-popup-page-column-2-2-2">
+                                                                    <label style={{ marginTop: "10px" }}>Task Execution (R)</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="jra-popup-page-column-half">
+                                                            <div className="jra-popup-page-additional-row">
+                                                                <div className="jra-popup-page-column-2-1">
+                                                                    <label style={{ marginTop: "10px" }}>Control Execution Specification</label>
+                                                                </div>
+                                                                <div className="jra-popup-page-column-2-2">
+                                                                    <label style={{ marginTop: "10px" }}>Go / No-Go</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Controls rows - no labels */}
                                                 {step.sub.map((subItem, idx) => {
                                                     const key = `${si}-${idx}`;
                                                     const isCollapsed = !!collapsedControls[key];
@@ -1097,13 +1125,12 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                     const goNoGoItem = step.go_noGo[idx] || {};
 
                                                     return (
-                                                        <div className={`jra-popup-page-form-group`} style={{ position: "relative", marginTop: idx !== 0 ? "5px" : "0px" }}>
+                                                        <div key={idx} className={`jra-popup-page-form-group`} style={{ position: "relative", marginTop: "5px" }}>
                                                             <div className="jra-popup-page-additional-row">
                                                                 <div className="jra-popup-page-column-half">
                                                                     <div className="jra-popup-page-additional-row">
                                                                         <div className="jra-popup-page-column-2-1-1">
-                                                                            {idx === 0 && (<label style={{ marginTop: "10px" }}>Control / Sub Task Step</label>)}
-
+                                                                            {/* No label here anymore */}
                                                                             <div className="jra-popup-page-main-container">
                                                                                 <div className={"jra-popup-page-control-container"}>
                                                                                     <textarea
@@ -1154,12 +1181,11 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                             </div>
                                                                         </div>
                                                                         <div className="jra-popup-page-column-2-2-2">
-                                                                            {idx === 0 && (<label style={{ marginTop: "10px" }}>Task Execution (R)</label>)}
-
+                                                                            {/* No label here anymore */}
                                                                             <div className={`ibra-popup-page-select-container`}>
                                                                                 <input
                                                                                     type="text"
-                                                                                    style={{ color: "black", cursor: "text" }}
+                                                                                    style={{ color: "black", cursor: "text", transform: 'translateY(-2px)' }}
                                                                                     ref={el => {
                                                                                         const key = `${si}-${idx}`;
                                                                                         if (el) {
@@ -1181,7 +1207,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                 <div className="jra-popup-page-column-half">
                                                                     <div className="jra-popup-page-additional-row">
                                                                         <div className="jra-popup-page-column-2-1">
-                                                                            {idx === 0 && (<label style={{ marginTop: "10px" }}>Control Execution Specification</label>)}
+                                                                            {/* No label here anymore */}
                                                                             <div className="jra-popup-page-control-container">
                                                                                 <textarea
                                                                                     type="text"
@@ -1199,12 +1225,11 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                             </div>
                                                                         </div>
                                                                         <div className="jra-popup-page-column-2-2">
-                                                                            {idx === 0 && (<label style={{ marginTop: "10px" }}>Go / No-Go</label>)}
-
+                                                                            {/* No label here anymore */}
                                                                             <div className={`ibra-popup-page-select-container`}>
                                                                                 <select
                                                                                     type="text"
-                                                                                    style={{ color: "black", cursor: "text", textAlign: "center" }}
+                                                                                    style={{ color: "black", cursor: "text", textAlign: "center", transform: 'translateY(-2px)' }}
                                                                                     ref={ownersInputRef}
                                                                                     className="jra-popup-page-select ibra-popup-page-row-input"
                                                                                     placeholder="Enter Go / No-Go"
@@ -1220,10 +1245,8 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                     )
-                                                }
-                                                )}
+                                                })}
                                             </div>
                                         </div>
                                     </div>
