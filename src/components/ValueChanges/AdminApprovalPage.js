@@ -5,6 +5,8 @@ import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faC
 import { jwtDecode } from 'jwt-decode';
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import "./AdminApprovalPage.css";
+import ApprovalPopup from "../RiskRelated/RiskValueChanges/ApprovalPopup";
+import AdminApprovalHeader from "../AdminAprovalHeaders/AdminApprovalHeader";
 
 const AdminApprovalPage = () => {
     const [drafts, setDrafts] = useState([]);
@@ -212,6 +214,84 @@ const AdminApprovalPage = () => {
         return `${year}-${month}-${day}`;
     };
 
+    const [filters, setFilters] = useState({
+        type: "",
+        item: "",
+        description: "",
+        suggestedBy: "",
+        status: "",
+        suggestedFrom: "",
+        suggestedTo: "",
+        reviewFrom: "",
+        reviewTo: "",
+    });
+
+    const onFilterChange = (key, value) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
+    };
+
+    // helpers that match how you render the table
+    const getTypeText = (r) => (formatType(r.type) || "").toString();
+    const getItemText = (r) => {
+        const first = Object.values(r?.data || {})[0];
+        return (first ?? "").toString();
+    };
+    const getDescText = (r) => {
+        const second = Object.values(r?.data || {})[1];
+        return (second ?? "").toString();
+    };
+    const getSuggestedByText = (r) => (r?.suggestedBy?.username || "").toString();
+    const getStatusText = (r) => (r?.status || "").toString();
+
+    const toISODate = (d) => {
+        if (!d) return "";
+        const dt = typeof d === "string" ? new Date(d) : d;
+        if (Number.isNaN(dt.getTime())) return "";
+        return dt.toISOString().slice(0, 10); // yyyy-mm-dd
+    };
+
+    const applyFilters = (rows) => {
+        const hasSuggested = Boolean(filters.suggestedFrom || filters.suggestedTo);
+        const hasReview = Boolean(filters.reviewFrom || filters.reviewTo);
+
+        const inRange = (iso, from, to) => {
+            if (!iso) return false;              // empty dates never match when a date filter is active
+            if (from && iso < from) return false;
+            if (to && iso > to) return false;
+            return true;
+        };
+
+        return rows.filter((r) => {
+            // text filters (case-insensitive "contains")
+            if (filters.type && !getTypeText(r).toLowerCase().includes(filters.type.toLowerCase())) return false;
+            if (filters.item && !getItemText(r).toLowerCase().includes(filters.item.toLowerCase())) return false;
+            if (filters.description && !getDescText(r).toLowerCase().includes(filters.description.toLowerCase())) return false;
+            if (filters.suggestedBy && !getSuggestedByText(r).toLowerCase().includes(filters.suggestedBy.toLowerCase())) return false;
+            if (filters.status && !getStatusText(r).toLowerCase().includes(filters.status.toLowerCase())) return false;
+
+            // dates (normalize to yyyy-mm-dd so string compare works)
+            if (hasSuggested) {
+                const suggestedISO = toISODate(r.suggestedDate);
+                if (!inRange(suggestedISO, filters.suggestedFrom, filters.suggestedTo)) return false;
+            }
+
+            // Review Date: if filtering, exclude N/A (empty) and only keep rows in range
+            if (hasReview) {
+                const reviewISO = toISODate(r.reviewDate); // "" when N/A
+                if (!inRange(reviewISO, filters.reviewFrom, filters.reviewTo)) return false;
+            }
+
+            return true;
+        });
+    };
+
+    const filteredFiles = applyFilters(drafts);
+
+    const getComplianceColor = (status) => {
+        if (status.toLowerCase() === "approved") return "status-good-admin";
+        if (status.toLowerCase() === "declined") return "status-bad-admin";
+    };
+
     return (
         <div className="admin-draft-info-container">
             {isSidebarVisible && (
@@ -270,19 +350,10 @@ const AdminApprovalPage = () => {
                 <div className="table-container-gen">
                     <table className="risk-admin-approve-table">
                         <thead className="risk-admin-approve-head">
-                            <tr className="risk-admin-approve-tr">
-                                <th className="doc-num-filter col risk-admin-approve-th">Nr</th>
-                                <th className="col-name-filter col risk-admin-approve-th">Type</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Item</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Description</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Suggested By</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Suggested Date</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Status</th>
-                                <th className="col-stat-filter col risk-admin-approve-th">Review Date</th>
-                            </tr>
+                            <AdminApprovalHeader filters={filters} onFilterChange={onFilterChange} />
                         </thead>
                         <tbody>
-                            {drafts.map((draft, index) => (
+                            {filteredFiles.map((draft, index) => (
                                 <tr key={draft._id} className={`file-info-row-height risk-admin-approve-tr`}>
                                     <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-index">{index + 1}</td>
                                     <td onClick={() => handleRowClick(draft)} className="col risk-admin-approve-th-type">{formatType(draft.type)}</td>
@@ -292,7 +363,7 @@ const AdminApprovalPage = () => {
                                     </td>
                                     <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-user">{draft.suggestedBy ? draft.suggestedBy.username : "Unknown"}</td>
                                     <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-date">{formatDate(draft.suggestedDate)}</td>
-                                    <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-status">{draft.status}</td>
+                                    <td onClick={() => handleRowClick(draft)} className={`risk-admin-approve-th-status ${getComplianceColor(draft.status)}`}>{draft.status}</td>
                                     <td onClick={() => handleRowClick(draft)} className="risk-admin-approve-th-date">{draft.reviewDate ? formatDate(draft.reviewDate) : "N/A"}</td>
 
                                 </tr>
@@ -302,33 +373,7 @@ const AdminApprovalPage = () => {
                 </div>
             </div>
 
-            {showPopup && (
-                <div className="popup-overlay-admin-approve">
-                    <div className="popup-container-admin-approve">
-                        <h3>Approve or Decline</h3>
-                        <p>Do you want to approve or decline this draft?</p>
-                        <textarea
-                            className="popup-comment-textbox"
-                            placeholder="Insert your comment..."
-                            value={comment || ""}
-                            onChange={(e) => setComment(e.target.value)}
-                            rows="4"
-                            style={{ resize: 'none' }} // Disable resizing of the textarea
-                        />
-                        <div className="popup-actions-admin-approve">
-                            <button onClick={handleApprove} className="approve-btn-admin-approve">
-                                <FontAwesomeIcon icon={faCheck} title="Approve" /> Approve
-                            </button>
-                            <button onClick={handleDecline} className="decline-btn-admin-approve">
-                                <FontAwesomeIcon icon={faTimes} title="Decline" /> Decline
-                            </button>
-                            <button onClick={() => { setShowPopup(false); setComment(""); }} className="cancel-btn-admin-approve">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showPopup && (<ApprovalPopup approve={handleApprove} decline={handleDecline} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
         </div>
     );
 };

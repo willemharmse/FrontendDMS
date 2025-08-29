@@ -13,10 +13,16 @@ const AbbreviationPopup = ({ isOpen, onClose, userID, setAbbrData, onAdd }) => {
     const [usersList, setUsersList] = useState([]);
 
     useEffect(() => {
-        // Function to fetch users
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                const response = await fetch(
+                    `${process.env.REACT_APP_URL}/api/user/getSystemAdmins/DDS`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        },
+                    }
+                );
                 if (!response.ok) {
                     throw new Error("Failed to fetch users");
                 }

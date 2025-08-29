@@ -84,6 +84,9 @@ import UserHomePageTMS from './components/TrainingManagement/UserView/UserHomePa
 import FlameProofHome from './components/FlameproofDMS/FlameProofHome';
 import FlameProofMain from './components/FlameproofDMS/FlameProofMain';
 import FlameProofSub from './components/FlameproofDMS/FlameProofSub';
+import FlameProofAllSites from './components/FlameproofDMS/FlameProofAllSites';
+import FlameProofInfoAll from './components/FlameproofDMS/FlameProofInfoAll';
+import FCMSAdminPage from './components/SystemAdmin/FCMSAdminPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -170,9 +173,11 @@ function App() {
         <Route path='FrontendDMS/reviewSpecial/:fileId/:type' element={<CreatePageSIReview />} />
         <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
-        <Route path="FrontendDMS/flameManageHome" element={<FlameProofHome />} />
-        <Route path="FrontendDMS/flameManage/:type" element={<FlameProofMain />} />
-        <Route path="FrontendDMS/flameManageSub/:type" element={<FlameProofSub />} />
+        <Route path="FrontendDMS/flameManageSites" element={<FlameProofAllSites />} />
+        <Route path="FrontendDMS/flameManageHome/:site" element={<FlameProofHome />} />
+        <Route path="FrontendDMS/flameAllMineAsset" element={<FlameProofInfoAll />} />
+        <Route path="FrontendDMS/flameManage/:type/:site" element={<FlameProofMain />} />
+        <Route path="FrontendDMS/flameManageSub/:type/:assetId" element={<FlameProofSub />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
         <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
         <Route path="FrontendDMS/constructionCM" element={<ConstructionCM />} />
@@ -212,6 +217,7 @@ function App() {
         <Route path='FrontendDMS/dmsAdmin' element={<DMSAdminPage />} />
         <Route path='FrontendDMS/rmsAdmin' element={<RMSAdminPage />} />
         <Route path='FrontendDMS/ddsAdmin' element={<DDSAdminPage />} />
+        <Route path='FrontendDMS/fcmsAdmin' element={<FCMSAdminPage />} />
         <Route path='FrontendDMS/courseMangement' element={<CourseHome />} />
         <Route path='FrontendDMS/courseDetails/:courseCode' element={<CourseDetails />} />
         <Route path='FrontendDMS/trainerManagement' element={<TrainersHome />} />
@@ -220,7 +226,7 @@ function App() {
         <Route path='FrontendDMS/traineeDetails/:traineeName' element={<TraineeDetails />} />
         <Route path='FrontendDMS/courseCreate' element={<CourseCreationPage />} />
         <Route path='FrontendDMS/courseView/:courseCode' element={<CourseViewPage />} />
-        <Route path='/courseHomeViewPage' element={<UserHomePageTMS />} />
+        <Route path='FrontendDMS/courseHomeViewPage' element={<UserHomePageTMS />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

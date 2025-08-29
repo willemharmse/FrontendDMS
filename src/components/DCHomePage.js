@@ -5,11 +5,13 @@ import "./DCHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faScaleBalanced, faCertificate, faListOl, faChevronLeft, faChevronRight, faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-
+import TopBarDD from "./Notifications/TopBarDD";
+import { getCurrentUser, canIn } from "../utils/auth";
 import TopBar from "./Notifications/TopBar";
 
 const DCHomePage = () => {
     const navigate = useNavigate();
+    const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
     useEffect(() => {
@@ -49,8 +51,7 @@ const DCHomePage = () => {
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    {/* Container for right-aligned icons */}
-                    <TopBar />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className="scrollable-box-dc-home">

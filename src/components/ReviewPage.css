@@ -171,7 +171,7 @@ body {
 }
 
 .Toastify__toast-container {
-    z-index: 9999 !important;
+    z-index: 100000 !important;
     /* Makes sure the toast appears on top of other elements */
 }
 

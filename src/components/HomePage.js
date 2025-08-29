@@ -37,7 +37,7 @@ const HomePage = () => {
       title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/courseHomeViewPage", category: "TMS"
     },
     {
-      title: "Flameproof Compliance Management", src: "test.png", icon: faGraduationCap, path: "/FrontendDMS/flameManageHome", category: "TMS"
+      title: "Flameproof Compliance Management", src: "FCMS.svg", icon: faGraduationCap, path: "/FrontendDMS/flameManageSites", category: "FCMS"
     },
     // {
     //   title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/constructionCM", category: "CMS"
@@ -65,12 +65,7 @@ const HomePage = () => {
         {menuItems.map((item, index) => (
           <div key={index} className="card" onClick={() => navigate(item.path)}>
             <div className="card-content">
-              {item.src === "test.png" && (
-                <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} className={`${item.src === "TM.png" ? "card-icon-hat" : "card-icon"}`} />
-              )}
-              {item.src !== "test.png" && (
-                <img src={item.src} alt="Logo" className={`${item.src === "TM.png" ? "card-icon-hat" : "card-icon"} ${item.src === "DM.png" ? "card-icon-dm" : "card-icon"} ${item.src === "RM.png" ? "card-icon-rm" : "card-icon"} ${item.src === "DC.png" ? "card-icon-dc" : "card-icon"} ${item.src === "CM.png" ? "card-icon-cm" : "card-icon"}`} />
-              )}
+              <img src={item.src} alt="Logo" className={`${item.src === "TM.png" ? "card-icon-hat" : "card-icon"} ${item.src === "FCMS.svg" ? "card-icon-flames" : "card-icon"} ${item.src === "DM.png" ? "card-icon-dm" : "card-icon"} ${item.src === "RM.png" ? "card-icon-rm" : "card-icon"} ${item.src === "DC.png" ? "card-icon-dc" : "card-icon"} ${item.src === "CM.png" ? "card-icon-cm" : "card-icon"}`} />
             </div>
             <h3>{item.title}</h3>
           </div>

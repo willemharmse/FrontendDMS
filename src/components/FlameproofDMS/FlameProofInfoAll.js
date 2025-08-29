@@ -1,0 +1,366 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretLeft, faCaretRight, faHardHat, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faX, faFileCirclePlus, faSearch, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { jwtDecode } from 'jwt-decode';
+import Select from "react-select";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SortPopup from "../FileInfo/SortPopup";
+import { getCurrentUser, can, isAdmin, hasRole, canIn } from "../../utils/auth";
+import TopBar from "../Notifications/TopBar";
+import "./FlameProofMain.css"
+import UploadChoiceFPM from "./Popups/UploadChoiceFPM";
+import UploadMasterPopup from "./Popups/UploadMasterPopup";
+import UploadComponentPopup from "./Popups/UploadComponentPopup";
+import RegisterAssetPopup from "./Popups/RegisterAssetPopup";
+import DeleteAsset from "./Popups/DeleteAsset";
+import SortPopupAsset from "./Popups/SortPopupAsset";
+import TopBarFP from "./Popups/TopBarFP";
+
+const FlameProofInfoAll = () => {
+  const [files, setFiles] = useState([]);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState('');
+  const access = getCurrentUser();
+  const [selectedFileId, setSelectedFileId] = useState(null);
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+  const [sortField, setSortField] = useState("");
+  const [sortOrder, setSortOrder] = useState("ascending");
+  const [loading, setLoading] = useState(false);
+  const [upload, setUpload] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const navigate = useNavigate();
+  const [register, setRegister] = useState(false);
+  const [popup, setPopup] = useState(null);
+  const [uploadAssetNr, setUploadAssetNr] = useState("");
+  const [assetTypes, setAssetTypes] = useState([]);
+  const [selectedAssetType, setSelectedAssetType] = useState([]);
+  const [sites, setSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState([]);
+
+  const closePopup = () => {
+    setPopup(null);
+  }
+
+  const openUpload = () => {
+    setUpload(true);
+  };
+
+  const closeUpload = () => {
+    setUpload(!upload);
+    fetchFiles();
+  };
+
+  const openRegister = () => {
+    setRegister(true);
+  };
+
+  const closeRegister = () => {
+    setRegister(!register);
+  };
+
+  const openSortModal = () => setIsSortModalOpen(true);
+  const closeSortModal = () => setIsSortModalOpen(false);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setToken(storedToken);
+      const decodedToken = jwtDecode(storedToken);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (token && hasRole(access, "FCMS")) {
+      fetchFiles();
+    }
+  }, [token]);
+
+  const handleSort = () => {
+    const sortedFiles = [...files].sort((a, b) => {
+      const fieldA = a[sortField]?.toString().toLowerCase() || "";
+      const fieldB = b[sortField]?.toString().toLowerCase() || "";
+      if (sortOrder === "ascending") return fieldA.localeCompare(fieldB);
+      return fieldB.localeCompare(fieldA);
+    });
+    setFiles(sortedFiles);
+    closeSortModal();
+  };
+
+  // Fetch files from the API
+  const fetchFiles = async () => {
+    const route = `/api/flameproof/assets/all-sites`;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+        headers: {
+          // 'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch files');
+      }
+      const data = await response.json();
+      const sortedFiles = data.assets.sort((a, b) => new Date(a.assetNr) - new Date(b.assetNr));
+
+      setFiles(sortedFiles);
+
+      const uniqueOpAreas = [...new Set(data.assets.map(file => file.operationalArea))].sort();
+      const uniqueSites = [...new Set(data.assets.map(file => file.siteName))].sort();
+      const uniqueTypes = [...new Set(data.assets.map(file => file.assetType))].sort();
+
+      setAreas(uniqueOpAreas);
+      setSites(uniqueSites);
+      setAssetTypes(uniqueTypes);
+
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const deleteAsset = async () => {
+    if (!selectedFileId) return;
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/assets/${selectedFileId}/permanent`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete the file');
+      setIsModalOpen(false);
+      setSelectedFileId(null);
+      fetchFiles();
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    } finally {
+      setLoading(false); // Reset loading state after response
+    }
+  };
+
+  const formatStatus = (type) => {
+    return type
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  const iconMap = {
+    "All Document": "allDocumentsDMS.svg",
+    "Continuous Miner": "FCMS_CM.png",
+    Guideline: "guidelinesDMSInverted.svg",
+    "DMRE MCOP Guideline": "guidelinesDMSInverted.svg",
+    "Industry Document": "guidelinesDMSInverted.svg",
+    MCOP: faHardHat,
+    Policy: "policiesDMSInverted.svg",
+    Procedure: "proceduresDMSInverted.svg",
+    "Risk Assessment": "riskAssessmentDMSInverted.svg",
+    "Special Instruction": "guidelinesDMSInverted.svg",
+    Standard: "standardsDMSInverted.svg",
+    Training: "guidelinesDMSInverted.svg",
+    Permit: "permitsDMSInverted.svg"
+  }
+
+
+  const openModal = (fileId, asset) => {
+    setSelectedFileId(fileId);
+    setSelectedAsset(asset);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedFileId(null);
+    setSelectedAsset(null);
+    setIsModalOpen(false);
+  };
+
+  const getComplianceColor = (status) => {
+    const value = parseInt(status.replace("%", ""), 10);
+    if (value >= 100) return "status-good";
+    if (value >= 80) return "status-worse";
+    if (value >= 50) return "status-worst";
+    return "status-bad";
+  };
+
+  const filteredFiles = files.filter((file) => {
+    const matchesSearchQuery = (
+      file.siteName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.assetType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.assetNr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.operationalArea.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.assetOwner.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.departmentHead.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const matchesFilters =
+      (selectedArea.length === 0 || selectedArea.includes(file.operationalArea)) &&
+      (selectedAssetType.length === 0 || selectedAssetType.includes(file.assetType)) &&
+      (selectedSite.length === 0 || selectedSite.includes(file.siteName));
+
+    return matchesSearchQuery && matchesFilters;
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return (
+    <div className="file-info-container">
+      {isSidebarVisible && (
+        <div className="sidebar-um">
+          <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
+            <FontAwesomeIcon icon={faCaretLeft} />
+          </div>
+          <div className="sidebar-logo-um">
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <p className="logo-text-um">Flameproof Compliance Management</p>
+          </div>
+
+          <div className="filter-dm-fi">
+            <p className="filter-text-dm-fi">Filter</p>
+            <div className="button-container-dm-fi">
+              <div className="fi-info-popup-page-select-container">
+                <Select options={assetTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedAssetType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Asset Type" />
+              </div>
+              <div className="fi-info-popup-page-select-container">
+                <Select options={sites.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedSite(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Site" />
+              </div>
+              <div className="fi-info-popup-page-select-container">
+                <Select options={areas.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area" />
+              </div>
+            </div>
+          </div>
+          {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+            <div className="filter-dm-fi-2">
+              <p className="filter-text-dm-fi">Upload</p>
+              <div className="button-container-dm-fi">
+                <button className="but-dm-fi">
+                  <div className="button-content" onClick={openUpload}>
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <span className="button-text">Single Certificate</span>
+                  </div>
+                </button>
+                <button className="but-dm-fi" onClick={openRegister}>
+                  <div className="button-content">
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <span className="button-text">Register Single Asset</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="sidebar-logo-dm-fi">
+            <img src={`${process.env.PUBLIC_URL}/allDocumentsDMS.svg`} alt="Logo" className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">{(`All Mine Assets`)}</p>
+          </div>
+        </div>
+      )}
+
+      {!isSidebarVisible && (
+        <div className="sidebar-hidden">
+          <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+            <FontAwesomeIcon icon={faCaretRight} />
+          </div>
+        </div>
+      )}
+
+      <div className="main-box-file-info">
+        <div className="top-section-um">
+          <div className="burger-menu-icon-um">
+            <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+          </div>
+
+          <div className="um-input-container">
+            <input
+              className="search-input-um"
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
+            {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
+          </div>
+
+          <div className={`info-box-fih`}>Number of Certificates: {filteredFiles.length}</div>
+
+          {/* This div creates the space in the middle */}
+          <div className="spacer"></div>
+
+          <TopBarFP openSort={openSortModal} />
+        </div>
+
+        <div className="table-container-file">
+          <table>
+            <thead>
+              <tr >
+                <th className="flame-all-num col" style={{ fontSize: "14px" }}>Nr</th>
+                <th className="flame-all-site col">Site</th>
+                <th className="flame-all-type col">Asset Type</th>
+                <th className="flame-all-ass-nr col">Asset Nr</th>
+                <th className="flame-all-area col">Area</th>
+                <th className="flame-all-owner col">Asset Owner</th>
+                <th className={`flame-all-head`}>Department Head</th>
+                <th className={`flame-all-status col`}>Compliance Status</th>
+                {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-all-act col" style={{ fontSize: "14px" }}>Action</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFiles.map((asset, index) => (
+                <tr key={index} style={{ fontSize: "14px" }} className={`file-info-row-height`} onClick={() => navigate(`/FrontendDMS/flameManageSub/${asset.assetNr}/${asset._id}`)}>
+                  <td className="col">{index + 1}</td>
+                  <td className="col" style={{ textAlign: "left" }}>{asset.siteName}</td>
+                  <td
+                    style={{ textAlign: "left" }}
+                    className="col"
+                  >
+                    {(asset.assetType)}
+                  </td>
+                  <td className="col" style={{ textAlign: "left" }}>{asset.assetNr}</td>
+                  <td className={`col`} style={{ textAlign: "left" }}>{(asset.operationalArea)}</td>
+                  <td className="col" style={{ textAlign: "left" }}>{asset.assetOwner}</td>
+                  <td className="col" style={{ textAlign: "left" }}>{asset.departmentHead}</td>
+                  <td className={`col ${getComplianceColor(asset.complianceStatus)}`}>{(asset.complianceStatus)}</td>
+                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+                    <td className={"col-act"}>
+                      <button
+                        className={"delete-button-fi col-but"}
+                        onClick={(e) => {
+                          e.stopPropagation();         // ⛔ prevent row click
+                          openModal(asset._id, asset);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
+      {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+      {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
+      {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
+      {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} />)}
+      <ToastContainer />
+    </div >
+  );
+};
+
+export default FlameProofInfoAll;

@@ -25,6 +25,26 @@
     text-align: center;
 }
 
+.flame-ph-icon {
+    width: 160px;
+    height: 160px;
+    background-color: #002060;
+    border-radius: 50%;
+    /* Ensures a perfect circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #002060;
+    overflow: hidden;
+    /* Prevents overflow */
+}
+
+.flame-ph-icon svg {
+    width: 60%;
+    /* Adjust icon size relative to the circle */
+    height: 60%;
+}
+
 .flame-area-filter {
     word-wrap: break-word;
     word-break: break-word;
@@ -198,5 +218,86 @@
     /* Bootstrap red */
     color: white;
     font-weight: bold;
+    text-align: center;
+}
+
+.flame-all-num {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-site {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-type {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-ass-nr {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-area {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-owner {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-head {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-status {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 13%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-all-act {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 7%;
+    font-size: 14px;
     text-align: center;
 }

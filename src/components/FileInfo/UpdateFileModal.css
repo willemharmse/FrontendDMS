@@ -139,6 +139,17 @@
     font-size: 14px;
 }
 
+.update-file-issue-date {
+    width: calc(100% - 48px);
+    margin-left: 12px;
+    padding: 12px;
+    font-family: Arial;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     border-radius: 4px;

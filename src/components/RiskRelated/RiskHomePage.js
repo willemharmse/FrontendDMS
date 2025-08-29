@@ -5,11 +5,13 @@ import "./RiskHomePage.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faCogs, faHardHat, faListCheck, faNetworkWired, faChevronLeft, faChevronRight, faArrowsRotate, faUserTie, faExclamationTriangle, faTriangleExclamation, faArrowLeft, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-
+import TopBarDD from "../Notifications/TopBarDD";
 import TopBar from "../Notifications/TopBar";
+import { getCurrentUser, canIn } from "../../utils/auth";
 
 const RiskHomePage = () => {
     const navigate = useNavigate();
+    const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -58,7 +60,7 @@ const RiskHomePage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 
                 <div className="scrollable-box-risk-home">

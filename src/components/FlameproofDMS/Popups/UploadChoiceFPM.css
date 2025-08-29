@@ -1,0 +1,151 @@
+.popup-overlay-fpm-upload-choice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-content-fpm-upload-choice {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 750px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 170px;
+    /* Ensure the popup does not stretch veceically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+.fpm-upload-choice-table-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers veceically */
+    flex: 1;
+    padding: 15px 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.fpm-upload-choice-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.fpm-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.fpm-select-container::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    font-family: Arial;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.fpm-select-container-2 {
+    position: relative;
+    width: 100%;
+}
+
+.fpm-font-fam-labels {
+    font-family: Arial;
+    font-size: 18px !important;
+    font-weight: normal;
+    text-align: center;
+    margin-top: 0px;
+}
+
+.fpm-select-container-2::after {
+    content: '';
+    position: absolute;
+    right: 25px;
+    font-family: Arial;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.fpm-input-select-half {
+    width: calc(100% - 14px);
+    margin-bottom: 2px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+    margin-left: 15px;
+}
+
+.fpm-input-select {
+    width: calc(100% - 14px);
+    margin-bottom: 2px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+.fpm-popup-additional-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.fpm-popup-half {
+    flex: 1;
+    width: 50%;
+}
+
+/* Match the look of the upload button in UploadPopup */
+.fpm-upload-choice-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    width: 28%;
+    height: 42px;
+    border-radius: 4px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.fpm-upload-choice-button:hover {
+    background-color: #0a2d5e;
+}

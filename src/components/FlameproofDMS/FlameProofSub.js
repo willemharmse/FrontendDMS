@@ -1,144 +1,64 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faClipboardCheck, faFileAlt, faFileSignature, faHardHat, faHome, faIndustry, faListOl, faScaleBalanced, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
-import FilterFileName from "../FileInfo/FilterFileName";
 import Select from "react-select";
-import ReviewDatePopup from "../FileInfo/ReviewDatePopup";
-import UploadPopup from "../FileInfo/UploadPopup";
-import UpdateFileModal from "../FileInfo/UpdateFileModal";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import BurgerMenuFIMain from "../FileInfo/BurgerMenuFIMain";
 import DeletePopup from "../FileInfo/DeletePopup";
-import SortPopup from "../FileInfo/SortPopup";
-import BatchUpload from "../FileInfo/BatchUpload";
 import DownloadPopup from "../FileInfo/DownloadPopup";
-import PopupMenu from "../FileInfo/PopupMenu";
-import Notifications from "../Notifications/Notifications";
-import RenameDocument from "../FileInfo/RenameDocument";
 import { getCurrentUser, can, isAdmin, hasRole, canIn } from "../../utils/auth";
-import TopBar from "../Notifications/TopBar";
 import "./FlameProofMain.css"
+import UploadChoiceFPM from "./Popups/UploadChoiceFPM";
+import UploadMasterPopup from "./Popups/UploadMasterPopup";
+import UploadComponentPopup from "./Popups/UploadComponentPopup";
+import RegisterAssetPopup from "./Popups/RegisterAssetPopup";
+import PopupMenuOptions from "./Popups/PopupMenuOptions";
+import UpdateCertificateModal from "./Popups/UpdateCertificateModal";
+import SortPopupCertificates from "./Popups/SortPopupCertificates";
+import TopBarFPC from "./Popups/TopBarFPC";
 
 const FlameProofSub = () => {
-  const { type } = useParams();
-  const [files, setFiles] = useState([]); // State to hold the file data
-  const [disciplines, setDisciplines] = useState([]);
+  const { type, assetId } = useParams();
+  const [files, setFiles] = useState([]);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [docTypes, setDocTypes] = useState([]);
-  const [docStatus, setDocStatus] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDiscipline, setSelectedDiscipline] = useState([]);
-  const [selectedType, setSelectedType] = useState([]);
   const [error, setError] = useState(null);
   const [token, setToken] = useState('');
   const access = getCurrentUser();
   const [hoveredFileId, setHoveredFileId] = useState(null);
   const [isTrashView, setIsTrashView] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [downloadFileId, setDownloadFileId] = useState(null);
   const [downloadFileName, setDownloadFileName] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isActionAvailable = !isTrashView && canIn(access, "DMS", ["systemAdmin", "contributor"]);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("ascending");
-  const [reviewDateVal, setReviewDateVal] = useState("");
-  const [isRDPopupOpen, setIsRDPopupOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [upload, setUpload] = useState(false);
   const [update, setUpdate] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
-  const [batch, setBatch] = useState(false);
   const [updateID, setUpdateID] = useState(null);
-  const [rename, setRename] = useState(false);
-  const [documentRenameName, setDocumentRenameName] = useState("");
-  const [filters, setFilters] = useState({
-    author: '',
-    deptHead: '',
-    docID: '',
-    startDate: '',
-    endDate: ''
-  });
-  const [count, setCount] = useState(""); // Placeholder for unread notifications count
-  const [profilePic, setProfilePic] = useState(null);
+  const [register, setRegister] = useState(false);
+  const [popup, setPopup] = useState(null);
+  const [uploadAssetNr, setUploadAssetNr] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [status, setStatus] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState([]);
 
-  const certificates = [
-    { nr: 1, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-010", certificateType: "Master", departmentHead: "Quintin Coetzee", component: "Master", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 2, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-002", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 1", status: "Invalid", issueDate: "2025-08-20" },
-    { nr: 3, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-012", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 2", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 4, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-013", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 3", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 5, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-014", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 4", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 6, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-015", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 5", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 7, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-016", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 6", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 8, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-017", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 7", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 9, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-018", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 8", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 10, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-019", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 9", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 11, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-020", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 10", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 12, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-021", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 11", status: "Valid", issueDate: "2025-08-20" },
-    { nr: 13, assetNr: "CM1", operationalArea: "Area A", assetOwner: "Thabo Mokoena", certificationAuthority: "FireSafe Ltd.", certificateNr: "FP-2025-022", certificateType: "Component", departmentHead: "Quintin Coetzee", component: "Component 12", status: "Valid", issueDate: "2025-08-20" }
-  ];
-
-  useEffect(() => {
-    // Load from sessionStorage on mount
-    const cached = sessionStorage.getItem('profilePic');
-    setProfilePic(cached || null);
-  }, []);
-
-  const fetchNotificationCount = async () => {
-    const route = `/api/notifications/count`;
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch notification count');
-      }
-      const data = await response.json();
-      setCount(data.notifications);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotificationCount();
-  }, []);
+  const closePopup = () => {
+    setPopup(null);
+  }
 
   const openUpload = () => {
     setUpload(true);
   };
-
-  const openRename = (fileName, fileID) => {
-    setDocumentRenameName(fileName);
-    setUpdateID(fileID);
-    setRename(true);
-  }
-
-  const closeRename = () => {
-    setRename(false);
-    fetchFiles();
-  }
-
-  const openBatch = () => {
-    setBatch(true);
-  }
-
-  const closeBatch = () => {
-    setBatch(false);
-    fetchFiles();
-  }
 
   const closeUpload = () => {
     setUpload(!upload);
@@ -155,18 +75,16 @@ const FlameProofSub = () => {
     fetchFiles();
   };
 
-  const openRDPopup = () => setIsRDPopupOpen(true);
-  const closeRDPopup = () => setIsRDPopupOpen(false);
+  const openRegister = () => {
+    setRegister(true);
+  };
+
+  const closeRegister = () => {
+    setRegister(!register);
+  };
 
   const openSortModal = () => setIsSortModalOpen(true);
   const closeSortModal = () => setIsSortModalOpen(false);
-
-  const handleFilterChange = (field, value) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [field]: value,
-    }));
-  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -175,27 +93,6 @@ const FlameProofSub = () => {
       const decodedToken = jwtDecode(storedToken);
     }
   }, [navigate]);
-
-  useEffect(() => {
-    const fetchValues = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL}/api/valuesUpload/`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-
-        setReviewDateVal(data[0].reviewDate);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-    fetchValues();
-  }, []);
-
-  const handlePreview = (fileId) => {
-    navigate(`/preview/${fileId}`);
-  };
 
   useEffect(() => {
     if (token && hasRole(access, "DMS")) {
@@ -218,30 +115,25 @@ const FlameProofSub = () => {
     closeSortModal();
   };
 
-  // Fetch files from the API
   const fetchFiles = async () => {
-    const route = isTrashView ? `/api/file/trash/` : (type === "All Document" ? `/api/file/` : `/api/file/type/${type}`);
+    const route = isTrashView ? `/api/flameproof/trash/asset/${assetId}` : `/api/flameproof/certificates/by-asset/${assetId}`;
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
         headers: {
-          // 'Authorization': `Bearer ${token}` // Uncomment and fill in the token if needed
         }
       });
       if (!response.ok) {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
-      const sortedFiles = data.files.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate));
 
-      setFiles(sortedFiles);
+      const uniqueOpAreas = [...new Set(data.certificates.map(file => file.asset.operationalArea))].sort();
+      const uniqueStatus = [...new Set(data.certificates.map(file => file.status))].sort();
 
-      const uniqueDiscipline = [...new Set(data.files.map(file => file.discipline))].sort();
-      const uniqueTypes = [...new Set(data.files.map(file => file.documentType))].sort();
-      const uniqueDocStatus = [...new Set(data.files.map(file => file.status))].sort();
+      setAreas(uniqueOpAreas);
+      setStatus(uniqueStatus);
 
-      setDocStatus(uniqueDocStatus);
-      setDisciplines(uniqueDiscipline);
-      setDocTypes(uniqueTypes);
+      setFiles(data.certificates);
     } catch (error) {
       setError(error.message);
     }
@@ -253,19 +145,48 @@ const FlameProofSub = () => {
 
   const restoreFile = async (fileId) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/file/trash/restore/${fileId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.REACT_APP_URL}/api/flameproof/trash/restore/${fileId}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, },
         }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch files');
+      );
+
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const data = isJson ? await res.json() : null;
+      console.log(data)
+
+      if (!res.ok) {
+        const msg = data?.error || data?.message || `Restore failed`;
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.error(msg, {
+          closeButton: true,
+          autoClose: 1500,
+          style: { textAlign: "center" },
+        });
+        return;
       }
+
+      const msg = data?.message || "Certificate restored successfully";
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success(msg, {
+        closeButton: true,
+        autoClose: 1200,
+        style: { textAlign: "center" },
+      });
 
       fetchFiles();
     } catch (error) {
-      alert('Error restoring the file. Please try again.');
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error(error.message || "Error restoring the file. Please try again.", {
+        closeButton: true,
+        autoClose: 1500,
+        style: { textAlign: "center" },
+      });
     }
   };
 
@@ -273,7 +194,7 @@ const FlameProofSub = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/file/download/${fileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/downloadCertificate/${fileId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -284,10 +205,8 @@ const FlameProofSub = () => {
         throw new Error('Failed to download the file');
       }
 
-      // Confirm the response is a Blob
       const blob = await response.blob();
 
-      // Create a URL and download the file
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -299,7 +218,7 @@ const FlameProofSub = () => {
       console.error('Error downloading file:', error);
       alert('Error downloading the file. Please try again.');
     } finally {
-      setLoading(false); // Reset loading state after response
+      setLoading(false);
     }
   };
 
@@ -308,7 +227,7 @@ const FlameProofSub = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/file/delete/${selectedFileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/delete/${selectedFileId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -329,7 +248,7 @@ const FlameProofSub = () => {
     if (!selectedFileId) return;
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/file/trash/delete/${selectedFileId}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/trash/delete/${selectedFileId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -360,54 +279,25 @@ const FlameProofSub = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const removeFileExtension = (fileName) => {
-    return fileName.replace(/\.[^/.]+$/, "");
-  };
-
-  const getReviewClass = (reviewDate) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today to midnight to avoid time mismatches
-    const review = new Date(reviewDate);
-    review.setHours(0, 0, 0, 0); // Normalize review date
-
-    const timeDiff = review - today;
-
-    // If the review date is in the past, mark it as "review-past"
-    if (timeDiff < 0) {
-      return "review-past";
-    }
-    // If the review date is within the next `reviewDateVal` days, mark it as "review-soon"
-    else if (timeDiff <= reviewDateVal * 24 * 60 * 60 * 1000) {
-      return "review-soon";
-    }
-    // Otherwise, mark it as "review-ongoing"
-    return "review-ongoing";
-
-  };
-
-  const iconMap = {
-    "All Document": "allDocumentsDMS.svg",
-    Audit: "auditsDMSInverted.svg",
-    Guideline: "guidelinesDMSInverted.svg",
-    "DMRE MCOP Guideline": "guidelinesDMSInverted.svg",
-    "Industry Document": "guidelinesDMSInverted.svg",
-    MCOP: faHardHat,
-    Policy: "policiesDMSInverted.svg",
-    Procedure: "proceduresDMSInverted.svg",
-    "Risk Assessment": "riskAssessmentDMSInverted.svg",
-    "Special Instruction": "guidelinesDMSInverted.svg",
-    Standard: "standardsDMSInverted.svg",
-    Training: "guidelinesDMSInverted.svg",
-    Permit: "permitsDMSInverted.svg"
+  const assetIconMap = {
+    "all-assets": "/allDocumentsDMS.svg",
+    "Continuous Miner": "/FCMS_CM2.png",
+    "Shuttle Car": "/FCMS_SC2.png",
+    "Roof Bolter": "/FCMS_RB2.png",
+    "Feeder Breaker": "/FCMS_FB2.png",
+    "Load Haul Dump": "/FCMS_LHD2.png",
+    "Tractor": "/FCMS_T2.png",
   }
 
-  const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'status-approved';
-      case 'in_review': return 'status-rejected';
-      case 'in_approval': return 'status-pending';
-      default: return 'status-default';
-    }
+  const getFirstAssetType = () => {
+    return (files?.[0]?.asset?.assetType || "").trim();
+  }
+
+  const getAssetIconSrc = () => {
+    if (isTrashView) return `${process.env.PUBLIC_URL}/trash.png`;
+    const firstType = getFirstAssetType();
+    const key = firstType.replace(/\s+/g, " ");
+    return `${process.env.PUBLIC_URL}${assetIconMap[key]}` || "/defaultDMS.svg";
   };
 
   const toggleTrashView = () => {
@@ -446,55 +336,37 @@ const FlameProofSub = () => {
   };
 
   const getComplianceColor = (status) => {
-    if (status === "Valid") return "status-good";
-    if (status === "Invalid") return "status-bad";
+    if (status === "valid") return "status-good";
+    if (status === "invalid") return "status-bad";
   };
 
-  // Filter files based on selected values
-  /*
   const filteredFiles = files.filter((file) => {
     const matchesSearchQuery = (
-      file.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.discipline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.documentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.owner.some(o => o.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      file.departmentHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.docID.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const matchTextFilters = (
-      file.owner.some(o => o.toLowerCase().includes(filters.author.toLowerCase())) &&
-      file.departmentHead.toLowerCase().includes(filters.deptHead.toLowerCase()) &&
-      file.docID.toLowerCase().includes(filters.docID.toLowerCase()) &&
-      (!filters.startDate || file.reviewDate >= filters.startDate) &&
-      (!filters.endDate || file.reviewDate <= filters.endDate)
+      file.asset.assetNr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.asset.operationalArea.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.asset.assetOwner.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.certAuth.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.certNr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.asset.departmentHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.certificateType.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const matchesFilters =
-      (selectedType.length === 0 || selectedType.includes(file.documentType)) &&
-      (selectedDiscipline.length === 0 || selectedDiscipline.includes(file.discipline)) &&
-      (selectedStatus.length === 0 || selectedStatus.includes(file.status));
+      (selectedArea.length === 0 || selectedArea.includes(file.asset.operationalArea)) &&
+      (selectedStatus.length === 0 || selectedStatus.includes(file.status))
 
-    const matchesApproval =
-      (can(access, "DMS", "viewer"))
-        ? file.status.toLowerCase() === "approved"
-        : true; // Allow all files for auditors
-
-    return matchesSearchQuery && matchesFilters && matchesApproval && matchTextFilters;
+    return matchesSearchQuery && matchesFilters;
   });
-*/
+
+  const invalidCount = filteredFiles.filter(
+    f => (f.status || "").toLowerCase() === "invalid"
+  ).length;
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of today
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="file-info-container">
-      {upload && (<UploadPopup onClose={closeUpload} />)}
-      {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} fileID={updateID} />)}
 
       {isSidebarVisible && (
         <div className="sidebar-um">
@@ -510,15 +382,15 @@ const FlameProofSub = () => {
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
               <div className="fi-info-popup-page-select-container">
-                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Operational Areas" />
+                <Select options={areas.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area" />
               </div>
               <div className="fi-info-popup-page-select-container">
-                <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Compliance Status" />
+                <Select options={status.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Status" />
               </div>
             </div>
           </div>
-          {!isTrashView && canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
-            <div className="filter-dm-fi-2">
+          {!isTrashView && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+            <div className="filter-dm-fi-2" onClick={openUpload}>
               <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi">
@@ -527,11 +399,18 @@ const FlameProofSub = () => {
                     <span className="button-text">Single Certificate</span>
                   </div>
                 </button>
+                <button className="but-dm-fi" onClick={openRegister}>
+                  <div className="button-content">
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <span className="button-text">Register Single Asset</span>
+                  </div>
+                </button>
               </div>
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <p className="logo-text-dm-fi">{(`${type}`)}</p>
+            <img src={getAssetIconSrc()} className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">{isTrashView ? `Trashed Certificates` : (type)}</p>
           </div>
         </div>
       )}
@@ -562,20 +441,14 @@ const FlameProofSub = () => {
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of Certificates: {certificates.length}</div>
-          <div className="info-box-fih trashed">Invalid Certificates: {1}</div>
+          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of Certificates: {filteredFiles.length}</div>
+          <div className="info-box-fih trashed">Invalid Certificates: {invalidCount}</div>
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
 
-          <div className="sort-menu-icon-um" style={{ marginRight: "0px" }}>
-            <FontAwesomeIcon icon={faSort} onClick={openSortModal} title="Sort" />
-          </div>
-
-          <TopBar />
+          <TopBarFPC isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} canIn={canIn} access={access} openSort={openSortModal} />
         </div>
-        {batch && (<BatchUpload onClose={closeBatch} />)}
-        {isRDPopupOpen && (<ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />)}
 
         <div className="table-container-file">
           <table>
@@ -591,36 +464,58 @@ const FlameProofSub = () => {
                 <th className="flame-sub-comp-filter col">Component</th>
                 <th className={`flame-sub-status-filter col`}>Status</th>
                 <th className="flame-sub-date-filter col">Issue Date</th>
-                <th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>
+                {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
               </tr>
             </thead>
             <tbody>
-              {certificates.map((file, index) => (
-                <tr key={index} style={{ fontSize: "14px" }} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
+              {filteredFiles.map((file, index) => (
+                <tr key={index} style={{ fontSize: "14px" }} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
-                  <td className="col" style={{ textAlign: "left" }}>{file.assetNr}</td>
                   <td
-                    onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
+                    className="col" style={{ textAlign: "left", position: "relative" }}
+                  >
+                    {file.asset.assetNr}
+
+                    {(hoveredFileId === file._id && !isTrashView) && (
+                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} />
+                    )}
+                  </td>
+                  <td
+
                     style={{ textAlign: "center" }}
                     className="col"
                   >
-                    {(file.operationalArea)}
+                    {(file.asset.operationalArea)}
                   </td>
-                  <td className="col">{file.assetOwner}</td>
-                  <td className={`col`}>{(file.certificationAuthority)}</td>
-                  <td className="col">{file.certificateNr}</td>
-                  <td className="col">{file.departmentHead}</td>
-                  <td className="col">{file.component}</td>
-                  <td className={`col ${getComplianceColor(file.status)}`}>{(file.status)}</td>
-                  <td className={`col`}>{(file.issueDate)}</td>
-                  <td className={isTrashView ? "col-act trashed" : "col-act"}>
-                    <button
-                      className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
+                  <td className="col">{file.asset.assetOwner}</td>
+                  <td className={`col`}>{(file.certAuth)}</td>
+                  <td className="col">{file.certNr}</td>
+                  <td className="col">{file.asset.departmentHead}</td>
+                  <td className="col">{formatStatus(file.certificateType)}</td>
+                  <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
+                  <td className={`col`}>{formatDate(file.issueDate)}</td>
+                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+                    <td className={isTrashView ? "col-act trashed" : "col-act"}>
+                      <button
+                        className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
+                        onClick={(e) => {
+                          e.stopPropagation();         // ⛔ prevent row click
+                          openModal(file._id, file.fileName);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                      </button>
 
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                    </button>
-                  </td>
+                      {isTrashView && (
+                        <button
+                          className={isTrashView ? "delete-button-fi col-but-res trashed-color" : "delete-button-fi col-but-res"}
+                          onClick={() => restoreFile(file._id)}
+                        >
+                          <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                        </button>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -629,9 +524,13 @@ const FlameProofSub = () => {
       </div>
 
       {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
-      {isSortModalOpen && (<SortPopup closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+      {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
-      {rename && (<RenameDocument documentName={documentRenameName} isOpen={rename} onClose={closeRename} fileID={updateID} />)}
+      {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
+      {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
+      {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} />)}
+      {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} />)}
       <ToastContainer />
     </div >
   );

@@ -348,7 +348,6 @@ const UploadPopup = ({ onClose }) => {
                     </div>
 
                     <div className="upload-file-page-form-footer">
-
                         <div className="create-user-buttons">
                             <button
                                 className="upload-file-page-upload-button"

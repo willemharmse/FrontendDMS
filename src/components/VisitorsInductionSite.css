@@ -1,0 +1,439 @@
+.visitors-induction-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: rgb(0, 3, 8);
+    background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
+}
+
+.visitors-induction-card {
+    background-color: transparent;
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.visitors-induction-logo {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.visitors-induction-login-error {
+    height: 20px;
+    /* Reserve space */
+    color: red;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    /* Or 0 if you don’t want extra space */
+}
+
+.visitors-induction-input-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    background: white;
+    background: transparent;
+}
+
+.visitors-induction-logo-img {
+    width: 140px;
+    height: 170px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+.visitors-induction-logo-img-text {
+    width: 300px;
+    height: 80px;
+    margin-bottom: 40px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.visitors-induction-input-container i {
+    position: absolute;
+    left: 15px;
+    /* Adjust icon position */
+    color: black;
+    font-size: 1rem;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-5px);
+    }
+
+    40% {
+        transform: translateX(5px);
+    }
+
+    60% {
+        transform: translateX(-5px);
+    }
+
+    80% {
+        transform: translateX(5px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.toast-offline-alert {
+    animation: shake 0.5s;
+    border: 2px solid red !important;
+    border-radius: 10px !important;
+}
+
+.toast-network-wrapper {
+    margin: 0 !important;
+    background-color: #CB6F6F !important;
+    color: white !important;
+    font-weight: bolder !important;
+}
+
+/* Shrink the body/message area */
+.toast-network-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    background-color: #CB6F6F !important;
+    color: white !important;
+    font-weight: bolder !important;
+}
+
+.margin-remover-login {
+    margin: 0 !important;
+}
+
+.visitors-induction-input-container input {
+    width: 100%;
+    padding: 12px 40px 12px 40px;
+    /* Adjusted to fit icon */
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: white;
+    outline: none;
+}
+
+.visitors-induction-password-toggle {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    width: 25px;
+    cursor: pointer;
+    color: black;
+}
+
+.visitors-induction-password-toggle:hover {
+    color: black;
+}
+
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.visitors-induction-input-container input[type=text] {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: white;
+}
+
+.visitors-induction-input-container input[type=password] {
+    width: 100%;
+    padding: 12px 40px 0px 12px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: white;
+}
+
+.visitors-induction-input-container input::placeholder {
+    color: #bdc3c7;
+}
+
+.visitors-induction-login-title {
+    font-size: 65px;
+    text-align: center;
+    font-weight: bolder;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.visitors-induction-form-group {
+    margin-bottom: 15px;
+    background: transparent;
+}
+
+.visitors-induction-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: white;
+    font-weight: 500;
+}
+
+.visitors-induction-form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.visitors-induction-form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.visitors-induction-options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    /* Reduce the width */
+    max-width: 475px;
+
+    /* Set a max width */
+    margin: 0 auto 70px auto;
+    margin-bottom: 15px;
+}
+
+.visitors-induction-surround {
+    border: 0.5px solid red !important;
+}
+
+.visitors-induction-remember-me {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgb(107, 106, 106);
+}
+
+.visitors-induction-forgot-password {
+    color: rgb(107, 106, 106);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.visitors-induction-forgot-password:hover {
+    text-decoration: underline;
+}
+
+.visitors-induction-login-button {
+    width: 40%;
+    padding: 0.8rem;
+    color: #002060;
+    /* Enhances contrast */
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    box-shadow:
+        inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        /* Inner top-left highlight */
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    /* Outer shadow for depth */
+    transition: all 0.2s;
+}
+
+.visitors-induction-login-button:hover {
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Brighter highlight */
+            #e0e0e0 30%,
+            /* Lighter silver */
+            #b8b8b8 60%,
+            /* Soft metallic */
+            #808080 100%
+            /* Darker contrast */
+        );
+    box-shadow:
+        inset 4px 4px 6px rgba(255, 255, 255, 0.9),
+        inset -4px -4px 6px rgba(0, 0, 0, 0.7),
+        3px 3px 5px rgba(0, 0, 0, 0.5);
+}
+
+.visitors-induction-login-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    /* Centers the button horizontally */
+    /* Adjust spacing */
+}
+
+.visitors-induction-logo-bottom-container {
+    position: fixed;
+    bottom: 30px;
+    left: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.visitors-induction-logo-bottom-container-right {
+    position: fixed;
+    bottom: 30px;
+    right: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.visitors-induction-logo-bottom-text-right {
+    font-size: 1rem;
+    color: white;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.visitors-induction-logo-bottom {
+    width: 50px;
+    height: 50px;
+}
+
+.visitors-induction-logo-bottom-text {
+    font-size: 0.7rem;
+    color: white;
+    margin-top: 5px;
+}
+
+.visitors-induction-progress-bar {
+    width: 40%;
+    height: 4px;
+    background-color: #4caf50;
+    /* Change color as needed */
+    transition: width 0.2s ease-in-out;
+
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+/* ---- Visitor screen layout tweaks ---- */
+.visitors-induction-card-wide {
+    max-width: 960px;
+    /* wider card for two columns */
+}
+
+.visitor-info-heading {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 12px auto 14px;
+    margin-left: 0px;
+    max-width: 900px;
+}
+
+/* 2-column grid for fields (collapses to 1 column on small screens) */
+.visitors-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px 22px;
+    margin-bottom: 18px;
+}
+
+@media (min-width: 860px) {
+    .visitors-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.grid-span-2 {
+    grid-column: 1 / -1;
+    /* lets the ID field span both columns */
+}
+
+/* make icons sit inside inputs nicely */
+.visitors-induction-input-container {
+    background: transparent;
+    position: relative;
+}
+
+.visitors-induction-input-container i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1a1a1a;
+    font-size: 0.95rem;
+}
+
+.visitors-induction-input-container input {
+    padding-left: 40px;
+    padding-right: 10px;
+    /* room for the icon */
+    background: #fff;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+}
+
+/* consent rows */
+.consent-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #fff;
+    margin: 12px 0;
+    line-height: 1.35;
+}
+
+.consent-row input[type="checkbox"] {
+    margin-top: 2px;
+}
+
+.required-asterisk {
+    color: #e43b3b;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+/* submit button width to match mock */
+.visitors-submit {
+    width: 220px;
+}

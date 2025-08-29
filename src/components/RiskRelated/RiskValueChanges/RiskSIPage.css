@@ -29,6 +29,18 @@
     color: #333;
 }
 
+.status-good-admin {
+    background-color: #7EAC89;
+    /* Bootstrap green */
+    color: white;
+}
+
+.status-bad-admin {
+    background-color: #CB6F6F;
+    /* Bootstrap red */
+    color: white;
+}
+
 .draft-list-admin {
     height: calc(100% - 90px);
     /* Set a fixed height */
@@ -247,7 +259,7 @@
 
 .risk-admin-approve-th-status {
     padding: 10px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #ddd;
     font-family: Arial;
     font-size: 14px;
@@ -256,7 +268,7 @@
 
 .risk-admin-approve-th-date {
     padding: 10px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #ddd;
     font-family: Arial;
     font-size: 14px;

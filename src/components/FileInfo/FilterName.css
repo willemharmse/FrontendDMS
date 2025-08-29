@@ -232,7 +232,7 @@
     position: absolute;
     top: 120px;
     /* Adjust to make it appear above the table row */
-    left: -75px;
+    left: -115px;
     transform: translateY(-100%);
     background-color: #ffffff;
     border: 1px solid #ddd;

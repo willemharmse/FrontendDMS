@@ -24,6 +24,30 @@
     max-height: 600px;
 }
 
+.batch-popup-overlay-assets {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.batch-popup-content-assets {
+    background: #f2f2f2;
+    padding: 25px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 700px;
+    width: 90%;
+}
+
 .batch-nr {
     width: 5%;
 }
@@ -147,6 +171,13 @@
     transform: translateY(-3%);
     padding: 20px 0;
     margin-bottom: 20px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.batch-file-group-assets {
+    padding: 20px 0;
+    margin-bottom: 10px;
     background-color: white;
     border-radius: 5px;
 }

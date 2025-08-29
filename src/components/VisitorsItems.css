@@ -1,0 +1,223 @@
+/* Root container (you provided this) */
+.visitors-items-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%) !important;
+    height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Card wrapper */
+.visitors-items-card {
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 28px 32px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title & intro */
+.visitors-items-title {
+    margin: 0;
+    text-align: center;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: #0a2a58;
+    font-weight: 800;
+}
+
+.visitors-items-intro {
+    margin: 14px auto 10px;
+    max-width: calc(100% - 28px);
+    text-align: center;
+    color: #333;
+    line-height: 1.45;
+}
+
+/* What you must declare */
+.visitors-items-whatyoumust {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 8px 14px;
+    align-items: start;
+    margin: 8px 0 6px;
+    color: #1a1a1a;
+}
+
+.visitors-items-what-label {
+    font-weight: 700;
+}
+
+.visitors-items-what-text {
+    line-height: 1.4;
+}
+
+/* Prohibited */
+.visitors-items-prohibited {
+    margin: 8px 0 16px;
+    text-align: center;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.visitors-items-prohibited-label {
+    text-decoration: underline;
+    font-weight: 800;
+}
+
+/* Rows area */
+.visitors-items-rows-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 300px;
+    /* ensures a decent scroll area even with 1 row */
+    flex: 1 1 auto;
+}
+
+.visitors-items-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.4fr 1fr 1fr 1.3fr 80px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+}
+
+.visitors-items-grid--header {
+    font-weight: 700;
+    color: #1a1a1a;
+    background: transparent;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.visitors-items-col-actions {
+    text-align: center;
+}
+
+.visitors-items-rows-scroll {
+    overflow: auto;
+    /* <-- Scrollable container between intro and button */
+    border: 1px none #e5e8ee;
+    border-radius: 10px;
+    background: transparent;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    /* keeps space for confirm + submit */
+}
+
+.visitors-items-input {
+    width: calc(100% - 24px);
+    padding: 10px 12px;
+    border: 1px solid #d9dce3;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+.visitors-items-input::placeholder {
+    color: #8a90a0;
+}
+
+.visitors-items-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.visitors-items-btn {
+    border: 1px none #cfd6e4;
+    background: transparent;
+    border-radius: 8px;
+    padding: 10px px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.02s ease-in, box-shadow 0.15s ease;
+}
+
+.visitors-items-btn:active {
+    transform: translateY(1px);
+}
+
+.visitors-items-btn--icon {
+    width: 30px;
+    padding: 8px 0;
+}
+
+.visitors-items-row-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.visitors-items-btn--secondary {
+    background: #f0f4ff;
+    border-color: #c7d4ff;
+}
+
+.visitors-items-btn--secondary:hover {
+    box-shadow: 0 2px 8px rgba(25, 88, 210, 0.15);
+}
+
+.visitors-items-confirm {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0 10px;
+    font-size: 14px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #222;
+}
+
+.visitors-items-req {
+    color: #de2b2b;
+}
+
+.visitors-items-submit-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.visitors-items-btn--primary {
+    margin-top: 10px;
+    height: 80%;
+    width: 15%;
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.visitors-items-btn--primary:hover {
+    box-shadow: 0 6px 16px rgba(10, 42, 88, 0.35);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+
+    .visitors-items-grid,
+    .visitors-items-grid--header {
+        grid-template-columns: 1fr;
+    }
+
+    .visitors-items-col-actions {
+        text-align: left;
+    }
+}

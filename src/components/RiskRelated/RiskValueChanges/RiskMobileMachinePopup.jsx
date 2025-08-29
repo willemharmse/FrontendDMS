@@ -14,7 +14,14 @@ const RiskMobileMachinePopup = ({ isOpen, onClose, userID, setMacData, onAdd }) 
         // Function to fetch users
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                const response = await fetch(
+                    `${process.env.REACT_APP_URL}/api/user/getSystemAdmins/RMS`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        },
+                    }
+                );
                 if (!response.ok) {
                     throw new Error("Failed to fetch users");
                 }

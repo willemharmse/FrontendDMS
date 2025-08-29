@@ -88,7 +88,8 @@
 .card-icon-dm,
 .card-icon-dc,
 .card-icon-rm,
-.card-icon-cm {
+.card-icon-cm,
+.card-icon-flames {
   transform: translateY(-13px);
   /* Moves the logo up */
 }
@@ -104,6 +105,15 @@
   font-size: 10rem;
   color: white;
   margin-bottom: 10px;
+}
+
+.card-icon-flames {
+  width: 115px;
+  height: 90px;
+  margin-top: 45px;
+  font-size: 10rem;
+  color: white;
+  margin-bottom: 5px;
 }
 
 .card-icon-hat {

@@ -1,0 +1,277 @@
+/* ===== Upload Master Popup (UMP) — unique, component-scoped classes ===== */
+
+.ump-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+.ump-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    z-index: 1000;
+}
+
+/* Popup content shell */
+.ump-content {
+    background: #f2f2f2;
+    padding: 20px 20px 22px 20px;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 750px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Top header (title + close) */
+.ump-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ump-input-select {
+    width: 100%;
+    margin-bottom: 0px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+.ump-title {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.ump-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #888;
+    width: 5%;
+}
+
+/* File chooser strip */
+.ump-form-group-container {
+    margin-bottom: 10px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.ump-file-name {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 5px 0 15px 0;
+}
+
+.ump-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.ump-choose-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    text-align: center;
+    width: 25%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 auto 4px auto;
+}
+
+/* Details section */
+.ump-form-group-main {
+    margin-bottom: 10px;
+    background-color: #fff;
+    padding: 15px 15px 0 15px;
+    border-radius: 8px;
+}
+
+.ump-section-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ump-section-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+    font-family: Arial;
+}
+
+.ump-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ump-form-row {
+    display: flex;
+}
+
+.ump-form-group {
+    margin-bottom: 5px;
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.ump-form-group label {
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+.ump-required {
+    color: red;
+    margin-left: 2px;
+}
+
+/* Selects */
+.ump-select-container {
+    position: relative;
+}
+
+.ump-select {
+    width: 100%;
+    padding: 10px;
+    height: 50px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+}
+
+.ump-select-container::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+/* Footer */
+.ump-form-footer {
+    margin: 10px 0 0px 0;
+    padding-top: 0;
+}
+
+.ump-upload-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    width: 27.54%;
+    height: 42px;
+    border-radius: 4px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.ump-choose-button:hover,
+.ump-upload-button:hover {
+    background-color: #0a2d5e;
+}
+
+.ump-upload-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Error state */
+.ump-error {
+    color: #CB6F6F;
+}
+
+.ump-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.ump-select-container::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    font-family: Arial;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.upm-comp-input-select {
+    width: 100%;
+    margin-bottom: 2px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .ump-overlay {
+        flex-direction: column;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .ump-form-row {
+        flex-direction: column;
+    }
+}
