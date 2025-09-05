@@ -36,6 +36,7 @@ import {
 import ImportSiteInfo from "./UploadPage/ImportSiteInfo";
 import ImportRiskSiteInfo from "./RiskRelated/ImportRiskSiteInfo";
 import TopBar from "./Notifications/TopBar";
+import { saveAs } from "file-saver";
 
 const AdminPage = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
@@ -43,6 +44,40 @@ const AdminPage = () => {
     const access = getCurrentUser();
     const [importSI, setImportSI] = useState(false);
     const navigate = useNavigate();
+
+    const exportSID = async () => {
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/siteInfoExport/export-sid`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            let filename = response.headers.get("X-Export-Filename");
+
+            if (!filename) {
+                const cd = response.headers.get("Content-Disposition") || "";
+                const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i);
+                if (match) filename = decodeURIComponent(match[1] || match[2]);
+            }
+
+            const documentName = "SID Document VN/A";
+
+            if (!filename) filename = `${documentName}.xlsx`;
+
+            const blob = await response.blob();
+            saveAs(blob, filename);
+        } catch (error) {
+            console.error("Error generating document:", error);
+        }
+    };
 
     const openImportSI = () => {
         setImportSI(true);
@@ -69,7 +104,7 @@ const AdminPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
                         <p className="logo-text-um">Admin Page</p>
                     </div>
                 </div>
@@ -105,6 +140,18 @@ const AdminPage = () => {
                             </>
                         </div>
                     )}
+
+                    {(can(access, "RMS", "systemAdmin") || isAdmin(access) || can(access, "DDS", "systemAdmin")) && (
+                        <div className={`document-card-fi-home-all`} onClick={exportSID}>
+                            <>
+                                <div className="icon-dept">
+                                    <img src={`${process.env.PUBLIC_URL}/exportSIDAdmin.svg`} className={"all-icon-fi-home"} />
+                                </div>
+                                <h3 className="document-title-fi-home">Export Site General Information</h3>
+                            </>
+                        </div>
+                    )}
+
                     {isAdmin(access) && (
                         <>
                             <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/userManagement")}>

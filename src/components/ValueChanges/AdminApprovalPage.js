@@ -5,8 +5,15 @@ import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faC
 import { jwtDecode } from 'jwt-decode';
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import "./AdminApprovalPage.css";
-import ApprovalPopup from "../RiskRelated/RiskValueChanges/ApprovalPopup";
+import ApprovalPopupAbbreviation from "../SuggestionApprovalPopups/ApprovalPopupAbbreviation";
 import AdminApprovalHeader from "../AdminAprovalHeaders/AdminApprovalHeader";
+import TopBar from "../Notifications/TopBar";
+import ApprovalPopupTerm from "../SuggestionApprovalPopups/ApprovalPopupTerm";
+import ApprovalPopupEquipment from "../SuggestionApprovalPopups/ApprovalPopupEquipment";
+import ApprovalPopupPPE from "../SuggestionApprovalPopups/ApprovalPopupPPE";
+import ApprovalPopupTool from "../SuggestionApprovalPopups/ApprovalPopupTool";
+import ApprovalPopupMaterial from "../SuggestionApprovalPopups/ApprovalPopupMaterial";
+import ApprovalPopupMachine from "../SuggestionApprovalPopups/ApprovalPopupMachine";
 
 const AdminApprovalPage = () => {
     const [drafts, setDrafts] = useState([]);
@@ -18,6 +25,26 @@ const AdminApprovalPage = () => {
     const [selectedDraft, setSelectedDraft] = useState(null);
     const [comment, setComment] = useState("");
     const [profilePic, setProfilePic] = useState(null);
+
+    const [statusTab, setStatusTab] = useState("In Review");
+
+    // Normalize a status string (case/spacing/punctuation tolerant)
+    const norm = (s = "") => s.toString().toLowerCase().replace(/[\s_-]+/g, "");
+
+    // Buckets for tolerant matching
+    const isReviewLike = (s) => ["review", "inreview", "pending", "awaitingreview"].includes(norm(s));
+    const isApprovedLike = (s) => ["approved", "accept", "accepted", "ok", "passed"].includes(norm(s));
+    const isDeclinedLike = (s) => ["declined", "rejected", "reject", "denied", "failed"].includes(norm(s));
+
+    // Does a draft fall into the currently selected tab?
+    const tabMatches = (draft) => {
+        const st = draft?.status ?? "";
+        if (norm(statusTab) === "all") return true;
+        if (norm(statusTab) === "inreview") return isReviewLike(st);
+        if (norm(statusTab) === "approved") return isApprovedLike(st);
+        if (norm(statusTab) === "declined") return isDeclinedLike(st);
+        return true;
+    };
 
     useEffect(() => {
         // Load from sessionStorage on mount
@@ -60,16 +87,19 @@ const AdminApprovalPage = () => {
         }
     };
 
-    const handleApprove = async () => {
+    const handleApprove = async (draft) => {
+        const data = draft.data;
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${selectedDraft._id}/approve`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${draft._id}/approve`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    comment, userID
+                    userID,
+                    data
                 })
             });
 
@@ -83,16 +113,19 @@ const AdminApprovalPage = () => {
         }
     };
 
-    const handleDecline = async () => {
+    const handleDecline = async (draft) => {
+        const data = draft.data;
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${selectedDraft._id}/decline`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreateVals/${draft._id}/decline`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    comment, userID
+                    userID,
+                    data
                 })
             });
 
@@ -135,74 +168,6 @@ const AdminApprovalPage = () => {
             case 'Material':
                 return "Material";
                 break;
-        }
-    };
-
-    const formatKey = (type) => {
-        switch (type) {
-            case 'abbr':
-                return "Abbreviation"
-                break;
-
-            case 'meaning':
-                return "Description"
-                break;
-
-            case 'term':
-                return "Term";
-                break;
-
-            case 'definition':
-                return "Definition"
-                break;
-
-            case 'ppe':
-                return "PPE"
-                break;
-
-            case 'eqp':
-                return "Equipment";
-                break;
-
-            case 'tool':
-                return "Tool";
-                break;
-
-            case 'mat':
-                return "Material";
-                break;
-
-            case 'machine':
-                return "Machine";
-                break;
-        }
-    };
-
-    const updateExcelFile = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/test/update-excel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update Excel file');
-            }
-
-            // Assuming the response is the Excel file in binary format
-            const blob = await response.blob();
-
-            // Create a temporary link to download the file
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'updated_data.xlsx'; // You can modify this name if needed
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error updating Excel file:', error);
         }
     };
 
@@ -261,28 +226,29 @@ const AdminApprovalPage = () => {
             return true;
         };
 
-        return rows.filter((r) => {
-            // text filters (case-insensitive "contains")
-            if (filters.type && !getTypeText(r).toLowerCase().includes(filters.type.toLowerCase())) return false;
-            if (filters.item && !getItemText(r).toLowerCase().includes(filters.item.toLowerCase())) return false;
-            if (filters.description && !getDescText(r).toLowerCase().includes(filters.description.toLowerCase())) return false;
-            if (filters.suggestedBy && !getSuggestedByText(r).toLowerCase().includes(filters.suggestedBy.toLowerCase())) return false;
-            if (filters.status && !getStatusText(r).toLowerCase().includes(filters.status.toLowerCase())) return false;
+        return rows
+            .filter(tabMatches)
+            .filter((r) => {
+                if (filters.type && !getTypeText(r).toLowerCase().includes(filters.type.toLowerCase())) return false;
+                if (filters.item && !getItemText(r).toLowerCase().includes(filters.item.toLowerCase())) return false;
+                if (filters.description && !getDescText(r).toLowerCase().includes(filters.description.toLowerCase())) return false;
+                if (filters.suggestedBy && !getSuggestedByText(r).toLowerCase().includes(filters.suggestedBy.toLowerCase())) return false;
+                if (filters.status && !getStatusText(r).toLowerCase().includes(filters.status.toLowerCase())) return false;
 
-            // dates (normalize to yyyy-mm-dd so string compare works)
-            if (hasSuggested) {
-                const suggestedISO = toISODate(r.suggestedDate);
-                if (!inRange(suggestedISO, filters.suggestedFrom, filters.suggestedTo)) return false;
-            }
+                // dates (normalize to yyyy-mm-dd so string compare works)
+                if (hasSuggested) {
+                    const suggestedISO = toISODate(r.suggestedDate);
+                    if (!inRange(suggestedISO, filters.suggestedFrom, filters.suggestedTo)) return false;
+                }
 
-            // Review Date: if filtering, exclude N/A (empty) and only keep rows in range
-            if (hasReview) {
-                const reviewISO = toISODate(r.reviewDate); // "" when N/A
-                if (!inRange(reviewISO, filters.reviewFrom, filters.reviewTo)) return false;
-            }
+                // Review Date: if filtering, exclude N/A (empty) and only keep rows in range
+                if (hasReview) {
+                    const reviewISO = toISODate(r.reviewDate); // "" when N/A
+                    if (!inRange(reviewISO, filters.reviewFrom, filters.reviewTo)) return false;
+                }
 
-            return true;
-        });
+                return true;
+            });
     };
 
     const filteredFiles = applyFilters(drafts);
@@ -319,35 +285,22 @@ const AdminApprovalPage = () => {
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                     </div>
 
-                    {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    {/* Container for right-aligned icons */}
-                    <div className="icons-container">
-                        <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faBell} title="Notifications" />
-                        </div>
-                        <div className="burger-menu-icon-um" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
-                            {profilePic ? (
-                                <img
-                                    src={profilePic}
-                                    alt="Profile"
-                                    style={{
-                                        width: "28px",          // match icon size
-                                        height: "28px",
-                                        borderRadius: "50%",    // circle
-                                        objectFit: "cover",
-                                        display: "block"
-                                    }}
-                                />
-                            ) : (
-                                <FontAwesomeIcon icon={faCircleUser} />
-                            )}
-                        </div>
-                        {isMenuOpen && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
-                    </div>
+                    <TopBar />
                 </div>
-                <div className="table-container-gen">
+                <div className="admin-approval-pill-bar">
+                    {["In Review", "Approved", "Declined", "All"].map((pill) => (
+                        <div
+                            key={pill}
+                            className={`admin-approval-pill ${statusTab === pill ? "active" : ""}`}
+                            onClick={() => setStatusTab(pill)}
+                        >
+                            {pill}
+                        </div>
+                    ))}
+                </div>
+                <div className="admin-approve-table-area">
                     <table className="risk-admin-approve-table">
                         <thead className="risk-admin-approve-head">
                             <AdminApprovalHeader filters={filters} onFilterChange={onFilterChange} />
@@ -373,7 +326,13 @@ const AdminApprovalPage = () => {
                 </div>
             </div>
 
-            {showPopup && (<ApprovalPopup approve={handleApprove} decline={handleDecline} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Abbreviation") && (<ApprovalPopupAbbreviation approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Definition") && (<ApprovalPopupTerm approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "PPE") && (<ApprovalPopupPPE approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Tool") && (<ApprovalPopupTool approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Material") && (<ApprovalPopupMaterial approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Mobile") && (<ApprovalPopupMachine approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "Equipment") && (<ApprovalPopupEquipment approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
         </div>
     );
 };

@@ -6,7 +6,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const RegisterAssetPopup = ({ onClose }) => {
+const RegisterAssetPopup = ({ onClose, refresh }) => {
     const [site, setSite] = useState('');
     const [type, setType] = useState('');
     const [number, setNumber] = useState('');
@@ -174,6 +174,8 @@ const RegisterAssetPopup = ({ onClose }) => {
             toast.success("Asset Successfully Registered", {
                 closeButton: false, autoClose: 800, style: { textAlign: 'center' }
             });
+
+            refresh();
         } catch (error) {
             setError(error.message);
             setLoading(false);

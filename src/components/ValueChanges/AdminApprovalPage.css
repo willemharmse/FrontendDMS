@@ -23,6 +23,83 @@
     /* Allows scrolling if content overflows */
 }
 
+/* --- Admin Approval pill bar (mirrors Notifications pills) --- */
+.admin-approval-pill-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 10px 5px 10px;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #ccc;
+    white-space: nowrap;
+}
+
+.admin-approval-pill {
+    flex: 0 0 auto;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    color: black;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.admin-approval-pill:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-approval-pill.active {
+    background-color: #002060;
+    color: white;
+    border-color: #002060;
+}
+
+/* For modern browsers */
+.admin-approve-table-area::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 10px;
+    /* Width of the vertical scrollbar */
+    height: 10px;
+    /* Height of the horizontal scrollbar */
+}
+
+.admin-approve-table-area::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 5px;
+    /* Rounded corners for the thumb */
+}
+
+.admin-approve-table-area::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker color when hovered */
+}
+
+.admin-approve-table-area::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    /* Color of the scrollbar track */
+    border-radius: 8px;
+    /* Rounded corners for the track */
+}
+
+/* For Firefox */
+.admin-approve-table-area {
+    scrollbar-width: thin;
+    /* Makes the scrollbar thinner */
+    scrollbar-color: #888 #e0e0e0;
+    /* Thumb color, track color */
+}
+
+.admin-approve-table-area {
+    height: calc(100% - 90px);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 .admin-title {
     text-align: center;
     margin-bottom: 15px;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
@@ -18,6 +18,7 @@ import PopupMenuOptions from "./Popups/PopupMenuOptions";
 import UpdateCertificateModal from "./Popups/UpdateCertificateModal";
 import SortPopupCertificates from "./Popups/SortPopupCertificates";
 import TopBarFPC from "./Popups/TopBarFPC";
+import DeleteCertificate from "./Popups/DeleteCertificate";
 
 const FlameProofSub = () => {
   const { type, assetId } = useParams();
@@ -51,6 +52,7 @@ const FlameProofSub = () => {
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState([]);
+  const [icon, setIcon] = useState("");
 
   const closePopup = () => {
     setPopup(null);
@@ -91,8 +93,9 @@ const FlameProofSub = () => {
     if (storedToken) {
       setToken(storedToken);
       const decodedToken = jwtDecode(storedToken);
+      getAssetIconSrc();
     }
-  }, [navigate]);
+  }, [navigate, isTrashView]);
 
   useEffect(() => {
     if (token && hasRole(access, "DMS")) {
@@ -285,7 +288,7 @@ const FlameProofSub = () => {
     "Shuttle Car": "/FCMS_SC2.png",
     "Roof Bolter": "/FCMS_RB2.png",
     "Feeder Breaker": "/FCMS_FB2.png",
-    "Load Haul Dump": "/FCMS_LHD2.png",
+    "Load Haul Dumper": "/FCMS_LHD2.png",
     "Tractor": "/FCMS_T2.png",
   }
 
@@ -293,11 +296,28 @@ const FlameProofSub = () => {
     return (files?.[0]?.asset?.assetType || "").trim();
   }
 
-  const getAssetIconSrc = () => {
-    if (isTrashView) return `${process.env.PUBLIC_URL}/trash.png`;
-    const firstType = getFirstAssetType();
-    const key = firstType.replace(/\s+/g, " ");
-    return `${process.env.PUBLIC_URL}${assetIconMap[key]}` || "/defaultDMS.svg";
+  const getAssetIconSrc = async () => {
+    if (isTrashView) {
+      setIcon(`${process.env.PUBLIC_URL}/trash.png`);
+      return;
+    }
+
+    const route = `/api/flameproof/getAsset/${type}`;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+        headers: {
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch files');
+      }
+      const data = await response.json();
+      const assetType = data.assets.assetType;
+      const key = assetType.replace(/\s+/g, " ");
+      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/defaultDMS.svg");
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   const toggleTrashView = () => {
@@ -340,23 +360,31 @@ const FlameProofSub = () => {
     if (status === "invalid") return "status-bad";
   };
 
-  const filteredFiles = files.filter((file) => {
-    const matchesSearchQuery = (
-      file.asset.assetNr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.asset.operationalArea.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.asset.assetOwner.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.certAuth.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.certNr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.asset.departmentHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.certificateType.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredFiles = useMemo(() => {
+    const fs = files.filter((file) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearchQuery = (
+        file.asset.assetNr.toLowerCase().includes(q) ||
+        file.asset.operationalArea.toLowerCase().includes(q) ||
+        file.asset.assetOwner.toLowerCase().includes(q) ||
+        file.certAuth.toLowerCase().includes(q) ||
+        file.certNr.toLowerCase().includes(q) ||
+        file.asset.departmentHead.toLowerCase().includes(q) ||
+        file.component.toLowerCase().includes(q)
+      );
 
-    const matchesFilters =
-      (selectedArea.length === 0 || selectedArea.includes(file.asset.operationalArea)) &&
-      (selectedStatus.length === 0 || selectedStatus.includes(file.status))
+      const matchesFilters =
+        (selectedArea.length === 0 || selectedArea.includes(file.asset.operationalArea)) &&
+        (selectedStatus.length === 0 || selectedStatus.includes(file.status));
 
-    return matchesSearchQuery && matchesFilters;
-  });
+      return matchesSearchQuery && matchesFilters;
+    });
+
+    const isMaster = (f) => (f.component || "").toLowerCase() === "master";
+    const masters = fs.filter(isMaster);
+    const others = fs.filter((f) => !isMaster(f));
+    return [...masters, ...others];
+  }, [files, searchQuery, selectedArea, selectedStatus]);
 
   const invalidCount = filteredFiles.filter(
     f => (f.status || "").toLowerCase() === "invalid"
@@ -375,7 +403,7 @@ const FlameProofSub = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Compliance Management</p>
+            <p className="logo-text-um">Flameproof Management</p>
           </div>
 
           <div className="filter-dm-fi">
@@ -391,12 +419,11 @@ const FlameProofSub = () => {
           </div>
           {!isTrashView && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2" onClick={openUpload}>
-              <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi">
                   <div className="button-content">
                     <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Single Certificate</span>
+                    <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
                 <button className="but-dm-fi" onClick={openRegister}>
@@ -409,7 +436,7 @@ const FlameProofSub = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={getAssetIconSrc()} className="icon-risk-rm" />
+            <img src={icon} className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{isTrashView ? `Trashed Certificates` : (type)}</p>
           </div>
         </div>
@@ -441,8 +468,8 @@ const FlameProofSub = () => {
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of Certificates: {filteredFiles.length}</div>
-          <div className="info-box-fih trashed">Invalid Certificates: {invalidCount}</div>
+          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of {isTrashView && (<>Deleted</>)} Certificates: {filteredFiles.length}</div>
+          {!isTrashView && (<div className="info-box-fih trashed">Invalid Certificates: {invalidCount}</div>)}
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
@@ -460,8 +487,8 @@ const FlameProofSub = () => {
                 <th className="flame-sub-owner-filter col">Asset Owner</th>
                 <th className="flame-sub-auth-filter col">Certification Authority</th>
                 <th className="flame-sub-cert-filter col">Certificate Nr</th>
-                <th className={`flame-sub-head-filter`}>Department Head</th>
                 <th className="flame-sub-comp-filter col">Component</th>
+                <th className={`flame-sub-head-filter`}>Department Head</th>
                 <th className={`flame-sub-status-filter col`}>Status</th>
                 <th className="flame-sub-date-filter col">Issue Date</th>
                 {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
@@ -469,10 +496,10 @@ const FlameProofSub = () => {
             </thead>
             <tbody>
               {filteredFiles.map((file, index) => (
-                <tr key={index} style={{ fontSize: "14px" }} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                <tr key={index} style={{ fontSize: "14px", cursor: "pointer" }} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
                   <td
-                    className="col" style={{ textAlign: "left", position: "relative" }}
+                    className="col" style={{ textAlign: "center", position: "relative" }}
                   >
                     {file.asset.assetNr}
 
@@ -490,8 +517,8 @@ const FlameProofSub = () => {
                   <td className="col">{file.asset.assetOwner}</td>
                   <td className={`col`}>{(file.certAuth)}</td>
                   <td className="col">{file.certNr}</td>
+                  <td className="col">{formatStatus(file.component)}</td>
                   <td className="col">{file.asset.departmentHead}</td>
-                  <td className="col">{formatStatus(file.certificateType)}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
                   <td className={`col`}>{formatDate(file.issueDate)}</td>
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
@@ -523,14 +550,12 @@ const FlameProofSub = () => {
         </div>
       </div>
 
-      {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
+      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
-      {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
-      {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} />)}
-      {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} />)}
+      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
+      {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >
   );

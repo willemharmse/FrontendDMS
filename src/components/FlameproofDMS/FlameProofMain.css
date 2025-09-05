@@ -206,17 +206,17 @@
 }
 
 .status-worst {
-    background-color: #FFC000;
+    background-color: #CB6F6F;
     /* Bootstrap orange */
-    color: black;
+    color: white;
     font-weight: bold;
     text-align: center;
 }
 
 .status-bad {
-    background-color: #CB6F6F;
+    background-color: #FFC000;
     /* Bootstrap red */
-    color: white;
+    color: black;
     font-weight: bold;
     text-align: center;
 }

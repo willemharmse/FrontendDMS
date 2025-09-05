@@ -159,6 +159,40 @@
     display: block;
 }
 
+.ump-form-group-third {
+    margin-bottom: 5px;
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    flex: 0.3215;
+}
+
+.ump-form-group-third label {
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+.ump-form-group-third-2 {
+    margin-bottom: 5px;
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    flex: 0.6785;
+}
+
+.ump-form-group-third-2 label {
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
 .ump-required {
     color: red;
     margin-left: 2px;

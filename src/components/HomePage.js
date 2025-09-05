@@ -37,7 +37,7 @@ const HomePage = () => {
       title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/courseHomeViewPage", category: "TMS"
     },
     {
-      title: "Flameproof Compliance Management", src: "FCMS.svg", icon: faGraduationCap, path: "/FrontendDMS/flameManageSites", category: "FCMS"
+      title: "Flameproof Management", src: "FCMS.svg", icon: faGraduationCap, path: "/FrontendDMS/flameManageSites", category: "FCMS"
     },
     // {
     //   title: "Compliance Management", src: "CM.png", icon: faFileAlt, path: "/constructionCM", category: "CMS"

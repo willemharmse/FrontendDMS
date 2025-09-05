@@ -188,10 +188,12 @@ const FlameProofInfoAll = () => {
 
   const getComplianceColor = (status) => {
     const value = parseInt(status.replace("%", ""), 10);
-    if (value >= 100) return "status-good";
-    if (value >= 80) return "status-worse";
-    if (value >= 50) return "status-worst";
-    return "status-bad";
+    let className = "";
+    if (value === 100) return "status-good";
+    if (value >= 80) return "status-bad";
+    if (value < 79) return "status-worst";
+
+    return className;
   };
 
   const filteredFiles = files.filter((file) => {
@@ -224,7 +226,7 @@ const FlameProofInfoAll = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Compliance Management</p>
+            <p className="logo-text-um">Flameproof Management</p>
           </div>
 
           <div className="filter-dm-fi">
@@ -243,12 +245,11 @@ const FlameProofInfoAll = () => {
           </div>
           {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2">
-              <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi">
                   <div className="button-content" onClick={openUpload}>
                     <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Single Certificate</span>
+                    <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
                 <button className="but-dm-fi" onClick={openRegister}>
@@ -318,19 +319,19 @@ const FlameProofInfoAll = () => {
             </thead>
             <tbody>
               {filteredFiles.map((asset, index) => (
-                <tr key={index} style={{ fontSize: "14px" }} className={`file-info-row-height`} onClick={() => navigate(`/FrontendDMS/flameManageSub/${asset.assetNr}/${asset._id}`)}>
-                  <td className="col">{index + 1}</td>
-                  <td className="col" style={{ textAlign: "left" }}>{asset.siteName}</td>
+                <tr key={index} style={{ fontSize: "14px", textAlign: "center", cursor: "pointer" }} className={`file-info-row-height`} onClick={() => navigate(`/FrontendDMS/flameManageSub/${asset.assetNr}/${asset._id}`)}>
+                  <td className="col" style={{ textAlign: "center" }}>{index + 1}</td>
+                  <td className="col" style={{ textAlign: "center" }}>{asset.siteName}</td>
                   <td
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", textAlign: "center" }}
                     className="col"
                   >
                     {(asset.assetType)}
                   </td>
-                  <td className="col" style={{ textAlign: "left" }}>{asset.assetNr}</td>
-                  <td className={`col`} style={{ textAlign: "left" }}>{(asset.operationalArea)}</td>
-                  <td className="col" style={{ textAlign: "left" }}>{asset.assetOwner}</td>
-                  <td className="col" style={{ textAlign: "left" }}>{asset.departmentHead}</td>
+                  <td className="col" style={{ textAlign: "center" }}>{asset.assetNr}</td>
+                  <td className={`col`} style={{ textAlign: "center" }}>{(asset.operationalArea)}</td>
+                  <td className="col" style={{ textAlign: "center" }}>{asset.assetOwner}</td>
+                  <td className="col" style={{ textAlign: "center" }}>{asset.departmentHead}</td>
                   <td className={`col ${getComplianceColor(asset.complianceStatus)}`}>{(asset.complianceStatus)}</td>
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                     <td className={"col-act"}>
@@ -354,10 +355,8 @@ const FlameProofInfoAll = () => {
 
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
-      {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
-      {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} />)}
+      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >
   );

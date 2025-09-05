@@ -9,6 +9,7 @@ import BatchUpload from "../FileInfo/BatchUpload";
 import BatchCertificates from "../FlameproofDMS/Popups/BatchCertificates";
 import BatchAssets from "../FlameproofDMS/Popups/BatchAssets";
 import AddSite from "../FlameproofDMS/Popups/AddSite";
+import FCMSTemplates from "../FlameproofDMS/Popups/FCMSTemplates";
 
 const FCMSAdminPage = () => {
     const [error, setError] = useState(null);
@@ -19,6 +20,7 @@ const FCMSAdminPage = () => {
     const [batch, setBatch] = useState(false);
     const [assets, setAssets] = useState(false);
     const [site, setSite] = useState(false);
+    const [template, setTemplate] = useState(false);
     const navigate = useNavigate();
 
     const openBatch = () => {
@@ -27,6 +29,14 @@ const FCMSAdminPage = () => {
 
     const closeBatch = () => {
         setBatch(!batch);
+    };
+
+    const openTemplate = () => {
+        setTemplate(true);
+    };
+
+    const closeTemplate = () => {
+        setTemplate(!template);
     };
 
     const openAssets = () => {
@@ -80,11 +90,11 @@ const FCMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FCMS</p>
+                        <p className="logo-text-um">Manage FMS</p>
                     </div>
 
                     <div className="button-container-create">
-                        <button className="but-um">
+                        <button className="but-um" onClick={openTemplate}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faDownload} className="button-icon" />
                                 <span className="button-text">Templates</span>
@@ -127,6 +137,7 @@ const FCMSAdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={openAssets} >
                         <>
                             <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/fmsBatch.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Register Multiple Assets</h3>
                         </>
@@ -135,6 +146,7 @@ const FCMSAdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={openSite} >
                         <>
                             <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Register New Site</h3>
                         </>
@@ -142,6 +154,8 @@ const FCMSAdminPage = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {template && (<FCMSTemplates onClose={closeTemplate} />)}
         </div>
     );
 };

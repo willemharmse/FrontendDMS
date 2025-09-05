@@ -44,7 +44,7 @@ const TopBarFPC = ({ openSort, isOpen, setIsOpen, toggleTrashView, isTrashView, 
     return (
         <div className="icons-container">
             <div className="burger-menu-icon-um-home">
-                <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faHome} title="Home" />
+                <FontAwesomeIcon onClick={() => navigate("/home")} icon={faHome} title="Home" />
             </div>
             <div className="sort-menu-icon-um">
                 <FontAwesomeIcon onClick={openSort} icon={faSort} title="Home" />

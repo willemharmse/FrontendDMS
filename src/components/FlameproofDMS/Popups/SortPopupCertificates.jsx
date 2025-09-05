@@ -23,7 +23,7 @@ const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sor
                             <option value="assetOwner" style={{ color: "black" }}>Asset Owner</option>
                             <option value="certNr" style={{ color: "black" }}>Certificate Nr</option>
                             <option value="certAuth" style={{ color: "black" }}>Certification Authority</option>
-                            <option value="certificateType" style={{ color: "black" }}>Component</option>
+                            <option value="component" style={{ color: "black" }}>Component</option>
                             <option value="departmentHead" style={{ color: "black" }}>Department Head</option>
                             <option value="issueDate" style={{ color: "black" }}>Issue Date</option>
                             <option value="status" style={{ color: "black" }}>Status</option>

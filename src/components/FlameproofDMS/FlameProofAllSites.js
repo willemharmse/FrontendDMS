@@ -29,10 +29,10 @@ const FlameProofAllSites = () => {
 
     const goToNextPage = (name, id) => {
         if (name === "All Mine Assets") {
-            navigate("/FrontendDMS/flameAllMineAsset");
+            navigate("/flameAllMineAsset");
         }
         else {
-            navigate(`/FrontendDMS/flameManageHome/${id}`);
+            navigate(`/flameManageHome/${id}`);
         }
     }
 
@@ -115,34 +115,31 @@ const FlameProofAllSites = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Flameproof Compliance Management</p>
+                        <p className="logo-text-um">Flameproof Management</p>
                     </div>
 
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                         <>
-                            <div className="filter-fih">
-                                <p className="filter-text-um">Upload</p>
-                                <div className="button-container-fih">
-                                    <button className="but-um" onClick={openUpload}>
-                                        <div className="button-content">
-                                            <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                                            <span className="button-text">Single Certificate</span>
-                                        </div>
-                                    </button>
-                                    <button className="but-um" onClick={openRegister}>
-                                        <div className="button-content">
-                                            <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                                            <span className="button-text">Register Single Asset</span>
-                                        </div>
-                                    </button>
-                                </div>
+                            <div className="button-container-create">
+                                <button className="but-um" onClick={openUpload}>
+                                    <div className="button-content">
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <span className="button-text">Upload Single Certificate</span>
+                                    </div>
+                                </button>
+                                <button className="but-um" onClick={openRegister}>
+                                    <div className="button-content">
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <span className="button-text">Register Single Asset</span>
+                                    </div>
+                                </button>
                             </div>
                             <div className="sidebar-logo-dm-fi">
                                 <div className="risk-button-container-create-bot">
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FCMS</span>
+                                            <span className="button-text">Manage FMS</span>
                                         </div>
                                     </button>
                                 </div>
@@ -203,10 +200,8 @@ const FlameProofAllSites = () => {
                 </div>
             </div>
             <ToastContainer />
-            {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
-            {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-            {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-            {register && (<RegisterAssetPopup onClose={closeRegister} />)}
+            {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchCount} />)}
+            {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} />)}
         </div>
     );
 };

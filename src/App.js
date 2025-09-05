@@ -87,6 +87,7 @@ import FlameProofSub from './components/FlameproofDMS/FlameProofSub';
 import FlameProofAllSites from './components/FlameproofDMS/FlameProofAllSites';
 import FlameProofInfoAll from './components/FlameproofDMS/FlameProofInfoAll';
 import FCMSAdminPage from './components/SystemAdmin/FCMSAdminPage';
+import PreviewCertificate from './components/FlameproofDMS/PreviewCertificate';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -178,6 +179,7 @@ function App() {
         <Route path="FrontendDMS/flameAllMineAsset" element={<FlameProofInfoAll />} />
         <Route path="FrontendDMS/flameManage/:type/:site" element={<FlameProofMain />} />
         <Route path="FrontendDMS/flameManageSub/:type/:assetId" element={<FlameProofSub />} />
+        <Route path="FrontendDMS/previewCertificate/:fileId" element={<PreviewCertificate />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
         <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
         <Route path="FrontendDMS/constructionCM" element={<ConstructionCM />} />

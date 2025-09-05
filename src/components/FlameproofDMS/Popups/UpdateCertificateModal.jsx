@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID }) => {
+const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refresh }) => {
     const [newFile, setNewFile] = useState(null);
     const [issueDate, setIssueDate] = useState("");
     const [error, setError] = useState(null);
@@ -113,6 +113,7 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID }) => {
             });
 
             closeModalAdd();
+            refresh();
         } catch (err) {
             setError(err.message);
             setSuccessMsg("");

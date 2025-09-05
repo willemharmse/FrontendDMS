@@ -61,6 +61,12 @@ const FlameProofMain = () => {
   const formatAssetTypeLabel = (assetType = "", isAll = false) => {
     if (isAll) return assetType;
     const initials = getInitials(assetType);
+    return initials ? `${assetType}` : assetType;
+  };
+
+  const formatAssetTypeLabel2 = (assetType = "", isAll = false) => {
+    if (isAll) return assetType;
+    const initials = getInitials(assetType);
     return initials ? `${assetType} (${initials})` : assetType;
   };
 
@@ -169,7 +175,7 @@ const FlameProofMain = () => {
     "Shuttle Car": "FCMS_SC2.png",
     "Roof Bolter": "FCMS_RB2.png",
     "Feeder Breaker": "FCMS_FB2.png",
-    "Load Haul Dump": "FCMS_LHD2.png",
+    "Load Haul Dumper": "FCMS_LHD2.png",
     "Tractor": "FCMS_T2.png",
   }
 
@@ -188,11 +194,13 @@ const FlameProofMain = () => {
   };
 
   const getComplianceColor = (status) => {
-    const value = parseInt(status.replace("%", ""), 10); // remove % and convert to number
-    if (value >= 100) return "status-good";   // fully compliant
-    if (value >= 80) return "status-worse";   // mostly compliant
-    if (value >= 50) return "status-worst";   // at risk
-    return "status-bad";                       // non-compliant
+    const value = parseInt(status.replace("%", ""), 10);
+    let className = "";
+    if (value === 100) return "status-good";
+    if (value >= 80) return "status-bad";
+    if (value < 79) return "status-worst";
+
+    return className;
   };
 
   const filteredFiles = files.filter((file) => {
@@ -223,7 +231,7 @@ const FlameProofMain = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Compliance Management</p>
+            <p className="logo-text-um">Flameproof Management</p>
           </div>
 
           <div className="filter-dm-fi">
@@ -242,12 +250,11 @@ const FlameProofMain = () => {
           </div>
           {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2">
-              <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi" onClick={openUpload}>
                   <div className="button-content">
                     <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Single Certificate</span>
+                    <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
                 <button className="but-dm-fi" onClick={openRegister}>
@@ -261,7 +268,7 @@ const FlameProofMain = () => {
           )}
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/${iconMap[isAll ? "all-assets" : type]}`} alt="Logo" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{(`${formatAssetTypeLabel(type.includes("All") ? type : type + "s", type.includes("All"))}`)}</p>
+            <p className="logo-text-dm-fi">{(`${formatAssetTypeLabel2(type.includes("All") ? type : type + "s", type.includes("All"))}`)}</p>
           </div>
         </div>
       )}
@@ -317,7 +324,7 @@ const FlameProofMain = () => {
               {filteredFiles.map((file, index) => (
                 <tr key={index} className={`file-info-row-height`} onClick={() => navigate(`/FrontendDMS/flameManageSub/${file.assetNr}/${file._id}`)}>
                   <td className="col">{index + 1}</td>
-                  {type.includes("All") && (<td className="col" style={{ textAlign: "left" }}>{file.assetType}</td>)}
+                  {type.includes("All") && (<td className="col" style={{ textAlign: "center" }}>{file.assetType}</td>)}
                   <td
                     onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
                     className="file-name-cell"
@@ -350,10 +357,8 @@ const FlameProofMain = () => {
 
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
-      {upload && (<UploadChoiceFPM setClose={closeUpload} setPopup={setPopup} setAsset={setUploadAssetNr} />)}
-      {popup === "master" && (<UploadMasterPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {popup === "component" && (<UploadComponentPopup onClose={closePopup} assetNr={uploadAssetNr} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} />)}
+      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >
   );

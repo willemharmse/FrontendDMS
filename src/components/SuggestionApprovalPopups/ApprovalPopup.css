@@ -17,7 +17,7 @@
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 800px;
+    max-width: 550px;
     width: 90%;
 }
 
@@ -30,9 +30,51 @@
     margin-bottom: 10px;
 }
 
+.approve-suggestion-input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    height: 15px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    text-align: center;
+}
+
+.approve-suggestion-textarea {
+    max-width: calc(100% - 20px);
+    width: calc(100% - 20px);
+    min-height: 20px;
+    max-height: 130px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-family: Arial;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    field-sizing: content;
+    resize: none;
+}
+
 .approve-suggestion-group {
     padding: 20px 20px;
     background-color: white;
+    border-radius: 5px;
+}
+
+.approve-suggestion-group-text {
+    padding: 20px 20px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+}
+
+.approve-suggestion-group-spacer {
+    padding-top: 10px;
+    background-color: transparent;
     border-radius: 5px;
 }
 
@@ -59,16 +101,6 @@
 .approve-suggestion-title {
     font-size: 1.4rem;
     margin-bottom: 15px;
-}
-
-.approve-suggestion-input {
-    width: 90%;
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-    text-align: center;
 }
 
 .approve-suggestion-label {

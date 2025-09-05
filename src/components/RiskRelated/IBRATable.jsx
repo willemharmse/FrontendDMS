@@ -648,7 +648,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 </button>
 
                 {showColumnSelector && (
-                    <div className="column-selector-popup" ref={popupRef}>
+                    <div className="column-selector-popup"
+                        onMouseDown={(e) => e.stopPropagation()} ref={popupRef}>
                         <div className="column-selector-header">
                             <h4>Select Columns</h4>
                             <button
@@ -701,7 +702,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 )}
 
                 <div className="table-wrapper-ibra" ref={tableWrapperRef}>
-                    <table className="table-borders-ibra">
+                    <table className="table-borders-ibra-table">
                         <thead className="ibra-table-header">
                             <tr>
                                 {displayColumns.map((columnId, idx) => {
@@ -907,8 +908,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     return (
                                                         <td
                                                             key={idx}
-                                                            className={`${colClass} ${colourClass}`}
+                                                            className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
+                                                            style={{ whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.riskRank}
                                                         </td>
@@ -922,8 +924,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     return (
                                                         <td
                                                             key={idx}
-                                                            className={`${colClass} ${colourClass}`}
+                                                            className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
+                                                            style={{ whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.priority}
                                                         </td>
@@ -937,8 +940,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     return (
                                                         <td
                                                             key={idx}
-                                                            className={`${colClass} ${colourClass}`}
+                                                            className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
+                                                            style={{ whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.material}
                                                         </td>
@@ -951,7 +955,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left" }}
+                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            className="correct-wrap-ibra"
                                                         >
                                                             {row.maxConsequence}
                                                         </td>
@@ -964,8 +969,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left" }}
-                                                            className={colId === "UE" ? "unwanted-event-borders" : ""}
+                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            className={`${colId === "UE" ? "unwanted-event-borders" : ""} correct-wrap-ibra`}
                                                         >
                                                             {row.UE}
                                                         </td>
@@ -978,7 +983,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left" }}
+                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            className="correct-wrap-ibra"
                                                         >
                                                             {row.source}
                                                         </td>
@@ -990,9 +996,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     return (
                                                         <td
                                                             key={idx}
-                                                            className={colClass}
+                                                            className={`${colClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
-                                                            style={{ alignItems: 'center', gap: '0px' }}
+                                                            style={{ alignItems: 'center', gap: '0px', whiteSpace: "pre-wrap" }}
                                                         >
                                                             <span>{cellData}</span>
                                                             <FontAwesomeIcon

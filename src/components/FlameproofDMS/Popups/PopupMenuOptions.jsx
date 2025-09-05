@@ -33,10 +33,13 @@ const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, c
                     <ul>
                         <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
                     </ul>
+                    <ul>
+                        <li onClick={() => navigate(`/FrontendDMS/previewCertificate/${file._id}`)}>Preview</li>
+                    </ul>
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
                     {false && (
                         <ul>
-                            <li onClick={() => navigate(`/versionHistory/${file.docID}`)}>Version History</li>
+                            <li onClick={() => navigate(`/FrontendDMS/versionHistory/${file.docID}`)}>Version History</li>
                         </ul>
                     )}
                 </div>

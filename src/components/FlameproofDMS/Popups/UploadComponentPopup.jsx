@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,7 +6,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const UploadComponentPopup = ({ onClose, assetNr }) => {
+const UploadComponentPopup = ({ onClose, refresh }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [certificateAuth, setCertificateAuth] = useState('');
     const [certificateNum, setCertificateNum] = useState('');
@@ -15,9 +15,15 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
+    const [assetNr, setAssetNr] = useState("");
     const [userID, setUserID] = useState('');
     const [errors, setErrors] = useState({});
     const [components, setComponents] = useState([])
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [showAssetDropdown, setShowAssetDropdown] = useState(false);
+    const assetRef = useRef(null);
+    const [assetNrs, setAssetNrs] = useState([]);           // [{ _id, assetNr, master }]
+    const [filteredAssetNrs, setFilteredAssetNrs] = useState([]);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -45,6 +51,28 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
         fetchComps();
     }, []);
 
+    const closeAllDropdowns = () => setShowAssetDropdown(false);
+
+    useEffect(() => {
+        const fetchValues = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getAssetNumbers`);
+                if (!response.ok) throw new Error("Failed to fetch asset numbers");
+                const data = await response.json();
+
+                // Defensive: support either array of strings OR array of objects
+                const normalized = (data.assetNumbers || []).map(a =>
+                    typeof a === "string" ? { assetNr: a, _id: a, master: false } : a
+                );
+
+                setAssetNrs(normalized);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchValues();
+    }, []);
+
     const validateForm = () => {
         const newErrors = {};
         if (!selectedFile) newErrors.file = true;
@@ -52,6 +80,7 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
         if (!certificateNum) newErrors.certificateNum = true;
         if (!issueDate) newErrors.issueDate = true;
         if (!component) newErrors.component = true;
+        if (!assetNr) newErrors.asset = true;
         return newErrors;
     };
 
@@ -81,7 +110,6 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('certificateType', "component");
         formData.append('certificationAuthority', certificateAuth);
         formData.append('certificateNr', certificateNum);
         formData.append('assetNr', assetNr);
@@ -104,6 +132,7 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
             setCertificateNum('');
             setComponent("");
             setIssueDate('');
+            setAssetNr("");
 
             setError(null);
             setLoading(false);
@@ -111,6 +140,8 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
             toast.success("Certificate Uploaded Successfully", {
                 closeButton: false, autoClose: 800, style: { textAlign: 'center' }
             });
+
+            refresh();
         } catch (error) {
             setError(error.message);
             setLoading(false);
@@ -132,12 +163,81 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
         if (isFormValid()) handleFileUpload();
     };
 
+    useEffect(() => {
+        const popupSelector = ".floating-dropdown";
+
+        const closeDropdowns = () => setShowAssetDropdown(false);
+
+        const handleClickOutside = (e) => {
+            const outside = !e.target.closest(popupSelector) && !e.target.closest("input");
+            if (outside) closeDropdowns();
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [showAssetDropdown]);
+
+    const positionDropdownToInput = () => {
+        const el = assetRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const handleAssetInput = (value) => {
+        closeAllDropdowns();
+        setAssetNr(value);
+
+        // Filter over objects by their assetNr field
+        const matches = assetNrs.filter(opt =>
+            (opt.assetNr || "").toLowerCase().includes((value || "").toLowerCase())
+        );
+        setFilteredAssetNrs(matches);
+        setShowAssetDropdown(true);
+        positionDropdownToInput();
+    };
+
+    const handleAssetFocus = () => {
+        closeAllDropdowns();
+        setFilteredAssetNrs(assetNrs);
+        setShowAssetDropdown(true);
+        positionDropdownToInput();
+    };
+
+    const selectAssetSuggestion = (value) => {
+        setAssetNr(value);
+        setShowAssetDropdown(false);
+    };
+
+    const selectedAsset = assetNrs.find(a => a.assetNr === assetNr) || null;
+    const selectedAssetHasMaster = !!selectedAsset?.master;
+
+    useEffect(() => {
+        if (!assetNr) return;
+        if (component === "Master" && selectedAssetHasMaster) {
+            setComponent("");
+        }
+    }, [assetNr, component, selectedAssetHasMaster]);
+
+    const norm = (s = "") => s.toLowerCase().trim();
+    const isMasterLabel = (s) => norm(s) === "master";
+
     return (
         <div className="ump-container">
             <div className="ump-overlay">
                 <div className="ump-content">
                     <div className="review-date-header">
-                        <h2 className="review-date-title">Upload Component Certificate</h2>
+                        <h2 className="review-date-title">Upload Certificate</h2>
                         <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                     </div>
 
@@ -153,10 +253,52 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
 
                     <div className="ump-form-group-main">
                         <div className="ump-section-header">
-                            <h2>Component Certificate Information</h2>
+                            <h2>Certificate Information</h2>
                         </div>
 
                         <form className="ump-form" onSubmit={handleSubmit}>
+                            <div className="ump-form-row">
+                                <div className={`ump-form-group-third ${errors.asset ? "ump-error" : ""}`}>
+                                    <label>Asset Number <span className="ump-required">*</span></label>
+
+                                    <div className="fpm-select-container">
+                                        <input
+                                            type="text"
+                                            name="assetNr"
+                                            value={assetNr || ""}
+                                            onChange={e => handleAssetInput(e.target.value)}
+                                            onFocus={handleAssetFocus}
+                                            ref={assetRef}
+                                            autoComplete="off"
+                                            className="ump-input-select font-fam"
+                                            placeholder="Select Asset Number"
+                                        />
+                                    </div>
+                                </div>
+                                <div className={`ump-form-group-third-2 ${errors.component ? "ump-error" : ""}`}>
+                                    <label>Component/ Type <span className="ump-required">*</span></label>
+
+                                    <div className="ump-select-container">
+                                        <select
+                                            type="text"
+                                            name="assetNr"
+                                            value={component || ""}
+                                            onChange={(e) => setComponent(e.target.value)}
+                                            className="upm-comp-input-select font-fam"
+                                            style={{ color: component === "" ? "GrayText" : "black" }}
+                                        >
+                                            <option value={""} className="def-colour">Select Component</option>
+                                            {components
+                                                .filter(comp => !(isMasterLabel(comp.component) && selectedAssetHasMaster))
+                                                .map((comp) => (
+                                                    <option key={comp._id} value={comp.component} className="norm-colour">
+                                                        {comp.component}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="ump-form-row">
                                 <div className={`ump-form-group ${errors.certificateAuth ? "ump-error" : ""}`}>
                                     <label>Certification Authority <span className="ump-required">*</span></label>
@@ -197,29 +339,6 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
                                     />
                                 </div>
                             </div>
-                            <div className="ump-form-row">
-                                <div className={`ump-form-group ${errors.component ? "ump-error" : ""}`}>
-                                    <label>Component <span className="ump-required">*</span></label>
-
-                                    <div className="ump-select-container">
-                                        <select
-                                            type="text"
-                                            name="assetNr"
-                                            value={component || ""}
-                                            onChange={(e) => setComponent(e.target.value)}
-                                            className="upm-comp-input-select font-fam"
-                                            style={{ color: component === "" ? "GrayText" : "black" }}
-                                        >
-                                            <option value={""} className="def-colour">Select Component</option>
-                                            {components.map((comp) => (
-                                                <option key={comp._id} value={comp.component} className="norm-colour">
-                                                    {comp.component}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
                         </form>
                     </div>
 
@@ -232,6 +351,28 @@ const UploadComponentPopup = ({ onClose, assetNr }) => {
                     </div>
                 </div>
             </div>
+
+            {showAssetDropdown && filteredAssetNrs.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: "fixed",
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredAssetNrs
+                        .slice() // avoid mutating original
+                        .sort((a, b) => (a.assetNr || "").localeCompare(b.assetNr || ""))
+                        .map((term, i) => (
+                            <li key={i} onMouseDown={() => selectAssetSuggestion(term.assetNr)}>
+                                {term.assetNr}
+                            </li>
+                        ))}
+                </ul>
+            )}
         </div>
     );
 };

@@ -28,7 +28,7 @@ const ImportSiteInfo = ({ onClose }) => {
         try {
             setLoading(true);
 
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/download/DDS`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/download/RMS`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -60,8 +60,8 @@ const ImportSiteInfo = ({ onClose }) => {
 
     const downloadTemplate = () => {
         const link = document.createElement('a');
-        link.href = `${process.env.PUBLIC_URL}/DD_Template.xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Site Information Document V0.15.xlsx');
+        link.href = `${process.env.PUBLIC_URL}/Risk_Template.xlsx`; // Adjust path as needed
+        link.setAttribute('download', 'TAU5 - Site Information Document V0.23.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -71,7 +71,7 @@ const ImportSiteInfo = ({ onClose }) => {
         console.log("📝 getDraftDocuments effect running");
         const getDraftDocuments = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/site-info/DDS`, {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/siteInfoDocuments/site-info/RMS`, {
                     method: "GET",
                 });
 
@@ -212,9 +212,9 @@ const ImportSiteInfo = ({ onClose }) => {
                         </button>
                         <div className="import-si-file-text">Site Information Document Template</div>
                         <div className="import-si-label">Version</div>
-                        <div className="import-si-value">V0.15</div>
+                        <div className="import-si-value">V0.24</div>
                         <div className="import-si-label">Date Uploaded</div>
-                        <div className="import-si-value">2025-08-08</div>
+                        <div className="import-si-value">2025-09-01</div>
                     </div>
 
                     <div className="import-si-file-group" style={{ position: "relative" }}>
