@@ -477,7 +477,7 @@ tr:hover+.insert-row-container .insert-row-button {
 
 .add-subrow-button-standards {
     position: absolute;
-    left: 48%;
+    left: 47%;
     bottom: -11px;
     /* tweak to sit on the border/edge
     background: #fff;
@@ -506,7 +506,7 @@ tr:hover+.insert-row-container .insert-row-button {
 
 .delete-subrow-button-standards {
     position: absolute;
-    left: 52%;
+    left: 53%;
     bottom: -11px;
     /* tweak to sit on the border/edge
     background: #fff;

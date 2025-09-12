@@ -1,0 +1,168 @@
+.modify-asset-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modify-asset-content {
+    background: #f2f2f2;
+    padding: 20px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+
+    min-height: 500px;
+    max-height: 500px;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f2f2f2;
+}
+
+/* For Chrome, Edge, Safari */
+.modify-asset-body::-webkit-scrollbar {
+    width: 6px;
+    /* thin scrollbar */
+}
+
+.modify-asset-body::-webkit-scrollbar-track {
+    background: #f2f2f2;
+    /* track color */
+}
+
+.modify-asset-body::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* thumb color */
+    border-radius: 3px;
+}
+
+/* Hide scrollbar arrows (Chrome/Edge/Safari) */
+.modify-asset-body::-webkit-scrollbar-button {
+    display: none;
+}
+
+.modify-asset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    font-family: Arial;
+}
+
+/* NEW: the scrollable middle area */
+.modify-asset-body {
+    flex: 1 1 auto;
+    overflow-y: scroll;
+    padding-right: 8px;
+    gap: 0px;
+}
+
+.modify-asset-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.modify-asset-group {
+    margin-bottom: 10px;
+    padding: 20px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.modify-asset-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+
+    text-align: left;
+    font-family: Arial;
+}
+
+.modify-asset-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 2.1%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modify-asset-input {
+    width: 90%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.modify-asset-label {
+    display: block;
+    font-size: 19px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.modify-asset-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.modify-asset-input-select {
+    width: calc(90%);
+    margin-bottom: 0px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+.modify-asset-select-container::after {
+    content: '';
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #777;
+    pointer-events: none;
+}
+
+.modify-asset-select-container {
+    position: relative;
+}

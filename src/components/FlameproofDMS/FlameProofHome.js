@@ -26,6 +26,19 @@ const FlameProofHome = () => {
     const [popup, setPopup] = useState(null);
     const [uploadAssetNr, setUploadAssetNr] = useState("");
     const [register, setRegister] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            // show overlay only if loading exceeds 400ms
+            timer = setTimeout(() => setShowDelayedLoading(true), 400);
+        } else {
+            setShowDelayedLoading(false);
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     const getInitials = (str = "") =>
         str
@@ -56,8 +69,11 @@ const FlameProofHome = () => {
         setUpload(true);
     };
 
-    const closeUpload = () => {
+    const closeUpload = (assetNr, id, nav) => {
         setUpload(!upload);
+        if (nav) {
+            navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`)
+        }
     };
 
     const openRegister = () => {
@@ -99,7 +115,7 @@ const FlameProofHome = () => {
             const data = await response.json();
 
             setCount(data.assets);
-            console.log(data.assets);
+            setIsLoading(false);
         } catch (error) {
             setError(error.message);
         }
@@ -154,7 +170,7 @@ const FlameProofHome = () => {
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FMS</span>
+                                            <span className="button-text">Manage FM</span>
                                         </div>
                                     </button>
                                 </div>
@@ -164,13 +180,15 @@ const FlameProofHome = () => {
                 </div>
             )}
 
-            {!isSidebarVisible && (
-                <div className="sidebar-hidden">
-                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                        <FontAwesomeIcon icon={faCaretRight} />
+            {
+                !isSidebarVisible && (
+                    <div className="sidebar-hidden">
+                        <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                            <FontAwesomeIcon icon={faCaretRight} />
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <div className="main-box-user">
                 <div className="top-section-um">
@@ -189,7 +207,7 @@ const FlameProofHome = () => {
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Certificate Types: {filteredDocs.length !== 0 ? filteredDocs.length - 1 : filteredDocs.length}</div>
+                    <div className="info-box-fih">Number of Asset Types: {filteredDocs.length !== 0 ? filteredDocs.length - 1 : filteredDocs.length}</div>
 
                     <div className="spacer"></div>
 
@@ -197,6 +215,13 @@ const FlameProofHome = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
+                    {showDelayedLoading && (
+                        <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
+                            <div className="file-info-loading__spinner" />
+                            <div className="file-info-loading__text">Loading Assets</div>
+                        </div>
+                    )}
+
                     {filteredDocs.map((doc, index) => (
                         <div key={index} className={`${isAllRow(doc) ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/flameManage/${doc.assetType}/${site}`)}>
                             {doc && (
@@ -214,8 +239,8 @@ const FlameProofHome = () => {
                 </div>
             </div>
             <ToastContainer />
-            {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchCount} />)}
-            {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} />)}
+            {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchCount} site={site} />)}
+            {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} preSelectedSite={site} />)}
         </div >
     );
 };

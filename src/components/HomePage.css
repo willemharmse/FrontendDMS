@@ -108,9 +108,9 @@
 }
 
 .card-icon-flames {
-  width: 115px;
-  height: 90px;
-  margin-top: 45px;
+  width: 110px;
+  height: 100px;
+  margin-top: 35px;
   font-size: 10rem;
   color: white;
   margin-bottom: 5px;
@@ -631,6 +631,11 @@
   .card-icon-hat {
     width: 110px;
     height: 72px;
+  }
+
+  .card-icon-flames {
+    width: 90px;
+    height: 90px;
   }
 
   .card-icon-dm {

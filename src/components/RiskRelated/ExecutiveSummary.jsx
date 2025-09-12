@@ -5,7 +5,7 @@ import ExecutiveSummaryInfo from './RiskInfo/ExecutiveSummaryInfo';
 import { toast } from 'react-toastify';
 import "../RiskAssessmentPages/RiskManagementPage.css"
 
-const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) => {
+const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange, readOnly = false }) => {
     const [priorityEvents, setPriorityEvents] = useState([]);
     const [materialEvents, setMaterialEvents] = useState([]);
     const [helpES, setHelpES] = useState(false);
@@ -122,29 +122,32 @@ const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) =
                                                 style={{ fontSize: "14px" }}
                                                 rows="5"   // Adjust the number of rows for initial height
                                                 placeholder="The automatically generated summary below serves as a starting point to help you draft the introduction of the executive summary. Please insert any other important information or additional notes here." // Optional placeholder text
+                                                readOnly={readOnly}
                                             />
-                                            {aiRewriteInProgress ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-exec spin-animation" />) : (
-                                                <FontAwesomeIcon
-                                                    icon={faMagicWandSparkles}
-                                                    className="aim-textarea-icon-exec"
-                                                    title="AI Rewrite"
-                                                    style={{ fontSize: "15px" }}
-                                                    onClick={() => AiRewriteExec()}
-                                                />
-                                            )}
+                                            {!readOnly && (<>
+                                                {aiRewriteInProgress ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-exec spin-animation" />) : (
+                                                    <FontAwesomeIcon
+                                                        icon={faMagicWandSparkles}
+                                                        className="aim-textarea-icon-exec"
+                                                        title="AI Rewrite"
+                                                        style={{ fontSize: "15px" }}
+                                                        onClick={() => AiRewriteExec()}
+                                                    />
+                                                )}
 
-                                            <FontAwesomeIcon
-                                                icon={faRotateLeft}
-                                                className="aim-textarea-icon-exec-undo"
-                                                title="Undo AI Rewrite"
-                                                style={{
-                                                    marginLeft: '8px',
-                                                    opacity: rewriteHistory.execSummary.length ? 1 : 0.3,
-                                                    cursor: rewriteHistory.execSummary.length ? 'pointer' : 'not-allowed',
-                                                    fontSize: "15px"
-                                                }}
-                                                onClick={() => undoAiRewrite('execSummary')}
-                                            />
+                                                <FontAwesomeIcon
+                                                    icon={faRotateLeft}
+                                                    className="aim-textarea-icon-exec-undo"
+                                                    title="Undo AI Rewrite"
+                                                    style={{
+                                                        marginLeft: '8px',
+                                                        opacity: rewriteHistory.execSummary.length ? 1 : 0.3,
+                                                        cursor: rewriteHistory.execSummary.length ? 'pointer' : 'not-allowed',
+                                                        fontSize: "15px"
+                                                    }}
+                                                    onClick={() => undoAiRewrite('execSummary')}
+                                                />
+                                            </>)}
                                         </div>
                                         <p style={{ fontSize: "14px" }}><strong>The following notes will be displayed in the report:</strong><br /></p>
                                         <p style={{ fontSize: "14px" }}>The <strong>Priority Unwanted Events (PUEs)</strong> identified in this risk assesment are (from the highest to the lowest rating):</p>
@@ -175,9 +178,11 @@ const ExecutiveSummary = ({ formData, setFormData, error, handleInputChange }) =
                                 </div>
                             </div>
                         ) : (
-                            <button className="add-row-button-ref" onClick={handleGenerateSummary}>
-                                Generate
-                            </button>
+                            <>
+                                {!readOnly && (<button className="add-row-button-ref" onClick={handleGenerateSummary}>
+                                    Generate
+                                </button>)}
+                            </>
                         )}
                     </div>
                 </div >

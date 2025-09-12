@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedDefinitions from "../ValueChanges/ModifySuggestedDefinitions";
 
-const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setErrors, si = false }) => {
+const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setErrors, si = false, readOnly = false }) => {
   const [termData, setTermData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
@@ -225,12 +225,12 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
     <div className="input-row">
       <div className={`term-input-box ${error ? "error-term" : ""}`}>
         <div className="ppe-header">
-          <input
+          {!readOnly && (<input
             type="checkbox"
             className="na-checkbox-ppe"
             checked={isNA}
             onChange={handleNAToggle}
-          />
+          />)}
           <h3 className="font-fam-labels">Terms & Definitions</h3>
         </div>
         <TermPopup
@@ -327,7 +327,7 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
               <tr>
                 <th className="col-term-term">Term</th>
                 <th className="col-term-desc">Definition</th>
-                <th className="col-term-act">Action</th>
+                {!readOnly && (<th className="col-term-act">Action</th>)}
               </tr>
             </thead>
             <tbody>
@@ -335,44 +335,46 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
                 <tr key={index}>
                   <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.term}</td>
                   <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.definition}</td>
-                  <td className="procCent " style={{ paddingBottom: "10px" }}>
-                    <div className="term-action-buttons">
-                      <button
-                        className="remove-row-button"
-                        style={{ paddingRight: "6px" }}
-                        onClick={() => {
-                          // Remove abbreviation from table and the selected abbreviations set
-                          setFormData({
-                            ...formData,
-                            termRows: formData.termRows.filter((_, i) => i !== index),
-                          });
-                          setUsedTermCodes(
-                            usedTermCodes.filter((term) => term !== row.term)
-                          );
+                  {!readOnly && (
+                    <td className="procCent " style={{ paddingBottom: "10px" }}>
+                      <div className="term-action-buttons">
+                        <button
+                          className="remove-row-button"
+                          style={{ paddingRight: "6px" }}
+                          onClick={() => {
+                            // Remove abbreviation from table and the selected abbreviations set
+                            setFormData({
+                              ...formData,
+                              termRows: formData.termRows.filter((_, i) => i !== index),
+                            });
+                            setUsedTermCodes(
+                              usedTermCodes.filter((term) => term !== row.term)
+                            );
 
-                          // Update the selectedAbbrs state to reflect the removal
-                          const newSelectedTerms = new Set(selectedTerms);
-                          newSelectedTerms.delete(row.term);
-                          setSelectedTerms(newSelectedTerms);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                      </button>
-                      <button
-                        className="edit-terms-row-button"
-                        style={{ paddingLeft: "6px" }}
-                        onClick={() => {
-                          if (originalData.some(item => item.term === row.term && item.definition === row.definition)) { openManagePopup(row.term) }
-                          else {
-                            openUpdate(row.term, row.definition)
+                            // Update the selectedAbbrs state to reflect the removal
+                            const newSelectedTerms = new Set(selectedTerms);
+                            newSelectedTerms.delete(row.term);
+                            setSelectedTerms(newSelectedTerms);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                        </button>
+                        <button
+                          className="edit-terms-row-button"
+                          style={{ paddingLeft: "6px" }}
+                          onClick={() => {
+                            if (originalData.some(item => item.term === row.term && item.definition === row.definition)) { openManagePopup(row.term) }
+                            else {
+                              openUpdate(row.term, row.definition)
 
-                          }
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEdit} title="Modify Term" />
-                      </button>
-                    </div>
-                  </td>
+                            }
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} title="Modify Term" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -385,7 +387,7 @@ const TermTableSI = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCo
           </button>
         )}
 
-        {selectedTerms.size > 0 && (
+        {(selectedTerms.size > 0 && !readOnly) && (
           <button className="add-row-button-terms-plus" onClick={handlePopupToggle}>
             <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
           </button>

@@ -8,7 +8,7 @@ import RiskEquipmentPopup from "../RiskValueChanges/RiskEquipmentPopup"
 import RiskManageEquipment from "../RiskValueChanges/RiskManageEquipment"
 import ModifySuggestedEquipment from "../../ValueChanges/ModifySuggestedEquipment";
 
-const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, userID }) => {
+const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquipment, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [eqpData, setEqpData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -199,12 +199,12 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
         <div className="input-row">
             <div className="eqp-input-box">
                 <div className="eqp-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-eqp"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">Equipment</h3>
                 </div>
 
@@ -301,50 +301,52 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="col-eqp-eqp" style={{ textAlign: "center" }}>Equipment</th>
-                                <th className="col-eqp-act" style={{ textAlign: "center" }}>Action</th>
+                                {!readOnly && (<th className="col-eqp-act" style={{ textAlign: "center" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {formData.Equipment?.map((row, index) => (
                                 <tr key={index}>
                                     <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.eqp}</td>
-                                    <td className="procCent">
-                                        <div className="term-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                style={{ paddingRight: "6px" }}
-                                                onClick={() => {
-                                                    // Remove abbreviation from table and the selected abbreviations set
-                                                    setFormData({
-                                                        ...formData,
-                                                        Equipment: formData.Equipment.filter((_, i) => i !== index),
-                                                    });
-                                                    setUsedEquipment(
-                                                        usedEquipment.filter((eqp) => eqp !== row.eqp)
-                                                    );
+                                    {!readOnly && (
+                                        <td className="procCent">
+                                            <div className="term-action-buttons">
+                                                <button
+                                                    className="remove-row-button"
+                                                    style={{ paddingRight: "6px" }}
+                                                    onClick={() => {
+                                                        // Remove abbreviation from table and the selected abbreviations set
+                                                        setFormData({
+                                                            ...formData,
+                                                            Equipment: formData.Equipment.filter((_, i) => i !== index),
+                                                        });
+                                                        setUsedEquipment(
+                                                            usedEquipment.filter((eqp) => eqp !== row.eqp)
+                                                        );
 
-                                                    // Update the selectedAbbrs state to reflect the removal
-                                                    const newSelectedEquipment = new Set(selectedEquipment);
-                                                    newSelectedEquipment.delete(row.eqp);
-                                                    setSelectedEquipment(newSelectedEquipment);
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                            </button>
-                                            <button
-                                                className="edit-terms-row-button"
-                                                style={{ paddingLeft: "6px" }}
-                                                onClick={() => {
-                                                    if (originalData.some(item => item.eqp === row.eqp)) { openManagePopup(row.eqp) }
-                                                    else {
-                                                        openUpdate(row.eqp);
-                                                    }
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} title="Modify Equipment" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                                        // Update the selectedAbbrs state to reflect the removal
+                                                        const newSelectedEquipment = new Set(selectedEquipment);
+                                                        newSelectedEquipment.delete(row.eqp);
+                                                        setSelectedEquipment(newSelectedEquipment);
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                                </button>
+                                                <button
+                                                    className="edit-terms-row-button"
+                                                    style={{ paddingLeft: "6px" }}
+                                                    onClick={() => {
+                                                        if (originalData.some(item => item.eqp === row.eqp)) { openManagePopup(row.eqp) }
+                                                        else {
+                                                            openUpdate(row.eqp);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEdit} title="Modify Equipment" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -357,7 +359,7 @@ const EquipmentTableRisk = ({ formData, setFormData, usedEquipment, setUsedEquip
                     </button>
                 )}
 
-                {selectedEquipment.size > 0 && (
+                {(selectedEquipment.size > 0 && !readOnly) && (
                     <button className="add-row-button-eqp-plus" onClick={handlePopupToggle} title="Add Row">
                         <FontAwesomeIcon icon={faPlusCircle} />
                     </button>

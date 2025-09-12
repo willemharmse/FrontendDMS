@@ -23,6 +23,19 @@ const FileInfoHome = () => {
     const [reset, setReset] = useState(false);
     const navigate = useNavigate();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            // show overlay only if loading exceeds 400ms
+            timer = setTimeout(() => setShowDelayedLoading(true), 400);
+        } else {
+            setShowDelayedLoading(false);
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     const clearSearch = () => {
         setSearchQuery("");
@@ -77,8 +90,10 @@ const FileInfoHome = () => {
             });
 
             setCount(sortedUsers);
+            setIsLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
         }
     };
 
@@ -165,7 +180,7 @@ const FileInfoHome = () => {
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Document Types: {count.length}</div>
+                    <div className="info-box-fih">Number of Document Types: {count.length === 0 ? 0 : count.length - 1}</div>
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -175,7 +190,13 @@ const FileInfoHome = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    {filteredDocs.map((doc, index) => (
+                    {showDelayedLoading && (
+                        <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
+                            <div className="file-info-loading__spinner" />
+                            <div className="file-info-loading__text">Loading Documents</div>
+                        </div>
+                    )}
+                    {!isLoading && filteredDocs.map((doc, index) => (
                         <div key={index} className={`${doc._id === "All Document" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/documentManage/${doc._id}`)}>
                             {doc && (
                                 <>

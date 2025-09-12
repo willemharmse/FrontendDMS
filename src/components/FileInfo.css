@@ -34,26 +34,6 @@ body {
   font-weight: bolder;
 }
 
-.fi-info-popup-page-select-container {
-  position: relative;
-  width: 100%;
-}
-
-.fi-info-popup-page-select-container::after {
-  content: '';
-  position: absolute;
-  right: 11px;
-  font-family: Arial;
-  top: 55%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 0px;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #777;
-  pointer-events: none;
-}
-
 .doc-num {
   word-wrap: break-word;
   /* Allows long words to break and wrap to the next line */
@@ -310,6 +290,12 @@ body {
   width: 50%;
 }
 
+.modify-asset-button-fi {
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
 .file-name {
   background: none;
   border: none;
@@ -332,6 +318,104 @@ body {
 
 .sidebar-select {
   font-size: 13px;
+}
+
+.fi-info-popup-page-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.fi-info-popup-page-select-container::after {
+  content: '';
+  position: absolute;
+  right: 11px;
+  font-family: Arial;
+  top: 17px;
+  transform: none;
+  width: 3px;
+  height: 0px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #777;
+  pointer-events: none;
+}
+
+.sidebar-select .sb__dropdown-indicator {
+  display: none;
+}
+
+.sidebar-select .sb__indicator-separator {
+  display: none;
+}
+
+.sidebar-select .sb__indicators {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 28px;
+}
+
+.sidebar-select .sb__clear-indicator {
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+  line-height: 0;
+  padding: 0;
+  padding-top: 4px;
+}
+
+.sidebar-select .sb__control,
+.sidebar-select .sb__control--is-focused {
+  min-height: 28px;
+  overflow: hidden;
+}
+
+.sidebar-select .sb__value-container {
+  padding: 2px 6px;
+  max-height: 60px;
+  overflow-y: auto;
+  align-items: center;
+}
+
+/* Tighter chips to fit more before scrolling */
+.sidebar-select .sb__multi-value {
+  min-height: 18px;
+  margin: 2px 2px 0 0;
+  /* small gap between chips */
+}
+
+.sidebar-select .sb__multi-value__label {
+  line-height: 16px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.sidebar-select .sb__multi-value__remove {
+  padding: 0 4px;
+}
+
+/* Keep indicators compact too */
+.sidebar-select .sb__indicators {
+  min-height: 28px;
+}
+
+.sidebar-select .sb__value-container::-webkit-scrollbar-thumb,
+.sidebar-select .sb__menu-list::-webkit-scrollbar-thumb {
+  background: #b3b3b3;
+  border-radius: 8px;
+}
+
+.sidebar-select .sb__value-container::-webkit-scrollbar-track,
+.sidebar-select .sb__menu-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 4) Remove top/bottom scrollbar arrow buttons (WebKit) */
+.sidebar-select .sb__value-container::-webkit-scrollbar-button,
+.sidebar-select .sb__menu-list::-webkit-scrollbar-button {
+  width: 12px !important;
+  height: 0;
+  display: block !important;
 }
 
 .popup-file-info {

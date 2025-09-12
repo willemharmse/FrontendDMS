@@ -18,6 +18,39 @@
     overflow: visible;
 }
 
+.table-scroll-wrapper-attributes-controls {
+    overflow-x: auto;
+    /* horizontal scroll lives here */
+    overflow-y: hidden;
+    cursor: grab;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll-wrapper-attributes-controls.dragging {
+    cursor: grabbing;
+}
+
+.table-scroll-wrapper-attributes-controls.dragging * {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Ensure our pointer handlers receive touch moves instead of native panning */
+.risk-control-attributes-table tbody {
+    touch-action: none;
+    /* we handle the horizontal pan ourselves */
+}
+
+.table-scroll-wrapper-attributes-controls.dragging,
+.table-scroll-wrapper-attributes-controls.dragging * {
+    opacity: 1 !important;
+}
+
+/* Stop native drag in Safari/WebKit (images/links etc.) */
+.table-scroll-wrapper-attributes-controls * {
+    -webkit-user-drag: none;
+}
+
 /* For modern browsers */
 .table-container-risk-control-attributes::-webkit-scrollbar {
     border-radius: 8px;

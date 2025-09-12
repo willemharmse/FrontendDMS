@@ -80,6 +80,7 @@
     background-color: #002060;
     color: white;
     font-weight: bold;
+    box-shadow: #002060 0px -1px 0px 0px;
 }
 
 .ibraCent {

@@ -67,6 +67,8 @@ const RiskManagementPageJRA = () => {
     const [generatePopup, setGeneratePopup] = useState(false);
     const [draftNote, setDraftNote] = useState(null);
     const [showWorkflow, setShowWorkflow] = useState(null);
+    const [readOnly, setReadOnly] = useState(false);
+    const [lockUser, setLockUser] = useState(null);
 
     const openDraftNote = () => {
         setDraftNote(true);
@@ -325,10 +327,12 @@ const RiskManagementPageJRA = () => {
         }
 
         try {
-            toast.info("Saving draft…", { autoClose: false });
-            await saveDraft();
-            toast.dismiss();
-            toast.success("Draft saved");
+            if (!readOnly) {
+                toast.info("Saving draft…", { autoClose: false });
+                await saveDraft();
+                toast.dismiss();
+                toast.success("Draft saved");
+            }
 
             await handleGenerateJRADocument();
 
@@ -369,9 +373,28 @@ const RiskManagementPageJRA = () => {
 
     const loadData = async (loadID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/jra/getDraft/${loadID}`);
-            const storedData = await response.json();
-            // Update your states as needed:
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/riskDraft/jra/getDraft/${loadID}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            const storedData = data.draft || {};
+            const readOnly = data.readOnly || false;
+
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
             setUsedPPEOptions(storedData.usedPPEOptions || []);
@@ -380,10 +403,14 @@ const RiskManagementPageJRA = () => {
             setUsedMobileMachines(storedData.usedMobileMachine || []);
             setUsedMaterials(storedData.usedMaterials || []);
             setUserIDs(storedData.userIDs || []);
+            setLockUser(storedData.lockOwner.username);
+
             setFormData(storedData.formData || {});
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
             loadedIDRef.current = loadID;
+
+            setReadOnly(readOnly);
         } catch (error) {
             console.error('Error loading data:', error);
         }
@@ -513,7 +540,7 @@ const RiskManagementPageJRA = () => {
 
     // On focus, show all options
     const handleSiteFocus = () => {
-
+        if (readOnly) return;
         setErrors(prev => ({
             ...prev,
             site: false
@@ -655,6 +682,7 @@ const RiskManagementPageJRA = () => {
     }, [formData.title]);
 
     const autoSaveDraft = () => {
+        if (readOnly) return;
         if (formData.title.trim() === "") return; // Don't save without a valid title
 
         if (loadedIDRef.current === '') {
@@ -1250,36 +1278,46 @@ const RiskManagementPageJRA = () => {
                             <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
                         </div>
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faSave} />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    transform="shrink-6 down-5 right-7"
-                                    color="gray"   /* or whatever contrast you need */
-                                />
-                            </span>
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                    {/* base floppy-disk, full size */}
+                                    <FontAwesomeIcon icon={faSave} />
+                                    {/* pen, shrunk & nudged down/right into corner */}
+                                    <FontAwesomeIcon
+                                        icon={faPen}
+                                        transform="shrink-6 down-5 right-7"
+                                        color="gray"   /* or whatever contrast you need */
+                                    />
+                                </span>
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+                            </div>
+                        )}
 
-                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                        {(canIn(access, "RMS", ["systemAdmin", "contributor"]) && !readOnly) && (
                             <div className="burger-menu-icon-risk-create-page-1">
                                 <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                             </div>
@@ -1296,6 +1334,12 @@ const RiskManagementPageJRA = () => {
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
+                    {readOnly && (<div className="input-row">
+                        <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white", fontWeight: "bold" }}>
+                            The draft is in Read Only Mode as the following user is modifying the draft: {lockUser}
+                        </div>
+                    </div>)}
+
                     <div className="input-row-risk-create" onClick={() => console.log(formData)}>
                         <div className={`input-box-title-risk-create ${errors.title ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
@@ -1308,6 +1352,7 @@ const RiskManagementPageJRA = () => {
                                     value={formData.title}
                                     onChange={handleInputChange}
                                     placeholder="Insert the Risk Assessment Title (E.g. Perform Earth Leakage Test on Electrical Circuits)"
+                                    readOnly={readOnly}
                                 />
                                 <span className="type-risk-create-JRA">{formData.documentType + " and PTO"}</span>
                             </div>
@@ -1326,6 +1371,7 @@ const RiskManagementPageJRA = () => {
                                     placeholder="Select Site"
                                     onChange={e => handleSiteInput(e.target.value)}
                                     onFocus={handleSiteFocus}
+                                    readOnly={readOnly}
                                 />
                             </div>
                         </div>
@@ -1343,24 +1389,25 @@ const RiskManagementPageJRA = () => {
                                         dateConducted: false
                                     }))
                                 }}
+                                readOnly={readOnly}
                             />
                         </div>
                     </div>
 
-                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setError={setErrors} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setError={setErrors} />
-                    <IntroTaskInfo formData={formData} setFormData={setFormData} error={errors.introInfo} setErrors={setErrors} />
-                    <PPETableRisk formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
-                    <HandToolsTableRisk formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
-                    <MaterialsTableRisk formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
-                    <EquipmentTableRisk formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
-                    <MobileMachineTableRisk formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} setErrors={setErrors} />
-                    <JRATable formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} error={errors.jra} setErrors={setErrors} />
+                    <DocumentSignaturesRiskTable readOnly={readOnly} rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+                    <AbbreviationTableRisk readOnly={readOnly} risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setError={setErrors} />
+                    <TermTableRisk readOnly={readOnly} risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setError={setErrors} />
+                    <IntroTaskInfo readOnly={readOnly} formData={formData} setFormData={setFormData} error={errors.introInfo} setErrors={setErrors} />
+                    <PPETableRisk readOnly={readOnly} formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
+                    <HandToolsTableRisk readOnly={readOnly} formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
+                    <MaterialsTableRisk readOnly={readOnly} formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
+                    <EquipmentTableRisk readOnly={readOnly} formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
+                    <MobileMachineTableRisk readOnly={readOnly} formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
+                    <AttendanceTable readOnly={readOnly} rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} setErrors={setErrors} />
+                    <JRATable readOnly={readOnly} formData={formData} setFormData={setFormData} isSidebarVisible={isSidebarVisible} error={errors.jra} setErrors={setErrors} />
                     <OtherTeam formData={formData} />
-                    <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
+                    <SupportingDocumentTable readOnly={readOnly} formData={formData} setFormData={setFormData} />
+                    <ReferenceTable readOnly={readOnly} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

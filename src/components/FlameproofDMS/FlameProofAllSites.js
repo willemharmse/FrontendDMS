@@ -26,13 +26,26 @@ const FlameProofAllSites = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [popup, setPopup] = useState(null);
     const [uploadAssetNr, setUploadAssetNr] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            // show overlay only if loading exceeds 400ms
+            timer = setTimeout(() => setShowDelayedLoading(true), 400);
+        } else {
+            setShowDelayedLoading(false);
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     const goToNextPage = (name, id) => {
-        if (name === "All Mine Assets") {
-            navigate("/flameAllMineAsset");
+        if (name === "All Organisation Assets") {
+            navigate("/FrontendDMS/flameAllMineAsset");
         }
         else {
-            navigate(`/flameManageHome/${id}`);
+            navigate(`/FrontendDMS/flameManageHome/${id}`);
         }
     }
 
@@ -48,8 +61,11 @@ const FlameProofAllSites = () => {
         setUpload(true);
     };
 
-    const closeUpload = () => {
+    const closeUpload = (assetNr, id, nav) => {
         setUpload(!upload);
+        if (nav) {
+            navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`)
+        }
     };
 
     const openRegister = () => {
@@ -91,6 +107,7 @@ const FlameProofAllSites = () => {
             const data = await response.json();
 
             setCount(data.sites);
+            setIsLoading(false);
         } catch (error) {
             setError(error.message);
         }
@@ -103,8 +120,11 @@ const FlameProofAllSites = () => {
     }, [loggedInUserId]);
 
     const iconMap = {
-        "All Mine Assets": "allDocumentsDMS.svg"
+        "All Organisation Assets": "allDocumentsDMS.svg",
+        default: "fmsSiteIcon.svg"
     }
+
+    const getIcon = (site) => `/${iconMap[site] ?? iconMap.default}`;
 
     return (
         <div className="user-info-container">
@@ -139,7 +159,7 @@ const FlameProofAllSites = () => {
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FMS</span>
+                                            <span className="button-text">Manage FM</span>
                                         </div>
                                     </button>
                                 </div>
@@ -174,7 +194,7 @@ const FlameProofAllSites = () => {
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Sites: {filteredDocs.length}</div>
+                    <div className="info-box-fih">Number of Sites: {filteredDocs.length === 0 ? 0 : filteredDocs.length - 1}</div>
 
                     <div className="spacer"></div>
 
@@ -182,13 +202,19 @@ const FlameProofAllSites = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
+                    {showDelayedLoading && (
+                        <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
+                            <div className="file-info-loading__spinner" />
+                            <div className="file-info-loading__text">Loading Sites</div>
+                        </div>
+                    )}
+
                     {filteredDocs.map((doc, index) => (
-                        <div key={index} className={`${doc.site === "All Mine Assets" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => goToNextPage(doc.site, doc._id)}>
+                        <div key={index} className={`${doc.site === "All Organisation Assets" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => goToNextPage(doc.site, doc._id)}>
                             {doc && (
                                 <>
-                                    <div className={`${doc.site === "All Mine Assets" ? "all-icon-fi-home" : "flame-ph-icon"}`}>
-                                        {doc.site === "All Mine Assets" && (<img src={`${process.env.PUBLIC_URL}/${iconMap[doc.site]}`} className={`${doc.site === "All Mine Assets" ? "all-icon-fi-home" : "icon-dept"}`} />)}
-                                        {!(doc.site === "All Mine Assets") && (<FontAwesomeIcon icon={faBuilding} className={`icon-dept`} />)}
+                                    <div className={`${doc.site === "All Organisation Assets" ? "all-icon-fi-home" : "flame-ph-icon"}`}>
+                                        <img src={`${process.env.PUBLIC_URL}${getIcon(doc.site)}`} className={`${doc.site === "All Organisation Assets" ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
                                     <h3 className="document-title-fi-home">{doc.site}</h3>
                                     <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>

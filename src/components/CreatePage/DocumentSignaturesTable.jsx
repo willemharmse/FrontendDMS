@@ -13,7 +13,8 @@ const DocumentSignaturesTable = ({
   removeRow,
   error,
   updateRows,
-  setErrors
+  setErrors,
+  readOnly = false
 }) => {
   const [nameLists, setNameLists] = useState([]);
   const [posLists, setPosLists] = useState([]);
@@ -114,6 +115,7 @@ const DocumentSignaturesTable = ({
   // —— Name handlers —— //
 
   const openNameDropdown = (index, all = false) => {
+    if (readOnly) return;
     closeDropdowns();
     const base = (all ? nameLists : nameLists.filter(n =>
       (!selectedNames.has(n) || n === rows[index].name)
@@ -178,6 +180,7 @@ const DocumentSignaturesTable = ({
   // —— Position handlers —— //
 
   const openPosDropdown = (index, all = false) => {
+    if (readOnly) return;
     closeDropdowns();
     const base = posLists
       .filter(p => p?.trim() !== "");
@@ -235,7 +238,7 @@ const DocumentSignaturesTable = ({
               <th className="font-fam cent">Authorisation</th>
               <th className="font-fam cent">Name</th>
               <th className="font-fam cent">Position</th>
-              <th className="font-fam cent col-sig-act">Action</th>
+              {!readOnly && (<th className="font-fam cent col-sig-act">Action</th>)}
             </tr>
           </thead>
           <tbody>
@@ -246,8 +249,9 @@ const DocumentSignaturesTable = ({
                     <select
                       className="table-control font-fam remove-default-styling"
                       value={row.auth}
-                      style={{ fontSize: "14px" }}
+                      style={{ fontSize: "14px", color: "black" }}
                       onChange={e => handleRowChange(e, index, "auth")}
+                      disabled={readOnly}
                     >
                       <option value="Author">Author</option>
                       <option value="Approver">Approver</option>
@@ -264,6 +268,7 @@ const DocumentSignaturesTable = ({
                     onChange={e => handleNameInputChange(index, e.target.value)}
                     onFocus={() => openNameDropdown(index, true)}
                     ref={el => (nameInputRefs.current[index] = el)}
+                    readOnly={readOnly}
                   />
                 </td>
                 <td>
@@ -275,9 +280,10 @@ const DocumentSignaturesTable = ({
                     onChange={e => handlePosInputChange(index, e.target.value)}
                     onFocus={() => openPosDropdown(index, true)}
                     ref={el => (posInputRefs.current[index] = el)}
+                    readOnly={readOnly}
                   />
                 </td>
-                <td className="procCent action-cell-auth-risk ">
+                {!readOnly && (<td className="procCent action-cell-auth-risk ">
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {
@@ -297,7 +303,7 @@ const DocumentSignaturesTable = ({
                   >
                     <FontAwesomeIcon icon={faPlusCircle} />
                   </button>
-                </td>
+                </td>)}
               </tr>
             ))}
           </tbody>

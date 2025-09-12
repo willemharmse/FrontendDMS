@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
+const IntroTaskInfo = ({ formData, setFormData, error, setErrors, readOnly = false }) => {
     const [groupedAreas, setGroupedAreas] = useState({});
     const [mainAreas, setMainAreas] = useState([]);
     const [riskSources, setRiskSources] = useState([]);
@@ -235,7 +235,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
 
     // On focus, show all options
     const handleSubAreasFocus = () => {
-
+        if (readOnly) return;
 
         if (error) {
             setErrors(prev => ({ ...prev, introInfo: false }));
@@ -378,7 +378,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
 
     // On focus, show all options
     const handleMainAreasFocus = () => {
-
+        if (readOnly) return;
 
         if (error) {
             setErrors(prev => ({ ...prev, introInfo: false }));
@@ -439,7 +439,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
 
     // On focus, show all options
     const handleOwnerFocus = () => {
-
+        if (readOnly) return;
 
         if (error) {
             setErrors(prev => ({ ...prev, introInfo: false }));
@@ -500,7 +500,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
 
     // On focus, show all options
     const handleLeaderFocus = () => {
-
+        if (readOnly) return;
 
         if (error) {
             setErrors(prev => ({ ...prev, introInfo: false }));
@@ -560,6 +560,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                             setErrors(prev => ({ ...prev, introInfo: false }));
                                         }
                                     }}
+                                    readOnly={readOnly}
                                 />
                             </td>
                         </tr>
@@ -584,6 +585,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                             setErrors(prev => ({ ...prev, introInfo: false }));
                                         }
                                     }}
+                                    readOnly={readOnly}
                                 />
                             </td>
                         </tr>
@@ -608,6 +610,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                             setErrors(prev => ({ ...prev, introInfo: false }));
                                         }
                                     }}
+                                    readOnly={readOnly}
                                 />
                             </td>
                         </tr>
@@ -623,6 +626,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                         placeholder="Select Main Area"
                                         onChange={e => handleMainAreaInput(e.target.value)}
                                         onFocus={handleMainAreasFocus}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </td>
@@ -639,6 +643,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                         placeholder="Select Sub Area"
                                         onChange={e => handleSubAreaInput(e.target.value)}
                                         onFocus={handleSubAreasFocus}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </td>
@@ -655,6 +660,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                         placeholder="Select Functional Owner"
                                         onChange={e => handleOwnerInput(e.target.value)}
                                         onFocus={handleOwnerFocus}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </td>
@@ -671,6 +677,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                         placeholder="Select Person in Charge"
                                         onChange={e => handleLeaderInput(e.target.value)}
                                         onFocus={handleLeaderFocus}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </td>
@@ -703,6 +710,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                     setErrors(prev => ({ ...prev, introInfo: false }));
                                                 }
                                             }}
+                                            disabled={readOnly}
                                         />
                                         Yes
                                     </label>
@@ -728,6 +736,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                     setErrors(prev => ({ ...prev, introInfo: false }));
                                                 }
                                             }}
+                                            disabled={readOnly}
                                         />
                                         No
                                     </label>
@@ -751,7 +760,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                         }))
                                     }
                                     value={formData.introInfo.howAffected}
-                                    readOnly={formData.introInfo.otherAffected !== 'yes'}
+                                    readOnly={formData.introInfo.otherAffected !== 'yes' || readOnly}
                                 />
                             )}
                         </div>
@@ -786,6 +795,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                     setErrors(prev => ({ ...prev, introInfo: false }));
                                                 }
                                             }}
+                                            disabled={readOnly}
                                         />
                                         Yes
                                     </label>
@@ -810,8 +820,8 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                 if (error) {
                                                     setErrors(prev => ({ ...prev, introInfo: false }));
                                                 }
-                                            }
-                                            }
+                                            }}
+                                            disabled={readOnly}
                                         />
                                         No
                                     </label>
@@ -841,6 +851,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                     ref={filesInputRef}
                                                     onChange={e => handleProcedureInput(e.target.value)}
                                                     onFocus={handleProcedureFocus}
+                                                    readOnly={readOnly}
                                                 />
                                             </td>
                                             <td>
@@ -863,6 +874,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                             }
                                                         }))
                                                     }
+                                                    readOnly={readOnly}
                                                 />
                                             </td>
                                             <td>
@@ -885,6 +897,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                             }
                                                         }))
                                                     }
+                                                    readOnly={readOnly}
                                                 />
                                             </td>
                                             <td>
@@ -908,6 +921,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors }) => {
                                                             }
                                                         }))
                                                     }
+                                                    readOnly={readOnly}
                                                 />
                                             </td>
                                         </tr>

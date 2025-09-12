@@ -61,6 +61,8 @@ const CreatePage = () => {
   const [loadingScope, setLoadingScope] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
   const [showWorkflow, setShowWorkflow] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
+  const [lockUser, setLockUser] = useState(null);
 
   const openWorkflow = () => {
     setShowWorkflow(true);
@@ -467,9 +469,28 @@ const CreatePage = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`);
-      const storedData = await response.json();
-      // Update your states as needed:
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}/api/draft/getDraft/${loadID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      const storedData = data.draft || {};
+      const readOnly = data.readOnly || false;
+
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
       setUsedPPEOptions(storedData.usedPPEOptions || []);
@@ -478,6 +499,7 @@ const CreatePage = () => {
       setUsedMobileMachines(storedData.usedMobileMachine || []);
       setUsedMaterials(storedData.usedMaterials || []);
       setUserIDs(storedData.userIDs || []);
+      setLockUser(storedData.lockOwner.username);
 
       const rawForm = storedData.formData || {};
       const normalizedForm = {
@@ -490,6 +512,8 @@ const CreatePage = () => {
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
+
+      setReadOnly(readOnly);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -626,6 +650,7 @@ const CreatePage = () => {
   }, [formData.title]);
 
   const autoSaveDraft = () => {
+    if (readOnly) return;
     if (formData.title.trim() === "") return; // Don't save without a valid title
 
     if (loadedIDRef.current === '') {
@@ -1201,36 +1226,44 @@ const CreatePage = () => {
               <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
+            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
-            </div>
+            </div>)}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                {/* base floppy-disk, full size */}
-                <FontAwesomeIcon icon={faSave} />
-                {/* pen, shrunk & nudged down/right into corner */}
-                <FontAwesomeIcon
-                  icon={faPen}
-                  transform="shrink-6 down-5 right-7"
-                  color="gray"   /* or whatever contrast you need */
-                />
-              </span>
-            </div>
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                  {/* base floppy-disk, full size */}
+                  <FontAwesomeIcon icon={faSave} />
+                  {/* pen, shrunk & nudged down/right into corner */}
+                  <FontAwesomeIcon
+                    icon={faPen}
+                    transform="shrink-6 down-5 right-7"
+                    color="gray"   /* or whatever contrast you need */
+                  />
+                </span>
+              </div>
+            )}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-            </div>
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+              </div>
+            )}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-            </div>
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+              </div>
+            )}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-            </div>
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+              </div>
+            )}
 
-            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+            {(canIn(access, "DDS", ["systemAdmin", "contributor"]) && !readOnly) && (
               <div className="burger-menu-icon-risk-create-page-1">
                 <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
               </div>
@@ -1251,6 +1284,12 @@ const CreatePage = () => {
         </div>
 
         <div className={`scrollable-box`}>
+          {readOnly && (<div className="input-row">
+            <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white", fontWeight: "bold" }}>
+              The draft is in Read Only Mode as the following user is modifying the draft: {lockUser}
+            </div>
+          </div>)}
+
           <div className="input-row">
             <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
@@ -1264,13 +1303,14 @@ const CreatePage = () => {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Title of your document (e.g. Working at Heights)"
+                  readOnly={readOnly}
                 />
                 <span className="type-create-page">{formData.documentType}</span>
               </div>
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -1284,29 +1324,34 @@ const CreatePage = () => {
                 onChange={handleInputChange}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the aim of the document here..." // Optional placeholder text
+                readOnly={readOnly}
               />
-              {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteAim()}
-                />
-              )}
+              {!readOnly &&
+                (<>
+                  {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteAim()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('aim')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.aim.length ? 1 : 0.3,
-                  cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('aim')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                      cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </>)
+              }
             </div>
           </div>
 
@@ -1328,45 +1373,50 @@ const CreatePage = () => {
                 }}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the scope of the document" // Optional placeholder text
+                readOnly={readOnly}
               />
 
-              {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />)
-                : (
+              {!readOnly &&
+                (<>
+                  {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />)
+                    : (
+                      <FontAwesomeIcon
+                        icon={faMagicWandSparkles}
+                        className="aim-textarea-icon-ibra"
+                        title="AI Rewrite"
+                        style={{ fontSize: "15px" }}
+                        onClick={() => AiRewriteScope()}
+                      />
+                    )}
+
                   <FontAwesomeIcon
-                    icon={faMagicWandSparkles}
-                    className="aim-textarea-icon-ibra"
-                    title="AI Rewrite"
-                    style={{ fontSize: "15px" }}
-                    onClick={() => AiRewriteScope()}
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('scope')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.scope.length ? 1 : 0.3,
+                      cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
                   />
-                )}
-
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('scope')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.scope.length ? 1 : 0.3,
-                  cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
+                </>)
+              }
             </div>
           </div>
 
-          <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} />
-          <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} />
-          <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} />
-          <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} />
-          <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} />
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-          <ProcedureTable formData={formData} setFormData={setFormData} procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} />
-          <ChapterTable formData={formData} setFormData={setFormData} />
-          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
-          <SupportingDocumentTable formData={formData} setFormData={setFormData} />
+          <PPETable formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} readOnly={readOnly} />
+          <HandToolTable formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} readOnly={readOnly} />
+          <EquipmentTable formData={formData} setFormData={setFormData} usedEquipment={usedEquipment} setUsedEquipment={setUsedEquipment} userID={userID} readOnly={readOnly} />
+          <MobileMachineTable formData={formData} setFormData={setFormData} usedMobileMachine={usedMobileMachine} setUsedMobileMachine={setUsedMobileMachines} userID={userID} readOnly={readOnly} />
+          <MaterialsTable formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} readOnly={readOnly} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+          <ProcedureTable formData={formData} setFormData={setFormData} procedureRows={formData.procedureRows} addRow={addProRow} removeRow={removeProRow} updateRow={updateRow} error={errors.procedureRows} title={formData.title} documentType={formData.documentType} updateProcRows={updateProcedureRows} setErrors={setErrors} readOnly={readOnly} />
+          <ChapterTable formData={formData} setFormData={setFormData} readOnly={readOnly} />
+          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} readOnly={readOnly} />
+          <SupportingDocumentTable formData={formData} setFormData={setFormData} readOnly={readOnly} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1385,11 +1435,12 @@ const CreatePage = () => {
                   }))
                 }}
                 placeholder="Insert the review period in months" // Optional placeholder text
+                readOnly={readOnly}
               />
             </div>
           </div>
 
-          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} readOnly={readOnly} />
           <div className="input-row-buttons">
             {/* Generate File Button */}
             <button

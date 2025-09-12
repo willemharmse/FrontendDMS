@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faDownload } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 import BatchUpload from "../FileInfo/BatchUpload";
+import DMSTemplatesPopup from "../FileInfo/DMSTemplatesPopup";
 
 const DMSAdminPage = () => {
     const [error, setError] = useState(null);
@@ -15,6 +16,15 @@ const DMSAdminPage = () => {
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [batch, setBatch] = useState(false);
     const navigate = useNavigate();
+    const [template, setTemplate] = useState(false);
+
+    const openTemplate = () => {
+        setTemplate(true);
+    };
+
+    const closeTemplate = () => {
+        setTemplate(!template);
+    };
 
     const openBatch = () => {
         setBatch(true);
@@ -60,7 +70,7 @@ const DMSAdminPage = () => {
                     </div>
 
                     <div className="button-container-create">
-                        <button className="but-um">
+                        <button className="but-um" onClick={openTemplate}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faDownload} className="button-icon" />
                                 <span className="button-text">Templates</span>
@@ -107,6 +117,7 @@ const DMSAdminPage = () => {
                 </div>
             </div>
             <ToastContainer />
+            {template && (<DMSTemplatesPopup onClose={closeTemplate} />)}
         </div>
     );
 };

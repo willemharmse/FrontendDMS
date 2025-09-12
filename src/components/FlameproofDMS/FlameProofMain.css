@@ -90,6 +90,12 @@
     text-align: center;
 }
 
+.flame-delete-button-fi {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
 .flame-sub-date-filter {
     word-wrap: break-word;
     word-break: break-word;
@@ -172,6 +178,15 @@
 }
 
 .flame-sub-ass-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flame-sub-ass-2-nr-filter {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;

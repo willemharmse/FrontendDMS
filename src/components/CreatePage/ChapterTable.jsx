@@ -3,7 +3,7 @@ import "./ChapterTable.css"; // Updated CSS filename
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
-const ChapterTable = ({ formData, setFormData }) => {
+const ChapterTable = ({ formData, setFormData, readOnly = false }) => {
     const addChapter = () => {
         const newChapter = {
             chapterNumber: formData.chapters.length + 1,
@@ -59,7 +59,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                     <div key={chapterIndex} className="mct-chapter-card">
                         <div className="mct-chapter-header">
                             <h4>Section {chapter.chapterNumber}</h4>
-                            <button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Section" /></button>
+                            {!readOnly && (<button className="mct-remove-btn" onClick={() => removeChapter(chapterIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Section" /></button>)}
                         </div>
                         <label>Section Title:</label>
                         <input
@@ -68,6 +68,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             value={chapter.chapterTitle}
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterTitle")}
                             placeholder="Insert section title..."
+                            readOnly={readOnly}
                         />
 
                         <label style={{ marginBottom: "5px", marginTop: "5px" }}>Section Body:</label>
@@ -76,6 +77,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             value={chapter.chapterBody}
                             onChange={(e) => handleInputChange(e, chapterIndex, null, "chapterBody")}
                             placeholder="Insert content..."
+                            readOnly={readOnly}
                             rows="10"
                         />
 
@@ -83,7 +85,7 @@ const ChapterTable = ({ formData, setFormData }) => {
                             <div key={subheadingIndex} className="mct-subheading-card">
                                 <div className="mct-subheading-header">
                                     <h5>Sub-Section {chapterIndex + 1}.{subheadingIndex + 1}</h5>
-                                    <button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Sub-Section" /></button>
+                                    {!readOnly && (<button className="mct-remove-btn" onClick={() => removeSubheading(chapterIndex, subheadingIndex)}><FontAwesomeIcon icon={faTrash} title="Remove Sub-Section" /></button>)}
                                 </div>
                                 <input
                                     className="mct-input"
@@ -91,22 +93,24 @@ const ChapterTable = ({ formData, setFormData }) => {
                                     value={subheading.subheadingTitle}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "subheadingTitle")}
                                     placeholder="Insert subheading title..."
+                                    readOnly={readOnly}
                                 />
                                 <textarea
                                     className="mct-textarea"
                                     value={subheading.body}
                                     onChange={(e) => handleInputChange(e, chapterIndex, subheadingIndex, "body")}
                                     placeholder="Insert content..."
+                                    readOnly={readOnly}
                                     rows="10"
                                 />
                             </div>
                         ))}
-                        <div class="add-chapter-container">
+                        {!readOnly && (<div class="add-chapter-container">
                             <button className="mct-add-subheading-btn" onClick={() => addSubheading(chapterIndex)}>+ Add Sub-Section</button>
-                        </div>
+                        </div>)}
                     </div>
                 ))}
-                <button className="add-row-button" onClick={addChapter}>Add</button>
+                {!readOnly && (<button className="add-row-button" onClick={addChapter}>Add</button>)}
             </div>
         </div>
     );

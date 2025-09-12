@@ -103,6 +103,11 @@
 
 }
 
+.no-invalid {
+    background-color: #CB6F6F !important;
+
+}
+
 .trashed-color {
     color: white !important;
 }

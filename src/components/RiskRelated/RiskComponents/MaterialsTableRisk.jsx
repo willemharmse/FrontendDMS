@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedMaterial from "../../ValueChanges/ModifySuggestedMaterial";
 
-const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMaterials, userID }) => {
+const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMaterials, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [matsData, setMatsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -197,12 +197,12 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
         <div className="input-row">
             <div className="mat-input-box">
                 <div className="materials-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-mat"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">Materials</h3>
                 </div>
                 <RiskMaterialPopup
@@ -298,50 +298,52 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="col-mat-mat" style={{ textAlign: "center" }}>Material</th>
-                                <th className="col-mat-act" style={{ textAlign: "center" }}>Action</th>
+                                {!readOnly && (<th className="col-mat-act" style={{ textAlign: "center" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {formData.Materials?.map((row, index) => (
                                 <tr key={index}>
                                     <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.mat}</td>
-                                    <td className="procCent">
-                                        <div className="term-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                style={{ paddingRight: "6px" }}
-                                                onClick={() => {
-                                                    // Remove abbreviation from table and the selected abbreviations set
-                                                    setFormData({
-                                                        ...formData,
-                                                        Materials: formData.Materials.filter((_, i) => i !== index),
-                                                    });
-                                                    setUsedMaterials(
-                                                        usedMaterials.filter((mat) => mat !== row.mat)
-                                                    );
+                                    {!readOnly && (
+                                        <td className="procCent">
+                                            <div className="term-action-buttons">
+                                                <button
+                                                    className="remove-row-button"
+                                                    style={{ paddingRight: "6px" }}
+                                                    onClick={() => {
+                                                        // Remove abbreviation from table and the selected abbreviations set
+                                                        setFormData({
+                                                            ...formData,
+                                                            Materials: formData.Materials.filter((_, i) => i !== index),
+                                                        });
+                                                        setUsedMaterials(
+                                                            usedMaterials.filter((mat) => mat !== row.mat)
+                                                        );
 
-                                                    // Update the selectedAbbrs state to reflect the removal
-                                                    const newSelectedMaterials = new Set(selectedMaterials);
-                                                    newSelectedMaterials.delete(row.mat);
-                                                    setSelectedMaterials(newSelectedMaterials);
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                            </button>
-                                            <button
-                                                className="edit-terms-row-button"
-                                                style={{ paddingLeft: "6px" }}
-                                                onClick={() => {
-                                                    if (originalData.some(item => item.mat === row.mat)) { openManagePopup(row.mat) }
-                                                    else {
-                                                        openUpdate(row.mat);
-                                                    }
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} title="Modify Material" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                                        // Update the selectedAbbrs state to reflect the removal
+                                                        const newSelectedMaterials = new Set(selectedMaterials);
+                                                        newSelectedMaterials.delete(row.mat);
+                                                        setSelectedMaterials(newSelectedMaterials);
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                                </button>
+                                                <button
+                                                    className="edit-terms-row-button"
+                                                    style={{ paddingLeft: "6px" }}
+                                                    onClick={() => {
+                                                        if (originalData.some(item => item.mat === row.mat)) { openManagePopup(row.mat) }
+                                                        else {
+                                                            openUpdate(row.mat);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEdit} title="Modify Material" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -354,7 +356,7 @@ const MaterialsTableRisk = ({ formData, setFormData, usedMaterials, setUsedMater
                     </button>
                 )}
 
-                {selectedMaterials.size > 0 && (
+                {(selectedMaterials.size > 0 && !readOnly) && (
                     <button className="add-row-button-mat-plus" onClick={handlePopupToggle}>
                         <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                     </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
 import { toast, ToastContainer } from 'react-toastify';
@@ -53,6 +53,29 @@ const FlameProofSub = () => {
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState([]);
   const [icon, setIcon] = useState("");
+  const [versionIcon, setVersionIcon] = useState("");
+  const [site, setSite] = useState("");
+  const [assetType, setAssetType] = useState("");
+  const [isLoadingTable, setIsLoadingTable] = useState(true);
+  const [showNoAssets, setShowNoAssets] = useState(false);
+
+  useEffect(() => {
+    const fetchSite = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getAssetSite/${assetId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setSite(data.site);
+        console.log(data.site);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchSite();
+  }, []);
 
   const closePopup = () => {
     setPopup(null);
@@ -62,7 +85,7 @@ const FlameProofSub = () => {
     setUpload(true);
   };
 
-  const closeUpload = () => {
+  const closeUpload = (assetNr, id, nav) => {
     setUpload(!upload);
     fetchFiles();
   };
@@ -119,7 +142,8 @@ const FlameProofSub = () => {
   };
 
   const fetchFiles = async () => {
-    const route = isTrashView ? `/api/flameproof/trash/asset/${assetId}` : `/api/flameproof/certificates/by-asset/${assetId}`;
+    setIsLoadingTable(true);
+    const route = isTrashView ? `/api/flameproof/trash/load` : `/api/flameproof/certificates/by-asset/${assetId}`;
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
         headers: {
@@ -139,6 +163,8 @@ const FlameProofSub = () => {
       setFiles(data.certificates);
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsLoadingTable(false);
     }
   };
 
@@ -292,13 +318,23 @@ const FlameProofSub = () => {
     "Tractor": "/FCMS_T2.png",
   }
 
+  const versionAssetIconMap = {
+    "all-assets": "allDocumentsDMS.svg",
+    "Continuous Miner": "FCMS_CM2.png",
+    "Shuttle Car": "FCMS_SC2.png",
+    "Roof Bolter": "FCMS_RB2.png",
+    "Feeder Breaker": "FCMS_FB2.png",
+    "Load Haul Dumper": "FCMS_LHD2.png",
+    "Tractor": "FCMS_T2.png",
+  }
+
   const getFirstAssetType = () => {
     return (files?.[0]?.asset?.assetType || "").trim();
   }
 
   const getAssetIconSrc = async () => {
     if (isTrashView) {
-      setIcon(`${process.env.PUBLIC_URL}/trash.png`);
+      setIcon("/trashIcon.svg");
       return;
     }
 
@@ -312,9 +348,10 @@ const FlameProofSub = () => {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
-      const assetType = data.assets.assetType;
-      const key = assetType.replace(/\s+/g, " ");
-      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/defaultDMS.svg");
+      setAssetType(data.assets.assetType);
+      const key = data.assets.assetType.replace(/\s+/g, " ");
+      setIcon(assetIconMap[key] || "/defaultDMS.svg");
+      setVersionIcon(versionAssetIconMap[key] || "/defaultDMS.svg");
     } catch (error) {
       setError(error.message);
     }
@@ -357,7 +394,7 @@ const FlameProofSub = () => {
 
   const getComplianceColor = (status) => {
     if (status === "valid") return "status-good";
-    if (status === "invalid") return "status-bad";
+    if (status === "invalid") return "status-worst";
   };
 
   const filteredFiles = useMemo(() => {
@@ -370,7 +407,7 @@ const FlameProofSub = () => {
         file.certAuth.toLowerCase().includes(q) ||
         file.certNr.toLowerCase().includes(q) ||
         file.asset.departmentHead.toLowerCase().includes(q) ||
-        file.component.toLowerCase().includes(q)
+        (file.component || "").toLowerCase().includes(q)
       );
 
       const matchesFilters =
@@ -381,8 +418,28 @@ const FlameProofSub = () => {
     });
 
     const isMaster = (f) => (f.component || "").toLowerCase() === "master";
+
+    const cmp = (a, b) => {
+      const ca = (a.component || "").toLowerCase();
+      const cb = (b.component || "").toLowerCase();
+
+      // put empty components last
+      if (!ca && !cb) return 0;
+      if (!ca) return 1;
+      if (!cb) return -1;
+
+      const byComponent = ca.localeCompare(cb, undefined, { numeric: true, sensitivity: "base" });
+      if (byComponent !== 0) return byComponent;
+
+      // tiebreaker: asset number (optional)
+      const an = (a.asset?.assetNr || "").toLowerCase();
+      const bn = (b.asset?.assetNr || "").toLowerCase();
+      return an.localeCompare(bn, undefined, { numeric: true, sensitivity: "base" });
+    };
+
     const masters = fs.filter(isMaster);
-    const others = fs.filter((f) => !isMaster(f));
+    const others = fs.filter((f) => !isMaster(f)).sort(cmp);
+
     return [...masters, ...others];
   }, [files, searchQuery, selectedArea, selectedStatus]);
 
@@ -392,6 +449,16 @@ const FlameProofSub = () => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  useEffect(() => {
+    if (!isLoadingTable) {
+      if (filteredFiles.length === 0) {
+        const t = setTimeout(() => setShowNoAssets(true), 800);
+        return () => clearTimeout(t);
+      }
+      setShowNoAssets(false);
+    }
+  }, [isLoadingTable, filteredFiles.length]);
 
   return (
     <div className="file-info-container">
@@ -410,26 +477,22 @@ const FlameProofSub = () => {
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
               <div className="fi-info-popup-page-select-container">
-                <Select options={areas.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area" />
+                <Select options={areas.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area"
+                  classNamePrefix="sb" />
               </div>
               <div className="fi-info-popup-page-select-container">
-                <Select options={status.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Status" />
+                <Select options={status.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Status"
+                  classNamePrefix="sb" />
               </div>
             </div>
           </div>
           {!isTrashView && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
-            <div className="filter-dm-fi-2" onClick={openUpload}>
+            <div className="filter-dm-fi-2" >
               <div className="button-container-dm-fi">
-                <button className="but-dm-fi">
+                <button className="but-dm-fi" onClick={openUpload}>
                   <div className="button-content">
                     <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
                     <span className="button-text">Upload Single Certificate</span>
-                  </div>
-                </button>
-                <button className="but-dm-fi" onClick={openRegister}>
-                  <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Register Single Asset</span>
                   </div>
                 </button>
               </div>
@@ -469,7 +532,7 @@ const FlameProofSub = () => {
           </div>
 
           <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Number of {isTrashView && (<>Deleted</>)} Certificates: {filteredFiles.length}</div>
-          {!isTrashView && (<div className="info-box-fih trashed">Invalid Certificates: {invalidCount}</div>)}
+          {!isTrashView && (<div className={`info-box-fih ${invalidCount === 0 ? `no-invalid` : `trashed`}`} style={invalidCount === 0 ? { backgroundColor: '#002060' } : undefined}>Invalid Certificates: {invalidCount}</div>)}
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
@@ -482,6 +545,7 @@ const FlameProofSub = () => {
             <thead>
               <tr className={isTrashView ? 'trashed' : ""}>
                 <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
+                {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
                 <th className="flame-sub-ass-nr-filter col">Asset Nr</th>
                 <th className="flame-sub-area-filter col">Area</th>
                 <th className="flame-sub-owner-filter col">Asset Owner</th>
@@ -495,16 +559,43 @@ const FlameProofSub = () => {
               </tr>
             </thead>
             <tbody>
+              {isLoadingTable && (
+                <tr>
+                  <td colSpan={
+                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                  } style={{ textAlign: "center", padding: 20 }}>
+                    <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading certificates.
+                  </td>
+                </tr>
+              )}
+
+              {!isLoadingTable && showNoAssets && (
+                <tr>
+                  <td colSpan={
+                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                  } style={{ textAlign: "center", padding: 20 }}>
+                    No Certificates Uploaded.
+                  </td>
+                </tr>
+              )}
+
               {filteredFiles.map((file, index) => (
                 <tr key={index} style={{ fontSize: "14px", cursor: "pointer" }} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
+                  {isTrashView && (<td
+
+                    style={{ textAlign: "center" }}
+                    className="col"
+                  >
+                    {(file.asset.assetType)}
+                  </td>)}
                   <td
                     className="col" style={{ textAlign: "center", position: "relative" }}
                   >
                     {file.asset.assetNr}
 
                     {(hoveredFileId === file._id && !isTrashView) && (
-                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} />
+                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} />
                     )}
                   </td>
                   <td
@@ -553,8 +644,7 @@ const FlameProofSub = () => {
       {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
-      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
+      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}
       {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >

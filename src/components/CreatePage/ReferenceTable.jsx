@@ -3,7 +3,7 @@ import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, error = false, required = false, setErrors }) => {
+const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, readOnly = false, error = false, required = false, setErrors }) => {
     const [files, setFiles] = useState([]);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
@@ -180,7 +180,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                 <th className="refColCen refNum">Nr</th>
                                 <th className="refColCen refRef">Name</th>
                                 <th className="refColCen refDocID">Reference Number (If Applicable)</th>
-                                <th className="refColCen refBut">Action</th>
+                                {!readOnly && (<th className="refColCen refBut">Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -195,6 +195,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                             value={removeFileExtension(row.ref)}
                                             onChange={(e) => handleDescChange(index, "ref", e.target.value)}
                                             onFocus={() => {
+                                                if (readOnly) return;
                                                 setShowDropdown(index);
                                                 if (error) {
                                                     setErrors(prev => ({
@@ -213,6 +214,7 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                                 }
                                             }}
                                             ref={(el) => (inputRefs.current[index] = el)}
+                                            readOnly={readOnly}
                                         />
                                     </td>
                                     <td>
@@ -230,9 +232,10 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                                     }))
                                                 }
                                             }}
+                                            readOnly={readOnly}
                                         />
                                     </td>
-                                    <td className="procCent action-cell-auth-risk">
+                                    {!readOnly && (<td className="procCent action-cell-auth-risk">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => handleRemove(index)}
@@ -247,14 +250,14 @@ const ReferenceTable = ({ referenceRows, addRefRow, removeRefRow, updateRefRow, 
                                         >
                                             <FontAwesomeIcon icon={faPlusCircle} />
                                         </button>
-                                    </td>
+                                    </td>)}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 )}
 
-                {referenceRows.length === 0 && (
+                {(referenceRows.length === 0 && !readOnly) && (
                     <button className="add-row-button-ref" onClick={addRefRow}>
                         Add
                     </button>

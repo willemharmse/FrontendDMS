@@ -63,6 +63,8 @@ const RiskManagementPageIBRA = () => {
     const [generatePopup, setGeneratePopup] = useState(false);
     const [draftNote, setDraftNote] = useState(null);
     const [showWorkflow, setShowWorkflow] = useState(null);
+    const [readOnly, setReadOnly] = useState(false);
+    const [lockUser, setLockUser] = useState(null);
 
     const openWorkflow = () => {
         setShowWorkflow(true);
@@ -335,10 +337,13 @@ const RiskManagementPageIBRA = () => {
         }
 
         try {
-            toast.info("Saving draft…", { autoClose: false });
-            await saveDraft();
-            toast.dismiss();
-            toast.success("Draft saved");
+
+            if (!readOnly) {
+                toast.info("Saving draft…", { autoClose: false });
+                await saveDraft();
+                toast.dismiss();
+                toast.success("Draft saved");
+            }
 
             await handleGenerateIBRADocument();
 
@@ -584,12 +589,32 @@ const RiskManagementPageIBRA = () => {
 
     const loadData = async (loadID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskDraft/ibra/getDraft/${loadID}`);
-            const storedData = await response.json();
-            // Update your states as needed:
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/riskDraft/ibra/getDraft/${loadID}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            const storedData = data.draft || {};
+            const readOnly = data.readOnly || false;
+
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
             setUserIDs(storedData.userIDs || []);
+            setLockUser(storedData.lockOwner.username);
 
             const raw = storedData.formData || {};
             const patched = normalizeIbraFormData(raw);
@@ -598,6 +623,8 @@ const RiskManagementPageIBRA = () => {
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
             loadedIDRef.current = loadID;
+
+            setReadOnly(readOnly);
         } catch (error) {
             console.error('Error loading data:', error);
         }
@@ -771,7 +798,7 @@ const RiskManagementPageIBRA = () => {
 
     // On focus, show all options
     const handleSiteFocus = () => {
-
+        if (readOnly) return;
         setErrors(prev => ({
             ...prev,
             site: false
@@ -912,6 +939,7 @@ const RiskManagementPageIBRA = () => {
     }, [formData.title]);
 
     const autoSaveDraft = () => {
+        if (readOnly) return;
         if (formData.title.trim() === "") return; // Don't save without a valid title
 
         if (loadedIDRef.current === '') {
@@ -1759,36 +1787,46 @@ const RiskManagementPageIBRA = () => {
                             <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
                         </div>
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                                {/* base floppy-disk, full size */}
-                                <FontAwesomeIcon icon={faSave} />
-                                {/* pen, shrunk & nudged down/right into corner */}
-                                <FontAwesomeIcon
-                                    icon={faPen}
-                                    transform="shrink-6 down-5 right-7"
-                                    color="gray"   /* or whatever contrast you need */
-                                />
-                            </span>
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                                    {/* base floppy-disk, full size */}
+                                    <FontAwesomeIcon icon={faSave} />
+                                    {/* pen, shrunk & nudged down/right into corner */}
+                                    <FontAwesomeIcon
+                                        icon={faPen}
+                                        transform="shrink-6 down-5 right-7"
+                                        color="gray"   /* or whatever contrast you need */
+                                    />
+                                </span>
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                            </div>
+                        )}
 
-                        <div className="burger-menu-icon-risk-create-page-1">
-                            <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-                        </div>
+                        {!readOnly && (
+                            <div className="burger-menu-icon-risk-create-page-1">
+                                <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+                            </div>
+                        )}
 
-                        {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
+                        {(canIn(access, "RMS", ["systemAdmin", "contributor"]) && !readOnly) && (
                             <div className="burger-menu-icon-risk-create-page-1">
                                 <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                             </div>
@@ -1803,6 +1841,12 @@ const RiskManagementPageIBRA = () => {
                 </div>
 
                 <div className={`scrollable-box-risk-create`}>
+                    {readOnly && (<div className="input-row">
+                        <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white", fontWeight: "bold" }}>
+                            The draft is in Read Only Mode as the following user is modifying the draft: {lockUser}
+                        </div>
+                    </div>)}
+
                     <div className="input-row-risk-create">
                         <div className={`input-box-title-risk-create ${errors.title ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Risk Assessment Title <span className="required-field">*</span></h3>
@@ -1815,6 +1859,7 @@ const RiskManagementPageIBRA = () => {
                                     value={formData.title}
                                     onChange={handleInputChange}
                                     placeholder="Insert Risk Assessment Title (e.g., Working at Heights)"
+                                    readOnly={readOnly}
                                 />
                                 <span className="type-risk-create">{formData.documentType}</span>
                             </div>
@@ -1833,6 +1878,7 @@ const RiskManagementPageIBRA = () => {
                                     placeholder="Select Site"
                                     onChange={e => handleSiteInput(e.target.value)}
                                     onFocus={handleSiteFocus}
+                                    readOnly={readOnly}
                                 />
                             </div>
                         </div>
@@ -1850,11 +1896,12 @@ const RiskManagementPageIBRA = () => {
                                         dateConducted: false
                                     }))
                                 }}
+                                readOnly={readOnly}
                             />
                         </div>
                     </div>
 
-                    <DocumentSignaturesRiskTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+                    <DocumentSignaturesRiskTable readOnly={readOnly} rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
 
                     <div className="input-row-risk-create">
                         <div className={`input-box-aim-risk-create ${errors.aim ? "error-create" : ""}`}>
@@ -1879,30 +1926,33 @@ const RiskManagementPageIBRA = () => {
                                 value={formData.aim}
                                 rows="5"   // Adjust the number of rows for initial height
                                 placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven." // Optional placeholder text
+                                readOnly={readOnly}
                             />
 
-                            {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                            {!readOnly && (<>
+                                {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                                    <FontAwesomeIcon
+                                        icon={faMagicWandSparkles}
+                                        className="aim-textarea-icon-ibra"
+                                        title="AI Rewrite"
+                                        style={{ fontSize: "15px" }}
+                                        onClick={() => AiRewriteAim()}
+                                    />
+                                )}
+
                                 <FontAwesomeIcon
-                                    icon={faMagicWandSparkles}
-                                    className="aim-textarea-icon-ibra"
-                                    title="AI Rewrite"
-                                    style={{ fontSize: "15px" }}
-                                    onClick={() => AiRewriteAim()}
+                                    icon={faRotateLeft}
+                                    className="aim-textarea-icon-ibra-undo"
+                                    title="Undo AI Rewrite"
+                                    onClick={() => undoAiRewrite('aim')}
+                                    style={{
+                                        marginLeft: '8px',
+                                        opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                                        cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                                        fontSize: "15px"
+                                    }}
                                 />
-                            )}
-
-                            <FontAwesomeIcon
-                                icon={faRotateLeft}
-                                className="aim-textarea-icon-ibra-undo"
-                                title="Undo AI Rewrite"
-                                onClick={() => undoAiRewrite('aim')}
-                                style={{
-                                    marginLeft: '8px',
-                                    opacity: rewriteHistory.aim.length ? 1 : 0.3,
-                                    cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
-                                    fontSize: "15px"
-                                }}
-                            />
+                            </>)}
                         </div>
                     </div>
 
@@ -1934,30 +1984,35 @@ const RiskManagementPageIBRA = () => {
                                                     scope: false
                                                 }))
                                             }}
+                                            readOnly={readOnly}
                                         />
-                                        {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
-                                            : (
-                                                <FontAwesomeIcon
-                                                    icon={faMagicWandSparkles}
-                                                    className="scope-textarea-icon"
-                                                    title="AI Rewrite"
-                                                    style={{ fontSize: "15px" }}
-                                                    onClick={() => AiRewriteScope()}
-                                                />
-                                            )}
+                                        {!readOnly && (
+                                            <>
+                                                {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
+                                                    : (
+                                                        <FontAwesomeIcon
+                                                            icon={faMagicWandSparkles}
+                                                            className="scope-textarea-icon"
+                                                            title="AI Rewrite"
+                                                            style={{ fontSize: "15px" }}
+                                                            onClick={() => AiRewriteScope()}
+                                                        />
+                                                    )}
 
-                                        <FontAwesomeIcon
-                                            icon={faRotateLeft}
-                                            className="scope-textarea-icon-undo"
-                                            title="Undo AI Rewrite"
-                                            onClick={() => undoAiRewrite('scope')}
-                                            style={{
-                                                marginLeft: '8px',
-                                                opacity: rewriteHistory.scope.length ? 1 : 0.3,
-                                                cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
-                                                fontSize: "15px"
-                                            }}
-                                        />
+                                                <FontAwesomeIcon
+                                                    icon={faRotateLeft}
+                                                    className="scope-textarea-icon-undo"
+                                                    title="Undo AI Rewrite"
+                                                    onClick={() => undoAiRewrite('scope')}
+                                                    style={{
+                                                        marginLeft: '8px',
+                                                        opacity: rewriteHistory.scope.length ? 1 : 0.3,
+                                                        cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
+                                                        fontSize: "15px"
+                                                    }}
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1979,28 +2034,33 @@ const RiskManagementPageIBRA = () => {
                                                     scope: false
                                                 }))
                                             }}
+                                            readOnly={readOnly}
                                         />
-                                        {loadingScopeI ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
-                                            : (<FontAwesomeIcon
-                                                icon={faMagicWandSparkles}
-                                                className="scope-textarea-icon"
-                                                title="AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => AiRewriteScopeInclusions()}
-                                            />)}
+                                        {!readOnly && (
+                                            <>
+                                                {loadingScopeI ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />)
+                                                    : (<FontAwesomeIcon
+                                                        icon={faMagicWandSparkles}
+                                                        className="scope-textarea-icon"
+                                                        title="AI Rewrite"
+                                                        style={{ fontSize: "15px" }}
+                                                        onClick={() => AiRewriteScopeInclusions()}
+                                                    />)}
 
-                                        <FontAwesomeIcon
-                                            icon={faRotateLeft}
-                                            className="scope-textarea-icon-undo"
-                                            title="Undo AI Rewrite"
-                                            style={{
-                                                marginLeft: '8px',
-                                                opacity: rewriteHistory.scopeInclusions.length ? 1 : 0.3,
-                                                cursor: rewriteHistory.scopeInclusions.length ? 'pointer' : 'not-allowed',
-                                                fontSize: "15px"
-                                            }}
-                                            onClick={() => undoAiRewrite('scopeInclusions')}
-                                        />
+                                                <FontAwesomeIcon
+                                                    icon={faRotateLeft}
+                                                    className="scope-textarea-icon-undo"
+                                                    title="Undo AI Rewrite"
+                                                    style={{
+                                                        marginLeft: '8px',
+                                                        opacity: rewriteHistory.scopeInclusions.length ? 1 : 0.3,
+                                                        cursor: rewriteHistory.scopeInclusions.length ? 'pointer' : 'not-allowed',
+                                                        fontSize: "15px"
+                                                    }}
+                                                    onClick={() => undoAiRewrite('scopeInclusions')}
+                                                />
+                                            </>
+                                        )}
                                     </div>
 
                                     <div className="risk-popup-page-column-half-scope">
@@ -2019,44 +2079,49 @@ const RiskManagementPageIBRA = () => {
                                                     scope: false
                                                 }))
                                             }}
+                                            readOnly={readOnly}
                                         />
-                                        {loadingScopeE ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />) :
-                                            (< FontAwesomeIcon
-                                                icon={faMagicWandSparkles}
-                                                className="scope-textarea-icon"
-                                                title="AI Rewrite"
-                                                style={{ fontSize: "15px" }}
-                                                onClick={() => AiRewriteScopeExlusions()}
-                                            />)}
+                                        {!readOnly && (
+                                            <>
+                                                {loadingScopeE ? (<FontAwesomeIcon icon={faSpinner} className="scope-textarea-icon spin-animation" />) :
+                                                    (< FontAwesomeIcon
+                                                        icon={faMagicWandSparkles}
+                                                        className="scope-textarea-icon"
+                                                        title="AI Rewrite"
+                                                        style={{ fontSize: "15px" }}
+                                                        onClick={() => AiRewriteScopeExlusions()}
+                                                    />)}
 
-                                        < FontAwesomeIcon
-                                            icon={faRotateLeft}
-                                            className="scope-textarea-icon-undo"
-                                            title="Undo AI Rewrite"
-                                            style={{
-                                                marginLeft: '8px',
-                                                opacity: rewriteHistory.scopeExclusions.length ? 1 : 0.3,
-                                                cursor: rewriteHistory.scopeExclusions.length ? 'pointer' : 'not-allowed',
-                                                fontSize: "15px"
-                                            }}
-                                            onClick={() => undoAiRewrite('scopeExclusions')}
-                                        />
+                                                < FontAwesomeIcon
+                                                    icon={faRotateLeft}
+                                                    className="scope-textarea-icon-undo"
+                                                    title="Undo AI Rewrite"
+                                                    style={{
+                                                        marginLeft: '8px',
+                                                        opacity: rewriteHistory.scopeExclusions.length ? 1 : 0.3,
+                                                        cursor: rewriteHistory.scopeExclusions.length ? 'pointer' : 'not-allowed',
+                                                        fontSize: "15px"
+                                                    }}
+                                                    onClick={() => undoAiRewrite('scopeExclusions')}
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <AbbreviationTableRisk risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setError={setErrors} />
-                    <TermTableRisk risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setError={setErrors} />
-                    <AttendanceTable rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} setErrors={setErrors} />
-                    {formData.documentType === "IBRA" && (<IBRATable rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} setErrors={setErrors} />)}
-                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
+                    <AbbreviationTableRisk readOnly={readOnly} risk={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setError={setErrors} />
+                    <TermTableRisk readOnly={readOnly} risk={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setError={setErrors} />
+                    <AttendanceTable readOnly={readOnly} rows={formData.attendance} addRow={addAttendanceRow} error={errors.attend} removeRow={removeAttendanceRow} updateRows={updateAttendanceRows} userID={userID} generateAR={handleClick} setErrors={setErrors} />
+                    {formData.documentType === "IBRA" && (<IBRATable readOnly={readOnly} rows={formData.ibra} error={errors.ibra} updateRows={updateIbraRows} updateRow={updateIBRARows} addRow={addIBRARow} removeRow={removeIBRARow} generate={handleClick2} isSidebarVisible={isSidebarVisible} setErrors={setErrors} />)}
+                    {(["IBRA"].includes(formData.documentType)) && (<ControlAnalysisTable readOnly={readOnly} error={errors.cea} rows={formData.cea} ibra={formData.ibra} updateRows={updateCEARows} onControlRename={handleControlRename} addRow={addCEARow} updateRow={updateCeaRows} removeRow={removeCEARow} title={formData.title} isSidebarVisible={isSidebarVisible} />)}
 
-                    <ExecutiveSummary formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
-                    <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-                    <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
-                    <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+                    <ExecutiveSummary readOnly={readOnly} formData={formData} setFormData={setFormData} error={errors.execSummary} handleInputChange={handleInputChange} />
+                    <SupportingDocumentTable readOnly={readOnly} formData={formData} setFormData={setFormData} />
+                    <ReferenceTable readOnly={readOnly} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
+                    <PicturesTable readOnly={readOnly} picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
 
                     <div className="input-row-buttons-risk-create">
                         {/* Generate File Button */}

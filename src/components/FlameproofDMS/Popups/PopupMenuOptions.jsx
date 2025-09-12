@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, canIn, access, openUpdate }) => {
+const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, canIn, access, openUpdate, img, txt }) => {
     const navigate = useNavigate();
     const popupRef = useRef(null);
     const [position, setPosition] = useState("below");
@@ -34,14 +34,13 @@ const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, c
                         <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
                     </ul>
                     <ul>
-                        <li onClick={() => navigate(`/FrontendDMS/previewCertificate/${file._id}`)}>Preview</li>
+                        <li onClick={() => navigate(`/previewCertificate/${file._id}`)}>Preview</li>
                     </ul>
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
-                    {false && (
-                        <ul>
-                            <li onClick={() => navigate(`/FrontendDMS/versionHistory/${file.docID}`)}>Version History</li>
-                        </ul>
-                    )}
+
+                    <ul>
+                        <li onClick={() => navigate(`/flameVersionHistory/${file._id}/${img}/${txt}`)}>Version History</li>
+                    </ul>
                 </div>
             )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faHardHat, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faEdit, faHardHat, faMagnifyingGlass, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faX, faFileCirclePlus, faSearch, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
@@ -18,6 +18,9 @@ import RegisterAssetPopup from "./Popups/RegisterAssetPopup";
 import DeleteAsset from "./Popups/DeleteAsset";
 import SortPopupAsset from "./Popups/SortPopupAsset";
 import TopBarFP from "./Popups/TopBarFP";
+import ModifyAsset from "./Popups/ModifyAsset";
+import ModifyAssetPopup from "./Popups/ModifyAssetPopup";
+import ModifyComponentsPopup from "./Popups/ModifyComponentsPopup";
 
 const FlameProofInfoAll = () => {
   const [files, setFiles] = useState([]);
@@ -45,18 +48,43 @@ const FlameProofInfoAll = () => {
   const [selectedSite, setSelectedSite] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState([]);
+  const [modifyingAsset, setModifyingAsset] = useState("");
+  const [modifyAsset, setModifyAsset] = useState(false);
+  const [modifyDate, setModifyDate] = useState(false);
+  const [assetID, setAssetID] = useState(null);
+
+  const openModify = (asset) => {
+    setModifyingAsset(asset)
+    setModifyAsset(true);
+  };
+
+  const closeModify = () => {
+    setModifyingAsset("")
+    setModifyAsset(false);
+  };
 
   const closePopup = () => {
     setPopup(null);
-  }
+  };
 
   const openUpload = () => {
     setUpload(true);
   };
 
-  const closeUpload = () => {
+  const closeUpload = (assetNr, id, nav) => {
     setUpload(!upload);
-    fetchFiles();
+    if (nav) {
+      navigate(`/flameManageSub/${assetNr}/${id}`)
+    }
+  };
+
+  const openModifyDate = (asset) => {
+    setAssetID(asset._id);
+    setModifyDate(true);
+  };
+
+  const closeModifyDate = () => {
+    setModifyDate(!modifyDate);
   };
 
   const openRegister = () => {
@@ -119,7 +147,6 @@ const FlameProofInfoAll = () => {
       setAreas(uniqueOpAreas);
       setSites(uniqueSites);
       setAssetTypes(uniqueTypes);
-
     } catch (error) {
       setError(error.message);
     }
@@ -233,13 +260,16 @@ const FlameProofInfoAll = () => {
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
               <div className="fi-info-popup-page-select-container">
-                <Select options={assetTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedAssetType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Asset Type" />
+                <Select options={assetTypes.map(d => ({ value: d, label: d }))} maxMenuHeight={140} isMulti onChange={(selected) => setSelectedAssetType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Asset Type"
+                  classNamePrefix="sb" />
               </div>
               <div className="fi-info-popup-page-select-container">
-                <Select options={sites.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedSite(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Site" />
+                <Select options={sites.map(d => ({ value: d, label: d }))} maxMenuHeight={140} isMulti onChange={(selected) => setSelectedSite(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Site"
+                  classNamePrefix="sb" />
               </div>
               <div className="fi-info-popup-page-select-container">
-                <Select options={areas.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area" />
+                <Select options={areas.map(d => ({ value: d, label: formatStatus(d) }))} maxMenuHeight={140} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area"
+                  classNamePrefix="sb" />
               </div>
             </div>
           </div>
@@ -263,7 +293,7 @@ const FlameProofInfoAll = () => {
           )}
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/allDocumentsDMS.svg`} alt="Logo" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{(`All Mine Assets`)}</p>
+            <p className="logo-text-dm-fi">{(`All Organisation Assets`)}</p>
           </div>
         </div>
       )}
@@ -294,7 +324,7 @@ const FlameProofInfoAll = () => {
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className={`info-box-fih`}>Number of Certificates: {filteredFiles.length}</div>
+          <div className={`info-box-fih`}>Number of Assets: {filteredFiles.length}</div>
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
@@ -336,13 +366,32 @@ const FlameProofInfoAll = () => {
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                     <td className={"col-act"}>
                       <button
-                        className={"delete-button-fi col-but"}
+                        className={"flame-delete-button-fi col-but-res"}
+                        onClick={(e) => {
+                          e.stopPropagation();         // ⛔ prevent row click
+                          openModify(asset);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEdit} title="Modify Asset" />
+                      </button>
+
+                      {false && (<button
+                        className={"flame-delete-button-fi col-but-res"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModifyDate(asset);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faMagnifyingGlass} title="Modify Components" />
+                      </button>)}
+                      <button
+                        className={"flame-delete-button-fi col-but"}
                         onClick={(e) => {
                           e.stopPropagation();         // ⛔ prevent row click
                           openModal(asset._id, asset);
                         }}
                       >
-                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                        <FontAwesomeIcon icon={faTrash} title="Delete Asset" />
                       </button>
                     </td>
                   )}
@@ -357,6 +406,8 @@ const FlameProofInfoAll = () => {
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
       {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
+      {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
+      {modifyDate && <ModifyComponentsPopup onClose={closeModifyDate} asset={assetID} />}
       <ToastContainer />
     </div >
   );

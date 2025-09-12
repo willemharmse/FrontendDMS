@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedHandTools from "../ValueChanges/ModifySuggestedHandTools";
 
-const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, userID }) => {
+const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [toolsData, setToolsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -198,12 +198,12 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
         <div className="input-row">
             <div className="tool-input-box">
                 <div className="tool-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-tool"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">Hand Tools</h3>
                 </div>
                 <ToolPopup
@@ -298,50 +298,52 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="col-tool-tool" style={{ textAlign: "center" }}>Tool</th>
-                                <th className="col-tool-act" style={{ textAlign: "center" }}>Action</th>
+                                {!readOnly && (<th className="col-tool-act" style={{ textAlign: "center" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {formData.HandTools?.map((row, index) => (
                                 <tr key={index}>
                                     <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.tool}</td>
-                                    <td className="procCent">
-                                        <div className="term-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                style={{ paddingRight: "6px" }}
-                                                onClick={() => {
-                                                    // Remove abbreviation from table and the selected abbreviations set
-                                                    setFormData({
-                                                        ...formData,
-                                                        HandTools: formData.HandTools.filter((_, i) => i !== index),
-                                                    });
-                                                    setUsedHandTools(
-                                                        usedHandTools.filter((tool) => tool !== row.tool)
-                                                    );
+                                    {!readOnly && (
+                                        <td className="procCent">
+                                            <div className="term-action-buttons">
+                                                <button
+                                                    className="remove-row-button"
+                                                    style={{ paddingRight: "6px" }}
+                                                    onClick={() => {
+                                                        // Remove abbreviation from table and the selected abbreviations set
+                                                        setFormData({
+                                                            ...formData,
+                                                            HandTools: formData.HandTools.filter((_, i) => i !== index),
+                                                        });
+                                                        setUsedHandTools(
+                                                            usedHandTools.filter((tool) => tool !== row.tool)
+                                                        );
 
-                                                    // Update the selectedAbbrs state to reflect the removal
-                                                    const newSelectedTools = new Set(selectedTools);
-                                                    newSelectedTools.delete(row.tool);
-                                                    setSelectedTools(newSelectedTools);
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                            </button>
-                                            <button
-                                                className="edit-terms-row-button"
-                                                style={{ paddingLeft: "6px" }}
-                                                onClick={() => {
-                                                    if (originalData.some(item => item.tool === row.tool)) { openManagePopup(row.tool) }
-                                                    else {
-                                                        openUpdate(row.tool);
-                                                    }
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} title="Modify Hand Tool" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                                        // Update the selectedAbbrs state to reflect the removal
+                                                        const newSelectedTools = new Set(selectedTools);
+                                                        newSelectedTools.delete(row.tool);
+                                                        setSelectedTools(newSelectedTools);
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                                </button>
+                                                <button
+                                                    className="edit-terms-row-button"
+                                                    style={{ paddingLeft: "6px" }}
+                                                    onClick={() => {
+                                                        if (originalData.some(item => item.tool === row.tool)) { openManagePopup(row.tool) }
+                                                        else {
+                                                            openUpdate(row.tool);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEdit} title="Modify Hand Tool" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -354,7 +356,7 @@ const HandToolTable = ({ formData, setFormData, usedHandTools, setUsedHandTools,
                     </button>
                 )}
 
-                {selectedTools.size > 0 && (
+                {(selectedTools.size > 0 && !readOnly) && (
                     <button className="add-row-button-tool-plus" onClick={handlePopupToggle}>
                         <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                     </button>

@@ -3,6 +3,7 @@
     top: 0;
     background-color: #002060;
     color: white;
+    box-shadow: #002060 0px -1px 0px 0px;
     z-index: 1;
 }
 

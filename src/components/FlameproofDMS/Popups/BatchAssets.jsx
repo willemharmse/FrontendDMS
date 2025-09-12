@@ -26,7 +26,7 @@ const BatchAssets = ({ onClose }) => {
         if (!isFormValid()) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }
@@ -78,7 +78,7 @@ const BatchAssets = ({ onClose }) => {
             setLoading(false); // Reset loading state after response
             toast.success("Assets Created", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }
@@ -91,7 +91,7 @@ const BatchAssets = ({ onClose }) => {
             }
             toast.error("Validation failed!", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }

@@ -78,6 +78,7 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
             setIsLoading(true);
             setShowNoDrafts(false);
             let route;
+            const token = localStorage.getItem("token");
             switch (type) {
                 case "procedure":
                     route = `${process.env.REACT_APP_URL}/api/draft/drafts/${userID}`
@@ -95,6 +96,10 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
             try {
                 const response = await fetch(route, {
                     method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
                 });
 
                 if (!response.ok) {
@@ -284,9 +289,9 @@ const LoadDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userID, type }
                                                     </div>
                                                 </td>
                                                 <td className="cent-draft-class">
-                                                    <div>{item.updater?.username || "-"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#667" }}>
-                                                        {item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
+                                                    <div>{item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}</div>
+                                                    <div style={{ fontSize: "12px", color: item.lockActive ? "#7EAC89" : "#667", fontWeight: item.lockActive ? "bolder" : "" }}>
+                                                        {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
                                                     </div>
                                                 </td>
                                                 <td className="load-draft-delete">

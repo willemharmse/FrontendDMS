@@ -3,7 +3,7 @@ import "./SupportingDocumentTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-const SupportingDocumentTable = ({ formData, setFormData }) => {
+const SupportingDocumentTable = ({ formData, setFormData, readOnly = false }) => {
     const fileInputRef = useRef(null);
     const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -58,7 +58,7 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                             <tr>
                                 <th className="refColCen refNum" style={{ width: "5%" }}>Nr</th>
                                 <th className="refColCen refRef" style={{ width: "90%" }}>Name</th>
-                                <th className="refColCen refBut" style={{ width: "5%" }}>Action</th>
+                                {!readOnly && (<th className="refColCen refBut" style={{ width: "5%" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -66,11 +66,11 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                                 <tr key={index}>
                                     <td className="refCent" style={{ fontSize: "14px" }}>{row.nr}</td>
                                     <td className="refCent" style={{ fontSize: "14px", textAlign: "left" }}>{removeFileExtension(row.name)}</td>
-                                    <td className="ref-but-row procCent">
+                                    {!readOnly && (<td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => handleRemoveFile(index)}>
                                             <FontAwesomeIcon icon={faTrash} title="Remove File" />
                                         </button>
-                                    </td>
+                                    </td>)}
                                 </tr>
                             ))}
                         </tbody>
@@ -84,9 +84,9 @@ const SupportingDocumentTable = ({ formData, setFormData }) => {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                 />
-                <button className="add-row-button-ref" onClick={() => fileInputRef.current.click()}>
+                {!readOnly && (<button className="add-row-button-ref" onClick={() => fileInputRef.current.click()}>
                     Select
-                </button>
+                </button>)}
             </div>
         </div>
     );

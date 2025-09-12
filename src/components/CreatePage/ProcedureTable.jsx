@@ -7,7 +7,7 @@ import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkl
 import FlowchartRenderer from "./FlowchartRenderer";
 import { aiRewrite } from "../../utils/jraAI";
 
-const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, setErrors, setFormData, formData }) => {
+const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, readOnly = false, setErrors, setFormData, formData }) => {
     const [designationOptions, setDesignationOptions] = useState([]);
     const [showARDropdown, setShowARDropdown] = useState({ index: null, field: "" });
     const [dropdownOptions, setDropdownOptions] = useState([]);
@@ -519,7 +519,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                 <th className="procCent procSub" style={{ backgroundColor: "#002060", color: "white" }}>Procedure Sub Steps</th>
                                 <th className="procCent procPrev" style={{ backgroundColor: "#002060", color: "white" }}>Predecessor<div className="procFineText" style={{ color: "white" }}>(Immediate Prior Steps)</div></th>
                                 <th className="procCent procAR" style={{ backgroundColor: "#002060", color: "white" }}>Responsible and Accountable</th>
-                                <th className="procCent procAct" style={{ backgroundColor: "#002060", color: "white" }}>Action</th>
+                                {!readOnly && (<th className="procCent procAct" style={{ backgroundColor: "#002060", color: "white" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -537,12 +537,12 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                     >
                                         <td className="procCent" style={{ fontSize: "14px" }}>
                                             {row.nr}
-                                            <FontAwesomeIcon
+                                            {!readOnly && (<FontAwesomeIcon
                                                 icon={faArrowsUpDown}
                                                 className="drag-handle-standards"
                                                 onMouseDown={() => setArmedDragRow(row.nr)}
                                                 onMouseUp={() => setArmedDragRow(null)}
-                                            />
+                                            />)}
                                         </td>
                                         <td>
                                             <div className="textarea-wrapper-proc">
@@ -558,13 +558,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             delete mainInputRefs.current[key];
                                                         }
                                                     }}
+                                                    readOnly={readOnly}
                                                     style={{ fontSize: "14px" }}
                                                     onChange={(e) => handleInputChange(index, "mainStep", e.target.value)}
                                                     placeholder="Insert the main step of the procedure here..." // Optional placeholder text
                                                 />
                                                 {loadingMainKey && (<FontAwesomeIcon icon={faSpinner} spin className="textarea-icon-proc-spin-main spin-animation-proc" />)}
                                                 {mainHistory[`${index}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"Undo AI Rewrite"} className="textarea-icon-proc-2" onClick={() => handleUndoMain(index)} />)}
-                                                {!loadingMainKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Main Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteMain(index)} />)}
+                                                {(!loadingMainKey && !readOnly) && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Main Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteMain(index)} />)}
 
                                             </div>
                                         </td>
@@ -582,13 +583,14 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             delete subInputRefs.current[key];
                                                         }
                                                     }}
+                                                    readOnly={readOnly}
                                                     onChange={(e) => handleInputChange(index, "SubStep", e.target.value)}
                                                     style={{ fontSize: "14px" }}
                                                     placeholder="Insert the sub steps of the procedure here..." // Optional placeholder text
                                                 />
                                                 {loadingSubKey && (<FontAwesomeIcon icon={faSpinner} spin className="textarea-icon-proc-spin spin-animation-proc" />)}
                                                 {subHistory[`${index}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"Undo AI Rewrite"} className="textarea-icon-proc-2" onClick={() => handleUndoSub(index)} />)}
-                                                {!loadingSubKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Sub Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteSub(index)} />)}
+                                                {(!loadingSubKey && !readOnly) && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite Sub Step"} className="textarea-icon-proc" onClick={() => handleAiRewriteSub(index)} />)}
 
                                             </div>
                                         </td>
@@ -598,7 +600,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                     <div key={stepIndex} className="prev-step-input-ref">
                                                         <input
                                                             type="text"
-                                                            style={{ fontSize: "14px" }}
+                                                            style={{ fontSize: "14px", width: readOnly ? "100%" : "" }}
                                                             className="aim-input-pt font-fam"
                                                             value={step}
                                                             onChange={(e) => {
@@ -613,8 +615,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                                 updateRow(index, "prevStep", updatedSteps.join(";"));
                                                             }}
                                                             placeholder="Insert step"
+                                                            readOnly={readOnly}
                                                         />
-                                                        <button
+                                                        {!readOnly && (<button
                                                             className="remove-step-button-ref"
                                                             onClick={() => {
                                                                 const updatedSteps = row.prevStep ? row.prevStep.split(";") : [];
@@ -626,8 +629,8 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             }}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Predecessor" />
-                                                        </button>
-                                                        {stepIndex === arr.length - 1 && (
+                                                        </button>)}
+                                                        {(stepIndex === arr.length - 1 && !readOnly) && (
                                                             <button
                                                                 className="add-row-button-pred"
                                                                 style={{ fontSize: "15px" }}
@@ -664,6 +667,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(filtered);
                                                         }}
                                                         onFocus={() => {
+                                                            if (readOnly) return;
                                                             const rect = inputRefs.current[`responsible-${index}`].getBoundingClientRect();
                                                             setDropdownPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.accountable));
@@ -673,6 +677,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             // Commit free-typed value into options
                                                             addDesignationIfNew(e.target.value);
                                                         }}
+                                                        readOnly={readOnly}
                                                     />
                                                 </div>
 
@@ -694,6 +699,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             setDropdownOptions(filtered);
                                                         }}
                                                         onFocus={() => {
+                                                            if (readOnly) return;
                                                             const rect = inputRefs.current[`accountable-${index}`].getBoundingClientRect();
                                                             setDropdownPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
                                                             setDropdownOptions(designationOptions.filter(opt => opt !== row.responsible));
@@ -703,11 +709,12 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                             // Commit free-typed value into options
                                                             addDesignationIfNew(e.target.value);
                                                         }}
+                                                        readOnly={readOnly}
                                                     />
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="procCent">
+                                        {!readOnly && (<td className="procCent">
                                             <button
                                                 className="remove-row-button"
                                                 onClick={() => removeProRow(index)}
@@ -733,7 +740,7 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                                                 <FontAwesomeIcon icon={faCopy} title="Duplicate Row" />
                                             </button>)}
 
-                                        </td>
+                                        </td>)}
                                     </tr>
                                 </React.Fragment>
                             ))}
@@ -741,9 +748,9 @@ const ProcedureTable = ({ procedureRows, addRow, removeRow, updateRow, error, ti
                     </table>
                 )}
 
-                <button className="add-row-button-ds font-fam" onClick={add}>
+                {!readOnly && (<button className="add-row-button-ds font-fam" onClick={add}>
                     <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
-                </button>
+                </button>)}
             </div>
 
             {showARDropdown.index !== null && dropdownOptions.length > 0 && (

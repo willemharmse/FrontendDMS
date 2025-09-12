@@ -26,7 +26,7 @@ const BatchCertificates = ({ onClose }) => {
         if (!isFormValid()) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }
@@ -83,7 +83,7 @@ const BatchCertificates = ({ onClose }) => {
             setLoading(false);
             toast.success("Files Uploaded", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }
@@ -96,7 +96,7 @@ const BatchCertificates = ({ onClose }) => {
             }
             toast.error("Validation failed!", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }

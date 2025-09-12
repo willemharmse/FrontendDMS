@@ -7,7 +7,7 @@ import ControlEAPopup from "./ControlEAPopup";
 import { saveAs } from "file-saver";
 import DeleteControlPopup from "./RiskComponents/DeleteControlPopup";
 
-const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow, error, title, onControlRename, isSidebarVisible }) => {
+const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updateRow, error, title, onControlRename, isSidebarVisible, readOnly = false }) => {
     const [insertPopup, setInsertPopup] = useState();
     const [selectedRowData, setSelectedRowData] = useState();
     const ceaSavedWidthRef = useRef(null);
@@ -33,7 +33,8 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         { id: "responsible", title: "Responsible Person", className: "control-analysis-responsible", icon: null },
         { id: "dueDate", title: "Due Date", className: "control-analysis-date", icon: null },
         { id: "notes", title: "Notes Regarding the Control", className: "control-analysis-notes", icon: null },
-        { id: "actions", title: "Action", className: "control-analysis-nr", icon: null },
+        ...(!readOnly
+            ? [{ id: "actions", title: "Action", className: "control-analysis-nr", icon: null }] : []),
     ];
 
     const openDeletePopup = (id, controlName) => {
@@ -168,7 +169,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
-        "nr", "control", "critical", "act", "activation", "hierarchy", "cons", "quality", "cer", "notes", "actions"
+        "nr", "control", "critical", "act", "activation", "hierarchy", "cons", "quality", "cer", "notes", ...(readOnly ? [] : ["actions"])
     ]);
 
     const [showColumnSelector, setShowColumnSelector] = useState(false);
@@ -177,12 +178,14 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         const raw = availableColumns
             .map(c => c.id)
             .filter(id => showColumns.includes(id));
+
         const expanded = [];
-        raw.forEach(id => {
-            expanded.push(id);
-        });
+        raw.forEach(id => expanded.push(id));
+
         while (expanded.length < 5) expanded.push(`blank-${expanded.length}`);
-        if (!expanded.includes("actions")) {
+
+        // only force-add actions when not readOnly
+        if (!readOnly && !expanded.includes("actions")) {
             expanded.push("actions");
         }
         return expanded;
@@ -416,14 +419,14 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                             return (
                                                 <td key={colIndex} className={colMeta.className} style={{ alignItems: 'center', gap: '0px' }}>
                                                     <span style={{ fontSize: '14px', fontWeight: "normal" }}>{row.nr}</span>
-                                                    <FontAwesomeIcon
+                                                    {!readOnly && (<FontAwesomeIcon
                                                         icon={faArrowsUpDown}
                                                         className="drag-handle"
                                                         title="Drag to reorder"
                                                         onMouseDown={() => setArmedDragRow(rowIndex)}
                                                         onMouseUp={() => setArmedDragRow(null)}
                                                         style={{ cursor: 'grab', marginRight: "2px", marginLeft: "4px" }}
-                                                    />
+                                                    />)}
                                                     <FontAwesomeIcon
                                                         icon={faArrowUpRightFromSquare}
                                                         style={{ fontSize: "14px", marginLeft: "2px", color: "black" }}
@@ -484,7 +487,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                 </div>
             </div>
             {deletePopupVisible && (<DeleteControlPopup controlName={controlToDelete.controlName} deleteControl={confirmDeleteControl} closeModal={closeDeletePopup} />)}
-            {insertPopup && (<ControlEAPopup data={selectedRowData} onClose={closeInsertPopup} onSave={updateRows} onControlRename={onControlRename} />)}
+            {insertPopup && (<ControlEAPopup data={selectedRowData} onClose={closeInsertPopup} onSave={updateRows} onControlRename={onControlRename} readOnly={readOnly} />)}
         </div>
     );
 };

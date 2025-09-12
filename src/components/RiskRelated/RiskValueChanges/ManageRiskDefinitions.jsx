@@ -134,7 +134,7 @@ const ManageRiskDefinitions = ({ closePopup, onClose, onUpdate, userID, setTermD
 
                     <div className="manDefs-popup-group">
                         <label className="manDefs-popup-label">Term Definition</label>
-                        <textarea rows={4} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
+                        <textarea rows={4} style={{ resize: "vertical" }} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert new term definition" type="text" value={definitionInp} onChange={(e) => setDefinitionInp(e.target.value)} />
                     </div>
 
                     <div className="manDefs-popup-group">

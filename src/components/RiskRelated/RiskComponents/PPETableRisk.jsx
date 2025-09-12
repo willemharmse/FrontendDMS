@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedPPE from "../../ValueChanges/ModifySuggestedPPE";
 
-const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, userID }) => {
+const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [ppeData, setPPEData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -198,12 +198,12 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
         <div className="input-row">
             <div className="ppe-input-box">
                 <div className="ppe-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-ppe"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">PPE</h3>
                 </div>
                 <RiskPPEPopup
@@ -298,50 +298,52 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="col-ppe-ppe" style={{ textAlign: "center" }}>PPE</th>
-                                <th className="col-ppe-act" style={{ textAlign: "center" }}>Action</th>
+                                {!readOnly && (<th className="col-ppe-act" style={{ textAlign: "center" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {formData.PPEItems?.map((row, index) => (
                                 <tr key={index}>
                                     <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.ppe}</td>
-                                    <td className="procCent">
-                                        <div className="term-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                style={{ paddingRight: "6px" }}
-                                                onClick={() => {
-                                                    // Remove abbreviation from table and the selected abbreviations set
-                                                    setFormData({
-                                                        ...formData,
-                                                        PPEItems: formData.PPEItems.filter((_, i) => i !== index),
-                                                    });
-                                                    setUsedPPEOptions(
-                                                        usedPPEOptions.filter((ppe) => ppe !== row.ppe)
-                                                    );
+                                    {!readOnly && (
+                                        <td className="procCent">
+                                            <div className="term-action-buttons">
+                                                <button
+                                                    className="remove-row-button"
+                                                    style={{ paddingRight: "6px" }}
+                                                    onClick={() => {
+                                                        // Remove abbreviation from table and the selected abbreviations set
+                                                        setFormData({
+                                                            ...formData,
+                                                            PPEItems: formData.PPEItems.filter((_, i) => i !== index),
+                                                        });
+                                                        setUsedPPEOptions(
+                                                            usedPPEOptions.filter((ppe) => ppe !== row.ppe)
+                                                        );
 
-                                                    // Update the selectedAbbrs state to reflect the removal
-                                                    const newSelectedPPE = new Set(selectedPPE);
-                                                    newSelectedPPE.delete(row.ppe);
-                                                    setSelectedPPE(newSelectedPPE);
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                            </button>
-                                            <button
-                                                className="edit-terms-row-button"
-                                                style={{ paddingLeft: "6px" }}
-                                                onClick={() => {
-                                                    if (originalData.some(item => item.ppe === row.ppe)) { openManagePopup(row.ppe) }
-                                                    else {
-                                                        openUpdate(row.ppe);
-                                                    }
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} title="Modify PPE" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                                        // Update the selectedAbbrs state to reflect the removal
+                                                        const newSelectedPPE = new Set(selectedPPE);
+                                                        newSelectedPPE.delete(row.ppe);
+                                                        setSelectedPPE(newSelectedPPE);
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                                </button>
+                                                <button
+                                                    className="edit-terms-row-button"
+                                                    style={{ paddingLeft: "6px" }}
+                                                    onClick={() => {
+                                                        if (originalData.some(item => item.ppe === row.ppe)) { openManagePopup(row.ppe) }
+                                                        else {
+                                                            openUpdate(row.ppe);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEdit} title="Modify PPE" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -354,7 +356,7 @@ const PPETableRisk = ({ formData, setFormData, usedPPEOptions, setUsedPPEOptions
                     </button>
                 )}
 
-                {selectedPPE.size > 0 && (
+                {(selectedPPE.size > 0 && !readOnly) && (
                     <button className="add-row-button-ppe-plus" onClick={handlePopupToggle}>
                         <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                     </button>

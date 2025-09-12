@@ -6,9 +6,9 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const RegisterAssetPopup = ({ onClose, refresh }) => {
-    const [site, setSite] = useState('');
-    const [type, setType] = useState('');
+const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType = "" }) => {
+    const [site, setSite] = useState(preSelectedSite);
+    const [type, setType] = useState(assetType);
     const [number, setNumber] = useState('');
     const [area, setArea] = useState('');
     const [owner, setOwner] = useState('');
@@ -22,6 +22,21 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
     const [sites, setSites] = useState([]);
     const [users, setUsers] = useState([]);
     const [areas, setAreas] = useState([]);
+    const siteLocked = !!preSelectedSite;
+    const typeLocked = !!assetType;
+
+    useEffect(() => {
+        if (preSelectedSite) setSite(preSelectedSite);
+    }, [preSelectedSite]);
+
+    const [siteAssetsMap, setSiteAssetsMap] = useState({});
+    const normalizeAssetNr = (v) => String(v ?? '').trim().toUpperCase();
+
+    const isAssetNumberValidForSite = (siteId, assetNr) => {
+        const set = siteAssetsMap[siteId];
+        if (!set) return false;
+        return set.has(normalizeAssetNr(assetNr));
+    };
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -55,7 +70,7 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: { textAlign: 'center' }
             });
             return false;
@@ -98,7 +113,11 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
                 }
                 const data = await response.json();
 
-                setTypes(data.assetTypes);
+                const sortedTypes = data.assetTypes.sort((a, b) => {
+                    return a.type.localeCompare(b.type);
+                });
+
+                setTypes(sortedTypes);
             } catch (error) {
                 setError(error.message);
             }
@@ -109,15 +128,26 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
     useEffect(() => {
         const fetchValues = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getUploadSites`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch users");
-                }
-                const data = await response.json();
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/sites-with-asset-numbers`);
+                if (!res.ok) throw new Error('Failed to fetch sites/asset numbers');
+                const data = await res.json();
 
-                setSites(data.sites);
-            } catch (error) {
-                setError(error.message);
+                const sorted = (data?.sites ?? []).sort((a, b) => a.site.localeCompare(b.site));
+
+                // Keep a minimal sites array for the <select/>
+                setSites(sorted.map(s => ({ _id: s._id, site: s.site })));
+
+                // Build lookup map: siteId -> Set of normalized numbers
+                const map = {};
+                for (const s of sorted) {
+                    const arr = Array.isArray(s.assetNumbers)
+                        ? s.assetNumbers
+                        : Array.isArray(s.assets) ? s.assets.map(x => x.assetNr) : [];
+                    map[s._id] = new Set(arr.map(normalizeAssetNr));
+                }
+                setSiteAssetsMap(map);
+            } catch (err) {
+                setError(err.message);
             }
         };
 
@@ -129,7 +159,11 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
                 }
                 const data = await response.json();
 
-                setAreas(data.areas);
+                const sortedAreas = data.areas.sort((a, b) => {
+                    return a.area.localeCompare(b.area);
+                });
+
+                setAreas(sortedAreas);
             } catch (error) {
                 setError(error.message);
             }
@@ -141,6 +175,15 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
 
     const handleFileUpload = async () => {
         if (!isFormValid()) return;
+
+        if (isAssetNumberValidForSite(site, number)) {
+            setErrors({ ...errors, number: true });
+            toast.error("Asset Number already exists for the selected Site", {
+                closeButton: false,
+                autoClose: 2000, style: { textAlign: 'center' }
+            });
+            return;
+        }
 
         const formData = new FormData();
         formData.append('site', site);
@@ -161,18 +204,18 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
             await response.json();
 
             setShowPopup(true);
-            setSite('');
+            if (!siteLocked) { setSite(''); }
             setDeptHead('');
             setArea('');
             setNumber('');
-            setType('');
+            if (!typeLocked) { setType(''); }
             setOwner('');
 
             setError(null);
             setLoading(false);
 
             toast.success("Asset Successfully Registered", {
-                closeButton: false, autoClose: 800, style: { textAlign: 'center' }
+                closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
 
             refresh();
@@ -205,12 +248,14 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
                             <div className="ump-form-row">
                                 <div className={`ump-form-group ${errors.site ? "ump-error" : ""}`}>
                                     <label>Site <span className="ump-required">*</span></label>
-                                    <div className="ump-select-container">
+                                    <div className={`${siteLocked ? `` : `fpm-select-container`}`}>
                                         <select
                                             value={site}
                                             onChange={(e) => setSite(e.target.value)}
                                             autoComplete="off"
-                                            className={site === "" ? `ump-input-select font-fam def-colour` : `ump-input-select font-fam`}
+                                            style={{ color: site === "" ? "GrayText" : "black" }}
+                                            className={site === "" ? `ump-input-select font-fam def-colour` : `ump-input-select font-fam def-colour`}
+                                            disabled={siteLocked}
                                         >
                                             <option value={""} className="def-colour">Select Site</option>
                                             {sites.map((site) => (
@@ -224,12 +269,14 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
 
                                 <div className={`ump-form-group ${errors.type ? "ump-error" : ""}`}>
                                     <label>Asset Type <span className="ump-required">*</span></label>
-                                    <div className="ump-select-container">
+                                    <div className={`${typeLocked ? `` : `fpm-select-container`}`}>
                                         <select
                                             value={type}
                                             onChange={(e) => setType(e.target.value)}
                                             autoComplete="off"
+                                            style={{ color: type === "" ? "GrayText" : "black" }}
                                             className={type === "" ? `ump-input-select font-fam def-colour` : `ump-input-select font-fam`}
+                                            disabled={typeLocked}
                                         >
                                             <option value={""} className="def-colour">Select Asset Type</option>
                                             {types.map((type) => (
@@ -264,7 +311,7 @@ const RegisterAssetPopup = ({ onClose, refresh }) => {
                                             autoComplete="off"
                                             className={area === "" ? `ump-input-select font-fam def-colour` : `ump-input-select font-fam`}
                                         >
-                                            <option value={""} className="def-colour">Select Operational Area</option>
+                                            <option value={""} className="def-colour">Select Area</option>
                                             {areas.map((area) => (
                                                 <option key={area._id} value={area.area} className="norm-colour">
                                                     {area.area}

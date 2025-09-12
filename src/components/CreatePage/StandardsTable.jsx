@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faCopy, faArrowsUpDown, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
-const StandardsTable = ({ formData, setFormData, error, title, documentType, setErrors }) => {
+const StandardsTable = ({ formData, setFormData, error, title, documentType, setErrors, readOnly = false }) => {
     const [filters, setFilters] = useState({
         mainSection: '',
         minRequirement: '',
@@ -416,12 +416,12 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                         >
                                             <td className="procCent" style={{ fontSize: "14px" }} rowSpan={spanCount}>
                                                 {row.nr}
-                                                <FontAwesomeIcon
+                                                {!readOnly && (<FontAwesomeIcon
                                                     icon={faArrowsUpDown}
                                                     className="drag-handle-standards"
                                                     onMouseDown={() => setArmedDragRow(row.id)}
                                                     onMouseUp={() => setArmedDragRow(null)}
-                                                />
+                                                />)}
                                             </td>
                                             <td rowSpan={spanCount} className="main-cell-standards" style={{}}>
                                                 <textarea
@@ -431,33 +431,37 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                     style={{ fontSize: "14px", fontWeight: "bold" }}
                                                     placeholder="Main Section" // Optional placeholder text
                                                     onChange={(e) => handleMainSectionChange(row.id, e.target.value)}
+                                                    readOnly={readOnly}
                                                 />
-                                                <button
-                                                    type="button"
-                                                    className="insert-mainrow-button-standards"
-                                                    title="Add Main Step Here"
-                                                    onClick={() => handleAddMain(row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faPlus} />
-                                                </button>
+                                                {!readOnly && (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            className="insert-mainrow-button-standards"
+                                                            title="Add Main Step Here"
+                                                            onClick={() => handleAddMain(row.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlus} />
+                                                        </button>
 
-                                                <button
-                                                    type="button"
-                                                    className="delete-mainrow-button-standards"
-                                                    title="Delete Main Step"
-                                                    onClick={() => handleDeleteMain(row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
-                                                </button>
+                                                        <button
+                                                            type="button"
+                                                            className="delete-mainrow-button-standards"
+                                                            title="Delete Main Step"
+                                                            onClick={() => handleDeleteMain(row.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
+                                                        </button>
 
-                                                <button
-                                                    type="button"
-                                                    className="duplicate-mainrow-button-standards"
-                                                    title="Duplicate Main Step"
-                                                    onClick={() => handleDuplicateMain(row.id)}
-                                                >
-                                                    <FontAwesomeIcon icon={faCopy} />
-                                                </button>
+                                                        <button
+                                                            type="button"
+                                                            className="duplicate-mainrow-button-standards"
+                                                            title="Duplicate Main Step"
+                                                            onClick={() => handleDuplicateMain(row.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faCopy} />
+                                                        </button></>
+                                                )}
                                             </td>
 
                                             {row.details.length > 0 ? (
@@ -472,25 +476,30 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                             placeholder="Detail description…"
                                                             style={{ fontSize: "14px" }}
                                                             onChange={(e) => handleDetailChange(row.id, row.details[0].id, "minRequirement", e.target.value)}
+                                                            readOnly={readOnly}
                                                         />
 
-                                                        <button
-                                                            type="button"
-                                                            className="add-subrow-button-standards"
-                                                            title="Add Main Step Here"
-                                                            onClick={() => handleAddDetail(row.id, row.details[0].id)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faPlus} />
-                                                        </button>
+                                                        {!readOnly && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    className="add-subrow-button-standards"
+                                                                    title="Add Main Step Here"
+                                                                    onClick={() => handleAddDetail(row.id, row.details[0].id)}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faPlus} />
+                                                                </button>
 
-                                                        <button
-                                                            type="button"
-                                                            className="delete-subrow-button-standards"
-                                                            title="Delete Main Step"
-                                                            onClick={() => handleDeleteDetail(row.id, row.details[0].id)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
-                                                        </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="delete-subrow-button-standards"
+                                                                    title="Delete Main Step"
+                                                                    onClick={() => handleDeleteDetail(row.id, row.details[0].id)}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </td>
                                                     <td>
                                                         <textarea
@@ -500,6 +509,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                             placeholder="Reference / Source…"
                                                             style={{ fontSize: "14px" }}
                                                             onChange={(e) => handleDetailChange(row.id, row.details[0].id, "reference", e.target.value)}
+                                                            readOnly={readOnly}
                                                         />
                                                     </td>
                                                     <td>
@@ -510,6 +520,7 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                             placeholder="Additional notes…"
                                                             style={{ fontSize: "14px" }}
                                                             onChange={(e) => handleDetailChange(row.id, row.details[0].id, "notes", e.target.value)}
+                                                            readOnly={readOnly}
                                                         />
                                                     </td>
                                                 </>
@@ -531,25 +542,28 @@ const StandardsTable = ({ formData, setFormData, error, title, documentType, set
                                                         placeholder="Detail description…"
                                                         style={{ fontSize: "14px" }}
                                                         onChange={(e) => handleDetailChange(row.id, detail.id, "minRequirement", e.target.value)}
+                                                        readOnly={readOnly}
                                                     />
 
-                                                    <button
-                                                        type="button"
-                                                        className="add-subrow-button-standards"
-                                                        title="Add Main Step Here"
-                                                        onClick={() => handleAddDetail(row.id, detail.id)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faPlus} />
-                                                    </button>
+                                                    {!readOnly && (<>
+                                                        <button
+                                                            type="button"
+                                                            className="add-subrow-button-standards"
+                                                            title="Add Main Step Here"
+                                                            onClick={() => handleAddDetail(row.id, detail.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlus} />
+                                                        </button>
 
-                                                    <button
-                                                        type="button"
-                                                        className="delete-subrow-button-standards"
-                                                        title="Delete Main Step"
-                                                        onClick={() => handleDeleteDetail(row.id, detail.id)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
-                                                    </button>
+                                                        <button
+                                                            type="button"
+                                                            className="delete-subrow-button-standards"
+                                                            title="Delete Main Step"
+                                                            onClick={() => handleDeleteDetail(row.id, detail.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
+                                                        </button>
+                                                    </>)}
                                                 </td>
                                                 <td>
                                                     <textarea

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faX, faSearch, faHistory, faPlus, faPenToSquare, faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import ModifySuggestedMobileMachines from "../ValueChanges/ModifySuggestedMobileMachines";
 
-const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, userID }) => {
+const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedMobileMachine, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [macData, setMacData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -198,12 +198,12 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
         <div className="input-row">
             <div className="mac-input-box">
                 <div className="mac-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-mac"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">Mobile Machinery</h3>
                 </div>
                 <MobileMachinePopup
@@ -299,50 +299,52 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                         <thead className="cp-table-header">
                             <tr>
                                 <th className="col-mac-mac" style={{ textAlign: "center" }}>Mobile Machine</th>
-                                <th className="col-mac-act" style={{ textAlign: "center" }}>Action</th>
+                                {!readOnly && (<th className="col-mac-act" style={{ textAlign: "center" }}>Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {formData.MobileMachine?.map((row, index) => (
                                 <tr key={index}>
                                     <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.mac}</td>
-                                    <td className="procCent">
-                                        <div className="term-action-buttons">
-                                            <button
-                                                className="remove-row-button"
-                                                style={{ paddingRight: "6px" }}
-                                                onClick={() => {
-                                                    // Remove abbreviation from table and the selected abbreviations set
-                                                    setFormData({
-                                                        ...formData,
-                                                        MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
-                                                    });
-                                                    setUsedMobileMachine(
-                                                        usedMobileMachine.filter((mac) => mac !== row.mac)
-                                                    );
+                                    {!readOnly && (
+                                        <td className="procCent">
+                                            <div className="term-action-buttons">
+                                                <button
+                                                    className="remove-row-button"
+                                                    style={{ paddingRight: "6px" }}
+                                                    onClick={() => {
+                                                        // Remove abbreviation from table and the selected abbreviations set
+                                                        setFormData({
+                                                            ...formData,
+                                                            MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
+                                                        });
+                                                        setUsedMobileMachine(
+                                                            usedMobileMachine.filter((mac) => mac !== row.mac)
+                                                        );
 
-                                                    // Update the selectedAbbrs state to reflect the removal
-                                                    const newSelectedMachines = new Set(selectedMMachine);
-                                                    newSelectedMachines.delete(row.mac);
-                                                    setSelectedMMachine(newSelectedMachines);
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                                            </button>
-                                            <button
-                                                className="edit-terms-row-button"
-                                                style={{ paddingLeft: "6px" }}
-                                                onClick={() => {
-                                                    if (originalData.some(item => item.machine === row.mac)) { openManagePopup(row.mac) }
-                                                    else {
-                                                        openUpdate(row.mac);
-                                                    }
-                                                }}
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} title="Modify Mobile Machine" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                                        // Update the selectedAbbrs state to reflect the removal
+                                                        const newSelectedMachines = new Set(selectedMMachine);
+                                                        newSelectedMachines.delete(row.mac);
+                                                        setSelectedMMachine(newSelectedMachines);
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                                                </button>
+                                                <button
+                                                    className="edit-terms-row-button"
+                                                    style={{ paddingLeft: "6px" }}
+                                                    onClick={() => {
+                                                        if (originalData.some(item => item.machine === row.mac)) { openManagePopup(row.mac) }
+                                                        else {
+                                                            openUpdate(row.mac);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEdit} title="Modify Mobile Machine" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -355,7 +357,7 @@ const MobileMachineTable = ({ formData, setFormData, usedMobileMachine, setUsedM
                     </button>
                 )}
 
-                {selectedMMachine.size > 0 && (
+                {(selectedMMachine.size > 0 && !readOnly) && (
                     <button className="add-row-button-mac-plus" onClick={handlePopupToggle}>
                         <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                     </button>

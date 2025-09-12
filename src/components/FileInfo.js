@@ -177,7 +177,7 @@ const FileInfo = () => {
   }, []);
 
   const handlePreview = (fileId) => {
-    navigate(`/preview/${fileId}`);
+    navigate(`/FrontendDMS/preview/${fileId}`);
   };
 
   useEffect(() => {
@@ -494,15 +494,18 @@ const FileInfo = () => {
             <div className="button-container-dm-fi">
               {(type === "All Document" || isTrashView) && (
                 <div className="fi-info-popup-page-select-container">
-                  <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Document Types" />
+                  <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Document Types"
+                    classNamePrefix="sb" />
                 </div>
               )}
               <div className="fi-info-popup-page-select-container">
-                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Discipline Types" />
+                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Discipline Types"
+                  classNamePrefix="sb" />
               </div>
               {can(access, "DMS", "systemAdmin") && (
                 <div className="fi-info-popup-page-select-container">
-                  <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Status Types" />
+                  <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Status Types"
+                    classNamePrefix="sb" />
                 </div>
               )}
             </div>

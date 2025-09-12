@@ -75,7 +75,7 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
         if (!isFormValid()) {
             toast.error("Please fill in all required fields", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }
@@ -106,7 +106,7 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
 
             toast.success("Certificate version updated successfully!", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 2000,
                 style: {
                     textAlign: 'center'
                 }

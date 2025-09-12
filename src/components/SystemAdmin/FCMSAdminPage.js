@@ -10,6 +10,7 @@ import BatchCertificates from "../FlameproofDMS/Popups/BatchCertificates";
 import BatchAssets from "../FlameproofDMS/Popups/BatchAssets";
 import AddSite from "../FlameproofDMS/Popups/AddSite";
 import FCMSTemplates from "../FlameproofDMS/Popups/FCMSTemplates";
+import ManageSites from "../FlameproofDMS/Popups/ManageSites";
 
 const FCMSAdminPage = () => {
     const [error, setError] = useState(null);
@@ -20,6 +21,7 @@ const FCMSAdminPage = () => {
     const [batch, setBatch] = useState(false);
     const [assets, setAssets] = useState(false);
     const [site, setSite] = useState(false);
+    const [manageSite, setManageSite] = useState(false);
     const [template, setTemplate] = useState(false);
     const navigate = useNavigate();
 
@@ -37,6 +39,14 @@ const FCMSAdminPage = () => {
 
     const closeTemplate = () => {
         setTemplate(!template);
+    };
+
+    const openManageSite = () => {
+        setManageSite(true);
+    };
+
+    const closeManageSite = () => {
+        setManageSite(!manageSite);
     };
 
     const openAssets = () => {
@@ -90,7 +100,7 @@ const FCMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FMS</p>
+                        <p className="logo-text-um">Manage FM</p>
                     </div>
 
                     <div className="button-container-create">
@@ -125,12 +135,12 @@ const FCMSAdminPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openBatch} >
+                    <div className={`document-card-fi-home`} onClick={openSite} >
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Upload Batch Certificates</h3>
+                            <h3 className="document-title-fi-home">Register New Site</h3>
                         </>
                     </div>
 
@@ -143,12 +153,21 @@ const FCMSAdminPage = () => {
                         </>
                     </div>
 
-                    <div className={`document-card-fi-home`} onClick={openSite} >
+                    <div className={`document-card-fi-home`} onClick={openBatch} >
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Upload Batch Certificates</h3>
+                        </>
+                    </div>
+
+                    <div className={`document-card-fi-home`} onClick={openManageSite} >
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Register New Site</h3>
+                            <h3 className="document-title-fi-home">Manage Sites</h3>
                         </>
                     </div>
                 </div>
@@ -156,6 +175,7 @@ const FCMSAdminPage = () => {
             <ToastContainer />
 
             {template && (<FCMSTemplates onClose={closeTemplate} />)}
+            {manageSite && (<ManageSites closePopup={closeManageSite} />)}
         </div>
     );
 };

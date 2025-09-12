@@ -8,7 +8,7 @@ import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
 
-const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors }) => {
+const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors, readOnly = false }) => {
     const ibraBoxRef = useRef(null);
     const tableWrapperRef = useRef(null);
     const [ibraPopup, setIbraPopup] = useState(false);
@@ -276,7 +276,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         { id: "responsible", title: "Responsible Person", className: "ibraCent ibraRA" },
         { id: "dueDate", title: "Due Date", className: "ibraCent ibraDD" },
         { id: "additional", title: "Notes Regarding the UE", className: "ibraCent ibraAdditional", icon: null },
-        { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
+        ...(readOnly ? [] : [{ id: "action", title: "Action", className: "ibraCent ibraAct", icon: null }]),
     ];
 
     // 1) A helper that wraps updateRows but also ensures "possible" is visible
@@ -352,6 +352,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     };
 
     const handleResponsibleFocus = (rowId, possibleId, responsibleId, value) => {
+        if (readOnly) return;
         setActiveSubCell({ rowId, possibleId, responsibleId });
 
         const matches = posLists
@@ -493,7 +494,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
-        "nr", "main", "hazards", "source", "UE", "controls", "riskRank", "action",
+        "nr", "main", "hazards", "source", "UE", "controls", "riskRank", ...(readOnly ? [] : ["action"]),
     ]);
 
     const [showColumnSelector, setShowColumnSelector] = useState(false);
@@ -513,7 +514,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             }
         });
         while (expanded.length < 5) expanded.push(`blank-${expanded.length}`);
-        if (!expanded.includes("action")) {
+        if (!readOnly && !expanded.includes("action")) {
             expanded.push("action");
         }
         return expanded;
@@ -815,20 +816,23 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                             onChange={e => handleActionChange(row.id, p.id, a.id, e.target.value)}
                                                                             className="ibra-textarea-PI"
                                                                             style={{ fontSize: "14px" }}
+                                                                            readOnly={readOnly}
                                                                         />
-                                                                        <FontAwesomeIcon
-                                                                            icon={faPlusCircle}
-                                                                            onClick={() => handleAddAction(row.id, p.id, a.id)}
-                                                                            className="control-icon-add-ibra magic-icon"
-                                                                            title="Add action required" />
-                                                                        {p.actions.length > 1 && (
+                                                                        {!readOnly && (<>
                                                                             <FontAwesomeIcon
-                                                                                icon={faTrash}
-                                                                                className="control-icon-remove-ibra magic-icon"
-                                                                                onClick={() => handleRemoveAction(row.id, p.id, a.id)}
-                                                                                title="Remove this action"
-                                                                            />
-                                                                        )}
+                                                                                icon={faPlusCircle}
+                                                                                onClick={() => handleAddAction(row.id, p.id, a.id)}
+                                                                                className="control-icon-add-ibra magic-icon"
+                                                                                title="Add action required" />
+                                                                            {p.actions.length > 1 && (
+                                                                                <FontAwesomeIcon
+                                                                                    icon={faTrash}
+                                                                                    className="control-icon-remove-ibra magic-icon"
+                                                                                    onClick={() => handleRemoveAction(row.id, p.id, a.id)}
+                                                                                    title="Remove this action"
+                                                                                />
+                                                                            )}
+                                                                        </>)}
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -858,6 +862,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                         className="ibra-textarea-PI"
                                                                         style={{ fontSize: "14px" }}
                                                                         placeholder="Insert or Select Responsible Person"
+                                                                        readOnly={readOnly}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -876,6 +881,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                         value={d.date}
                                                                         onChange={e => handleDueDateChange(row.id, p.id, d.id, e.target.value)}
                                                                         className="ibra-input-date"
+                                                                        readOnly={readOnly}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -1001,13 +1007,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             style={{ alignItems: 'center', gap: '0px', whiteSpace: "pre-wrap" }}
                                                         >
                                                             <span>{cellData}</span>
-                                                            <FontAwesomeIcon
+                                                            {!readOnly && (<FontAwesomeIcon
                                                                 icon={faArrowsUpDown}
                                                                 className="drag-handle"
                                                                 onMouseDown={() => setArmedDragRow(row.id)}
                                                                 onMouseUp={() => setArmedDragRow(null)}
                                                                 style={{ cursor: 'grab', marginRight: "2px", marginLeft: "4px" }}
-                                                            />
+                                                            />)}
                                                             <FontAwesomeIcon
                                                                 icon={faArrowUpRightFromSquare}
                                                                 style={{ fontSize: "14px", marginLeft: "2px", color: "black" }}
@@ -1084,12 +1090,12 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                     </table>
 
                 </div>
-                <button className="add-row-button-ds-risk font-fam" onClick={addRow}>
+                {!readOnly && (<button className="add-row-button-ds-risk font-fam" onClick={addRow}>
                     <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
-                </button>
+                </button>)}
             </div>
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
-            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} />)}
+            {ibraPopup && (<IBRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} readOnly={readOnly} />)}
 
             {showExeDropdown && filteredExe.length > 0 && (
                 <ul

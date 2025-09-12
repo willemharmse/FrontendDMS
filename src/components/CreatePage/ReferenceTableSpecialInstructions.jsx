@@ -3,7 +3,7 @@ import "./ReferenceTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, setFormData }) => {
+const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, setFormData, readOnly = false }) => {
     const [files, setFiles] = useState([]);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
@@ -188,12 +188,12 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
         <div className="input-row">
             <div className="input-box-ref">
                 <div className="ppe-header">
-                    <input
+                    {!readOnly && (<input
                         type="checkbox"
                         className="na-checkbox-ppe"
                         checked={isNA}
                         onChange={handleNAToggle}
-                    />
+                    />)}
                     <h3 className="font-fam-labels">Reference Documents</h3>
                 </div>
 
@@ -204,7 +204,7 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
                                 <th className="refColCen refNum">Nr</th>
                                 <th className="refColCen refRef">Name</th>
                                 <th className="refColCen refDocID">Reference Number (If Applicable)</th>
-                                <th className="refColCen refBut">Action</th>
+                                {!readOnly && (<th className="refColCen refBut">Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -219,6 +219,7 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
                                             value={removeFileExtension(row.ref)}
                                             onChange={(e) => handleDescChange(index, "ref", e.target.value)}
                                             onFocus={() => {
+                                                if (readOnly) return;
                                                 setShowDropdown(index);
                                                 setFilteredOptions(prev => ({ ...prev, [index]: files }));
                                                 if (inputRefs.current[index]) {
@@ -231,6 +232,7 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
                                                 }
                                             }}
                                             ref={(el) => (inputRefs.current[index] = el)}
+                                            readOnly={readOnly}
                                         />
                                     </td>
                                     <td>
@@ -240,9 +242,10 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
                                             className="table-control"
                                             value={row.refDesc}
                                             onChange={(e) => handleInputChange(index, "refDesc", e.target.value)}
+                                            readOnly={readOnly}
                                         />
                                     </td>
-                                    <td className="procCent action-cell-auth-risk">
+                                    {!readOnly && (<td className="procCent action-cell-auth-risk">
                                         <button
                                             className="remove-row-button"
                                             onClick={() => handleRemove(index)}
@@ -257,14 +260,14 @@ const ReferenceTableSpecialInstructions = ({ formData, referenceRows, addRefRow,
                                         >
                                             <FontAwesomeIcon icon={faPlusCircle} />
                                         </button>
-                                    </td>
+                                    </td>)}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 )}
 
-                {(referenceRows.length === 0 && isNA) && (
+                {(referenceRows.length === 0 && isNA && !readOnly) && (
                     <button className="add-row-button-ref" onClick={addRefRow}>
                         Add
                     </button>

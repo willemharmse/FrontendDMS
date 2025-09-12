@@ -20,7 +20,7 @@ import ControlDesc from '../RiskInfo/ControlDesc';
 import { v4 as uuidv4 } from 'uuid';
 import MaterialUE from '../RiskInfo/MaterialUE';
 
-const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
+const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
     const [groupedAreas, setGroupedAreas] = useState({});     // { MA1: [...], MA2: [...] }
     const [mainAreas, setMainAreas] = useState([]);     // [ 'MA1', 'MA2', … ]
     const [availableSubAreas, setAvailableSubAreas] = useState([]);
@@ -568,6 +568,10 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
     };
 
     const handleSubmit = async (e) => {
+        if (readOnly) {
+            onClose();
+            return;
+        }
         const updatedData = {
             main: selectedMainArea,
             sub: selectedSubArea,
@@ -614,6 +618,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
 
     // On focus, show all options
     const handleUEFocus = () => {
+        if (readOnly) return;
         closeAllDropdowns();
         const matches = ueOptions;
         setFilteredUE(matches);
@@ -667,6 +672,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
 
     // On focus, show all options
     const handleSubAreasFocus = () => {
+        if (readOnly) return;
         closeAllDropdowns();
 
         let matches = [];
@@ -720,6 +726,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
 
     // On focus, show all options
     const handleMainAreasFocus = () => {
+        if (readOnly) return;
         closeAllDropdowns();
         const matches = mainAreas;
         setFilteredMainAreas(matches);
@@ -763,6 +770,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
 
     // On focus, show all options
     const handleOwnerFocus = () => {
+        if (readOnly) return;
         closeAllDropdowns();
         const matches = functionalOwners;
         setFilteredOwners(matches);
@@ -807,6 +815,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
     };
 
     const handleControlFocus = (id) => {
+        if (readOnly) return;
         closeAllDropdowns();
         const current = controlRows.find(r => r.id === id)?.value || '';
         const matches = controls
@@ -857,6 +866,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                         value={selectedMainArea}
                                                         onChange={e => handleMainAreaInput(e.target.value)}
                                                         onFocus={handleMainAreasFocus}
+                                                        readOnly={readOnly}
                                                     />
                                                 </div>
                                             </div>
@@ -876,6 +886,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                         value={selectedSubArea}
                                                         onChange={e => handleSubAreaInput(e.target.value)}
                                                         onFocus={handleSubAreasFocus}
+                                                        readOnly={readOnly}
                                                     />
                                                 </div>
                                             </div>
@@ -900,6 +911,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                             value={selectedOwner}
                                                             onChange={e => handleOwnerInput(e.target.value)}
                                                             onFocus={handleOwnerFocus}
+                                                            readOnly={readOnly}
                                                         />
                                                     </div>
                                                 </div>
@@ -915,6 +927,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                         className="ibra-popup-page-select"
                                                         value={riskSource}
                                                         onChange={(e) => setRiskSource(e.target.value)}
+                                                        disabled={readOnly}
                                                     >
                                                         <option value="">Select Hazard Classification / Energy Release</option>
                                                         {riskSources.map((term, index) => (
@@ -934,7 +947,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                             <div className="ibra-popup-page-component-wrapper">
                                                 <div className={`ibra-popup-page-form-group ${errors.hazards ? "error-upload-required-up" : ""}`}>
                                                     <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpHaz} style={{ cursor: 'pointer' }} />Hazard</label>
-                                                    <div className="ibra-popup-hazard-table-container">
+                                                    <div className="ibra-popup-hazard-table-container" style={{ height: readOnly ? "253px" : "" }}>
                                                         <table className="ibra-popup-page-table">
                                                             <tbody>
                                                                 {hazardRows.map(row => (
@@ -947,14 +960,15 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                                                     className="ibra-popup-page-input-table ibra-popup-page-row-input"
                                                                                     onChange={(e) => handleHazardChange(row.id, e.target.value)}
                                                                                     placeholder="Insert Hazard"
+                                                                                    readOnly={readOnly}
                                                                                 />
-                                                                                <button
+                                                                                {!readOnly && (<button
                                                                                     type="button"
                                                                                     className="ibra-popup-page-action-button"
                                                                                     onClick={() => removeHazardRow(row.id)}
                                                                                 >
                                                                                     <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
-                                                                                </button>
+                                                                                </button>)}
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -962,13 +976,13 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                    <button
+                                                    {!readOnly && (<button
                                                         type="button"
                                                         className="ibra-popup-page-add-row-button"
                                                         onClick={addHazardRow}
                                                     >
                                                         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
-                                                    </button>
+                                                    </button>)}
                                                 </div>
                                             </div>
                                         </div>
@@ -999,6 +1013,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                             value={selectedUE}
                                                             onChange={e => handleUEInput(e.target.value)}
                                                             onFocus={handleUEFocus}
+                                                            readOnly={readOnly}
                                                         />
                                                     </div>
                                                 </div>
@@ -1013,6 +1028,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                 value={maxConsequence}
                                                 onChange={(e) => setMaxConsequence(e.target.value)}
                                                 placeholder="Insert max reasonable consequence details"
+                                                readOnly={readOnly}
                                             ></textarea>
                                         </div>
                                     </div>
@@ -1033,6 +1049,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                                             onFocus={() => handleControlFocus(row.id)}
                                                                             onChange={e => handleControlInput(row.id, e.target.value)}
                                                                             ref={el => inputRefs.current[`control-${row.id}`] = el}
+                                                                            readOnly={readOnly}
                                                                         />
                                                                     </div>
                                                                     <button
@@ -1042,26 +1059,26 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                                     >
                                                                         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} />
                                                                     </button>
-                                                                    <button
+                                                                    {!readOnly && (<button
                                                                         type="button"
                                                                         className="ibra-popup-page-action-button"
                                                                         onClick={() => removeControlRow(row.id)}
                                                                     >
                                                                         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
-                                                                    </button>
+                                                                    </button>)}
                                                                 </div>
                                                             </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
-                                            <button
+                                            {!readOnly && (<button
                                                 type="button"
                                                 className="ibra-popup-page-add-row-button"
                                                 onClick={addControlRow}
                                             >
                                                 <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
-                                            </button>
+                                            </button>)}
                                         </div>
                                     </div>
                                 </div>
@@ -1076,6 +1093,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                 className="ibra-popup-page-select"
                                                 value={selectedLikelihood}
                                                 onChange={(e) => setSelectedLikelihood(e.target.value)}
+                                                disabled={readOnly}
                                             >
                                                 <option value="">Select Likelihood</option>
                                                 {likelihoodOptions.map((option, index) => (
@@ -1107,6 +1125,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                                                         value={row.value}
                                                                         className="ibra-popup-page-select-c"
                                                                         onChange={(e) => handleRiskRankChange(row.id, e.target.value)}
+                                                                        disabled={readOnly}
                                                                     >
                                                                         {riskRankOptions.map((option, index) => (
                                                                             <option key={index} value={option}>
@@ -1176,7 +1195,8 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                             value={additionalComments}
                                             onChange={(e) => setAdditionalComments(e.target.value)}
                                             placeholder="Insert additional notes for this specific unwanted event (Do not include future controls or improvements here, these should be listed at the end of the IBRA table)."
-                                        ></textarea>
+                                            readOnly={readOnly}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1190,7 +1210,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData }) => {
                                 onClick={handleSubmit}
                                 disabled={!valid()}
                             >
-                                {loading ? <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faSpinner} spin /> : 'Submit'}
+                                {loading ? <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faSpinner} spin /> : (readOnly ? `Close Popup` : `Submit`)}
                             </button>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faEraser, faTimes, faDownload, faCaretLeft, faCaretRight } from "@fortawesome/free-solid-svg-icons";
@@ -17,6 +17,41 @@ const ControlAttributes = () => {
     const [filteredControls, setFilteredControls] = useState([]);
     const [searchPopupVisible, setSearchPopupVisible] = useState(false);
     const [searchInput, setSearchInput] = useState("");
+    const scrollerRef = useRef(null);   // the horizontal scroller (wrapper div)
+    const tbodyRef = useRef(null);      // to listen for row pointer events
+    const drag = useRef({ active: false, startX: 0, startLeft: 0 });
+
+    const onNativeDragStart = (e) => {
+        // Kill native drag/ghost image that can fade elements
+        e.preventDefault();
+    };
+
+    const onRowPointerDown = (e) => {
+        if (!e.target.closest("tr")) return;
+        const scroller = scrollerRef.current;
+        if (!scroller) return;
+        drag.current.active = true;
+        drag.current.startX = e.clientX;
+        drag.current.startLeft = scroller.scrollLeft;
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        scroller.classList.add("dragging");
+    };
+
+    const onRowPointerMove = (e) => {
+        if (!drag.current.active) return;
+        const scroller = scrollerRef.current;
+        if (!scroller) return;
+        const dx = e.clientX - drag.current.startX;
+        scroller.scrollLeft = drag.current.startLeft - dx; // pan like a scrollbar
+        e.preventDefault(); // avoid text selection while dragging
+    };
+
+    const endRowDrag = (e) => {
+        if (!drag.current.active) return;
+        drag.current.active = false;
+        scrollerRef.current?.classList.remove("dragging");
+        e.currentTarget.releasePointerCapture?.(e.pointerId);
+    };
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -106,7 +141,7 @@ const ControlAttributes = () => {
                     </div>
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{`Control Management`}</p>
+                        <p className="logo-text-dm-fi">{`View Controls`}</p>
                     </div>
                 </div>
             )}
@@ -152,7 +187,7 @@ const ControlAttributes = () => {
                             </div>
                         )}
                     </div>
-                    <div className="table-scroll-wrapper-attributes-controls">
+                    <div className="table-scroll-wrapper-attributes-controls" ref={scrollerRef}>
                         <table className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}>
                             <thead className="risk-control-attributes-head">
                                 <tr>
@@ -172,9 +207,15 @@ const ControlAttributes = () => {
                                     <th className="risk-control-attributes-cons">Main Consequence Addressed</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody ref={tbodyRef}
+                                onPointerDown={onRowPointerDown}
+                                onPointerMove={onRowPointerMove}
+                                onPointerUp={endRowDrag}
+                                onPointerCancel={endRowDrag}
+                                onDragStart={onNativeDragStart}
+                            >
                                 {filteredControls.map((row, index) => (
-                                    <tr key={index}>
+                                    <tr className="table-scroll-wrapper-attributes-controls" key={index}>
                                         <td className="procCent" style={{ fontSize: "14px" }}>{index + 1}</td>
                                         <td style={{ fontSize: "14px" }}>{row.control}</td>
                                         <td style={{ fontSize: "14px" }}>{row.description}</td>

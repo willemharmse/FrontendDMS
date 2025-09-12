@@ -3,7 +3,7 @@ import "./PicturesTable.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) => {
+const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow, readOnly = false }) => {
     const handleInputChange = (index, field, value) => {
         // 1) Compute a per‐cell figure number:
         const cellNumber = field === "pic1"
@@ -46,7 +46,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                             <tr>
                                 <th className="picColCen picOne">Picture Name</th>
                                 <th className="picColCen picTwo">Picture Name</th>
-                                <th className="picColCen picBut">Action</th>
+                                {!readOnly && (<th className="picColCen picBut">Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -58,6 +58,7 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                             className="table-control"
                                             style={{ fontSize: "14px" }}
                                             value={row.pic1}
+                                            readOnly={readOnly}
                                             onChange={(e) => handleInputChange(index, "pic1", e.target.value)}
                                         />
                                     </td>
@@ -67,27 +68,28 @@ const PicturesTable = ({ picturesRows, addPicRow, removePicRow, updatePicRow }) 
                                             className="table-control"
                                             style={{ fontSize: "14px" }}
                                             value={row.pic2}
+                                            readOnly={readOnly}
                                             onChange={(e) => handleInputChange(index, "pic2", e.target.value)}
                                         />
                                     </td>
-                                    <td className="ref-but-row procCent">
+                                    {!readOnly && (<td className="ref-but-row procCent">
                                         <button className="remove-row-button" onClick={() => removePicRow(index)}>
                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                         </button>
-                                    </td>
+                                    </td>)}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 )}
 
-                {picturesRows.length === 0 && (
+                {(picturesRows.length === 0 && !readOnly) && (
                     <button className="add-row-button-pic" onClick={addPicRow}>
                         Add
                     </button>
                 )}
 
-                {picturesRows.length > 0 && (
+                {(picturesRows.length > 0 && !readOnly) && (
                     <button className="add-row-button-pic-plus" onClick={addPicRow}>
                         <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
                     </button>

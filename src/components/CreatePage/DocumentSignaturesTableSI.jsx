@@ -13,7 +13,8 @@ const DocumentSignaturesTableSI = ({
   removeRow,
   error,
   updateRows,
-  setErrors
+  setErrors,
+  readOnly = false
 }) => {
   const [nameLists, setNameLists] = useState([]);
   const [posLists, setPosLists] = useState([]);
@@ -114,6 +115,7 @@ const DocumentSignaturesTableSI = ({
   // —— Name handlers —— //
 
   const openNameDropdown = (index, all = false) => {
+    if (readOnly) return;
     closeDropdowns();
     const base = (all ? nameLists : nameLists.filter(n =>
       (!selectedNames.has(n) || n === rows[index].name)
@@ -178,6 +180,7 @@ const DocumentSignaturesTableSI = ({
   // —— Position handlers —— //
 
   const openPosDropdown = (index, all = false) => {
+    if (readOnly) return;
     closeDropdowns();
     const base = posLists
       .filter(p => p?.trim() !== "");
@@ -258,6 +261,7 @@ const DocumentSignaturesTableSI = ({
                     onChange={e => handleNameInputChange(index, e.target.value)}
                     onFocus={() => openNameDropdown(index, true)}
                     ref={el => (nameInputRefs.current[index] = el)}
+                    readOnly={readOnly}
                   />
                 </td>
                 <td>
@@ -269,6 +273,7 @@ const DocumentSignaturesTableSI = ({
                     onChange={e => handlePosInputChange(index, e.target.value)}
                     onFocus={() => openPosDropdown(index, true)}
                     ref={el => (posInputRefs.current[index] = el)}
+                    readOnly={readOnly}
                   />
                 </td>
               </tr>

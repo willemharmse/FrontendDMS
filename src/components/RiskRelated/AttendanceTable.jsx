@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faInfoCircle, faPlusCircle, faTableColumns, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from "react-toastify";
 
-const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR, setErrors }) => {
+const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, generateAR, setErrors, readOnly = false }) => {
     const [designations, setDesignations] = useState([]);
     const [authors, setAuthors] = useState([]);
     const [companies, setCompanies] = useState([]);
@@ -109,7 +109,8 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     };
 
     const [showColumns, setShowColumns] = useState([
-        "nr", "name", "site", "designation", "attendance", "action",
+        "nr", "name", "site", "designation", "attendance",
+        ...(!readOnly ? ["action"] : []),
     ]);
 
     const fetchAuthors = async () => {
@@ -237,6 +238,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
     };
 
     const handleFocus = (index, field) => {
+        if (readOnly) return;
         if (error) {
             setErrors(prev => ({ ...prev, attend: false })); // Clear attendance error on focus
         }
@@ -417,7 +419,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                             <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-desg` : `attend-desg-exp`}`}>Designation</th>
                             <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-pres` : `attend-pres-exp`}`}>Attendance</th>
                             {showColumns.includes("num") && (<th className="font-fam cent attend-id">Company / ID Number</th>)}
-                            <th className={`font-fam cent ${!showColumns.includes("num") ? `attend-act` : `attend-act-exp`}`}>Action</th>
+                            {!readOnly && (<th className={`font-fam cent ${!showColumns.includes("num") ? `attend-act` : `attend-act-exp`}`}>Action</th>)}
                         </tr>
                     </thead>
                     <tbody>
@@ -434,6 +436,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onFocus={() => handleFocus(index, "name")}
                                         placeholder="Insert or select name"
                                         ref={(el) => (inputRefs.current[`name-${index}`] = el)}
+                                        readOnly={readOnly}
                                     />
                                 </td>
                                 <td>
@@ -446,6 +449,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onChange={(e) => handleInputChange(index, "site", e)}
                                         placeholder="Insert company/site"
                                         ref={(el) => (inputRefs.current[`site-${index}`] = el)}
+                                        readOnly={readOnly}
                                     />
                                 </td>
                                 <td>
@@ -456,7 +460,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         onChange={(e) => handleInputChange(index, "designation", e)}
                                         onFocus={() => handleFocus(index, "designation")}
                                         placeholder="Insert or select designation"
-                                        readOnly={index === 0}
+                                        readOnly={index === 0 || readOnly}
                                         style={{ fontSize: "14px" }}
                                         ref={(el) => (inputRefs.current[`designation-${index}`] = el)}
                                     />
@@ -475,6 +479,7 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                             newRows[index] = updatedRow;
                                             updateRows(newRows);
                                         }}
+                                        disabled={readOnly}
                                     />
                                 </td>
                                 {showColumns.includes("num") && (<td className="font-fam cent">
@@ -485,41 +490,44 @@ const AttendanceTable = ({ rows = [], addRow, removeRow, error, updateRows, gene
                                         style={{ fontSize: "14px" }}
                                         onChange={(e) => handleInputChange(index, "num", e)}
                                         placeholder="Insert company / ID number"
+                                        readOnly={readOnly}
                                     />
                                 </td>)}
-                                <td className="procCent action-cell-auth-risk">
-                                    <button
-                                        className="remove-row-button font-fam"
-                                        onClick={() => {
-                                            if (index !== 0) { // Prevent removal of the first row
-                                                removeRow(index);
-                                            } else {
-                                                toast.dismiss();
-                                                toast.clearWaitingQueue();
-                                                toast.warn("The Facilitator cannot be removed.", {
-                                                    closeButton: false,
-                                                    autoClose: 800,
-                                                    style: {
-                                                        textAlign: 'center'
-                                                    }
-                                                });
-                                            }
-                                        }}
-                                        title="Remove Row"
-                                        type="button"
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                    <button
-                                        className="insert-row-button-sig font-fam"
-                                        onClick={() => insertRowAt(index + 1)}
-                                        title="Add row"
-                                        type="button"
-                                        style={{ fontSize: "15px" }}
-                                    >
-                                        <FontAwesomeIcon icon={faPlusCircle} />
-                                    </button>
-                                </td>
+                                {!readOnly && (
+                                    <td className="procCent action-cell-auth-risk">
+                                        <button
+                                            className="remove-row-button font-fam"
+                                            onClick={() => {
+                                                if (index !== 0) { // Prevent removal of the first row
+                                                    removeRow(index);
+                                                } else {
+                                                    toast.dismiss();
+                                                    toast.clearWaitingQueue();
+                                                    toast.warn("The Facilitator cannot be removed.", {
+                                                        closeButton: false,
+                                                        autoClose: 800,
+                                                        style: {
+                                                            textAlign: 'center'
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                            title="Remove Row"
+                                            type="button"
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                        <button
+                                            className="insert-row-button-sig font-fam"
+                                            onClick={() => insertRowAt(index + 1)}
+                                            title="Add row"
+                                            type="button"
+                                            style={{ fontSize: "15px" }}
+                                        >
+                                            <FontAwesomeIcon icon={faPlusCircle} />
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

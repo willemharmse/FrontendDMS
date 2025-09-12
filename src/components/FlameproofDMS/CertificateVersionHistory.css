@@ -1,0 +1,63 @@
+.certificate-version-history-file-nr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-name {
+    width: 40%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-version {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-certAuth {
+    width: 15%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-certNr {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-issueDate {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-dateReplaced {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.certificate-version-history-file-actions {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}

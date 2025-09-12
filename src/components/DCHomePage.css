@@ -79,3 +79,32 @@
     z-index: 5;
     overflow: hidden;
 }
+
+.file-with-certificate {
+    position: relative;
+    display: inline-block;
+}
+
+.file-icon {
+    font-size: 45px !important;
+    /* size of the file */
+    color: white;
+    /* file color */
+}
+
+.file-with-certificate svg {
+    width: 40%;
+    height: 60%;
+}
+
+.certificate-icon {
+    position: absolute;
+    top: -14px;
+    /* moves it above the file */
+    right: 25px;
+    /* aligns to the top right */
+    font-size: 10px !important;
+    /* smaller size */
+    color: gray;
+    /* gold-ish color */
+}

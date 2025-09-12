@@ -1,0 +1,422 @@
+.modify-comp-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modify-comp-popup-content {
+    background: #f2f2f2;
+    padding: 25px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 1100px;
+    width: 100%;
+    min-height: 440px;
+}
+
+.modify-comp-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.modify-comp-info-row .modify-comp-file-group {
+    flex: 1;
+}
+
+.top-right-button-rsi {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.modify-comp-row-height-rows {
+    height: 10px !important;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
+.modify-comp-row-height-headers {
+    height: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.modify-comp-table-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 5px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.modify-comp-table-group {
+    display: flex;
+    justify-content: center;
+    /* Centers horizontally */
+    align-items: center;
+    /* Centers vertically */
+    height: 100%;
+    padding: 15px 5px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.modify-comp-table {
+    height: calc(100% - 20px);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+    max-height: 400px;
+    min-height: 400px;
+}
+
+.modify-comp-headers {
+    position: sticky;
+    top: 0;
+    background-color: #D9D9D9;
+    color: #333;
+    z-index: 1;
+}
+
+.modify-comp-table-wrapper-dept {
+    overflow-y: auto;
+    max-height: 200px;
+    min-height: 200px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    /* You can adjust the width as needed */
+    margin-bottom: 10px;
+    margin-top: 10px;
+    /* Space between table and buttons */
+    position: relative;
+    /* Ensures the table is positioned correctly */
+    display: flex;
+    /* Enable flexbox for centering the table inside */
+    justify-content: center;
+    /* Centers the table horizontally */
+    align-items: center;
+    /* Centers the table vertically */
+    display: block;
+}
+
+.modify-comp-file-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 30px;
+    text-align: center;
+    width: 90%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.modify-comp-file-header {
+    transform: translateY(-30%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-family: Arial;
+}
+
+.modify-comp-file-group {
+    transform: translateY(+5%);
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.modify-comp-file-group-table {
+    transform: translateY(-3%);
+    padding: 20px 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.modify-comp-file-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;
+
+    text-align: left;
+    font-family: Arial;
+}
+
+.modify-comp-file-close {
+    background: none;
+    color: #ADADAD;
+    border: none;
+    font-size: 20px;
+    width: 2.1%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modify-comp-popup-title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+.modify-comp-popup-input {
+    width: 90%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.modify-comp-file-label {
+    display: block;
+    font-size: 19px;
+    font-family: Arial;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.modify-comp-file-label-tc {
+    display: block;
+    color: #7F7F7F;
+    font-size: 12px;
+    font-family: Arial;
+    width: 85%;
+    font-weight: 300;
+    margin: 0px auto 10px;
+    /* This centers the span */
+    text-align: center;
+}
+
+.modify-comp-popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.modify-comp-popup-button {
+    padding: 10px 15px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    margin: 0 5px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.modify-comp-popup-button.confirm {
+    background-color: #7EAC89 !important;
+    color: white !important;
+}
+
+.modify-comp-popup-button.cancel {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.modify-comp-popup-button:hover {
+    transform: scale(1.05) !important;
+}
+
+.modify-comp-popup-button:active {
+    transform: scale(0.95) !important;
+}
+
+.modify-comp-file-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.modify-comp-file-button {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.modify-comp-file-button-files {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+    transform: translateY(-13%);
+}
+
+.modify-comp-file-button-sub {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+    transform: translateY(+15%);
+}
+
+.modify-comp-file-text-xlsx {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.modify-comp-file-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.modify-comp-label {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+.modify-comp-value {
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+}
+
+.modify-comp-ass-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 6%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-comp-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-owner-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-auth-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-cert-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-head-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-status-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 6%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-date-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 14px;
+    text-align: center;
+}

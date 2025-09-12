@@ -12,7 +12,7 @@ import ControlQuality from './RiskInfo/ControlQuality';
 import ControlEffectiveness from './RiskInfo/ControlEffectiveness';
 import axios from 'axios';
 
-const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
+const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) => {
     const [initialControlName] = useState(data.control);
     const [controlName, setControlName] = useState("");
     const [criticalControl, setCriticalControl] = useState("");
@@ -242,6 +242,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
 
     // On focus, show all options
     const handleResponsibleFocus = () => {
+        if (readOnly) return;
         closeAllDropdowns();
         const matches = posLists;
         setFilteredResponsible(matches);
@@ -287,6 +288,11 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
 
 
     const handleSubmit = async (e) => {
+        if (readOnly) {
+            onClose();
+            return;
+        }
+
         const updatedData = {
             control: controlName,
             critical: criticalControl,
@@ -303,6 +309,8 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
             dueDate: dueDate,
             responsible: responsible
         };
+
+        console.log(updatedData);
 
         if (controlName.trim() !== initialControlName.trim()) {
             onControlRename(initialControlName.trim(), controlName.trim());
@@ -331,6 +339,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                         className="cea-popup-page-input"
                                         value={controlName}
                                         onChange={(e) => setControlName(e.target.value)}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </div>
@@ -345,6 +354,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     className="ibra-popup-page-select"
                                                     value={criticalControl}
                                                     onChange={(e) => setCriticalControl(e.target.value)}
+                                                    disabled={readOnly}
                                                 >
                                                     <option value="">Select Option</option>
                                                     <option value='Yes'>Yes</option>
@@ -363,6 +373,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     className="ibra-popup-page-select"
                                                     value={controlType}
                                                     onChange={(e) => setControlType(e.target.value)}
+                                                    disabled={readOnly}
                                                 >
                                                     <option value="">Select Option</option>
                                                     {
@@ -386,6 +397,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     className="ibra-popup-page-select"
                                                     value={controlActivation}
                                                     onChange={(e) => setControlActivation(e.target.value)}
+                                                    disabled={readOnly}
                                                 >
                                                     <option value="">Select Option</option>
                                                     {
@@ -409,6 +421,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     className="ibra-popup-page-select"
                                                     value={hierarchy}
                                                     onChange={(e) => setHierarchy(e.target.value)}
+                                                    disabled={readOnly}
                                                 >
                                                     <option value="">Select Option</option>
                                                     {
@@ -435,6 +448,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                     className="ibra-popup-page-select"
                                                     value={controlAim}
                                                     onChange={(e) => setControlAim(e.target.value)}
+                                                    disabled={readOnly}
                                                 >
                                                     <option value="">Select Consequence</option>
                                                     {
@@ -460,6 +474,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                             className="ibra-popup-page-select"
                                                             value={quality}
                                                             onChange={(e) => setQuality(e.target.value)}
+                                                            disabled={readOnly}
                                                         >
                                                             <option value="">Select Quality</option>
                                                             {
@@ -500,6 +515,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                         onChange={(e) => setNotes(e.target.value)}
                                         className="cea-popup-page-textarea-full"
                                         placeholder="Insert Improvement to Control"
+                                        readOnly={readOnly}
                                     ></textarea>
                                 </div>
                             </div>
@@ -512,6 +528,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                         onChange={(e) => setDescription(e.target.value)}
                                         className="cea-popup-page-textarea-full"
                                         placeholder="Description of control"
+                                        readOnly={readOnly}
                                     ></textarea>
                                 </div>
                             </div>
@@ -524,6 +541,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                         onChange={(e) => setPerformance(e.target.value)}
                                         className="cea-popup-page-textarea-full"
                                         placeholder="Performance requirement of control"
+                                        readOnly={readOnly}
                                     ></textarea>
                                 </div>
                             </div>
@@ -541,6 +559,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                         value={action}
                                                         onChange={(e) => setAction(e.target.value)}
                                                         placeholder="Insert Required Action to Improve Control"
+                                                        readOnly={readOnly}
                                                     />
                                                 </div>
                                             </div>
@@ -560,6 +579,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                                     onChange={e => handleResponsibleInput(e.target.value)}
                                                                     onFocus={() => handleResponsibleFocus()}
                                                                     placeholder="Select Responsible Person"
+                                                                    readOnly={readOnly}
                                                                 />
                                                             </div>
                                                         </div>
@@ -575,6 +595,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                                                 className="cea-popup-page-input"
                                                                 value={dueDate}
                                                                 onChange={(e) => setDueDate(e.target.value)}
+                                                                readOnly={readOnly}
                                                             />
                                                         </div>
                                                     </div>
@@ -593,7 +614,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename }) => {
                                 className="ibra-popup-page-upload-button"
                                 onClick={handleSubmit}
                             >
-                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Submit'}
+                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : (readOnly ? `Close Popup` : `Submit`)}
                             </button>
                         </div>
                     </div>

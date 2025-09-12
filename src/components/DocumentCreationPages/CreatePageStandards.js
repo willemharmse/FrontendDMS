@@ -57,6 +57,8 @@ const CreatePageStandards = () => {
   const [loadingScope, setLoadingScope] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
   const [showWorkflow, setShowWorkflow] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
+  const [lockUser, setLockUser] = useState(null);
 
   const openWorkflow = () => {
     setShowWorkflow(true);
@@ -464,9 +466,28 @@ const CreatePageStandards = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/standards/getDraft/${loadID}`);
-      const storedData = await response.json();
-      // Update your states as needed:
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}/api/draft/standards/getDraft/${loadID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      const storedData = data.draft || {};
+      const readOnly = data.readOnly || false;
+
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
       setUsedPPEOptions(storedData.usedPPEOptions || []);
@@ -475,10 +496,13 @@ const CreatePageStandards = () => {
       setUsedMobileMachines(storedData.usedMobileMachine || []);
       setUsedMaterials(storedData.usedMaterials || []);
       setUserIDs(storedData.userIDs || []);
+      setLockUser(storedData.lockOwner.username);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
+
+      setReadOnly(readOnly);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -610,6 +634,7 @@ const CreatePageStandards = () => {
   }, [formData.title]);
 
   const autoSaveDraft = () => {
+    if (readOnly) return;
     if (formData.title.trim() === "") return; // Don't save without a valid title
 
     if (loadedIDRef.current === '') {
@@ -1178,38 +1203,46 @@ const CreatePageStandards = () => {
               <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
-            </div>
+            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+            </div>)}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                {/* base floppy-disk, full size */}
-                <FontAwesomeIcon icon={faSave} />
-                {/* pen, shrunk & nudged down/right into corner */}
-                <FontAwesomeIcon
-                  icon={faPen}
-                  transform="shrink-6 down-5 right-7"
-                  color="gray"   /* or whatever contrast you need */
-                />
-              </span>
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-            </div>
-
-            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+            {!readOnly && (
               <div className="burger-menu-icon-risk-create-page-1">
-                <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
+                <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                  {/* base floppy-disk, full size */}
+                  <FontAwesomeIcon icon={faSave} />
+                  {/* pen, shrunk & nudged down/right into corner */}
+                  <FontAwesomeIcon
+                    icon={faPen}
+                    transform="shrink-6 down-5 right-7"
+                    color="gray"   /* or whatever contrast you need */
+                  />
+                </span>
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+              </div>
+            )}
+
+            {(canIn(access, "DDS", ["systemAdmin", "contributor"]) && !readOnly) && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
               </div>
             )}
           </div>
@@ -1223,6 +1256,12 @@ const CreatePageStandards = () => {
         </div>
 
         <div className={`scrollable-box`}>
+          {readOnly && (<div className="input-row">
+            <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white", fontWeight: "bold" }}>
+              The draft is in Read Only Mode as the following user is modifying the draft: {lockUser}
+            </div>
+          </div>)}
+
           <div className="input-row">
             <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
@@ -1235,13 +1274,14 @@ const CreatePageStandards = () => {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Title of your document (e.g. Working at Heights)"
+                  readOnly={readOnly}
                 />
                 <span className="type-create-page">{formData.documentType}</span>
               </div>
             </div>
           </div>
 
-          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+          <DocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
           <div className="input-row">
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -1254,29 +1294,34 @@ const CreatePageStandards = () => {
                 onChange={handleInputChange}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the aim of the document here..." // Optional placeholder text
+                readOnly={readOnly}
               />
-              {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteAim()}
-                />
-              )}
+              {!readOnly &&
+                (<>
+                  {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteAim()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('aim')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.aim.length ? 1 : 0.3,
-                  cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('aim')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                      cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </>)
+              }
             </div>
           </div>
 
@@ -1298,41 +1343,45 @@ const CreatePageStandards = () => {
                 }}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the scope of the document" // Optional placeholder text
+                readOnly={readOnly}
               />
+              {!readOnly &&
+                (<>
+                  {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />)
+                    : (
+                      <FontAwesomeIcon
+                        icon={faMagicWandSparkles}
+                        className="aim-textarea-icon-ibra"
+                        title="AI Rewrite"
+                        style={{ fontSize: "15px" }}
+                        onClick={() => AiRewriteScope()}
+                      />
+                    )}
 
-              {loadingScope ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />)
-                : (
                   <FontAwesomeIcon
-                    icon={faMagicWandSparkles}
-                    className="aim-textarea-icon-ibra"
-                    title="AI Rewrite"
-                    style={{ fontSize: "15px" }}
-                    onClick={() => AiRewriteScope()}
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('scope')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.scope.length ? 1 : 0.3,
+                      cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
                   />
-                )}
-
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('scope')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.scope.length ? 1 : 0.3,
-                  cursor: rewriteHistory.scope.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
+                </>)
+              }
             </div>
           </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-          <StandardsTable formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} />
-          <ChapterTable formData={formData} setFormData={setFormData} />
-          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
-          <SupportingDocumentTable formData={formData} setFormData={setFormData} />
-          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />
+          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+          <StandardsTable formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} readOnly={readOnly} />
+          <ChapterTable formData={formData} setFormData={setFormData} readOnly={readOnly} />
+          <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} readOnly={readOnly} />
+          <SupportingDocumentTable formData={formData} setFormData={setFormData} readOnly={readOnly} />
+          <PicturesTable picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} readOnly={readOnly} />
 
           <div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
@@ -1349,7 +1398,8 @@ const CreatePageStandards = () => {
                     reviewDate: false
                   }))
                 }}
-                placeholder="Insert the review period in months" // Optional placeholder text
+                placeholder="Insert the review period in months"
+                readOnly={readOnly}
               />
             </div>
           </div>

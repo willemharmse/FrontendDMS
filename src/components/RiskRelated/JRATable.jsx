@@ -16,7 +16,7 @@ import Go_Nogo from "./RiskInfo/Go_Nogo";
 import CurrentControlsJRA from "./RiskInfo/CurrentControlsJRA";
 import JRAPopup from "./JRAPopup";
 
-const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors }) => {
+const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, readOnly = false }) => {
     const [rowData, setRowData] = useState([]);
     const [showJRAPopup, setShowJRAPopup] = useState(false);
     const ibraBoxRef = useRef(null);
@@ -69,6 +69,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
     }
 
     function handleUpdateJraRow(updatedRow) {
+        if (readOnly) {
+            closeJRAPopup();
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             jra: prev.jra.map(r =>
@@ -371,7 +376,8 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
         { id: "taskExecution", title: "Task Execution", className: "ibraCent ibraTXJRA", icon: faInfoCircle },
         { id: "controls", title: "Control Execution Specification\n(For Work Execution Document [WED])", className: "ibraCent ibraEXEJRA", icon: faInfoCircle },
         { id: "go", title: "Go/ No-Go", className: "ibraCent ibraDeadlineJRA", icon: faInfoCircle },
-        { id: "action", title: "Action", className: "ibraCent ibraAct", icon: null },
+        ...(!readOnly
+            ? [{ id: "action", title: "Action", className: "ibraCent ibraAct", icon: null }] : []),
     ];
 
     const openInfo = (type) => {
@@ -528,7 +534,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
-        "nr", "main", "hazards", "sub", "UE", "taskExecution", "controls", "go", "action",
+        "nr", "main", "hazards", "sub", "UE", "taskExecution", "controls", "go", ...(readOnly ? [] : ["action"]),
     ]);
 
     const [showColumnSelector, setShowColumnSelector] = useState(false);
@@ -540,7 +546,10 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
         while (result.length < 5) {
             result.push(`blank-${result.length}`);
         }
-        result.push('action');
+        // only force-add actions when not readOnly
+        if (!readOnly && !result.includes("action")) {
+            result.push("action");
+        }
         return result;
     };
 
@@ -662,7 +671,8 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
                 </button>
 
                 {showColumnSelector && (
-                    <div className="column-selector-popup" ref={popupRef}>
+                    <div className="column-selector-popup"
+                        onMouseDown={(e) => e.stopPropagation()} ref={popupRef}>
                         <div className="column-selector-header">
                             <h4>Select Columns</h4>
                             <button
@@ -778,13 +788,13 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
                                                         return (
                                                             <td key={colIdx} rowSpan={rowCount} className={cls}>
                                                                 <span>{row.nr}</span>
-                                                                <FontAwesomeIcon
+                                                                {!readOnly && (<FontAwesomeIcon
                                                                     icon={faArrowsUpDown}
                                                                     className="drag-handle"
                                                                     onMouseDown={() => setArmedDragRow(row.id)}
                                                                     onMouseUp={() => setArmedDragRow(null)}
                                                                     style={{ cursor: 'grab', marginRight: "2px", marginLeft: "4px" }}
-                                                                />
+                                                                />)}
                                                                 <FontAwesomeIcon
                                                                     icon={faArrowUpRightFromSquare}
                                                                     style={{ fontSize: "14px", marginLeft: "2px", color: "black" }}
@@ -811,32 +821,34 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
                                                                 <div className="main-cell-content">
                                                                     <div style={{ display: "block", textAlign: "left" }}>{row.main}</div>
                                                                 </div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="insert-mainrow-button"
-                                                                    title="Add Main Step Here"
-                                                                    onClick={() => insertMainRow(rowIndex)}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faPlus} />
-                                                                </button>
+                                                                {!readOnly && (<>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="insert-mainrow-button"
+                                                                        title="Add Main Step Here"
+                                                                        onClick={() => insertMainRow(rowIndex)}
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faPlus} />
+                                                                    </button>
 
-                                                                <button
-                                                                    type="button"
-                                                                    className="delete-mainrow-button"
-                                                                    title="Delete Main Step"
-                                                                    onClick={() => removeRow(row.id)}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
-                                                                </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="delete-mainrow-button"
+                                                                        title="Delete Main Step"
+                                                                        onClick={() => removeRow(row.id)}
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
+                                                                    </button>
 
-                                                                <button
-                                                                    type="button"
-                                                                    className="duplicate-mainrow-button"
-                                                                    title="Duplicate Main Step"
-                                                                    onClick={() => handleDuplicateRow(rowIndex)}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faCopy} />
-                                                                </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="duplicate-mainrow-button"
+                                                                        title="Duplicate Main Step"
+                                                                        onClick={() => handleDuplicateRow(rowIndex)}
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faCopy} />
+                                                                    </button>
+                                                                </>)}
                                                             </td>
                                                         );
                                                     }
@@ -879,14 +891,14 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
                                                                         </div>
                                                                     );
                                                                 })}
-                                                                <button
+                                                                {!readOnly && (<button
                                                                     type="button"
                                                                     className="insert-subrow-button"
                                                                     onClick={() => insertBodyRow(row.id, bodyIdx + 1)}
                                                                     title="Add sub-step here"
                                                                 >
                                                                     <FontAwesomeIcon icon={faPlus} />
-                                                                </button>
+                                                                </button>)}
                                                             </td>
                                                         );
                                                     }
@@ -1080,7 +1092,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors })
             {helpTaskExecution && (<TaskExecution setClose={closeTaskExecutionHelp} />)}
             {helpUnwantedEvents && (<UnwantedEvent setClose={closeUnwantedEventsHelp} />)}
             {go_noGO && (<Go_Nogo setClose={closeGo_noGo} />)}
-            {showJRAPopup && (<JRAPopup onClose={closeJRAPopup} data={rowData} onSubmit={handleUpdateJraRow} nr={rowData.nr} formData={formData} />)}
+            {showJRAPopup && (<JRAPopup readOnly={readOnly} onClose={closeJRAPopup} data={rowData} onSubmit={handleUpdateJraRow} nr={rowData.nr} formData={formData} />)}
         </div>
     );
 };

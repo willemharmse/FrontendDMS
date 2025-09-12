@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrash, faTrashCan, faPlus, faPlusCircle, faMagicWandSparkles, faCopy, faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
-const SpecialInstructionsTable = ({ formData, setFormData, error, title, documentType, setErrors }) => {
+const SpecialInstructionsTable = ({ formData, setFormData, error, title, documentType, setErrors, readOnly = false }) => {
     const [armedDragRow, setArmedDragRow] = useState(null);
     const [draggedRowId, setDraggedRowId] = useState(null);
     const [dragOverRowId, setDragOverRowId] = useState(null);
@@ -126,7 +126,7 @@ const SpecialInstructionsTable = ({ formData, setFormData, error, title, documen
                             <tr>
                                 <th className="procCent siNr">Nr</th>
                                 <th className="procCent siMain">Special Instruction</th>
-                                <th className="procCent siSub">Action</th>
+                                {!readOnly && (<th className="procCent siSub">Action</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -148,12 +148,12 @@ const SpecialInstructionsTable = ({ formData, setFormData, error, title, documen
                                     >
                                         <td className="procCent" style={{ fontSize: "14px", color: "black" }}>
                                             {row.nr}
-                                            <FontAwesomeIcon
+                                            {!readOnly && (<FontAwesomeIcon
                                                 icon={faArrowsUpDown}
                                                 className="drag-handle-standards"
                                                 onMouseDown={() => setArmedDragRow(row.id)}
                                                 onMouseUp={() => setArmedDragRow(null)}
-                                            />
+                                            />)}
                                         </td>
                                         <td className="main-cell-standards" style={{}}>
                                             <textarea
@@ -167,9 +167,10 @@ const SpecialInstructionsTable = ({ formData, setFormData, error, title, documen
                                                     ...prev,
                                                     special: false
                                                 }))}
+                                                readOnly={readOnly}
                                             />
                                         </td>
-                                        <td className="action-cell-si procCent">
+                                        {!readOnly && (<td className="action-cell-si procCent">
                                             <div className="action-buttons-si">
                                                 <button
                                                     className="remove-row-button font-fam"
@@ -188,7 +189,7 @@ const SpecialInstructionsTable = ({ formData, setFormData, error, title, documen
                                                     <FontAwesomeIcon icon={faPlusCircle} />
                                                 </button>
                                             </div>
-                                        </td>
+                                        </td>)}
                                     </tr>
                                 );
                             })}

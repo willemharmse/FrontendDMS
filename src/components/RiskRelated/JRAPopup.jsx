@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { aiRewrite, aiRewriteWED } from "../../utils/jraAI";
 import { v4 as uuidv4 } from 'uuid';
 
-const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
+const JRAPopup = ({ onClose, data, onSubmit, nr, formData, readOnly = false }) => {
     const [activeHazardCell, setActiveHazardCell] = useState(null);
     const [activeSubCell, setActiveSubCell] = useState(null);
     const ownersInputRef = useRef(null);
@@ -475,6 +475,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
     };
 
     const handleMainStepFocus = (value) => {
+        if (readOnly) return;
         closeAllDropdowns();
         const matches = mainTaskOptions
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
@@ -547,6 +548,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
     };
 
     const handleUnwantedEventFocus = (stepIndex, ueIndex, value) => {
+        if (readOnly) return;
         if (stepIndex === 0) return;
         closeAllDropdowns();
         setActiveHazardCell({ stepIndex: stepIndex, hazardIndex: ueIndex });
@@ -805,6 +807,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
     };
 
     const handleSubStepFocus = (stepIndex, subIndex, value) => {
+        if (readOnly) return;
         setActiveSubCell({ stepIndex: stepIndex, subIndex: subIndex });
 
         const main = jraData.main;
@@ -923,6 +926,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
     };
 
     const handleResponsibleFocus = (stepIndex, subIndex, value) => {
+        if (readOnly) return;
         setActiveSubCell({ stepIndex: stepIndex, subIndex: subIndex });
 
         const matches = posLists
@@ -994,6 +998,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                         onChange={(e) => handleMainStepInput(e.target.value)}
                                         onFocus={(e) => handleMainStepFocus(e.target.value)}
                                         ref={mainStepInputRef}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </div>
@@ -1002,17 +1007,18 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                             {jraData.jraBody.map((step, si) => (
                                 <div>
                                     <div className="jra-popup-page-form-group-main-container-2">
-                                        {si > 0 && (
-                                            <button
-                                                type="button"
-                                                className="jra-popup-page-delete-group-button"
-                                                onClick={() => handleDeleteGroup(si)}
-                                                title="Delete this Unwanted Event & Hazard group"
-                                            >
-                                                <FontAwesomeIcon icon={faTrashAlt} />
-                                            </button>
-                                        )}
-
+                                        {!readOnly && (<>
+                                            {si > 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="jra-popup-page-delete-group-button"
+                                                    onClick={() => handleDeleteGroup(si)}
+                                                    title="Delete this Unwanted Event & Hazard group"
+                                                >
+                                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                                </button>
+                                            )}
+                                        </>)}
                                         <div
                                             className="jra-popup-page-additional-group"
                                             style={{ marginTop: si !== 0 ? "18px" : undefined, paddingBottom: "0px" }}
@@ -1030,7 +1036,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                     <select
                                                                         type="text"
                                                                         style={{ color: step.hazards[0].hazard === "" ? "grey" : "black", cursor: "text" }}
-                                                                        disabled={si === 0}
+                                                                        disabled={si === 0 || readOnly}
                                                                         className="jra-popup-page-select ibra-popup-page-row-input"
                                                                         placeholder="Select Hazard / Energy Release"
                                                                         value={step.hazards[0]?.hazard}
@@ -1066,7 +1072,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                 delete unwantedEventRefs.current[key];
                                                                             }
                                                                         }}
-                                                                        readOnly={si === 0}
+                                                                        readOnly={si === 0 || readOnly}
                                                                         className="ibra-popup-page-input-table ibra-popup-page-row-input"
                                                                         placeholder="Insert Unwanted Event"
                                                                         value={step.UE[0]?.ue}
@@ -1135,7 +1141,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                 <div className={"jra-popup-page-control-container"}>
                                                                                     <textarea
                                                                                         type="text"
-                                                                                        style={{ color: "black", cursor: "text", fieldsizing: "content", minHeight: "19px", paddingRight: controlHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "" }}
+                                                                                        style={{ color: "black", cursor: "text", fieldsizing: "content", minHeight: "19px", paddingRight: controlHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "", resize: "vertical" }}
                                                                                         ref={el => {
                                                                                             const key = `${si}-${idx}`;
                                                                                             if (el) {
@@ -1149,35 +1155,39 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                         value={subItem.task}
                                                                                         onChange={(e) => handleSubStepInput(si, idx, e.target.value)}
                                                                                         onFocus={(e) => handleSubStepFocus(si, idx, e.target.value)}
+                                                                                        readOnly={readOnly}
                                                                                     />
 
-                                                                                    {loadingControlKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
+                                                                                    {!readOnly && (<>
+                                                                                        {loadingControlKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
 
-                                                                                    {controlHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoControl(si, idx)} />)}
-                                                                                    {!loadingControlKey && !allSubStepOptions.includes(subItem.task) && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiRewrite(si, idx)} />)}
-
+                                                                                        {controlHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoControl(si, idx)} />)}
+                                                                                        {!loadingControlKey && !allSubStepOptions.includes(subItem.task) && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiRewrite(si, idx)} />)}
+                                                                                    </>)}
                                                                                 </div>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    className="jra-popup-page-add-subrow-button"
-                                                                                    onClick={() => handleAddSubRow(si, idx)}
-                                                                                    title="Add Control"
-                                                                                >
-                                                                                    <FontAwesomeIcon icon={faPlusCircle} />
-                                                                                </button>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    className="jra-popup-page-delete-subrow-button"
-                                                                                    onClick={() => handleDeleteSubRow(si, idx)}
-                                                                                    disabled={step.sub.length <= 1}
-                                                                                    title={
-                                                                                        step.sub.length <= 1
-                                                                                            ? "At least one control must remain"
-                                                                                            : "Delete row"
-                                                                                    }
-                                                                                >
-                                                                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                                                                </button>
+                                                                                {!readOnly && (<>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="jra-popup-page-add-subrow-button"
+                                                                                        onClick={() => handleAddSubRow(si, idx)}
+                                                                                        title="Add Control"
+                                                                                    >
+                                                                                        <FontAwesomeIcon icon={faPlusCircle} />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="jra-popup-page-delete-subrow-button"
+                                                                                        onClick={() => handleDeleteSubRow(si, idx)}
+                                                                                        disabled={step.sub.length <= 1}
+                                                                                        title={
+                                                                                            step.sub.length <= 1
+                                                                                                ? "At least one control must remain"
+                                                                                                : "Delete row"
+                                                                                        }
+                                                                                    >
+                                                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                                                    </button>
+                                                                                </>)}
                                                                             </div>
                                                                         </div>
                                                                         <div className="jra-popup-page-column-2-2-2">
@@ -1199,6 +1209,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                     value={execItem.R || ''}
                                                                                     onChange={(e) => handleResponsibleInput(si, idx, e.target.value)}
                                                                                     onFocus={(e) => handleResponsibleFocus(si, idx, e.target.value)}
+                                                                                    readOnly={readOnly}
                                                                                 />
                                                                             </div>
                                                                         </div>
@@ -1211,17 +1222,19 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                             <div className="jra-popup-page-control-container">
                                                                                 <textarea
                                                                                     type="text"
-                                                                                    style={{ color: "black", cursor: "text", paddingRight: wedHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "40px" }}
+                                                                                    style={{ color: "black", cursor: "text", paddingRight: wedHistory[`${si}-${idx}`]?.length > 0 ? "60px" : "40px", resize: "vertical" }}
                                                                                     ref={ownersInputRef}
                                                                                     className="jra-popup-page-control-table jra-popup-page-row-input"
                                                                                     placeholder="Insert WED Question"
                                                                                     value={controlItem.control || ''}
+                                                                                    readOnly={readOnly}
                                                                                     onChange={(e) => handleControlChange(si, idx, e.target.value)}
                                                                                 />
-                                                                                {loadingWEDKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
-
-                                                                                {wedHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoWED(si, idx)} />)}
-                                                                                {!loadingWEDKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiWEDCreate(si, idx)} />)}
+                                                                                {!readOnly && (<>
+                                                                                    {loadingWEDKey && (<FontAwesomeIcon icon={faSpinner} spin className="jra-popup-page-control-icon-spin spin-animation" />)}
+                                                                                    {wedHistory[`${si}-${idx}`]?.length > 0 && (<FontAwesomeIcon icon={faUndo} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon-2" onClick={() => handleUndoWED(si, idx)} />)}
+                                                                                    {!loadingWEDKey && (<FontAwesomeIcon icon={faMagicWandSparkles} title={"AI Rewrite WED Question"} className="jra-popup-page-control-icon" onClick={() => handleAiWEDCreate(si, idx)} />)}
+                                                                                </>)}
                                                                             </div>
                                                                         </div>
                                                                         <div className="jra-popup-page-column-2-2">
@@ -1234,6 +1247,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                                                                     className="jra-popup-page-select ibra-popup-page-row-input"
                                                                                     placeholder="Enter Go / No-Go"
                                                                                     value={goNoGoItem.go || ''}
+                                                                                    disabled={readOnly}
                                                                                     onChange={(e) => handleGoNoGoChange(si, idx, e.target.value)}
                                                                                 >
                                                                                     <option value=""> </option>
@@ -1250,7 +1264,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="jra-popup-page-add-group-2">
+                                    {!readOnly && (<div className="jra-popup-page-add-group-2">
                                         <button
                                             type="button"
                                             className="jra-popup-page-add-button-2"
@@ -1259,7 +1273,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                         >
                                             + Add Hazard / Unwanted Event
                                         </button>
-                                    </div>
+                                    </div>)}
                                 </div>
                             ))}
 
@@ -1273,7 +1287,7 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData }) => {
                                 className="ibra-popup-page-upload-button"
                                 onClick={() => onSubmit(jraData)}
                             >
-                                {'Submit'}
+                                {(readOnly ? `Close Popup` : `Submit`)}
                             </button>
                         </div>
                     </div>

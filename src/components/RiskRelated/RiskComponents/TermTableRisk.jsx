@@ -6,7 +6,7 @@ import RiskTermPopup from "../RiskValueChanges/RiskTermPopup";
 import ManageRiskDefinitions from "../RiskValueChanges/ManageRiskDefinitions";
 import ModifySuggestedDefinitions from "../../ValueChanges/ModifySuggestedDefinitions";
 
-const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setError }) => {
+const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setError, readOnly = false }) => {
   const [termData, setTermData] = useState([]);
   const [originalData, setOriginalData] = useState([])
   const [popupVisible, setPopupVisible] = useState(false);
@@ -296,7 +296,7 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
               <tr>
                 <th className="col-term-term" style={{ textAlign: "center" }}>Term</th>
                 <th className="col-term-desc" style={{ textAlign: "center" }}>Definition</th>
-                <th className="col-term-act" style={{ textAlign: "center" }}>Action</th>
+                {!readOnly && (<th className="col-term-act" style={{ textAlign: "center" }}>Action</th>)}
               </tr>
             </thead>
             <tbody>
@@ -304,58 +304,60 @@ const TermTableRisk = ({ risk, formData, setFormData, usedTermCodes, setUsedTerm
                 <tr key={index}>
                   <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.term}</td>
                   <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>{row.definition}</td>
-                  <td className="procCent " style={{ paddingBottom: "10px" }}>
-                    <div className="term-action-buttons">
-                      <button
-                        className="remove-row-button"
-                        style={{ paddingRight: "6px" }}
-                        onClick={() => {
-                          const cleanTerm = row.term.replace(/\s*\*$/, "");
-                          // Remove abbreviation from table and the selected abbreviations set
-                          setFormData({
-                            ...formData,
-                            termRows: formData.termRows.filter((_, i) => i !== index),
-                          });
-                          setUsedTermCodes(
-                            usedTermCodes.filter((term) => term !== cleanTerm)
-                          );
+                  {!readOnly && (
+                    <td className="procCent " style={{ paddingBottom: "10px" }}>
+                      <div className="term-action-buttons">
+                        <button
+                          className="remove-row-button"
+                          style={{ paddingRight: "6px" }}
+                          onClick={() => {
+                            const cleanTerm = row.term.replace(/\s*\*$/, "");
+                            // Remove abbreviation from table and the selected abbreviations set
+                            setFormData({
+                              ...formData,
+                              termRows: formData.termRows.filter((_, i) => i !== index),
+                            });
+                            setUsedTermCodes(
+                              usedTermCodes.filter((term) => term !== cleanTerm)
+                            );
 
-                          // Update the selectedAbbrs state to reflect the removal
-                          const newSelectedTerms = new Set(selectedTerms);
-                          newSelectedTerms.delete(cleanTerm);
-                          setSelectedTerms(newSelectedTerms);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faTrash} title="Remove Row" />
-                      </button>
-                      <button
-                        className="edit-terms-row-button"
-                        style={{ paddingLeft: "6px" }}
-                        onClick={() => {
-                          if (originalData.some(item => item.term === row.term && item.definition === row.definition)) { openManagePopup(row.term) }
-                          else {
-                            openUpdate(row.term, row.definition)
+                            // Update the selectedAbbrs state to reflect the removal
+                            const newSelectedTerms = new Set(selectedTerms);
+                            newSelectedTerms.delete(cleanTerm);
+                            setSelectedTerms(newSelectedTerms);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Remove Row" />
+                        </button>
+                        <button
+                          className="edit-terms-row-button"
+                          style={{ paddingLeft: "6px" }}
+                          onClick={() => {
+                            if (originalData.some(item => item.term === row.term && item.definition === row.definition)) { openManagePopup(row.term) }
+                            else {
+                              openUpdate(row.term, row.definition)
 
-                          }
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEdit} title="Modify Term" />
-                      </button>
-                    </div>
-                  </td>
+                            }
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} title="Modify Term" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         )}
 
-        {selectedTerms.size === 0 && (
+        {(selectedTerms.size === 0 && !readOnly) && (
           <button className="add-row-button-terms" onClick={handlePopupToggle}>
             Select
           </button>
         )}
 
-        {selectedTerms.size > 0 && (
+        {(selectedTerms.size > 0 && !readOnly) && (
           <button className="add-row-button-terms-plus" onClick={handlePopupToggle}>
             <FontAwesomeIcon icon={faPlusCircle} title="Add Row" />
           </button>

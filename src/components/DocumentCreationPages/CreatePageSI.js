@@ -56,6 +56,8 @@ const CreatePageSI = () => {
   const [generatePopup, setGeneratePopup] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
   const [showWorkflow, setShowWorkflow] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
+  const [lockUser, setLockUser] = useState(null);
 
   const openWorkflow = () => {
     setShowWorkflow(true);
@@ -146,6 +148,7 @@ const CreatePageSI = () => {
 
   // On focus, show all options
   const handleSiteFocus = () => {
+    if (readOnly) return;
     closeAllDropdowns();
 
     setErrors(prev => ({
@@ -202,6 +205,7 @@ const CreatePageSI = () => {
 
   // On focus, show all options
   const handleDirecteeFocus = () => {
+    if (readOnly) return;
     closeAllDropdowns();
 
     setErrors(prev => ({
@@ -618,16 +622,41 @@ const CreatePageSI = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/draft/special/getDraft/${loadID}`);
-      const storedData = await response.json();
-      // Update your states as needed:
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}/api/draft/special/getDraft/${loadID}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      console.log(data);
+
+      const storedData = data.draft || {};
+      const readOnly = data.readOnly || false;
+
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
       setUserIDs(storedData.userIDs || []);
+      setLockUser(storedData.lockOwner.username);
       setFormData(storedData.formData || {});
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
+
+      setReadOnly(readOnly);
+      console.log(readOnly);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -691,6 +720,7 @@ const CreatePageSI = () => {
   }, [formData.title]);
 
   const autoSaveDraft = () => {
+    if (readOnly) return;
     if (formData.title.trim() === "") return; // Don't save without a valid title
 
     if (loadedIDRef.current === '') {
@@ -1109,38 +1139,52 @@ const CreatePageSI = () => {
               <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
-            </div>
+            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+            </div>)}
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                {/* base floppy-disk, full size */}
-                <FontAwesomeIcon icon={faSave} />
-                {/* pen, shrunk & nudged down/right into corner */}
-                <FontAwesomeIcon
-                  icon={faPen}
-                  transform="shrink-6 down-5 right-7"
-                  color="gray"   /* or whatever contrast you need */
-                />
-              </span>
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-            </div>
-
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" onClick={openShare} />
-            </div>
-
-            {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
+            {!readOnly && (
               <div className="burger-menu-icon-risk-create-page-1">
-                <FontAwesomeIcon icon={faUpload} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" onClick={handlePubClick} />
+                <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                  {/* base floppy-disk, full size */}
+                  <FontAwesomeIcon icon={faSave} />
+                  {/* pen, shrunk & nudged down/right into corner */}
+                  <FontAwesomeIcon
+                    icon={faPen}
+                    transform="shrink-6 down-5 right-7"
+                    color="gray"   /* or whatever contrast you need */
+                  />
+                </span>
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+              </div>
+            )}
+
+            {!readOnly && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+              </div>
+            )}
+
+            {(canIn(access, "DDS", ["systemAdmin", "contributor"]) && !readOnly) && (
+              <div className="burger-menu-icon-risk-create-page-1">
+                <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
+              </div>
+            )}
+
+            {(localStorage.getItem("draftData")) && (
+              <div className="burger-menu-icon-risk-create-page-1" onClick={() => loadOfflineData()}>
+                <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
               </div>
             )}
           </div>
@@ -1153,6 +1197,12 @@ const CreatePageSI = () => {
         </div>
 
         <div className={`scrollable-box`}>
+          {readOnly && (<div className="input-row">
+            <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white", fontWeight: "bold" }}>
+              The draft is in Read Only Mode as the following user is modifying the draft: {lockUser}
+            </div>
+          </div>)}
+
           <div className="input-row">
             <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Document Title <span className="required-field">*</span></h3>
@@ -1165,6 +1215,7 @@ const CreatePageSI = () => {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Title of your document (e.g., Surface TMM Pre-Use Checklist)"
+                  readOnly={readOnly}
                 />
                 <span className="type-create-page" style={{ width: "10%" }}>{formData.documentType}</span>
               </div>
@@ -1185,6 +1236,7 @@ const CreatePageSI = () => {
                   autoComplete="off"
                   className="special-intruction-input special-intruction-row-input"
                   placeholder="Insert or Select Operation/ Site Name"
+                  readOnly={readOnly}
                 />
               </div>
             </div>
@@ -1204,6 +1256,7 @@ const CreatePageSI = () => {
                       dateConducted: false
                     }))}
                     className="special-intruction-input-date-half font-fam"
+                    readOnly={readOnly}
                   />
                 </div>
                 <div className={`input-box-type-special-intruction-date-half`}>
@@ -1217,6 +1270,7 @@ const CreatePageSI = () => {
                     value={formData.expiryDate || ""}
                     onChange={handleInputChange}
                     className="special-intruction-input-date-half font-fam"
+                    readOnly={readOnly}
                   />
                 </div>
               </div>
@@ -1247,6 +1301,7 @@ const CreatePageSI = () => {
                     autoComplete="off"
                     className="special-intruction-input-select-half font-fam"
                     placeholder="Insert Person Giving the Special Instruction"
+                    readOnly={readOnly}
                   />
                 </div>
               </div>
@@ -1267,12 +1322,13 @@ const CreatePageSI = () => {
                   autoComplete="off"
                   className="special-intruction-input-select-half font-fam"
                   placeholder="Insert Group or Person Instruction is Directed To"
+                  readOnly={readOnly}
                 />
               </div>
             </div>
           </div>
 
-          <DocumentSignaturesTableSI rows={formData.rows} handleRowChange={handleRowChange} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} />
+          <DocumentSignaturesTableSI rows={formData.rows} handleRowChange={handleRowChange} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
           <div className="input-row" style={{ position: 'relative' }}>
             <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
@@ -1289,38 +1345,41 @@ const CreatePageSI = () => {
                 }))}
                 rows="5"   // Adjust the number of rows for initial height
                 placeholder="Insert the purpose of this document and include any relevant background information regarding the topic." // Optional placeholder text
+                readOnly={readOnly}
               />
+              {!readOnly && (
+                <>
+                  {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-si spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteAim()}
+                    />
+                  )}
 
-              {loadingAim ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-si spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteAim()}
-                />
-              )}
-
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-si-undo"
-                title="Undo AI Rewrite"
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.aim.length ? 1 : 0.3,
-                  cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-                onClick={() => undoAiRewrite("aim")}
-              />
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-si-undo"
+                    title="Undo AI Rewrite"
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.aim.length ? 1 : 0.3,
+                      cursor: rewriteHistory.aim.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                    onClick={() => undoAiRewrite("aim")}
+                  />
+                </>)}
             </div>
           </div>
 
-          <SpecialInstructionsTable formData={formData} setFormData={setFormData} error={errors.special} setErrors={setErrors} />
-          <ChapterTable formData={formData} setFormData={setFormData} />
-          <AbbreviationTableSI formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} si={true} />
-          <TermTableSI formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} si={true} />
-          <ReferenceTableSpecialInstructions formData={formData} setFormData={setFormData} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} />
+          <SpecialInstructionsTable formData={formData} setFormData={setFormData} error={errors.special} setErrors={setErrors} readOnly={readOnly} />
+          <ChapterTable formData={formData} setFormData={setFormData} readOnly={readOnly} />
+          <AbbreviationTableSI formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} si={true} readOnly={readOnly} />
+          <TermTableSI formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} si={true} readOnly={readOnly} />
+          <ReferenceTableSpecialInstructions formData={formData} setFormData={setFormData} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} readOnly={readOnly} />
 
           <div className="input-row-buttons">
             {/* Generate File Button */}

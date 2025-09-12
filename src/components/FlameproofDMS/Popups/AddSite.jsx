@@ -42,7 +42,7 @@ const AddSite = ({ isOpen, onClose }) => {
             toast.clearWaitingQueue();
             toast.success("New site added successfully", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: "center" },
             });
 
@@ -52,7 +52,7 @@ const AddSite = ({ isOpen, onClose }) => {
             toast.clearWaitingQueue();
             toast.error(error.message || "Failed to add site.", {
                 closeButton: true,
-                autoClose: 1200,
+                autoClose: 1500,
                 style: { textAlign: "center" },
             });
         }
