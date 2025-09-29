@@ -26,6 +26,21 @@
     border-radius: 10px;
 }
 
+.popup-content-component-page-sub {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 700px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 400px;
+    /* Ensure the popup does not stretch vertically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
 .component-page-table-group {
     display: flex;
     flex-direction: column;

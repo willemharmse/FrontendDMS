@@ -76,7 +76,11 @@ const FCMSSiteAdmin = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FM Sites</p>
+                        <p className="logo-text-um">Manage FMM</p>
+                    </div>
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/fmsManageSites2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"Manage Sites"}</p>
                     </div>
                 </div>
             )}

@@ -245,16 +245,21 @@ const FlameProofMain = () => {
   };
 
   const iconMap = {
-    "all-assets": "allDocumentsDMS.svg",
-    "Continuous Miner": "FCMS_CM2.png",
-    "Shuttle Car": "FCMS_SC2.png",
-    "Roof Bolter": "FCMS_RB2.png",
-    "Feeder Breaker": "FCMS_FB2.png",
-    "Load Haul Dumper": "FCMS_LHD2.png",
-    "Tractor": "FCMS_T2.png",
+    "all-assets": "/allDocumentsDMS.svg",
+    "Continuous Miner": "/FCMS_CM2.png",
+    "Shuttle Car": "/FCMS_SC2.png",
+    "Roof Bolter": "/FCMS_RB2.png",
+    "Feeder Breaker": "/FCMS_FB2.png",
+    "Load Haul Dumper": "/FCMS_LHD2.png",
+    "Tractor": "/FCMS_T2.png",
   }
 
   const isAll = typeof type === "string" && type.includes("All");
+
+  const getIcon = (t) => {
+    if (isAll) return iconMap["all-assets"];
+    return iconMap[t] || "/genericAssetType2.svg";
+  };
 
   const openModal = (fileId, asset) => {
     setSelectedFileId(fileId);
@@ -355,7 +360,7 @@ const FlameProofMain = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={`${process.env.PUBLIC_URL}/${iconMap[isAll ? "all-assets" : type]}`} alt="Logo" className="icon-risk-rm" />
+            <img src={`${process.env.PUBLIC_URL}${getIcon(type)}`} alt="Logo" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{(`${type.includes("All") ? type : type + "s"}`)}</p>
             {!type.includes("All") && (<p className="logo-text-dm-fi" style={{ marginTop: "0px" }}>{siteName}</p>)}
           </div>
@@ -381,6 +386,7 @@ const FlameProofMain = () => {
               className="search-input-um"
               type="text"
               placeholder="Search"
+              autoComplete="off"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -488,7 +494,7 @@ const FlameProofMain = () => {
 
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
-      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetType={type} />)}
+      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetType={type.includes("All") ? "" : type} />)}
       {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
       {modifyDate && <ModifyComponentsPopup onClose={closeModifyDate} asset={assetID} />}

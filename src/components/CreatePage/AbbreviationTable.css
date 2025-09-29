@@ -287,6 +287,35 @@
     /* Rotate to form a checkmark */
 }
 
+.checkbox-inp-component {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    vertical-align: middle;
+    border-radius: 20%;
+    border: 2px solid #ccc;
+    background-color: white;
+    position: relative;
+}
+
+.checkbox-inp-component:checked {
+    background-color: #002060;
+    border-color: #002060;
+}
+
+.checkbox-inp-component:checked::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 3px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
 .center-abbrs {
     text-align: center;
     font-size: 16px;

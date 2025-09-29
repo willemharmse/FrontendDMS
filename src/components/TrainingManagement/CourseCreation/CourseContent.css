@@ -230,6 +230,23 @@
     color: #002060;
 }
 
+.courseCont-add-iconBtn {
+    background: transparent;
+    color: black;
+    border: none;
+    padding: 10px 9px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    width: 30px;
+    display: grid;
+    place-items: center;
+}
+
+.courseCont-add-iconBtn:hover {
+    color: #002060;
+}
+
 /* optional: keep trash hover red like before */
 .courseCont-iconBtn:nth-child(1):hover {
     color: #CB6F6F;

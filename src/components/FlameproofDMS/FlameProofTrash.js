@@ -321,6 +321,7 @@ const FlameProofTrash = () => {
             <input
               className="search-input-um"
               type="text"
+              autoComplete="off"
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

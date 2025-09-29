@@ -58,6 +58,7 @@ const FlameProofSub = () => {
   const [assetType, setAssetType] = useState("");
   const [isLoadingTable, setIsLoadingTable] = useState(true);
   const [showNoAssets, setShowNoAssets] = useState(false);
+  const [siteTitle, setSiteTitle] = useState("");
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -67,8 +68,9 @@ const FlameProofSub = () => {
           throw new Error("Failed to fetch users");
         }
         const data = await response.json();
-        setSite(data.site);
-        console.log(data.site);
+        setSite(data.site._id);
+        setSiteTitle(data.site.site);
+        console.log(data.site._id);
       } catch (error) {
         setError(error.message);
       }
@@ -153,6 +155,8 @@ const FlameProofSub = () => {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
+
+      console.log(data);
 
       const uniqueOpAreas = [...new Set(data.certificates.map(file => file.asset.operationalArea))].sort();
       const uniqueStatus = [...new Set(data.certificates.map(file => file.status))].sort();
@@ -301,7 +305,7 @@ const FlameProofSub = () => {
   };
 
   const formatDate = (dateString) => {
-    if (dateString === null) return "—"
+    if (dateString === null || !dateString) return "—"
     const date = new Date(dateString); // Convert to Date object
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
@@ -351,8 +355,8 @@ const FlameProofSub = () => {
       const data = await response.json();
       setAssetType(data.assets.assetType);
       const key = data.assets.assetType.replace(/\s+/g, " ");
-      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/defaultDMS.svg");
-      setVersionIcon(versionAssetIconMap[key] || "/defaultDMS.svg");
+      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/genericAssetType2.svg");
+      setVersionIcon(versionAssetIconMap[key] || "/genericAssetType2.svg");
     } catch (error) {
       setError(error.message);
     }
@@ -530,6 +534,7 @@ const FlameProofSub = () => {
           <div className="sidebar-logo-dm-fi">
             <img src={icon} className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{isTrashView ? `Trashed Certificates` : (type)}</p>
+            <p className="logo-text-dm-fi" style={{ marginTop: "0px" }}>{siteTitle}</p>
           </div>
         </div>
       )}
@@ -553,6 +558,7 @@ const FlameProofSub = () => {
               className="search-input-um"
               type="text"
               placeholder="Search"
+              autoComplete="off"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -575,7 +581,6 @@ const FlameProofSub = () => {
               <tr className={isTrashView ? 'trashed' : ""}>
                 <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
                 {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
-                <th className="flame-sub-ass-nr-filter col">Asset Nr</th>
                 <th className="flame-sub-area-filter col">Area</th>
                 <th className="flame-sub-owner-filter col">Asset Owner</th>
                 <th className="flame-sub-auth-filter col">Certification Authority</th>
@@ -584,6 +589,7 @@ const FlameProofSub = () => {
                 <th className={`flame-sub-head-filter`}>Department Head</th>
                 <th className={`flame-sub-status-filter col`}>Status</th>
                 <th className="flame-sub-date-filter col">Issue Date</th>
+                <th className="flame-sub-date-filter col">Expiry Date</th>
                 {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
               </tr>
             </thead>
@@ -612,20 +618,14 @@ const FlameProofSub = () => {
                 <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
                   <td
-                    className="col" style={{ textAlign: "center", position: "relative" }}
-                  >
-                    {file.asset.assetNr}
 
-                    {(hoveredFileId === file._id && !file.isPlaceholder) && (
-                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} />
-                    )}
-                  </td>
-                  <td
-
-                    style={{ textAlign: "center" }}
+                    style={{ textAlign: "center", position: "relative" }}
                     className="col"
                   >
                     {(file.asset.operationalArea)}
+                    {(hoveredFileId === file._id && !file.isPlaceholder) && (
+                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} />
+                    )}
                   </td>
                   <td className="col">{file.asset.assetOwner}</td>
                   <td className={`col`}>{(file.certAuth)}</td>
@@ -634,6 +634,7 @@ const FlameProofSub = () => {
                   <td className="col">{file.asset.departmentHead}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
                   <td className={`col`}>{formatDate(file.issueDate)}</td>
+                  <td className={`col`}>{formatDate(file.certificateExipryDate)}</td>
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                     <td className={"col-act"}>
                       {!file.isPlaceholder && (<button

@@ -26,6 +26,21 @@
     border-radius: 10px;
 }
 
+.popup-content-dept-add {
+    background: #f2f2f2;
+    padding: 20px;
+    width: 850px;
+    /* Wider popup */
+    max-height: 100%;
+    min-height: 530px;
+    /* Ensure the popup does not stretch vertically */
+    overflow: hidden;
+    /* Prevent the popup content from scrolling */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
 .dept-input-container {
     position: relative;
     height: 40px;

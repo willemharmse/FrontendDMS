@@ -24,9 +24,13 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard 
             }
 
             try {
-                const res = await fetch(
-                    `${process.env.REACT_APP_URL}/api/${route}`
-                );
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/${route}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        Accept: "application/json",
+                    },
+                });
                 if (!res.ok) throw new Error(res.statusText);
                 const data = await res.json();
                 if (isMounted) setDrafts(data);

@@ -31,10 +31,10 @@ const PopupMenuOptionsAssets = ({ isOpen, setHoveredFileId, openModifyModal, fil
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
                     <ul>
-                        <li onClick={() => navigate(`/FrontendDMS/flameManageSub/${file.assetNr}/${file._id}`)}>View Certificates</li>
+                        <li onClick={() => navigate(`/flameManageSub/${file.assetNr}/${file._id}`)}>View Certificates</li>
                     </ul>
                     {canIn(access, "FCMS", ["systemAdmin"]) && (<ul>
-                        <li onClick={() => openModifyModal(file._id)}>Update Components</li>
+                        <li onClick={() => navigate(`/flameComponents/${file._id}`)}>Update Components</li>
                     </ul>)}
                 </div>
             )}

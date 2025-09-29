@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,8 +22,83 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
     const [sites, setSites] = useState([]);
     const [users, setUsers] = useState([]);
     const [areas, setAreas] = useState([]);
+    const [showTypes, setShowTypes] = useState(false);
+    const [filteredTypes, setFilteredTypes] = useState([]);
+    const typesInputRef = useRef(null);
     const siteLocked = !!preSelectedSite;
     const typeLocked = !!assetType;
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+    useEffect(() => {
+        const popupSelector = '.floating-dropdown';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowTypes(null);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [showTypes]);
+
+    const closeAllDropdowns = () => {
+        setShowTypes(null);
+    };
+
+    const handleTypeInput = (value) => {
+        closeAllDropdowns();
+        setType(value);
+        const matches = types
+            .filter(opt => opt.type.toLowerCase().includes(value.toLowerCase()));
+        setFilteredTypes(matches);
+        setShowTypes(true);
+
+        const el = typesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    // On focus, show all options
+    const handleTypeFocus = () => {
+        closeAllDropdowns();
+        const matches = types;
+        setFilteredTypes(matches);
+        setShowTypes(true);
+
+        const el = typesInputRef.current;
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const selectTypeSuggestion = (value) => {
+        setType(value);
+        setShowTypes(false);
+    };
 
     useEffect(() => {
         if (preSelectedSite) setSite(preSelectedSite);
@@ -270,21 +345,17 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                                 <div className={`ump-form-group ${errors.type ? "ump-error" : ""}`}>
                                     <label>Asset Type <span className="ump-required">*</span></label>
                                     <div className={`${typeLocked ? `` : `fpm-select-container`}`}>
-                                        <select
+                                        <input
                                             value={type}
-                                            onChange={(e) => setType(e.target.value)}
+                                            onChange={e => handleTypeInput(e.target.value)}
+                                            onFocus={handleTypeFocus}
+                                            ref={typesInputRef}
                                             autoComplete="off"
                                             style={{ color: type === "" ? "GrayText" : "black" }}
                                             className={type === "" ? `ump-input-select font-fam def-colour` : `ump-input-select font-fam`}
                                             disabled={typeLocked}
-                                        >
-                                            <option value={""} className="def-colour">Select Asset Type</option>
-                                            {types.map((type) => (
-                                                <option key={type._id} value={type.type} className="norm-colour">
-                                                    {type.type}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            placeholder="Select Asset Type"
+                                        />
                                     </div>
                                 </div>
 
@@ -371,6 +442,28 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                     </div>
                 </div>
             </div>
+
+            {showTypes && filteredTypes.length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {filteredTypes.filter(Boolean).sort().map((term, i) => (
+                        <li
+                            key={i}
+                            onMouseDown={() => selectTypeSuggestion(term.type)}
+                        >
+                            {term.type}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };

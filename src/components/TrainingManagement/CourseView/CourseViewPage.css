@@ -34,6 +34,33 @@
     border-radius: 8px;
 }
 
+/* Let flex children be allowed to scroll instead of forcing parents to grow */
+.course-view-content,
+.inductionView-card-module-info,
+.inductionView-module-course-content,
+.inductionView-slide-content {
+    min-height: 0;
+    /* critical for flex overflow to work correctly */
+}
+
+/* The white card: keep its size, let inner content control scrolling */
+.inductionView-module-course-content {
+    overflow: hidden;
+    /* prevents the card from visually "breaking" */
+}
+
+/* The grey body panel: scroll if content is too tall */
+.inductionView-slide-content {
+    overflow: auto;
+    /* will add a scrollbar when needed */
+}
+
+/* Optional: if text column itself can be very long, make it scrollable too */
+.inductionView-text-box {
+    max-height: min(60vh, 520px);
+    overflow: auto;
+}
+
 .course-content-body {
     font-size: 24px;
     font-weight: bold;
@@ -45,8 +72,146 @@
     border-radius: 8px;
     border: 1px solid #ccc;
     margin-bottom: 15px;
-    height: calc(100% - 180px);
+    height: calc(100% - 0px);
     /* adjust height to fit within box */
+}
+
+/* parent that wraps the text + table — fixed height, never grows */
+.course-content-body-outline {
+    /* existing aesthetics */
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+    text-align: left;
+    padding: 15px 20px;
+    background-color: #dadada;
+    border-radius: 8px;
+
+    /* layout */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    /* 🚩 fixed height; adjust to taste or use a CSS var */
+    height: calc(100% - 0px);
+    flex: 1 1 auto;
+    overflow: hidden;
+    /* hide overflow here; inner area will scroll */
+}
+
+/* keep the labels stacked */
+.course-outline-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.course-outline-text span {
+    display: block;
+    font-size: 17px;
+}
+
+.inductionView-slide-content {
+    display: flex;
+    flex-direction: column;
+    /* keep children stacked */
+    justify-content: center;
+    /* center them vertically */
+    height: calc(100% - 53px);
+}
+
+.inductionView-card-module-info {
+    height: calc(100% - 30px);
+}
+
+.inductionView-module-course-content {
+    background: white !important;
+    border-radius: 8px;
+    padding: 14px;
+    height: 100%;
+}
+
+/* Constrain oversized media and allow scrolling if it's too tall */
+.inductionView-media-box {
+    max-height: min(60vh, 520px);
+    /* fits most screens without overwhelming */
+    overflow: auto;
+    /* scroll if the media is taller */
+    display: flex;
+    /* center the media nicely within the box */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Make media fit inside the box without stretching */
+.inductionView-media-box img,
+.inductionView-media-box video,
+.inductionView-media-box audio {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    object-fit: contain;
+    /* keep aspect ratio inside the box */
+    border-radius: 6px;
+}
+
+.course-outline-table {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 6px;
+    background: white;
+}
+
+.course-outline-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+}
+
+.inductionView-intro-center {
+    display: flex;
+    flex-direction: column;
+    /* keep children stacked */
+    justify-content: center;
+    /* center them vertically */
+    height: 100%;
+}
+
+.inductionView-intro {
+    min-height: calc(100% - 30px);
+}
+
+.course-outline-table th {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+    color: #000;
+}
+
+.course-outline-table td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+    color: #000;
+    font-size: 14px;
+}
+
+.course-outline-table thead th {
+    background: rgb(190, 190, 190);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* (optional) keep header visible while table scrolls */
+.course-outline-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .course-nav-bar {
@@ -91,4 +256,128 @@
             #0040a0 25%,
             #003080 50%,
             #002060 100%);
+}
+
+/* ==== Assessment (scrolling questions + fixed submit) ==== */
+.assessment-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 14px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* allow inner scroll area to shrink */
+}
+
+.assessment-header {
+    font-weight: 800;
+    font-size: 22px;
+    color: #0b2f6b;
+    margin-bottom: 8px;
+}
+
+.assessment-divider {
+    height: 4px;
+    background: #0b2f6b;
+    border-radius: 2px;
+    margin-bottom: 10px;
+}
+
+.assessment-meta {
+    color: #000;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.assessment-scroll {
+    flex: 1 1 auto;
+    /* take remaining height */
+    min-height: 0;
+    /* critical for flex overflow */
+    overflow: auto;
+    /* only this part scrolls */
+    padding-right: 6px;
+    /* keep text away from scrollbar */
+}
+
+.assessment-q {
+    color: #000;
+    margin-bottom: 18px;
+}
+
+.assessment-q-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #0b2f6b;
+    margin-bottom: 8px;
+}
+
+.assessment-options {
+    display: grid;
+    gap: 6px;
+    color: #000;
+    font-size: 16px;
+}
+
+.assessment-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.assessment-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+/* keep the button looking like your nav buttons */
+.assessment-submit {
+    width: auto;
+    /* let it size to content */
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+/* Full green pass screen */
+.assessment-pass-screen {
+    background: #7EAC89;
+    /* rich green */
+    color: #fff;
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.assessment-pass-content {
+    padding: 24px;
+}
+
+.assessment-pass-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.assessment-pass-grade {
+    font-size: clamp(48px, 10vw, 96px);
+    font-weight: 900;
+    line-height: 1;
+    margin: 6px 0 10px 0;
+}
+
+.assessment-pass-sub {
+    font-size: 18px;
+    opacity: 0.95;
+    margin-bottom: 16px;
+}
+
+.assessment-pass-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
 }

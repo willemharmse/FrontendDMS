@@ -92,6 +92,17 @@ import EPACSHome from './components/EPACS/EPACSHome';
 import CertificateVersionHistory from './components/FlameproofDMS/CertificateVersionHistory';
 import FlameProofTrash from './components/FlameproofDMS/FlameProofTrash';
 import FCMSSiteAdmin from './components/SystemAdmin/FCMSSiteAdmin';
+import VisitorsInductionHomePage from './components/VisitorsInduction/VisitorsInductionHomePage';
+import VisitorsInductionSite from './components/VisitorsInductionSite';
+import FCMSAssetTypes from './components/SystemAdmin/FCMSAssetTypes';
+import InductionViewPage from './components/TrainingManagement/CourseView/InductionViewPage';
+import VisitorInductionHomePage from './components/TrainingManagement/UserView/VisitorInductionHomePage';
+import VisitorLogin from './components/VisitorsInduction/VisitorLogin';
+import InductionCreationPage from './components/VisitorsInduction/InductionCreation/InductionCreationPage';
+import GeneratedInductionInfo from './components/VisitorsInduction/InductionCreation/GeneratedInductionInfo';
+import ManageComponentDates from './components/FlameproofDMS/ManageComponentDates';
+import TMSHomePage from './components/TrainingManagement/TMSHomePage';
+import ManageComponentAssets from './components/FlameproofDMS/ManageComponentAssets';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -153,6 +164,7 @@ function App() {
       <Routes>
         {/* Desktop Routes */}
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
+        <Route path="FrontendDMS/visitorLogin" element={<VisitorLogin />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
         <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
@@ -185,8 +197,10 @@ function App() {
         <Route path="FrontendDMS/flameAllMineAsset" element={<FlameProofInfoAll />} />
         <Route path="FrontendDMS/flameManage/:type/:site" element={<FlameProofMain />} />
         <Route path="FrontendDMS/flameManageSub/:type/:assetId" element={<FlameProofSub />} />
+        <Route path="FrontendDMS/flameComponents/:id" element={<ManageComponentDates />} />
         <Route path="FrontendDMS/flameVersionHistory/:id/:image/:text" element={<CertificateVersionHistory />} />
         <Route path="FrontendDMS/flameSites/" element={<FCMSSiteAdmin />} />
+        <Route path="FrontendDMS/flameAssets/" element={<FCMSAssetTypes />} />
         <Route path="FrontendDMS/previewCertificate/:fileId" element={<PreviewCertificate />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
         <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
@@ -228,6 +242,7 @@ function App() {
         <Route path='FrontendDMS/rmsAdmin' element={<RMSAdminPage />} />
         <Route path='FrontendDMS/ddsAdmin' element={<DDSAdminPage />} />
         <Route path='FrontendDMS/fcmsAdmin' element={<FCMSAdminPage />} />
+        <Route path='FrontendDMS/trainingHomePage' element={<TMSHomePage />} />
         <Route path='FrontendDMS/courseMangement' element={<CourseHome />} />
         <Route path='FrontendDMS/courseDetails/:courseCode' element={<CourseDetails />} />
         <Route path='FrontendDMS/trainerManagement' element={<TrainersHome />} />
@@ -236,7 +251,14 @@ function App() {
         <Route path='FrontendDMS/traineeDetails/:traineeName' element={<TraineeDetails />} />
         <Route path='FrontendDMS/courseCreate' element={<CourseCreationPage />} />
         <Route path='FrontendDMS/courseView/:courseCode' element={<CourseViewPage />} />
+        <Route path='FrontendDMS/inductionView/:id' element={<InductionViewPage />} />
         <Route path='FrontendDMS/courseHomeViewPage' element={<UserHomePageTMS />} />
+        <Route path='FrontendDMS/visitorView' element={<VisitorsInductionHomePage />} />
+        <Route path='FrontendDMS/visitorHomePage' element={<VisitorInductionHomePage />} />
+        <Route path='FrontendDMS/visitor-profile' element={<VisitorsInductionSite />} />
+        <Route path='FrontendDMS/inductionCreation' element={<InductionCreationPage />} />
+        <Route path='FrontendDMS/generatedInductionInfo' element={<GeneratedInductionInfo />} />
+        <Route path='FrontendDMS/flameproofComponents/:type/:id' element={<ManageComponentAssets />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

@@ -130,7 +130,7 @@ const BatchCertificates = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-group">
-                    <div className="batch-file-text">Upload the TAU5 Site Certificate List</div>
+                    <div className="batch-file-text">Upload Site Certificate List</div>
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">

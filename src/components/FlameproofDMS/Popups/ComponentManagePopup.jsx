@@ -1,52 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast } from 'react-toastify';
-import { faTrash, faX, faSearch, faEdit } from '@fortawesome/free-solid-svg-icons';
-import RenameSite from "./RenameSite";
-import DeleteSitePopup from "./DeleteSitePopup";
-import "./ComponentManagePopup.css"
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import "./ComponentManagePopup.css";
 import AddComponent from "./AddComponent";
+import ModifyComponentName from "./ModifyComponentName";
 
 const ComponentManagePopup = ({ closePopup, assetType }) => {
-    const [components, setComponents] = useState(assetType?.components || []);
+    const normalize = (list) =>
+        (Array.isArray(list) ? list : []).map(c =>
+            typeof c === 'string'
+                ? { name: c, mandatory: true }
+                : { name: String(c?.name || ''), mandatory: Boolean(c?.mandatory) }
+        );
+
+    const [components, setComponents] = useState(normalize(assetType?.components));
     const [addComponent, setAddComponents] = useState(false);
+    const [edit, setEdit] = useState(false);
+    const [editName, setEditName] = useState("");
 
-    const openAdd = () => {
-        setAddComponents(true);
-    }
+    useEffect(() => {
+        setComponents(normalize(assetType?.components));
+    }, [assetType]);
 
-    const closeAdd = () => {
-        setAddComponents(false);
-    }
+    const openAdd = () => setAddComponents(true);
+    const closeAdd = () => setAddComponents(false);
+
+    const openEdit = (name) => { setEditName(name); setEdit(true); };
+    const closeEdit = () => setEdit(false);
+
+    const handleToggleMandatory = (idx) => {
+        setComponents(prev =>
+            prev.map((c, i) => (i === idx ? { ...c, mandatory: !c.mandatory } : c))
+        );
+    };
 
     const handleRemove = (idx) => {
         const item = components[idx];
-        const name = typeof item === 'string' ? item : item?.name;
-
-        if (String(name || '').trim().toLowerCase() === 'master') {
+        if (String(item?.name || '').trim().toLowerCase() === 'master') {
             toast.error("You can't remove the 'Master' component.", {
                 autoClose: 900, style: { textAlign: 'center' }
             });
             return;
         }
-
         setComponents(prev => prev.filter((_, i) => i !== idx));
     };
 
     const handleSubmit = async () => {
-        // allow strings or {name} objects
-        const names = (components || [])
-            .map(c => (typeof c === 'string' ? c : c?.name))
-            .map(s => String(s || '').trim())
-            .filter(Boolean);
-
-        // case-insensitive dedupe
-        const seen = new Set();
-        const unique = [];
-        for (const n of names) {
-            const k = n.toLowerCase();
-            if (!seen.has(k)) { seen.add(k); unique.push(n); }
+        // trim + dedupe by name (case-insensitive), preserve first-seen mandatory
+        const byKey = new Map();
+        for (const c of components) {
+            const name = String(c?.name || '').trim();
+            if (!name) continue;
+            const key = name.toLowerCase();
+            if (!byKey.has(key)) byKey.set(key, { name, mandatory: Boolean(c?.mandatory) });
         }
+        const payload = Array.from(byKey.values());
 
         try {
             const res = await fetch(
@@ -57,7 +66,7 @@ const ComponentManagePopup = ({ closePopup, assetType }) => {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
-                    body: JSON.stringify({ components: unique }),
+                    body: JSON.stringify({ components: payload }), // <-- send {name, mandatory}
                 }
             );
 
@@ -75,7 +84,7 @@ const ComponentManagePopup = ({ closePopup, assetType }) => {
         <div className="popup-overlay-component-page">
             <div className="popup-content-component-page">
                 <div className="review-date-header">
-                    <h2 className="review-date-title">{assetType.type} Management</h2>
+                    <h2 className="review-date-title">Standard Asset Management</h2>
                     <button className="review-date-close" onClick={closePopup} title="Close Popup">×</button>
                 </div>
 
@@ -85,33 +94,54 @@ const ComponentManagePopup = ({ closePopup, assetType }) => {
                         <table className="popup-table font-fam">
                             <thead className="component-page-headers">
                                 <tr>
-                                    <th className="components-types-name">Component</th>
-                                    <th className="components-types-delete">Action</th>
+                                    <th className="components-types-name" style={{ width: "40%" }}>Component</th>
+                                    <th className="components-types-name" style={{ width: "45%" }}>Mandatory</th>
+                                    <th className="components-types-delete" style={{ width: "15%" }}>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {components.length > 0 ? (
                                     components.map((component, idx) => (
-                                        <tr key={component._id} style={{ cursor: "pointer" }}>
-                                            <td>{component.name || '(unnamed site)'}</td>
-                                            <td className="comp-act-icon-delete">
-                                                {component.name !== "Master" && (<FontAwesomeIcon
-                                                    icon={faTrash}
-                                                    onClick={() => handleRemove(idx)}
-                                                    title="Remove Component"
-                                                    style={{ marginLeft: '10px' }}
+                                        <tr key={component._id || `${component.name}-${idx}`} style={{ cursor: "pointer" }}>
+                                            <td>{component.name || '(unnamed component)'}</td>
+                                            <td style={{ textAlign: "center" }}>
+                                                {/* no styling as requested */}
+                                                {component.name !== "Master" && (<input
+                                                    className="checkbox-inp-abbr"
+                                                    type="checkbox"
+                                                    checked={!!component.mandatory}
+                                                    onChange={() => handleToggleMandatory(idx)}
                                                 />)}
+                                            </td>
+                                            <td className="comp-act-icon-delete">
+                                                {component.name !== "Master" && (
+                                                    <FontAwesomeIcon
+                                                        icon={faEdit}
+                                                        onClick={() => openEdit(component.name)}
+                                                        title="Modify Component"
+                                                        style={{ marginLeft: '10px' }}
+                                                    />
+                                                )}
+                                                {component.name !== "Master" && (
+                                                    <FontAwesomeIcon
+                                                        icon={faTrash}
+                                                        onClick={() => handleRemove(idx)}
+                                                        title="Remove Component"
+                                                        style={{ marginLeft: '10px' }}
+                                                    />
+                                                )}
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="3">No sites found.</td>
+                                        <td colSpan="3">No components found.</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+
                     <button className="add-row-button-conmponent-page" onClick={openAdd}>
                         Add Component
                     </button>
@@ -124,7 +154,24 @@ const ComponentManagePopup = ({ closePopup, assetType }) => {
                 </div>
             </div>
 
-            {addComponent && (<AddComponent components={components} isOpen={addComponent} onClose={closeAdd} setComponents={setComponents} />)}
+            {addComponent && (
+                <AddComponent
+                    components={components}
+                    isOpen={addComponent}
+                    onClose={closeAdd}
+                    setComponents={setComponents}
+                />
+            )}
+
+            {edit && (
+                <ModifyComponentName
+                    components={components}
+                    isOpen={edit}
+                    onClose={closeEdit}
+                    originalName={editName}
+                    setComponents={setComponents}
+                />
+            )}
         </div>
     );
 };

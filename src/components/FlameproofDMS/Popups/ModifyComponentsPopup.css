@@ -375,3 +375,15 @@
     font-size: 14px;
     text-align: center;
 }
+
+/* required components */
+.checkbox-inp-component.is-required {
+    background-color: grey;
+    border-color: grey;
+}
+
+.checkbox-inp-component.is-required:hover {
+    background-color: grey;
+    border-color: grey;
+    cursor: not-allowed;
+}

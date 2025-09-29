@@ -23,7 +23,6 @@ const FCMSAdminPage = () => {
     const [assets, setAssets] = useState(false);
     const [site, setSite] = useState(false);
     const [manageSite, setManageSite] = useState(false);
-    const [manageAsset, setManageAsset] = useState(false);
     const [template, setTemplate] = useState(false);
     const navigate = useNavigate();
 
@@ -49,14 +48,6 @@ const FCMSAdminPage = () => {
 
     const closeManageSite = () => {
         setManageSite(!manageSite);
-    };
-
-    const openManageAsset = () => {
-        setManageAsset(true);
-    };
-
-    const closeManageAsset = () => {
-        setManageAsset(!manageAsset);
     };
 
     const openAssets = () => {
@@ -110,7 +101,7 @@ const FCMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FM</p>
+                        <p className="logo-text-um">Manage FMM</p>
                     </div>
 
                     <div className="button-container-create">
@@ -175,18 +166,18 @@ const FCMSAdminPage = () => {
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameSites")} >
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/fmsManageSites.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Manage Sites</h3>
                         </>
                     </div>
 
-                    <div className={`document-card-fi-home`} onClick={openManageAsset} >
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameAssets")} >
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/fmsManageAssets.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Manage Asset Types</h3>
+                            <h3 className="document-title-fi-home">Manage Assets</h3>
                         </>
                     </div>
                 </div>
@@ -195,7 +186,6 @@ const FCMSAdminPage = () => {
 
             {template && (<FCMSTemplates onClose={closeTemplate} />)}
             {manageSite && (<ManageSites closePopup={closeManageSite} />)}
-            {manageAsset && (<ManageAssetTypes closePopup={closeManageAsset} />)}
         </div>
     );
 };

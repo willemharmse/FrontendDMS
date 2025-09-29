@@ -22,8 +22,8 @@ const FCMSTemplates = ({ onClose }) => {
 
     const downloadTemplateCert = () => {
         const link = document.createElement('a');
-        link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Certificate List V0.6 (15.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Flameproof Certificate List V0.6 (15.09.2025).xlsx');
+        link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Certificate List V0.7 (17.09.2025).xlsx`; // Adjust path as needed
+        link.setAttribute('download', 'TAU5 - Flameproof Certificate List V0.7 (17.09.2025).xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -64,9 +64,9 @@ const FCMSTemplates = ({ onClose }) => {
                     </button>
                     <div className="import-si-file-text">Batch Upload Certificates</div>
                     <div className="import-si-label">Version</div>
-                    <div className="import-si-value">V0.6</div>
+                    <div className="import-si-value">V0.7</div>
                     <div className="import-si-label">Date Uploaded</div>
-                    <div className="import-si-value">2025-09-15</div>
+                    <div className="import-si-value">2025-09-17</div>
                 </div>
 
                 <div className="import-si-file-group" style={{ position: "relative" }}>

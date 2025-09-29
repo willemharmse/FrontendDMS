@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faBookOpen, faBullhorn, faChalkboardTeacher, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faBookOpen, faBullhorn, faChalkboardTeacher, faDownload, faLaptop } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
+import CreateProfilePopup from "../VisitorsInduction/Popups/CreateProfilePopup";
 
 const TrainingAdminPage = () => {
     const [error, setError] = useState(null);
@@ -49,7 +50,7 @@ const TrainingAdminPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Training Management</p>
                     </div>
 
@@ -84,25 +85,33 @@ const TrainingAdminPage = () => {
                     <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/courseCreate")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}//tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
                             </div>
                             <h3 className="document-title-fi-home">Create Course</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/courseMangement")}>
+                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/inductionCreation")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/tmsAdminAllCourses.svg`} className={"all-icon-fi-home"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
                             </div>
-                            <h3 className="document-title-fi-home">All Courses</h3>
+                            <h3 className="document-title-fi-home">Create Visitor Induction</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/courseMangement")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse.svg`} className={"icon-dept"} />
+                                <FontAwesomeIcon icon={faLaptop} src={`${process.env.PUBLIC_URL}/tmsAdminAllCourses.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Manage Visitor Trainees</h3>
+                            <h3 className="document-title-fi-home">Manage Courses</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorView")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/tmsRecordsAdmin.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Manage Visitor Induction</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`}>
@@ -110,7 +119,7 @@ const TrainingAdminPage = () => {
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/tmsRecordsAdmin.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Access Training Records</h3>
+                            <h3 className="document-title-fi-home">Manage Employee Training</h3>
                         </>
                     </div>
                 </div>

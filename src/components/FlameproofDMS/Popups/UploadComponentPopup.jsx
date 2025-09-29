@@ -35,6 +35,13 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
     const [assetOptions, setAssetOptions] = useState([]);
     const navigate = useNavigate();
 
+    const todayString = () => {
+        const d = new Date();
+        // shift for timezone so the ISO date matches local date
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    };
+
     const normStr = (s = "") => s.toLowerCase().trim();
     const siteLocked = !!site;
     const assetLocked = !!assetNumber;
@@ -81,7 +88,6 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                 const res = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/sites-assets-active`);
                 if (!res.ok) throw new Error("Failed to fetch sites/assets");
                 const data = await res.json();
-                console.log("" + data.sites);
                 const sitesArr = (data.sites || []).map(s => ({ _id: s._id, site: s.site }));
                 const assetsMap = {};
                 (data.sites || []).forEach(s => {
@@ -103,8 +109,8 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                     assetsMap[k].sort((a, b) => (a.assetNr || "").localeCompare(b.assetNr || ""));
                 });
 
-                setSites(sitesArr);
                 setAssetsBySite(assetsMap);
+                console.log("" + assetsMap[site]);
 
                 // ⬇️ user must pick site first, so:
                 setFilteredSites(sitesArr);
@@ -120,31 +126,20 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
         fetchSitesAssetsActive();
     }, [site, assetNumber]);
 
-    // --- available components depend on chosen asset (required - already-certified) ---
     useEffect(() => {
         if (!assetNr) {
             setAvailableComponents([]);
             return;
         }
 
-        // find the selected asset in this site
         const current = assetNrs.find(a => a.assetNr === assetNr);
-
-        // Required components come from the asset itself
         const requiredAll = Array.from(new Set(getRequiredFromAsset(current).map(s => s.trim())));
-
-        // Already-certified components (case-insensitive set)
         const already = new Set(getCertifiedFromAsset(current).map(s => s.toLowerCase()));
-
-        // If API only flags Master via boolean, respect that too
         if (String(current?.master ?? '').toLowerCase() === 'true' || current?.master === true) {
             already.add('master');
         }
 
-        // Filter: show required items that don't yet have a cert
         const remaining = requiredAll.filter(name => !already.has(name.toLowerCase()));
-
-        // Sort: Master first, then by the number in "Component N"
         const isMaster = (s) => (s || '').trim().toLowerCase() === 'master';
         const num = (s) => parseInt(String(s || '').replace(/^\D+/, ''), 10) || 0;
 
@@ -154,7 +149,6 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
             return num(a) - num(b);
         });
 
-        // Map to the same shape your <option> expects: {_id, component}
         const opts = remaining.map((name, i) => ({ _id: `opt-${i}-${name}`, component: name }));
         setAvailableComponents(opts);
     }, [assetNr, assetNrs]);
@@ -162,19 +156,19 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
     useEffect(() => {
         if (!siteId) {
             setAssetNrs([]);
-            setAssetOptions([]);              // ⬅️ enforce gating
+            setAssetOptions([]);
             setAssetNr("");
             setComponent("");
             return;
         }
 
-        // ⬇️ filter assets in this site by assetType (if provided)
         const listAll = assetsBySite[siteId] || [];
         const list =
             assetTypeFilter
                 ? listAll.filter(a => normStr(a.assetType) === assetTypeFilter)
                 : listAll;
 
+        console.log(list)
         setAssetNrs(list);
         setAssetOptions(list);
 
@@ -476,7 +470,12 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                                         type="date"
                                         name="assetNr"
                                         value={issueDate}
-                                        onChange={(e) => setIssueDate(e.target.value)}
+                                        max={todayString()}
+                                        onChange={(e) => {
+                                            const v = e.target.value;
+                                            const max = todayString();
+                                            setIssueDate(v && v > max ? max : v); // clamp to today if future picked/typed
+                                        }}
                                         autoComplete="off"
                                         className="ump-input-select font-fam"
                                         placeholder="Select Asset Number"

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { faRotate } from '@fortawesome/free-solid-svg-icons';
-import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faCaretLeft, faCaretRight, faArrowLeft, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 
 const PreviewCertificate = () => {
@@ -14,18 +12,33 @@ const PreviewCertificate = () => {
     const [iframeHeight, setIframeHeight] = useState("100%");
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
+    // NEW: loading state + delayed overlay
+    const [isLoading, setIsLoading] = useState(true);
+    const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            timer = setTimeout(() => setShowDelayedLoading(true), 400);
+        } else {
+            setShowDelayedLoading(false);
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             setToken(storedToken);
-            const decodedToken = jwtDecode(storedToken);
+            jwtDecode(storedToken); // (decodedToken not used)
         }
 
         if (fileId) {
             const url = `${process.env.REACT_APP_URL}/api/flameproof/preview/${fileId}`;
             setFileUrl(url);
+            setIsLoading(true); // NEW: start loading when URL set/changes
         }
 
         const handleResize = () => {
@@ -37,13 +50,18 @@ const PreviewCertificate = () => {
         };
 
         window.addEventListener("resize", handleResize);
-
         handleResize();
 
         return () => {
             window.removeEventListener("resize", handleResize);
         };
     }, [navigate, fileId]);
+
+    // Optional: handle iframe error to stop spinner and show a message
+    const handleIframeError = () => {
+        setIsLoading(false);
+        // You can also set an error state and show it instead of the spinner
+    };
 
     return (
         <div className="pdf-info-container">
@@ -73,20 +91,34 @@ const PreviewCertificate = () => {
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                     </div>
                     <div className="spacer"></div>
-
                     <TopBar />
                 </div>
 
                 <div className="file-preview-container">
                     {fileUrl ? (
-                        <iframe
-                            src={`${fileUrl}`}
-                            className="file-viewer"
-                            title="File Preview"
-                            style={{ height: iframeHeight }}
-                        ></iframe>
+                        <>
+                            {/* Loading overlay (appears above the iframe while loading) */}
+                            {showDelayedLoading && isLoading && (
+                                <div className="preview-loading" role="status" aria-live="polite" aria-label="Loading certificate">
+                                    <FontAwesomeIcon icon={faSpinner} spin className="preview-loading__spinner" />
+                                    <div className="preview-loading__text">Loading Certificate</div>
+                                </div>
+                            )}
+
+                            <iframe
+                                src={fileUrl}
+                                className="file-viewer"
+                                title="File Preview"
+                                style={{ height: iframeHeight }}
+                                onLoad={() => setIsLoading(false)}     // NEW
+                                onError={handleIframeError}            // NEW (optional)
+                            />
+                        </>
                     ) : (
-                        <p>Loading file...</p>
+                        <div className="preview-loading" role="status" aria-live="polite" aria-label="Loading certificate">
+                            <FontAwesomeIcon icon={faSpinner} spin className="preview-loading__spinner" />
+                            <div className="preview-loading__text">Loading Certificate</div>
+                        </div>
                     )}
                 </div>
             </div>

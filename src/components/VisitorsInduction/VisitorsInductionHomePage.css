@@ -1,0 +1,160 @@
+.visitor-ind-num-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-name-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-surname-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 11%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-company-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-profileBy-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-valid-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-exp-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-vers-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 9%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-ind-act-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 7%;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Clickable state (additive highlight only) */
+.vihr-expandable-row--open {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* Inline details row container (new elements only) */
+.vihr-row-details>.vihr-row-details__cell {
+    padding: 0;
+    border-top: none;
+}
+
+.vihr-row-details__content {
+    margin: 4px 0 4px 0;
+    padding: 18px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    animation: vihr-slide-in 160ms ease-out;
+}
+
+@keyframes vihr-slide-in {
+    from {
+        transform: translateY(-4px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Grid layout for the extra details */
+.vihr-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 12px 24px;
+}
+
+.vihr-details__label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: Arial;
+    opacity: 0.65;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.vihr-details__value {
+    font-size: 13px;
+    font-family: Arial;
+    line-height: 1.35;
+    word-break: break-word;
+    text-align: center;
+}
+
+@media (max-width: 1300px) {
+    .vihr-details__label {
+        font-size: 12px;
+    }
+
+    .vihr-details__value {
+        font-size: 11px;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .vihr-details-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .vihr-details-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast } from 'react-toastify';
-import { faTrash, faX, faSearch, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faX, faSearch, faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
 import RenameSite from "./RenameSite";
 import DeleteSitePopup from "./DeleteSitePopup";
 import ComponentManagePopup from "./ComponentManagePopup";
+import AssetManageAssetComponents from "./AssetManageAssetComponents";
 
 const ManageAssetTypes = ({ closePopup }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [departments, setDepartments] = useState([]);
     const [updateType, setUpdateType] = useState("");
     const [update, setUpdate] = useState(false);
+    const [assetManage, setAssetManage] = useState("");
+
+    const openAssetManage = (updateType) => {
+        setUpdateType(updateType)
+        setAssetManage(true);
+    }
+
+    const closeAssetManage = () => {
+        setUpdateType('')
+        setAssetManage(false);
+    }
 
     const openUpdateSiteName = (updateType) => {
         setUpdateType(updateType);
@@ -29,6 +41,7 @@ const ManageAssetTypes = ({ closePopup }) => {
             if (!response.ok) throw new Error('Failed to fetch sites');
             const data = await response.json();
             const sorted = data.types.sort((a, b) => (a?.type || '').localeCompare(b?.type || ''));
+            console.log(sorted);
             setDepartments(sorted);
         } catch (error) {
             console.log(error.message);
@@ -87,6 +100,12 @@ const ManageAssetTypes = ({ closePopup }) => {
                                             <td>{department.type || '(unnamed site)'}</td>
                                             <td style={{ textAlign: "center" }}>{department.componentCount || 'N/A'}</td>
                                             <td className="dept-Act-icon-delete">
+                                                {false && (<FontAwesomeIcon
+                                                    icon={faEye}
+                                                    title="View Assets"
+                                                    style={{ marginRight: "10px" }}
+                                                    onClick={() => openAssetManage(department)}
+                                                />)}
                                                 <FontAwesomeIcon
                                                     icon={faEdit}
                                                     title="Edit Asset Type"
@@ -111,6 +130,12 @@ const ManageAssetTypes = ({ closePopup }) => {
                     isOpen={true}
                     closePopup={closeUpdateSiteName}
                     assetType={updateType}
+                />
+            )}
+
+            {assetManage && (
+                <AssetManageAssetComponents
+                    closePopup={closeAssetManage} type={updateType}
                 />
             )}
         </div>

@@ -166,7 +166,7 @@ const FlameProofAllSites = () => {
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FM</span>
+                                            <span className="button-text">Manage FMM</span>
                                         </div>
                                     </button>
                                 </div>
@@ -195,6 +195,7 @@ const FlameProofAllSites = () => {
                             type="text"
                             placeholder="Search"
                             value={searchQuery}
+                            autoComplete="off"
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}

@@ -915,7 +915,7 @@ const CourseCreationPage = () => {
           <CourseSummary formData={formData} setFormData={setFormData} />
           <CourseOutline formData={formData} setFormData={setFormData} />
           <ReferenceTable referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={false} />
-          {false && (<CourseAssessment formData={formData} setFormData={setFormData} />)}
+          {true && (<CourseAssessment formData={formData} setFormData={setFormData} />)}
           {false && (
             <div className="input-row-buttons">
               <button

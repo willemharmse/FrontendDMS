@@ -42,11 +42,11 @@ const TopBarFP = ({ menu, setReset, isProfile = false, openSort }) => {
 
     return (
         <div className="icons-container">
+            <div className="sort-menu-icon-um">
+                <FontAwesomeIcon onClick={openSort} icon={faSort} title="Sort" />
+            </div>
             <div className="burger-menu-icon-um-home">
                 <FontAwesomeIcon onClick={() => navigate("/home")} icon={faHome} title="Home" />
-            </div>
-            <div className="sort-menu-icon-um">
-                <FontAwesomeIcon onClick={openSort} icon={faSort} title="Home" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />

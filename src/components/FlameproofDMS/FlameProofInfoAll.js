@@ -335,6 +335,7 @@ const FlameProofInfoAll = () => {
               className="search-input-um"
               type="text"
               placeholder="Search"
+              autoComplete="off"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

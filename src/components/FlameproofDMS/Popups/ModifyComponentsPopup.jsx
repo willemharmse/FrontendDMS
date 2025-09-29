@@ -17,6 +17,56 @@ const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
     const [selectedArea, setSelectedArea] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState([]);
     const [rows, setRows] = useState([]);
+    const todayStr = new Date().toISOString().split("T")[0]; // e.g. "2025-09-25"
+
+    const isValidDateObj = (d) => d instanceof Date && !Number.isNaN(d.getTime());
+
+    const parseMaybeDate = (v) => {
+        if (!v) return null;
+        if (v instanceof Date) return isValidDateObj(v) ? v : null;
+        if (typeof v === 'string') {
+            const s = v.trim();
+            if (!s || s === '—') return null;
+            const d = new Date(s);
+            return isValidDateObj(d) ? d : null;
+        }
+        return null;
+    };
+
+    const toInputDate = (v) => {
+        const d = parseMaybeDate(v);
+        if (!d) return '';
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
+    const normalizeLooseDate = (s) => {
+        if (!s) return null;
+        const m = String(s).trim().match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+        if (!m) return null;
+        let [, yStr, moStr, dStr] = m;
+        const y = Number(yStr);
+        const mo = Number(moStr);
+        const d = Number(dStr);
+        if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+
+        const dt = new Date(Date.UTC(y, mo - 1, d));
+        if (!isValidDateObj(dt)) return null;
+        if (dt.getUTCFullYear() !== y || dt.getUTCMonth() + 1 !== mo || dt.getUTCDate() !== d) return null;
+
+        const mm = String(mo).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        return `${y}-${mm}-${dd}`;
+    };
+
+    const toISOFromInputLoose = (s) => {
+        const norm = normalizeLooseDate(s);
+        if (!norm) return null;
+        const dt = new Date(`${norm}T00:00:00.000Z`);
+        return isValidDateObj(dt) ? dt.toISOString() : null;
+    };
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -46,13 +96,13 @@ const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
 
             setRows(
                 (data.certificates || []).map((c) => {
-                    const originalISO = c.dateUpdated ? new Date(c.dateUpdated).toISOString() : null;
+                    const parsed = parseMaybeDate(c.dateUpdated);
                     return {
                         _id: c._id,
                         component: c.component,
                         assetId: c.asset?._id,
-                        originalISO,
-                        dateUpdatedStr: toInputDate(c.dateUpdated),
+                        originalISO: parsed ? parsed.toISOString() : null,
+                        dateUpdatedStr: toInputDate(parsed),  // shows "" if none
                         changed: false,
                     };
                 })
@@ -71,31 +121,14 @@ const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
         setRows((prev) => {
             const next = [...prev];
             const r = next[index];
-
-            // Normalize form value to ISO (or null) for comparison
-            const toISO = (s) => (s?.trim()
-                ? new Date(`${s}T00:00:00.000Z`).toISOString()
-                : null);
-
-            const newISO = toISO(value);
+            const newISO = toISOFromInputLoose(value);   // null if invalid/partial
             const changed = newISO !== r.originalISO;
-
             next[index] = { ...r, dateUpdatedStr: value, changed };
             return next;
         });
     };
 
     const filteredFiles = files;
-
-    const toInputDate = (v) => {
-        if (!v) return "";
-        const d = new Date(v);
-        if (Number.isNaN(d.getTime())) return "";
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-    };
 
     const submitUpdates = async () => {
         try {
@@ -110,13 +143,13 @@ const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
                 : null);
 
             const updates = rows.map((r) => {
-                const changedTo = toISO(r.dateUpdatedStr);
+                const changedTo = toISOFromInputLoose(r.dateUpdatedStr);
                 return {
                     component: r.component,
-                    dateUpdated: changedTo,         // the value to persist
-                    changedByUser: !!r.changed,     // did the user change it?
-                    changedFrom: r.originalISO,     // previous ISO (or null)
-                    changedTo,                      // new ISO (or null)
+                    dateUpdated: changedTo,
+                    changedByUser: !!r.changed,
+                    changedFrom: r.originalISO,
+                    changedTo,
                 };
             });
 
@@ -165,12 +198,30 @@ const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
                                         <td>
                                             <input
                                                 type="date"
-                                                name="assetNr"
+                                                max={todayStr}   // prevents picking a future date with the picker
                                                 value={(rows[index]?.dateUpdatedStr) ?? ""}
                                                 onChange={(e) => onDateChange(index, e.target.value)}
-                                                autoComplete="off"
+                                                onBlur={(e) => {
+                                                    let norm = normalizeLooseDate(e.target.value);
+
+                                                    // if user typed a valid but future date, clamp to today
+                                                    if (norm && norm > todayStr) {
+                                                        norm = todayStr;
+                                                    }
+
+                                                    setRows((prev) => {
+                                                        const next = [...prev];
+                                                        const r = next[index];
+                                                        const newISO = norm ? toISOFromInputLoose(norm) : null;
+                                                        next[index] = {
+                                                            ...r,
+                                                            dateUpdatedStr: norm || "",
+                                                            changed: newISO !== r.originalISO,
+                                                        };
+                                                        return next;
+                                                    });
+                                                }}
                                                 className="ump-input-select font-fam"
-                                                placeholder="Select Asset Number"
                                             />
                                         </td>
                                         <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>

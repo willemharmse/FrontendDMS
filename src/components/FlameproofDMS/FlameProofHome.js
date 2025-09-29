@@ -137,6 +137,17 @@ const FlameProofHome = () => {
         "Tractor": "/FCMS_T.png",
     }
 
+    const getIcon = (type) => {
+        if (isAllRow(type)) {
+            return iconMap[type._id];
+        }
+        else {
+            return iconMap[type.assetType] || "/genericAssetType.svg";
+        }
+
+        return "";
+    }
+
     return (
         <div className="user-info-container">
             {isSidebarVisible && (
@@ -170,7 +181,7 @@ const FlameProofHome = () => {
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FM</span>
+                                            <span className="button-text">Manage FMM</span>
                                         </div>
                                     </button>
                                 </div>
@@ -200,6 +211,7 @@ const FlameProofHome = () => {
                             className="search-input-um"
                             type="text"
                             placeholder="Search"
+                            autoComplete="off"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -227,7 +239,7 @@ const FlameProofHome = () => {
                             {doc && (
                                 <>
                                     <div className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`}>
-                                        <img src={`${process.env.PUBLIC_URL}${iconMap[isAllRow(doc) ? doc._id : doc.assetType]}`} className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`} />
+                                        <img src={`${process.env.PUBLIC_URL}${getIcon(doc)}`} className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
                                     <h3 className="document-title-fi-home">{formatAssetTypeLabel(isAllRow(doc) ? doc.assetType : doc.assetType + "s", isAllRow(doc))}</h3>
                                     <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>
