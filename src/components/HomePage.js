@@ -33,9 +33,9 @@ const HomePage = () => {
     {
       title: "Risk Management", src: "RM.png", icon: faClipboardList, path: "/FrontendDMS/riskHome", category: "RMS"
     },
-    {
-      title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/FrontendDMS/trainingHomePage", category: "TMS"
-    },
+    //{
+    // title: "Training Management", src: "TM.png", icon: faGraduationCap, path: "/trainingHomePage", category: "TMS"
+    //},
     {
       title: "EPA Management", src: "EPAM.png", icon: faGraduationCap, path: "/FrontendDMS/EPACSHome", category: "EPACS"
     },

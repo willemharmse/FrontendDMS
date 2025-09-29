@@ -6,7 +6,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType = "" }) => {
+const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType = "", exit }) => {
     const [site, setSite] = useState(preSelectedSite);
     const [type, setType] = useState(assetType);
     const [number, setNumber] = useState('');
@@ -275,8 +275,12 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: formData,
             });
-            if (!response.ok) throw new Error(response.error || 'Failed to upload file');
-            await response.json();
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data?.message || data?.error || 'Failed to upload file');
+            }
+            const typeId = data?.typeID ?? null;
 
             setShowPopup(true);
             if (!siteLocked) { setSite(''); }
@@ -293,7 +297,9 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
 
-            refresh();
+            setTimeout(() => {
+                onClose(typeId, type);
+            }, 2000);
         } catch (error) {
             setError(error.message);
             setLoading(false);
@@ -311,7 +317,7 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                 <div className="ump-content">
                     <div className="review-date-header">
                         <h2 className="review-date-title">Register Asset</h2>
-                        <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
+                        <button className="review-date-close" onClick={exit} title="Close Popup">×</button>
                     </div>
 
                     <div className="ump-form-group-main">
@@ -458,6 +464,7 @@ const RegisterAssetPopup = ({ onClose, refresh, preSelectedSite = "", assetType 
                         <li
                             key={i}
                             onMouseDown={() => selectTypeSuggestion(term.type)}
+                            style={{ fontSize: "14px", fontFamily: "Arial" }}
                         >
                             {term.type}
                         </li>

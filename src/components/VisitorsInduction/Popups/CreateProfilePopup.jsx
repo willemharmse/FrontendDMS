@@ -161,9 +161,10 @@ const CreateProfilePopup = ({ onClose, refresh }) => {
                                                 <div className="create-visitor-profile-page-select-container">
                                                     <input
                                                         className="cea-popup-page-input"
-                                                        placeholder="Insert ID Number/Passport Number"
+                                                        placeholder="Insert ID Number (Insert Passport Number if not South African citizen)"
                                                         onChange={(e) => setID(e.target.value)}
                                                         value={id}
+                                                        style={{ fontSize: id === "" ? "12px" : "" }}
                                                     />
                                                 </div>
                                             </div>

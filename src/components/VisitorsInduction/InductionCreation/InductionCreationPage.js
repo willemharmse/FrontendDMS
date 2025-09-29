@@ -929,7 +929,7 @@ const InductionCreationPage = () => {
                   className="font-fam title-input"
                   value={formData.courseTitle}
                   onChange={handleInputChange}
-                  placeholder="Insert Learning Material Title (e.g. Working at Heights)"
+                  placeholder="Insert Visitor Induction Title"
                 />
               </div>
             </div>
@@ -946,7 +946,7 @@ const InductionCreationPage = () => {
                 value={formData.intorduction}
                 onChange={handleInputChange}
                 rows="5"
-                placeholder="Insert Course Introduction"
+                placeholder="Insert Visitor Induction Introduction"
               />
             </div>
           </div>
@@ -962,7 +962,7 @@ const InductionCreationPage = () => {
                 value={formData.courseObjectives}
                 onChange={handleInputChange}
                 rows="5"
-                placeholder="The objective of the course is to: "
+                placeholder="The objective of the visitor induction is to: "
               />
             </div>
           </div>

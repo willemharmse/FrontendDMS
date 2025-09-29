@@ -119,7 +119,12 @@ const FlameProofMain = () => {
     setRegister(true);
   };
 
-  const closeRegister = () => {
+  const closeRegister = (id, type) => {
+    setRegister(!register);
+    navigate(`/FrontendDMS/flameproofComponents/${type}/${id}`)
+  };
+
+  const exitRegister = () => {
     setRegister(!register);
   };
 
@@ -495,7 +500,7 @@ const FlameProofMain = () => {
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetType={type.includes("All") ? "" : type} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type} exit={exitRegister} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
       {modifyDate && <ModifyComponentsPopup onClose={closeModifyDate} asset={assetID} />}
       {openComponentUpdate && (<ModifyComponentsPopup asset={componentAssetUpdate} onClose={closeComponentModify} refresh={fetchFiles} />)}

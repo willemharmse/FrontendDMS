@@ -72,9 +72,15 @@ const FlameProofAllSites = () => {
         setRegister(true);
     };
 
-    const closeRegister = () => {
+    const closeRegister = (id, type) => {
+        setRegister(!register);
+        navigate(`/FrontendDMS/flameproofComponents/${type}/${id}`)
+    };
+
+    const exitRegister = () => {
         setRegister(!register);
     };
+
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -235,7 +241,7 @@ const FlameProofAllSites = () => {
             </div>
             <ToastContainer />
             {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchCount} />)}
-            {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} />)}
+            {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} exit={exitRegister} />)}
         </div>
     );
 };

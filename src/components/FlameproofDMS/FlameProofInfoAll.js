@@ -105,7 +105,12 @@ const FlameProofInfoAll = () => {
     setRegister(true);
   };
 
-  const closeRegister = () => {
+  const closeRegister = (id, type) => {
+    setRegister(!register);
+    navigate(`/FrontendDMS/flameproofComponents/${type}/${id}`)
+  };
+
+  const exitRegister = () => {
     setRegister(!register);
   };
 
@@ -432,7 +437,7 @@ const FlameProofInfoAll = () => {
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
       {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} exit={exitRegister} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
       {openComponentUpdate && (<ModifyComponentsPopup asset={componentAssetUpdate} onClose={closeComponentModify} refresh={fetchFiles} />)}
       <ToastContainer />

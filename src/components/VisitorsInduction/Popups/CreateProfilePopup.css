@@ -170,7 +170,8 @@
     padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    min-height: 410px;
 }
 
 .cbp-hint {
@@ -189,6 +190,7 @@
     border: 1px solid #e2e2e2;
     border-radius: 6px;
     overflow: hidden;
+    min-height: 270px;
 }
 
 .cbp-table-header {
@@ -217,6 +219,7 @@
     /* keeps interior scroll similar to screenshot height */
     overflow: auto;
     background: #fff;
+    min-height: 210px;
 }
 
 .cbp-tr {

@@ -16,7 +16,7 @@ const InductionSummary = ({ formData, setFormData }) => {
                     rows="5"
                     value={formData.summary}
                     onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                    placeholder="Insert Course Summary"
+                    placeholder="Insert visitor induction summary."
                 />
             </div>
         </div>
