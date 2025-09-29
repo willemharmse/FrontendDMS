@@ -819,7 +819,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                                 className={[cls, 'main-cell'].join(' ')}
                                                             >
                                                                 <div className="main-cell-content">
-                                                                    <div style={{ display: "block", textAlign: "left" }}>{row.main}</div>
+                                                                    <div style={{ display: "block", textAlign: "left", whiteSpace: "pre-wrap" }}>{row.main}</div>
                                                                 </div>
                                                                 {!readOnly && (<>
                                                                     <button
@@ -920,7 +920,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "sub") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}  correct-wrap-ibra`} >
                                                                 {body.sub.map((sObj, sIdx) => (
                                                                     <div className="test-jra"
                                                                         key={sObj.id}
@@ -938,7 +938,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                                         }}
                                                                     >
                                                                         <div className="control-with-icons" key={colIdx}>
-                                                                            <div style={{ display: "block", textAlign: "left" }}>{sObj.task}</div>
+                                                                            <div style={{ display: "block", textAlign: "left", whiteSpace: "pre-wrap" }}>{sObj.task}</div>
                                                                         </div>
                                                                     </div>
                                                                 ))}
@@ -996,7 +996,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                                             syncGroups.current[key] = arr;
                                                                         }}
                                                                     >
-                                                                        <div style={{ display: "block", textAlign: "left" }}>{cObj.control}</div>
+                                                                        <div style={{ display: "block", textAlign: "left", whiteSpace: "pre-wrap" }}>{cObj.control}</div>
                                                                     </div>
                                                                 ))}
                                                             </td>

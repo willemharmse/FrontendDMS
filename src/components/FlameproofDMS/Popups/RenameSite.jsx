@@ -61,7 +61,7 @@ const RenameSite = ({ isOpen, onClose, siteName, siteId }) => {
 
         if (deleted) {
             toast.dismiss(); toast.clearWaitingQueue();
-            toast.error("Site name cannot be the same as a deleted site.", {
+            toast.error(`${newName} previously existed in the system. Please restore or contact the system administrator.`, {
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
             return;

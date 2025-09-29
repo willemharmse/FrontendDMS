@@ -6,7 +6,7 @@ import BurgerMenuFI from "../../FileInfo/BurgerMenuFI";
 import Notifications from "../../Notifications/Notifications";
 import BurgerMenuFP from "./BurgerMenuFP";
 
-const TopBarFPC = ({ openSort, isOpen, setIsOpen, toggleTrashView, isTrashView, canIn, access }) => {
+const TopBarFPC = ({ openSort, canIn, access }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,7 +71,7 @@ const TopBarFPC = ({ openSort, isOpen, setIsOpen, toggleTrashView, isTrashView, 
                 )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen) && (<BurgerMenuFP isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} canIn={canIn} access={access} />)}
+            {(isMenuOpen) && (<BurgerMenuFP isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} canIn={canIn} access={access} />)}
         </div>
     );
 };

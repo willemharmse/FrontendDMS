@@ -85,11 +85,13 @@ const BatchAssets = ({ onClose }) => {
             })
         } catch (error) {
             setLoading(false);
+            console.log(error);
             if (error.response?.data?.details) {
                 setErrors(error.response.data.details); // Set errors from backend
+
                 createErrorFile(error.response.data.details); // Generate download
             }
-            toast.error("Validation failed!", {
+            toast.error("Could not register assets see attached text document, or contact a systems administrator.", {
                 closeButton: false,
                 autoClose: 2000,
                 style: {
@@ -137,8 +139,8 @@ const BatchAssets = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-buttons">
-                    <button className="batch-file-button-sub" onClick={() => handleClick()}>
-                        {'Submit'}
+                    <button className="batch-file-button-sub" disabled={loading} onClick={() => handleClick()}>
+                        {loading ? <FontAwesomeIcon icon={faSpinner} className="spin-animation" /> : 'Submit'}
                     </button>
                 </div>
             </div>

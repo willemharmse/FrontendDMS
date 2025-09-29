@@ -156,6 +156,13 @@ const FlameProofAllSites = () => {
                             </div>
                             <div className="sidebar-logo-dm-fi">
                                 <div className="risk-button-container-create-bot">
+
+                                    <button className="but-um" onClick={() => navigate("/FrontendDMS/flameTrash")}>
+                                        <div className="button-content">
+                                            <img src={`${process.env.PUBLIC_URL}/fmsTrashNorm.svg`} className={"button-logo-custom"} />
+                                            <span className="button-text">Trash</span>
+                                        </div>
+                                    </button>
                                     <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
                                         <div className="button-content">
                                             <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />

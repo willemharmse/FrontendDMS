@@ -18,9 +18,9 @@
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 1100px;
+    max-width: 850px;
     width: 100%;
-    min-height: 440px;
+    min-height: 420px;
 }
 
 .modify-comp-info-row {
@@ -349,65 +349,11 @@
     word-wrap: break-word;
 }
 
-.modify-comp-ass-nr-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 6%;
-    font-size: 14px;
-    text-align: center;
-}
-
 .modify-comp-comp-filter {
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 10%;
-    font-size: 14px;
-    text-align: center;
-}
-
-.modify-comp-owner-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 10%;
-    font-size: 14px;
-    text-align: center;
-}
-
-.modify-comp-auth-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 12%;
-    font-size: 14px;
-    text-align: center;
-}
-
-.modify-comp-cert-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 10%;
-    font-size: 14px;
-    text-align: center;
-}
-
-.modify-comp-head-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 10%;
-    font-size: 14px;
-    text-align: center;
-}
-
-.modify-comp-status-filter {
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    width: 6%;
+    width: 30%;
     font-size: 14px;
     text-align: center;
 }
@@ -416,7 +362,16 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 10%;
+    width: 40%;
+    font-size: 14px;
+    text-align: center;
+}
+
+.modify-comp-user-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 30%;
     font-size: 14px;
     text-align: center;
 }

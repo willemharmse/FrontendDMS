@@ -94,7 +94,7 @@ const BatchCertificates = ({ onClose }) => {
                 setErrors(error.response.data.details); // Set errors from backend
                 createErrorFile(error.response.data.details); // Generate download
             }
-            toast.error("Validation failed!", {
+            toast.error("Could not upload certificates see attached text document, or contact a systems administrator.", {
                 closeButton: false,
                 autoClose: 2000,
                 style: {
@@ -200,8 +200,8 @@ const BatchCertificates = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-buttons">
-                    <button className="batch-file-button-sub" onClick={() => handleClick()}>
-                        {'Submit'}
+                    <button className="batch-file-button-sub" disabled={loading} onClick={() => handleClick()}>
+                        {loading ? <FontAwesomeIcon icon={faSpinner} className="spin-animation" /> : 'Submit'}
                     </button>
                 </div>
             </div>

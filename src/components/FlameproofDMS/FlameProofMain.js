@@ -20,6 +20,8 @@ import TopBarFP from "./Popups/TopBarFP";
 import ModifyAsset from "./Popups/ModifyAsset";
 import ModifyAssetPopup from "./Popups/ModifyAssetPopup";
 import ModifyComponentsPopup from "./Popups/ModifyComponentsPopup";
+import PopupMenuOptions from "./Popups/PopupMenuOptions";
+import PopupMenuOptionsAssets from "./Popups/PopupMenuOptionsAssets";
 
 const FlameProofMain = () => {
   const { type, site } = useParams();
@@ -55,6 +57,8 @@ const FlameProofMain = () => {
   const [modifyDate, setModifyDate] = useState(false);
   const [assetID, setAssetID] = useState(null);
   const [siteName, setSiteName] = useState("");
+  const [openComponentUpdate, setOpenComponentUpdate] = useState(false);
+  const [componentAssetUpdate, setComponentAssetUpdate] = useState("");
 
   const openModify = (asset) => {
     setModifyingAsset(asset)
@@ -64,6 +68,16 @@ const FlameProofMain = () => {
   const closeModify = () => {
     setModifyingAsset("")
     setModifyAsset(false);
+  };
+
+  const openComponentModify = (asset) => {
+    setComponentAssetUpdate(asset)
+    setOpenComponentUpdate(true);
+  };
+
+  const closeComponentModify = () => {
+    setComponentAssetUpdate("")
+    setOpenComponentUpdate(false);
   };
 
   const closePopup = () => {
@@ -171,6 +185,11 @@ const FlameProofMain = () => {
     closeSortModal();
   };
 
+  // put this near the top (outside component) or inside the component before usage
+  const natCompare = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const sortByAssetNr = (arr) =>
+    [...arr].sort((a, b) => natCompare.compare(a.assetNr || '', b.assetNr || ''));
+
   const fetchFiles = async () => {
     setIsLoadingTable(true);
     const route = `/api/flameproof/assets/${site}/type/${type}`;
@@ -184,8 +203,7 @@ const FlameProofMain = () => {
         throw new Error('Failed to fetch files');
       }
       const data = await response.json();
-      const sortedFiles = data.assets.sort((a, b) => new Date(a.assetNr) - new Date(b.assetNr));
-
+      const sortedFiles = sortByAssetNr(data.assets);
       setFiles(sortedFiles);
 
       const uniqueOpAreas = [...new Set(data.assets.map(file => file.operationalArea))].sort();
@@ -413,15 +431,19 @@ const FlameProofMain = () => {
               )}
 
               {filteredFiles.map((file, index) => (
-                <tr key={index} className={`file-info-row-height`} onClick={() => navigate(`/FrontendDMS/flameManageSub/${file.assetNr}/${file._id}`)}>
+                <tr key={index} className={`file-info-row-height`} style={{ cursor: "pointer" }}
+                  onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
                   {type.includes("All") && (<td className="col" style={{ textAlign: "center" }}>{file.assetType}</td>)}
                   <td
-                    onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
                     className="file-name-cell"
                     style={{ textAlign: "center" }}
                   >
                     {(file.assetNr)}
+
+                    {(hoveredFileId === file._id) && (
+                      <PopupMenuOptionsAssets file={file} isOpen={hoveredFileId === file._id} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} openModifyModal={openComponentModify} />
+                    )}
                   </td>
                   <td className="col">{file.operationalArea}</td>
                   <td className={`col`}>{(file.assetOwner)}</td>
@@ -470,6 +492,7 @@ const FlameProofMain = () => {
       {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
       {modifyDate && <ModifyComponentsPopup onClose={closeModifyDate} asset={assetID} />}
+      {openComponentUpdate && (<ModifyComponentsPopup asset={componentAssetUpdate} onClose={closeComponentModify} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >
   );

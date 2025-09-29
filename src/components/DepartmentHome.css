@@ -183,6 +183,26 @@
     height: 60%;
 }
 
+.icon-dept-deleted-sites {
+    width: 160px;
+    height: 160px;
+    background-color: #CB6F6F;
+    border-radius: 50%;
+    /* Ensures a perfect circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    overflow: hidden;
+    /* Prevents overflow */
+}
+
+.icon-dept-deleted-sites svg {
+    width: 60%;
+    /* Adjust icon size relative to the circle */
+    height: 60%;
+}
+
 .icon-fi-home-all {
     width: 100%;
     /* Adjust the percentage as needed */

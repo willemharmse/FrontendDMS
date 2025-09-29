@@ -163,6 +163,23 @@
     border-radius: 5px;
 }
 
+.restore-assets-file-button-delete {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: auto;
+    margin-right: 10px;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
 .delete-file-button-cancel {
     background: linear-gradient(to bottom,
             #B8D4C1 0%,
@@ -176,6 +193,22 @@
             #30503A 100%
             /* Deepest shade */
         );
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 2px;
+    margin-left: 10px;
+    margin-right: auto;
+    width: 30%;
+    font-size: 16px;
+    font-weight: bolder;
+    font-family: Arial;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.restore-file-certificate-button-cancel {
+    background: linear-gradient(to bottom, #6688cc 0%, #003080 25%, #002060 50%, #001040 100%);
     color: white;
     border: none;
     padding: 12px;

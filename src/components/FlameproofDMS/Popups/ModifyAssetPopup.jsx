@@ -23,6 +23,15 @@ const ModifyAssetPopup = ({ onClose, refresh, asset }) => {
     const [users, setUsers] = useState([]);
     const [areas, setAreas] = useState([]);
 
+    const originalSiteId = useMemo(
+        () => asset?.site?._id || asset?.siteId || asset?.site,
+        [asset]
+    );
+    const originalAssetNr = useMemo(
+        () => (asset?.assetNr ?? asset?.assetNumber ?? ''),
+        [asset]
+    );
+
     const [siteAssetsMap, setSiteAssetsMap] = useState({});
     const normalizeAssetNr = (v) => String(v ?? '').trim().toUpperCase();
 
@@ -171,7 +180,12 @@ const ModifyAssetPopup = ({ onClose, refresh, asset }) => {
     const handleFileUpload = async () => {
         if (!isFormValid()) return;
 
-        if (isAssetNumberValidForSite(site, number)) {
+        const normalizedNewNr = normalizeAssetNr(number);
+        const normalizedOriginalNr = normalizeAssetNr(originalAssetNr);
+        const isSameAsOriginal =
+            String(site) === String(originalSiteId) && normalizedNewNr === normalizedOriginalNr;
+
+        if (!isSameAsOriginal && isAssetNumberValidForSite(site, number)) {
             setErrors({ ...errors, number: true });
             toast.error("Asset Number already exists for the selected Site", {
                 closeButton: false,

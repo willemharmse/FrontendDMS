@@ -48,34 +48,32 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
         }
     }, []);
 
-    useEffect(() => {
-        const fetchComps = async () => {
-            try {
-                const res = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getUploadComponents`);
-                if (!res.ok) throw new Error("Failed to fetch components");
-                const data = await res.json();
+    const toStringList = (arr) =>
+        (Array.isArray(arr) ? arr : [])
+            .map(v => typeof v === 'string' ? v : (v?.name ?? v?.component ?? ''))
+            .map(s => String(s || '').trim())
+            .filter(Boolean);
 
-                const sorted = (data.components || []).sort((a, b) => {
-                    // Master first
-                    const aIsM = (a.component || "").toLowerCase().trim() === "master";
-                    const bIsM = (b.component || "").toLowerCase().trim() === "master";
-                    if (aIsM && !bIsM) return -1;
-                    if (bIsM && !aIsM) return 1;
+    // pull the required components stored on the asset
+    const getRequiredFromAsset = (asset) =>
+        toStringList(
+            asset?.requiredComponents ??
+            asset?.componentsList ??
+            asset?.componentsRequired ??
+            asset?.components ??              // <- if your asset stores required components here
+            []
+        );
 
-                    // then Component N by number
-                    const num = s => parseInt((s || "").replace(/^\D+/, ""), 10) || 0;
-                    return num(a.component) - num(b.component);
-                });
-
-                setComponents(sorted);
-            } catch (e) {
-                console.error(e);
-                setComponents([]); // safe default
-            }
-        };
-
-        fetchComps();
-    }, []);
+    // pull the components that already have certificates for this asset
+    const getCertifiedFromAsset = (asset) =>
+        toStringList(
+            asset?.certifiedComponents ??
+            asset?.componentsWithCertificates ??
+            asset?.certificateComponents ??
+            (Array.isArray(asset?.certificates) ? asset.certificates.map(c => c.component) : []) ??
+            asset?.existingComponents ??
+            []                                // <- if your /sites-assets-active already sets this
+        );
 
     useEffect(() => {
         const fetchSitesAssetsActive = async () => {
@@ -83,15 +81,19 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                 const res = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/sites-assets-active`);
                 if (!res.ok) throw new Error("Failed to fetch sites/assets");
                 const data = await res.json();
-
+                console.log("" + data.sites);
                 const sitesArr = (data.sites || []).map(s => ({ _id: s._id, site: s.site }));
                 const assetsMap = {};
                 (data.sites || []).forEach(s => {
                     assetsMap[s._id] = (s.assets || []).map(a => ({
                         _id: a._id,
                         assetNr: a.assetNr,
-                        assetType: a.assetType || "",        // ⬅️ keep assetType per-asset
-                        components: Array.isArray(a.components) ? a.components : []
+                        assetType: a.assetType || "",
+                        // REQUIRED components from the asset doc
+                        components: Array.isArray(a.components) ? a.components : [],
+                        // components that ALREADY have active certs
+                        certifiedComponents: Array.isArray(a.certifiedComponents) ? a.certifiedComponents : [],
+                        hasMaster: !!a.hasMaster    // or a.master; route returns both
                     }));
                 });
 
@@ -117,6 +119,45 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
 
         fetchSitesAssetsActive();
     }, [site, assetNumber]);
+
+    // --- available components depend on chosen asset (required - already-certified) ---
+    useEffect(() => {
+        if (!assetNr) {
+            setAvailableComponents([]);
+            return;
+        }
+
+        // find the selected asset in this site
+        const current = assetNrs.find(a => a.assetNr === assetNr);
+
+        // Required components come from the asset itself
+        const requiredAll = Array.from(new Set(getRequiredFromAsset(current).map(s => s.trim())));
+
+        // Already-certified components (case-insensitive set)
+        const already = new Set(getCertifiedFromAsset(current).map(s => s.toLowerCase()));
+
+        // If API only flags Master via boolean, respect that too
+        if (String(current?.master ?? '').toLowerCase() === 'true' || current?.master === true) {
+            already.add('master');
+        }
+
+        // Filter: show required items that don't yet have a cert
+        const remaining = requiredAll.filter(name => !already.has(name.toLowerCase()));
+
+        // Sort: Master first, then by the number in "Component N"
+        const isMaster = (s) => (s || '').trim().toLowerCase() === 'master';
+        const num = (s) => parseInt(String(s || '').replace(/^\D+/, ''), 10) || 0;
+
+        remaining.sort((a, b) => {
+            if (isMaster(a)) return -1;
+            if (isMaster(b)) return 1;
+            return num(a) - num(b);
+        });
+
+        // Map to the same shape your <option> expects: {_id, component}
+        const opts = remaining.map((name, i) => ({ _id: `opt-${i}-${name}`, component: name }));
+        setAvailableComponents(opts);
+    }, [assetNr, assetNrs]);
 
     useEffect(() => {
         if (!siteId) {
@@ -150,33 +191,6 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
         // Always show all sites (or keep any pre-existing site prop lock)
         if (sites.length) setFilteredSites(sites);
     }, [sites]);
-
-    // --- available components depend on chosen asset ---
-    useEffect(() => {
-        if (!assetNr) {                     // ⬅️ enforce gating
-            setAvailableComponents([]);
-            return;
-        }
-
-        const current = assetNrs.find(a => a.assetNr === assetNr);
-        const existing = current?.components || [];
-
-        const filtered = components.filter(c => {
-            const label = c.component;
-            return !existing.includes(label);
-        });
-
-        const isMasterLabel = s => normStr(s) === "master";
-        filtered.sort((a, b) => {
-            if (isMasterLabel(a.component)) return -1;
-            if (isMasterLabel(b.component)) return 1;
-            const numA = parseInt((a.component || "").replace(/^\D+/, ""), 10) || 0;
-            const numB = parseInt((b.component || "").replace(/^\D+/, ""), 10) || 0;
-            return numA - numB;
-        });
-
-        setAvailableComponents(filtered);
-    }, [components, assetNrs, assetNr]);
 
     const norm = (s = "") => s.toLowerCase().trim();
     const isMasterLabel = s => norm(s) === "master";

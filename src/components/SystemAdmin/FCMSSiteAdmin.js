@@ -12,8 +12,9 @@ import AddSite from "../FlameproofDMS/Popups/AddSite";
 import FCMSTemplates from "../FlameproofDMS/Popups/FCMSTemplates";
 import ManageSites from "../FlameproofDMS/Popups/ManageSites";
 import ManageAssetTypes from "../FlameproofDMS/Popups/ManageAssetTypes";
+import ManageDeletedSites from "../FlameproofDMS/Popups/ManageDeletedSites";
 
-const FCMSAdminPage = () => {
+const FCMSSiteAdmin = () => {
     const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
@@ -23,25 +24,10 @@ const FCMSAdminPage = () => {
     const [assets, setAssets] = useState(false);
     const [site, setSite] = useState(false);
     const [manageSite, setManageSite] = useState(false);
+    const [manageDeletedSite, setManageDeletedSite] = useState(false);
     const [manageAsset, setManageAsset] = useState(false);
     const [template, setTemplate] = useState(false);
     const navigate = useNavigate();
-
-    const openBatch = () => {
-        setBatch(true);
-    };
-
-    const closeBatch = () => {
-        setBatch(!batch);
-    };
-
-    const openTemplate = () => {
-        setTemplate(true);
-    };
-
-    const closeTemplate = () => {
-        setTemplate(!template);
-    };
 
     const openManageSite = () => {
         setManageSite(true);
@@ -51,30 +37,13 @@ const FCMSAdminPage = () => {
         setManageSite(!manageSite);
     };
 
-    const openManageAsset = () => {
-        setManageAsset(true);
+    const openManageDeletedSite = () => {
+        setManageDeletedSite(true);
     };
 
-    const closeManageAsset = () => {
-        setManageAsset(!manageAsset);
+    const closeManageDeletedSite = () => {
+        setManageDeletedSite(!manageDeletedSite);
     };
-
-    const openAssets = () => {
-        setAssets(true);
-    };
-
-    const closeAssets = () => {
-        setAssets(!assets);
-    };
-
-    const openSite = () => {
-        setSite(true);
-    };
-
-    const closeSite = () => {
-        setSite(!site);
-    };
-
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -100,9 +69,6 @@ const FCMSAdminPage = () => {
 
     return (
         <div className="user-info-container">
-            {batch && (<BatchCertificates onClose={closeBatch} />)}
-            {assets && (<BatchAssets onClose={closeAssets} />)}
-            {site && (<AddSite isOpen={site} onClose={closeSite} />)}
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
@@ -110,16 +76,7 @@ const FCMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FM</p>
-                    </div>
-
-                    <div className="button-container-create">
-                        <button className="but-um" onClick={openTemplate}>
-                            <div className="button-content">
-                                <FontAwesomeIcon icon={faDownload} className="button-icon" />
-                                <span className="button-text">Templates</span>
-                            </div>
-                        </button>
+                        <p className="logo-text-um">Manage FM Sites</p>
                     </div>
                 </div>
             )}
@@ -145,59 +102,31 @@ const FCMSAdminPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openSite} >
+                    <div className={`document-card-fi-home`} onClick={openManageSite} >
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Register New Site</h3>
+                            <h3 className="document-title-fi-home">Active Sites</h3>
                         </>
                     </div>
 
-                    <div className={`document-card-fi-home`} onClick={openAssets} >
+                    <div className={`document-card-fi-home`} onClick={openManageDeletedSite} >
                         <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsBatch.svg`} className={"icon-dept"} />
+                            <div className="icon-dept-deleted-sites">
+                                <img src={`${process.env.PUBLIC_URL}/fmsSiteDelete.svg`} className={"icon-dept-deleted-sites"} />
                             </div>
-                            <h3 className="document-title-fi-home">Register Multiple Assets</h3>
-                        </>
-                    </div>
-
-                    <div className={`document-card-fi-home`} onClick={openBatch} >
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/adminBatchUpload.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Upload Batch Certificates</h3>
-                        </>
-                    </div>
-
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameSites")} >
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Manage Sites</h3>
-                        </>
-                    </div>
-
-                    <div className={`document-card-fi-home`} onClick={openManageAsset} >
-                        <>
-                            <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
-                            </div>
-                            <h3 className="document-title-fi-home">Manage Asset Types</h3>
+                            <h3 className="document-title-fi-home">Deleted Sites</h3>
                         </>
                     </div>
                 </div>
             </div>
             <ToastContainer />
 
-            {template && (<FCMSTemplates onClose={closeTemplate} />)}
+            {manageDeletedSite && (<ManageDeletedSites closePopup={closeManageDeletedSite} />)}
             {manageSite && (<ManageSites closePopup={closeManageSite} />)}
-            {manageAsset && (<ManageAssetTypes closePopup={closeManageAsset} />)}
         </div>
     );
 };
 
-export default FCMSAdminPage;
+export default FCMSSiteAdmin;

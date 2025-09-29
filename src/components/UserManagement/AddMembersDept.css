@@ -36,6 +36,21 @@
     /* Centers the container */
 }
 
+.asset-types-name {
+    text-align: center;
+    width: 40%;
+}
+
+.asset-types-count {
+    text-align: center;
+    width: 40%;
+}
+
+.asset-types-delete {
+    text-align: center;
+    width: 20%;
+}
+
 .dept-Name-delete {
     width: 75%;
 }

@@ -20,8 +20,7 @@ import SortPopupCertificates from "./Popups/SortPopupCertificates";
 import TopBarFPC from "./Popups/TopBarFPC";
 import DeleteCertificate from "./Popups/DeleteCertificate";
 
-const FlameProofSub = () => {
-  const { type, assetId } = useParams();
+const FlameProofTrash = () => {
   const [files, setFiles] = useState([]);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,84 +28,22 @@ const FlameProofSub = () => {
   const [token, setToken] = useState('');
   const access = getCurrentUser();
   const [hoveredFileId, setHoveredFileId] = useState(null);
-  const [isTrashView, setIsTrashView] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
-  const [downloadFileId, setDownloadFileId] = useState(null);
-  const [downloadFileName, setDownloadFileName] = useState(null);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("ascending");
   const [loading, setLoading] = useState(false);
-  const [upload, setUpload] = useState(false);
-  const [update, setUpdate] = useState(false);
   const navigate = useNavigate();
-  const [updateID, setUpdateID] = useState(null);
-  const [register, setRegister] = useState(false);
-  const [popup, setPopup] = useState(null);
-  const [uploadAssetNr, setUploadAssetNr] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [status, setStatus] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState([]);
-  const [icon, setIcon] = useState("");
-  const [versionIcon, setVersionIcon] = useState("");
-  const [site, setSite] = useState("");
-  const [assetType, setAssetType] = useState("");
+  const [types, setTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState([]);
   const [isLoadingTable, setIsLoadingTable] = useState(true);
   const [showNoAssets, setShowNoAssets] = useState(false);
-
-  useEffect(() => {
-    const fetchSite = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getAssetSite/${assetId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        setSite(data.site);
-        console.log(data.site);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
-    fetchSite();
-  }, []);
-
-  const closePopup = () => {
-    setPopup(null);
-  }
-
-  const openUpload = () => {
-    setUpload(true);
-  };
-
-  const closeUpload = (assetNr, id, nav) => {
-    setUpload(!upload);
-    fetchFiles();
-  };
-
-  const openUpdate = (fileID) => {
-    setUpdateID(fileID);
-    setUpdate(true);
-  };
-
-  const closeUpdate = () => {
-    setUpdate(!update);
-    fetchFiles();
-  };
-
-  const openRegister = () => {
-    setRegister(true);
-  };
-
-  const closeRegister = () => {
-    setRegister(!register);
-  };
 
   const openSortModal = () => setIsSortModalOpen(true);
   const closeSortModal = () => setIsSortModalOpen(false);
@@ -116,19 +53,14 @@ const FlameProofSub = () => {
     if (storedToken) {
       setToken(storedToken);
       const decodedToken = jwtDecode(storedToken);
-      getAssetIconSrc();
     }
-  }, [navigate, isTrashView]);
+  }, [navigate]);
 
   useEffect(() => {
     if (token && hasRole(access, "DMS")) {
       fetchFiles();
     }
   }, [token]);
-
-  useEffect(() => {
-    fetchFiles();
-  }, [isTrashView]);
 
   const handleSort = () => {
     const sortedFiles = [...files].sort((a, b) => {
@@ -143,7 +75,7 @@ const FlameProofSub = () => {
 
   const fetchFiles = async () => {
     setIsLoadingTable(true);
-    const route = isTrashView ? `/api/flameproof/trash/load` : `/api/flameproof/certificates/by-asset/${assetId}`;
+    const route = `/api/flameproof/trash/load`;
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
         headers: {
@@ -154,11 +86,15 @@ const FlameProofSub = () => {
       }
       const data = await response.json();
 
+      console.log(data);
+
       const uniqueOpAreas = [...new Set(data.certificates.map(file => file.asset.operationalArea))].sort();
       const uniqueStatus = [...new Set(data.certificates.map(file => file.status))].sort();
+      const uniqueTypes = [...new Set(data.certificates.map(file => file.asset.assetType))].sort();
 
       setAreas(uniqueOpAreas);
       setStatus(uniqueStatus);
+      setTypes(uniqueTypes);
 
       setFiles(data.certificates);
     } catch (error) {
@@ -219,60 +155,6 @@ const FlameProofSub = () => {
     }
   };
 
-  const downloadFile = async (fileId, fileName) => {
-    try {
-      setLoading(true);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/downloadCertificate/${fileId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to download the file');
-      }
-
-      const blob = await response.blob();
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName || 'document.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      alert('Error downloading the file. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteFile = async () => {
-    if (!selectedFileId) return;
-    try {
-      setLoading(true);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/delete/${selectedFileId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete the file');
-      setIsModalOpen(false);
-      setSelectedFileId(null);
-      fetchFiles();
-    } catch (error) {
-      console.error('Error deleting file:', error);
-    } finally {
-      setLoading(false); // Reset loading state after response
-    }
-  };
-
   const deleteFileFromTrash = async () => {
     if (!selectedFileId) return;
     try {
@@ -301,65 +183,11 @@ const FlameProofSub = () => {
   };
 
   const formatDate = (dateString) => {
-    if (dateString === null) return "—"
     const date = new Date(dateString); // Convert to Date object
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const day = String(date.getDate()).padStart(2, '0'); // Pad day with leading zero
     return `${year}-${month}-${day}`;
-  };
-
-  const assetIconMap = {
-    "all-assets": "/allDocumentsDMS.svg",
-    "Continuous Miner": "/FCMS_CM2.png",
-    "Shuttle Car": "/FCMS_SC2.png",
-    "Roof Bolter": "/FCMS_RB2.png",
-    "Feeder Breaker": "/FCMS_FB2.png",
-    "Load Haul Dumper": "/FCMS_LHD2.png",
-    "Tractor": "/FCMS_T2.png",
-  }
-
-  const versionAssetIconMap = {
-    "all-assets": "allDocumentsDMS.svg",
-    "Continuous Miner": "FCMS_CM2.png",
-    "Shuttle Car": "FCMS_SC2.png",
-    "Roof Bolter": "FCMS_RB2.png",
-    "Feeder Breaker": "FCMS_FB2.png",
-    "Load Haul Dumper": "FCMS_LHD2.png",
-    "Tractor": "FCMS_T2.png",
-  }
-
-  const getFirstAssetType = () => {
-    return (files?.[0]?.asset?.assetType || "").trim();
-  }
-
-  const getAssetIconSrc = async () => {
-    if (isTrashView) {
-      setIcon(`${process.env.PUBLIC_URL}/trashIcon.svg`);
-      return;
-    }
-
-    const route = `/api/flameproof/getAsset/${type}`;
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-        headers: {
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch files');
-      }
-      const data = await response.json();
-      setAssetType(data.assets.assetType);
-      const key = data.assets.assetType.replace(/\s+/g, " ");
-      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/defaultDMS.svg");
-      setVersionIcon(versionAssetIconMap[key] || "/defaultDMS.svg");
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const toggleTrashView = () => {
-    setIsTrashView(!isTrashView);
   };
 
   const openModal = (fileId, fileName) => {
@@ -374,107 +202,56 @@ const FlameProofSub = () => {
     setIsModalOpen(false);
   };
 
-  const openDownloadModal = (fileId, fileName) => {
-    setDownloadFileId(fileId);
-    setDownloadFileName(fileName);
-    setIsDownloadModalOpen(true);
-  };
-
-  const closeDownloadModal = () => {
-    setDownloadFileId(null);
-    setDownloadFileName(null);
-    setIsDownloadModalOpen(false);
-  };
-
-  const confirmDownload = () => {
-    if (downloadFileId && downloadFileName) {
-      downloadFile(downloadFileId, downloadFileName);
-    }
-    closeDownloadModal();
-  };
-
   const getComplianceColor = (status) => {
     if (status === "valid") return "status-good";
     if (status === "invalid") return "status-worst";
-    if (status === "not uploaded") return "status-missing"
   };
 
   const filteredFiles = useMemo(() => {
-    // normalize "missing" -> "not uploaded" for consistent UI behavior
-    const normStatus = (s) => {
-      const v = (s || "").toLowerCase();
-      return v === "missing" ? "not uploaded" : v;
-    };
-
-    // 1) same initial filter (search + area + status)
     const fs = files.filter((file) => {
       const q = searchQuery.toLowerCase();
-
       const matchesSearchQuery = (
-        (file.asset.assetNr || "").toLowerCase().includes(q) ||
-        (file.asset.operationalArea || "").toLowerCase().includes(q) ||
-        (file.asset.assetOwner || "").toLowerCase().includes(q) ||
-        (file.certAuth || "").toLowerCase().includes(q) ||
-        (file.certNr || "").toLowerCase().includes(q) ||
-        (file.asset.departmentHead || "").toLowerCase().includes(q) ||
-        ((file.component || "").toLowerCase().includes(q))
+        file.asset.assetNr.toLowerCase().includes(q) ||
+        file.asset.operationalArea.toLowerCase().includes(q) ||
+        file.asset.assetOwner.toLowerCase().includes(q) ||
+        file.certAuth.toLowerCase().includes(q) ||
+        file.certNr.toLowerCase().includes(q) ||
+        file.asset.departmentHead.toLowerCase().includes(q) ||
+        (file.component || "").toLowerCase().includes(q)
       );
-
-      const fileStatusNorm = normStatus(file.status);
 
       const matchesFilters =
         (selectedArea.length === 0 || selectedArea.includes(file.asset.operationalArea)) &&
-        (selectedStatus.length === 0 || selectedStatus.includes(fileStatusNorm));
+        (selectedStatus.length === 0 || selectedStatus.includes(file.status)) &&
+        (selectedType.length === 0 || selectedType.includes(file.asset.assetType));
 
       return matchesSearchQuery && matchesFilters;
     });
 
-    // 2) sort: not uploaded first, then master, then components (alpha), then assetNr
-    const isMaster = (f) => {
-      const c = (f.component || "").trim().toLowerCase();
-      return c === "master" || c === "master component";
-    };
-
-    const statusPriority = (f) => (normStatus(f.status) === "not uploaded" ? 0 : 1);
-    const componentPriority = (f) => (isMaster(f) ? 0 : 1);
+    const isMaster = (f) => (f.component || "").toLowerCase() === "master";
 
     const cmp = (a, b) => {
-      // A) not uploaded group first
-      const spA = statusPriority(a);
-      const spB = statusPriority(b);
-      if (spA !== spB) return spA - spB;
-
-      // B) master before other components
-      const cpA = componentPriority(a);
-      const cpB = componentPriority(b);
-      if (cpA !== cpB) return cpA - cpB;
-
-      // C) alphabetical by component (case-insensitive, numeric-aware)
       const ca = (a.component || "").toLowerCase();
       const cb = (b.component || "").toLowerCase();
-      if (ca || cb) {
-        const byComp = ca.localeCompare(cb, undefined, { numeric: true, sensitivity: "base" });
-        if (byComp !== 0) return byComp;
-      }
 
-      // D) tiebreaker: assetNr
+      if (!ca && !cb) return 0;
+      if (!ca) return 1;
+      if (!cb) return -1;
+
+      const byComponent = ca.localeCompare(cb, undefined, { numeric: true, sensitivity: "base" });
+      if (byComponent !== 0) return byComponent;
+
+      // tiebreaker: asset number (optional)
       const an = (a.asset?.assetNr || "").toLowerCase();
       const bn = (b.asset?.assetNr || "").toLowerCase();
       return an.localeCompare(bn, undefined, { numeric: true, sensitivity: "base" });
     };
 
-    return [...fs].sort(cmp);
-  }, [files, searchQuery, selectedArea, selectedStatus]);
+    const masters = fs.filter(isMaster);
+    const others = fs.filter((f) => !isMaster(f)).sort(cmp);
 
-  const invalidCount = filteredFiles.filter(f => {
-    const status = (f.status || "").toLowerCase();
-    return status === "invalid" || status === "not uploaded";
-  }).length;
-
-  const validCount = filteredFiles.filter(f => {
-    const status = (f.status || "").toLowerCase();
-    return status === "valid";
-  }).length;
+    return [...masters, ...others];
+  }, [files, searchQuery, selectedArea, selectedStatus, selectedType]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -506,6 +283,10 @@ const FlameProofSub = () => {
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
               <div className="fi-info-popup-page-select-container">
+                <Select options={types.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Asset Type"
+                  classNamePrefix="sb" />
+              </div>
+              <div className="fi-info-popup-page-select-container">
                 <Select options={areas.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area"
                   classNamePrefix="sb" />
               </div>
@@ -515,21 +296,9 @@ const FlameProofSub = () => {
               </div>
             </div>
           </div>
-          {!isTrashView && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
-            <div className="filter-dm-fi-2" >
-              <div className="button-container-dm-fi">
-                <button className="but-dm-fi" onClick={openUpload}>
-                  <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Upload Single Certificate</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
           <div className="sidebar-logo-dm-fi">
-            <img src={icon} className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{isTrashView ? `Trashed Certificates` : (type)}</p>
+            <img src={`${process.env.PUBLIC_URL}/trashIcon.svg`} className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">Trash</p>
           </div>
         </div>
       )}
@@ -560,40 +329,38 @@ const FlameProofSub = () => {
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className={isTrashView ? `info-box-fih trashed` : `info-box-fih`}>Valid Certificates: {validCount}</div>
-          {!isTrashView && (<div className={`info-box-fih ${invalidCount === 0 ? `no-invalid` : `trashed`}`} style={invalidCount === 0 ? { backgroundColor: '#002060' } : undefined}>Outstanding Certificates: {invalidCount}</div>)}
+          <div className={`info-box-fih trashed`}>Number of Deleted Certificates: {filteredFiles.length}</div>
 
-          {/* This div creates the space in the middle */}
           <div className="spacer"></div>
 
-          <TopBarFPC isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} canIn={canIn} access={access} openSort={openSortModal} />
+          <TopBarFPC canIn={canIn} access={access} openSort={openSortModal} />
         </div>
 
         <div className="table-container-file">
           <table>
             <thead>
-              <tr className={isTrashView ? 'trashed' : ""}>
-                <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
-                {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
-                <th className="flame-sub-ass-nr-filter col">Asset Nr</th>
-                <th className="flame-sub-area-filter col">Area</th>
-                <th className="flame-sub-owner-filter col">Asset Owner</th>
-                <th className="flame-sub-auth-filter col">Certification Authority</th>
-                <th className="flame-sub-cert-filter col">Certificate Nr</th>
-                <th className="flame-sub-comp-filter col">Component</th>
-                <th className={`flame-sub-head-filter`}>Department Head</th>
-                <th className={`flame-sub-status-filter col`}>Status</th>
-                <th className="flame-sub-date-filter col">Issue Date</th>
-                {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
+              <tr className={'trashed'}>
+                <th className="flame-trash-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
+                <th className="flame-trash-site-filter col" style={{ fontSize: "14px" }}>Site</th>
+                <th className="flame-trash-type-filter col" style={{ fontSize: "14px" }}>Asset Type</th>
+                <th className="flame-trash-ass-nr-filter col">Asset Nr</th>
+                <th className="flame-trash-area-filter col">Area</th>
+                <th className="flame-trash-owner-filter col">Asset Owner</th>
+                <th className="flame-trash-cert-filter col">Certificate Nr</th>
+                <th className="flame-trash-comp-filter col">Component</th>
+                <th className={`flame-trash-head-filter`}>Department Head</th>
+                <th className={`flame-trash-status-filter col`}>Status</th>
+                <th className="flame-trash-date-filter col">Issue Date</th>
+                <th className="flame-trash-act-filter col" style={{ fontSize: "14px" }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {isLoadingTable && (
                 <tr>
                   <td colSpan={
-                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    12
                   } style={{ textAlign: "center", padding: 20 }}>
-                    <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading certificates.
+                    <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading removed certificates.
                   </td>
                 </tr>
               )}
@@ -601,50 +368,64 @@ const FlameProofSub = () => {
               {!isLoadingTable && showNoAssets && (
                 <tr>
                   <td colSpan={
-                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    12
                   } style={{ textAlign: "center", padding: 20 }}>
-                    No Certificates Uploaded.
+                    No Removed Certificates Found.
                   </td>
                 </tr>
               )}
 
               {filteredFiles.map((file, index) => (
-                <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                <tr key={index} style={{ fontSize: "14px", cursor: "pointer" }} className={`tr-trash file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
                   <td
-                    className="col" style={{ textAlign: "center", position: "relative" }}
+                    style={{ textAlign: "center" }}
+                    className="col"
                   >
-                    {file.asset.assetNr}
-
-                    {(hoveredFileId === file._id && !file.isPlaceholder) && (
-                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} />
-                    )}
+                    {(file.asset.site.site)}
                   </td>
                   <td
 
                     style={{ textAlign: "center" }}
                     className="col"
                   >
+                    {(file.asset.assetType)}
+                  </td>
+                  <td
+                    className="col" style={{ textAlign: "center", position: "relative" }}
+                  >
+                    {file.asset.assetNr}
+                  </td>
+                  <td
+                    style={{ textAlign: "center" }}
+                    className="col"
+                  >
                     {(file.asset.operationalArea)}
                   </td>
                   <td className="col">{file.asset.assetOwner}</td>
-                  <td className={`col`}>{(file.certAuth)}</td>
                   <td className="col">{file.certNr}</td>
                   <td className="col">{formatStatus(file.component)}</td>
                   <td className="col">{file.asset.departmentHead}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
                   <td className={`col`}>{formatDate(file.issueDate)}</td>
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
-                    <td className={"col-act"}>
-                      {!file.isPlaceholder && (<button
-                        className={"delete-button-fi col-but"}
+                    <td className={"col-act trashed"}>
+                      <button
+                        className={"delete-button-fi col-but trashed-color"}
                         onClick={(e) => {
-                          e.stopPropagation();         // ⛔ prevent row click
+                          e.stopPropagation();
                           openModal(file._id, file.fileName);
                         }}
                       >
                         <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                      </button>)}
+                      </button>
+
+                      <button
+                        className={"delete-button-fi col-but-res trashed-color"}
+                        onClick={() => restoreFile(file._id)}
+                      >
+                        <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -654,14 +435,11 @@ const FlameProofSub = () => {
         </div>
       </div>
 
-      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
+      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFileFromTrash={deleteFileFromTrash} isTrashView={true} loading={loading} selectedFileName={selectedFileName} />)}
       {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
-      {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
-      {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}
-      {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} refresh={fetchFiles} />)}
       <ToastContainer />
     </div >
   );
 };
 
-export default FlameProofSub;
+export default FlameProofTrash;

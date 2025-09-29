@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast } from 'react-toastify';
-import { faTrash, faX, faSearch, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faX, faSearch, faEdit, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import RenameSite from "./RenameSite";
 import DeleteSitePopup from "./DeleteSitePopup";
+import RestoreCertificates from "./RestoreCertificates";
+import RestoreCertificatesClose from "./RestoreCertificatesClose";
+import DeleteSitePerm from "./DeleteSitePerm";
 
-const ManageSites = ({ closePopup }) => {
+const ManageDeletedSites = ({ closePopup }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [departments, setDepartments] = useState([]);
     const [deleteID, setDeleteID] = useState("");
@@ -31,6 +34,91 @@ const ManageSites = ({ closePopup }) => {
         fetchValues();
     };
 
+    const closeRestoreCerts = async () => {
+        setUpdate(false);
+
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_URL}/api/flameproof/sites/${updateID}/restore`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+
+            const isJson = res.headers.get("content-type")?.includes("application/json");
+            const data = isJson ? await res.json() : null;
+
+            if (!res.ok) {
+                const msg = data?.error || data?.message || `Request failed (${res.status})`;
+                throw new Error(msg);
+            }
+
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.success("Site restored without certificates.", {
+                closeButton: true,
+                autoClose: 1500,
+                style: { textAlign: "center" },
+            });
+
+            fetchValues();
+        } catch (err) {
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.error(err.message || "Failed to restore site.", {
+                closeButton: true,
+                autoClose: 1800,
+                style: { textAlign: "center" },
+            });
+        }
+    };
+
+    const restoreSiteAndCertificates = async () => {
+        setUpdate(false);
+
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_URL}/api/flameproof/sites/${updateID}/restore-active-certificates`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+
+            const isJson = res.headers.get("content-type")?.includes("application/json");
+            const data = isJson ? await res.json() : null;
+
+            if (!res.ok && res.status !== 207) {
+                const msg = data?.error || data?.message || `Request failed (${res.status})`;
+                throw new Error(msg);
+            }
+
+            // success or partial success
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.success("Certificates restored with site.",
+                { closeButton: true, autoClose: 1800, style: { textAlign: "center" } }
+            );
+
+            fetchValues();
+        } catch (err) {
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.error(err.message || "Failed to restore site and certificates.", {
+                closeButton: true,
+                autoClose: 1800,
+                style: { textAlign: "center" },
+            });
+        }
+    };
+
     const fetchValues = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getUploadSites`, { headers: {} });
@@ -39,7 +127,7 @@ const ManageSites = ({ closePopup }) => {
             const data = await response.json();
 
             // ⬇️ Filter out deleted sites; keep ones with no `deleted` field
-            const visibleSites = (data?.sites ?? []).filter(s => s && s.deleted !== true);
+            const visibleSites = (data?.sites ?? []).filter(s => s && s.deleted === true);
 
             // single, safe sort (handles missing site names)
             const sorted = visibleSites.sort((a, b) => (a?.site || '').localeCompare(b?.site || ''));
@@ -52,7 +140,7 @@ const ManageSites = ({ closePopup }) => {
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/removeSite/${deleteID}`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/sites/${deleteID}/permanent`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
@@ -62,7 +150,7 @@ const ManageSites = ({ closePopup }) => {
             setConfirm(false);
             fetchValues();
 
-            toast.success("Site deleted successfully.", {
+            toast.success("Site and all certificates deleted successfully.", {
                 autoClose: 2000,
                 closeButton: false,
                 style: { textAlign: 'center' }
@@ -87,7 +175,7 @@ const ManageSites = ({ closePopup }) => {
         <div className="popup-overlay-dept">
             <div className="popup-content-dept">
                 <div className="review-date-header">
-                    <h2 className="review-date-title">Manage Active Sites</h2>
+                    <h2 className="review-date-title">Manage Deleted Sites</h2>
                     <button className="review-date-close" onClick={closePopup} title="Close Popup">×</button>
                 </div>
 
@@ -124,14 +212,14 @@ const ManageSites = ({ closePopup }) => {
                                             <td>{department.site || '(unnamed site)'}</td>
                                             <td className="dept-Act-icon-delete">
                                                 <FontAwesomeIcon
-                                                    icon={faEdit}
-                                                    title="Edit Site"
+                                                    icon={faRefresh}
+                                                    title="Restore Site"
                                                     onClick={() => openUpdateSiteName(department._id, department.site)}
                                                     style={{ marginRight: '10px' }}
                                                 />
                                                 <FontAwesomeIcon
                                                     icon={faTrash}
-                                                    title="Remove Site"
+                                                    title="Delete Site"
                                                     onClick={() => {
                                                         setDeleteID(department._id);
                                                         setDeleteName(department.site);
@@ -154,16 +242,16 @@ const ManageSites = ({ closePopup }) => {
             </div>
 
             {update && (
-                <RenameSite
+                <RestoreCertificatesClose
                     isOpen={true}
-                    onClose={closeUpdateSiteName}
-                    siteId={updateID}
-                    siteName={updateName}
+                    closeModal={closeUpdateSiteName}
+                    restoreCertificates={restoreSiteAndCertificates}
+                    restoreSite={closeRestoreCerts}
                 />
             )}
 
             {confirm && (
-                <DeleteSitePopup
+                <DeleteSitePerm
                     setIsDeleteModalOpen={closeConfirm}
                     siteName={deleteName}
                     handleDelete={handleDelete}
@@ -173,4 +261,4 @@ const ManageSites = ({ closePopup }) => {
     );
 };
 
-export default ManageSites;
+export default ManageDeletedSites;

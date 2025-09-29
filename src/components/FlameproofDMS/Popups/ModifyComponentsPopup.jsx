@@ -6,7 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from "axios";
 import "./ModifyComponentsPopup.css";
 
-const ModifyComponentsPopup = ({ onClose, asset }) => {
+const ModifyComponentsPopup = ({ onClose, asset, refresh }) => {
     const [userID, setUserID] = useState('');
     const [loading, setLoading] = useState(false);
     const [info, setInfo] = useState({});
@@ -42,14 +42,20 @@ const ModifyComponentsPopup = ({ onClose, asset }) => {
 
             setFiles(data.certificates);
 
+            console.log(data.certificates);
+
             setRows(
-                (data.certificates || []).map((c) => ({
-                    _id: c._id,
-                    component: c.component,
-                    assetId: c.asset?._id,
-                    // store value as input-friendly string; empty for null
-                    dateUpdatedStr: toInputDate(c.dateUpdated),
-                }))
+                (data.certificates || []).map((c) => {
+                    const originalISO = c.dateUpdated ? new Date(c.dateUpdated).toISOString() : null;
+                    return {
+                        _id: c._id,
+                        component: c.component,
+                        assetId: c.asset?._id,
+                        originalISO,
+                        dateUpdatedStr: toInputDate(c.dateUpdated),
+                        changed: false,
+                    };
+                })
             );
         } catch (error) {
             setError(error.message);
@@ -64,30 +70,22 @@ const ModifyComponentsPopup = ({ onClose, asset }) => {
     const onDateChange = (index, value) => {
         setRows((prev) => {
             const next = [...prev];
-            next[index] = { ...next[index], dateUpdatedStr: value };
+            const r = next[index];
+
+            // Normalize form value to ISO (or null) for comparison
+            const toISO = (s) => (s?.trim()
+                ? new Date(`${s}T00:00:00.000Z`).toISOString()
+                : null);
+
+            const newISO = toISO(value);
+            const changed = newISO !== r.originalISO;
+
+            next[index] = { ...r, dateUpdatedStr: value, changed };
             return next;
         });
     };
 
     const filteredFiles = files;
-
-    const downloadTemplateCert = () => {
-        const link = document.createElement('a');
-        link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Certificate List V0.5 (11.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Flameproof Certificate List V0.5 (11.09.2025).xlsx');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const downloadTemplateAsset = () => {
-        const link = document.createElement('a');
-        link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Asset List V0.3 (05.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Flameproof Asset List V0.3 (05.09.2025).xlsx');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
     const toInputDate = (v) => {
         if (!v) return "";
@@ -99,39 +97,41 @@ const ModifyComponentsPopup = ({ onClose, asset }) => {
         return `${y}-${m}-${day}`;
     };
 
-    const formatStatus = (type) => {
-        return type
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, char => char.toUpperCase());
-    };
-
-    const getComplianceColor = (status) => {
-        if (status === "valid") return "status-good";
-        if (status === "invalid") return "status-worst";
-    };
-
     const submitUpdates = async () => {
         try {
             setLoading(true);
-
             if (!rows.length) return;
 
             const assetID = rows[0].assetId;
 
-            const updates = rows.map((r) => ({
-                component: r.component,
-                dateUpdated:
-                    r.dateUpdatedStr?.trim()
-                        ? new Date(r.dateUpdatedStr).toISOString()
-                        : null,
-            }));
+            // helper to create ISO from input date string (or null)
+            const toISO = (s) => (s?.trim()
+                ? new Date(`${s}T00:00:00.000Z`).toISOString()
+                : null);
+
+            const updates = rows.map((r) => {
+                const changedTo = toISO(r.dateUpdatedStr);
+                return {
+                    component: r.component,
+                    dateUpdated: changedTo,         // the value to persist
+                    changedByUser: !!r.changed,     // did the user change it?
+                    changedFrom: r.originalISO,     // previous ISO (or null)
+                    changedTo,                      // new ISO (or null)
+                };
+            });
+
+            const token = localStorage.getItem("token");
 
             await axios.put(
                 `${process.env.REACT_APP_URL}/api/flameproof/modifyComponents/${assetID}/component-updates`,
-                { updates }
+                { updates },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
             toast.success("Component dates updated.");
+
+            await fetchFiles();
+            refresh();
         } catch (e) {
             console.error(e);
             toast.error("Failed to update component dates.");
@@ -148,36 +148,21 @@ const ModifyComponentsPopup = ({ onClose, asset }) => {
                     <button className="modify-comp-file-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
 
-                <div className="modify-comp-file-group" style={{ position: "relative" }}>
+                <div className="modify-comp-file-group">
                     <div className="modify-comp-table">
                         <table>
                             <thead>
                                 <tr>
-                                    <th className="modify-comp-ass-nr-filter col">Asset Nr</th>
                                     <th className="modify-comp-comp-filter col">Component</th>
-                                    <th className="modify-comp-owner-filter col">Asset Owner</th>
-                                    <th className="modify-comp-auth-filter col">Certification Authority</th>
-                                    <th className="modify-comp-cert-filter col">Certificate Nr</th>
-                                    <th className={`modify-comp-head-filter`}>Department Head</th>
-                                    <th className={`modify-comp-status-filter col`}>Status</th>
-                                    <th className="modify-comp-date-filter col">Date Updated</th>
+                                    <th className="modify-comp-date-filter col">Component Date Updated</th>
+                                    <th className="modify-comp-user-filter col">User</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredFiles.map((file, index) => (
-                                    <tr key={index} style={{ fontSize: "14px", cursor: "pointer" }} className={`file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                                        <td
-                                            className="col" style={{ textAlign: "center", position: "relative" }}
-                                        >
-                                            {file.asset.assetNr}
-                                        </td>
-                                        <td className="col">{file.component}</td>
-                                        <td className="col">{file.asset.assetOwner}</td>
-                                        <td className={`col`}>{(file.certAuth)}</td>
-                                        <td className="col">{file.certNr}</td>
-                                        <td className="col">{file.asset.departmentHead}</td>
-                                        <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
-                                        <td className={`col`}>
+                                    <tr key={index} style={{ fontSize: "14px" }} className={`file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                                        <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>{file.component}</td>
+                                        <td>
                                             <input
                                                 type="date"
                                                 name="assetNr"
@@ -187,6 +172,9 @@ const ModifyComponentsPopup = ({ onClose, asset }) => {
                                                 className="ump-input-select font-fam"
                                                 placeholder="Select Asset Number"
                                             />
+                                        </td>
+                                        <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>
+                                            {file?.updater}
                                         </td>
                                     </tr>
                                 ))}

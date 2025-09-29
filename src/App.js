@@ -90,6 +90,8 @@ import FCMSAdminPage from './components/SystemAdmin/FCMSAdminPage';
 import PreviewCertificate from './components/FlameproofDMS/PreviewCertificate';
 import EPACSHome from './components/EPACS/EPACSHome';
 import CertificateVersionHistory from './components/FlameproofDMS/CertificateVersionHistory';
+import FlameProofTrash from './components/FlameproofDMS/FlameProofTrash';
+import FCMSSiteAdmin from './components/SystemAdmin/FCMSSiteAdmin';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -178,11 +180,13 @@ function App() {
         <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/EPACSHome" element={<EPACSHome />} />
         <Route path="FrontendDMS/flameManageSites" element={<FlameProofAllSites />} />
+        <Route path="FrontendDMS/flameTrash" element={<FlameProofTrash />} />
         <Route path="FrontendDMS/flameManageHome/:site" element={<FlameProofHome />} />
         <Route path="FrontendDMS/flameAllMineAsset" element={<FlameProofInfoAll />} />
         <Route path="FrontendDMS/flameManage/:type/:site" element={<FlameProofMain />} />
         <Route path="FrontendDMS/flameManageSub/:type/:assetId" element={<FlameProofSub />} />
         <Route path="FrontendDMS/flameVersionHistory/:id/:image/:text" element={<CertificateVersionHistory />} />
+        <Route path="FrontendDMS/flameSites/" element={<FCMSSiteAdmin />} />
         <Route path="FrontendDMS/previewCertificate/:fileId" element={<PreviewCertificate />} />
         <Route path="FrontendDMS/departmentManage" element={<DepartmentHome />} />
         <Route path="FrontendDMS/department/:deptId" element={<DepartmentView />} />
