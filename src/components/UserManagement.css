@@ -921,12 +921,16 @@ tbody tr:hover {
     position: absolute;
     left: -20px;
     font-size: 16px;
-    /* Adjust icon size as needed */
 }
 
 .button-text {
     width: 100%;
     text-align: center;
+}
+
+.button-text-new {
+    width: 100%;
+    text-align: left;
 }
 
 .um-info-popup-page-select-container {

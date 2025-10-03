@@ -14,7 +14,8 @@ const BurgerMenuFP = ({ isOpen, setIsOpen, toggleTrashView, isTrashView, canIn, 
             {isOpen && (
                 <div className="menu-content-FI-main" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        <li onClick={() => navigate("/userProfile")}>My Profile</li>
+                        <li onClick={() => navigate("/FrontendDMS/userProfile")}>My Profile</li>
+                        {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<li onClick={toggleTrashView}>{isTrashView ? "All Certificates" : "Deleted Certificates"}</li>)}
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

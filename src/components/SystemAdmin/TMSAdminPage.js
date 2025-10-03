@@ -56,7 +56,7 @@ const TMSAdminPage = () => {
                     <div className="button-container-create">
                         <button className="but-um">
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faDownload} className="button-icon" />
+                                <FontAwesomeIcon icon={faDownload} className="button-logo-custom" />
                                 <span className="button-text">Templates</span>
                             </div>
                         </button>

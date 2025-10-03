@@ -7,7 +7,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import TopBarDD from "../../Notifications/TopBarDD";
 import SaveAsPopup from "../../Popups/SaveAsPopup";
@@ -45,8 +45,81 @@ const InductionCreationPage = () => {
   const [generatePopup, setGeneratePopup] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
   const [showWorkflow, setShowWorkflow] = useState(null);
+  const [loadingIntro, setLoadingIntro] = useState(false);
+  const [loadingObj, setLoadingObj] = useState(false);
 
-  // Keep object URLs so we can revoke them and avoid leaks
+  const [rewriteHistory, setRewriteHistory] = useState({
+    introduction: [],
+    objectives: []
+  });
+
+  const pushAiRewriteHistory = (field) => {
+    setRewriteHistory(prev => ({
+      ...prev,
+      [field]: [...prev[field], formData[field]]
+    }));
+  };
+
+  const undoAiRewrite = (field) => {
+    setRewriteHistory(prev => {
+      const hist = [...prev[field]];
+      if (hist.length === 0) return prev;         // nothing to undo
+      const lastValue = hist.pop();
+      setFormData(fd => ({ ...fd, [field]: lastValue }));
+      return { ...prev, [field]: hist };
+    });
+  };
+
+
+  const AiRewriteIntro = async () => {
+    try {
+      const prompt = formData.intorduction;
+
+      pushAiRewriteHistory('introduction');
+      setLoadingIntro(true);
+
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const { response: newText } = await response.json();
+      setLoadingIntro(false);
+      setFormData(fd => ({ ...fd, intorduction: newText }));
+    } catch (error) {
+      setLoadingIntro(false);
+      console.error('Error saving data:', error);
+    }
+  }
+
+  const AiRewriteObjectives = async () => {
+    try {
+      const prompt = formData.courseObjectives;
+
+      pushAiRewriteHistory('objectives');
+      setLoadingObj(true);
+
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const { response: newText } = await response.json();
+      setLoadingObj(false);
+      setFormData(fd => ({ ...fd, courseObjectives: newText }));
+    } catch (error) {
+      setLoadingObj(false);
+    }
+  }
+
   const objectUrlCacheRef = useRef(new Map()); // fileId -> objectURL
 
   function revokeAllObjectUrls() {
@@ -60,41 +133,43 @@ const InductionCreationPage = () => {
 
     const jobs = [];
     for (const mod of draft.courseModules || []) {
-      for (const slide of mod.slides || []) {
-        const media = slide.media;
-        if (!media?.fileId) {
-          slide.mediaPreview = null;
-          slide.mediaFile = null;
-          slide.mediaType = "";     // <- add this
-          continue;
-        }
+      for (const topic of mod.topics || []) {
+        for (const slide of topic.slides || []) {
+          const media = slide.media;
+          if (!media?.fileId) {
+            slide.mediaPreview = null;
+            slide.mediaFile = null;
+            slide.mediaType = "";     // <- add this
+            continue;
+          }
 
-        const cached = objectUrlCacheRef.current.get(media.fileId);
-        if (cached) {
-          slide.mediaPreview = cached;
-          slide.mediaFile = null;
-          slide.mediaType = media.contentType || "";  // <- keep MIME if known
-          continue;
-        }
+          const cached = objectUrlCacheRef.current.get(media.fileId);
+          if (cached) {
+            slide.mediaPreview = cached;
+            slide.mediaFile = null;
+            slide.mediaType = media.contentType || "";  // <- keep MIME if known
+            continue;
+          }
 
-        const url = `${apiBase}/api/visitorDrafts/media/${encodeURIComponent(media.fileId)}`;
-        jobs.push(
-          fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-            .then(async (res) => {
-              if (!res.ok) throw new Error(`media ${media.fileId} ${res.status}`);
-              const blob = await res.blob();
-              const objUrl = URL.createObjectURL(blob);
-              objectUrlCacheRef.current.set(media.fileId, objUrl);
-              slide.mediaPreview = objUrl;
-              slide.mediaFile = null;
-              slide.mediaType = blob.type || media.contentType || ""; // <- store MIME for rendering
-            })
-            .catch((err) => {
-              console.warn("Hydrate media failed:", media.fileId, err.message);
-              slide.mediaPreview = null;
-              slide.mediaType = "";
-            })
-        );
+          const url = `${apiBase}/api/visitorDrafts/media/${encodeURIComponent(media.fileId)}`;
+          jobs.push(
+            fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+              .then(async (res) => {
+                if (!res.ok) throw new Error(`media ${media.fileId} ${res.status}`);
+                const blob = await res.blob();
+                const objUrl = URL.createObjectURL(blob);
+                objectUrlCacheRef.current.set(media.fileId, objUrl);
+                slide.mediaPreview = objUrl;
+                slide.mediaFile = null;
+                slide.mediaType = blob.type || media.contentType || ""; // <- store MIME for rendering
+              })
+              .catch((err) => {
+                console.warn("Hydrate media failed:", media.fileId, err.message);
+                slide.mediaPreview = null;
+                slide.mediaType = "";
+              })
+          );
+        }
       }
     }
     await Promise.all(jobs);
@@ -178,28 +253,29 @@ const InductionCreationPage = () => {
     const wire = structuredClone(currentForm);
     const fd = new FormData();
 
-    // walk modules/slides; collect files
+    // walk modules → topics → slides; collect files
     for (const mod of wire.courseModules || []) {
-      for (const slide of mod.slides || []) {
-        // If a new/changed file is attached, slide.mediaFile will be a File
-        const f = slide.mediaFile;
-        if (f instanceof File) {
-          const fileId = slide.media?.fileId || crypto.randomUUID();
-          // replace transient fields with durable metadata
-          slide.media = {
-            fileId,
-            filename: f.name,
-            contentType: f.type,
-            size: f.size
-          };
-          slide.mediaFile = undefined;
-          slide.mediaPreview = undefined;
-          fd.append(`files[${fileId}]`, f, f.name);
-        } else {
-          // no change; keep existing media descriptor (if any), ensure no transient fields
-          slide.mediaFile = undefined;
-          // keep mediaPreview for UX in-memory, but don't send it
-          slide.mediaPreview = undefined;
+      for (const topic of mod.topics || []) {
+        for (const slide of topic.slides || []) {
+          const f = slide.mediaFile;
+          if (f instanceof File) {
+            const fileId = slide.media?.fileId || crypto.randomUUID();
+            // replace transient fields with durable metadata
+            slide.media = {
+              fileId,
+              filename: f.name,
+              contentType: f.type,
+              size: f.size
+            };
+            slide.mediaFile = undefined;
+            slide.mediaPreview = undefined;
+            fd.append(`files[${fileId}]`, f, f.name);
+          } else {
+            // no change; keep existing media descriptor (if any), ensure no transient fields
+            slide.mediaFile = undefined;
+            // keep mediaPreview for UX in-memory, but don't send it
+            slide.mediaPreview = undefined;
+          }
         }
       }
     }
@@ -309,17 +385,19 @@ const InductionCreationPage = () => {
     };
 
     for (const mod of wire.courseModules || []) {
-      for (const slide of mod.slides || []) {
-        if (slide.mediaFile instanceof File) {
-          const f = slide.mediaFile;
-          const fileId = slide.media?.fileId || crypto.randomUUID();
-          slide.media = { fileId, filename: f.name, contentType: f.type, size: f.size };
-          slide.mediaFile = undefined;
-          slide.mediaPreview = undefined;
-          fd.append(`files[${fileId}]`, f, f.name);
-        } else {
-          slide.mediaFile = undefined;
-          slide.mediaPreview = undefined;
+      for (const topic of mod.topics || []) {
+        for (const slide of topic.slides || []) {
+          if (slide.mediaFile instanceof File) {
+            const f = slide.mediaFile;
+            const fileId = slide.media?.fileId || crypto.randomUUID();
+            slide.media = { fileId, filename: f.name, contentType: f.type, size: f.size };
+            slide.mediaFile = undefined;
+            slide.mediaPreview = undefined;
+            fd.append(`files[${fileId}]`, f, f.name);
+          } else {
+            slide.mediaFile = undefined;
+            slide.mediaPreview = undefined;
+          }
         }
       }
     }
@@ -806,7 +884,7 @@ const InductionCreationPage = () => {
       setLoading(false);
 
       setTimeout(() => {
-        navigate('/FrontendDMS/generatedInductionInfo');
+        navigate('/generatedInductionInfo');
       }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);
@@ -823,26 +901,23 @@ const InductionCreationPage = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um" onClick={() => console.log(formData)}>Visitor Induction Management</p>
+            <p className="logo-text-um" onClick={() => console.log(formData)}>Training Management</p>
           </div>
 
           <div className="button-container-create">
             <button className="but-um" onClick={() => openLoadPopup()}>
               <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
-                <FontAwesomeIcon
-                  icon={faArrowUp}
-                  transform="shrink-2 up-8 left-20"
-                  color="#002060"
-                  fontSize={"16px"}
-                />
-                <span className="button-text">Saved Drafts</span>
+                <span className="button-logo-custom" aria-hidden="true">
+                  <FontAwesomeIcon icon={faFolderOpenSolid} className="icon-base-draft" />
+                  <FontAwesomeIcon icon={faArrowUp} className="icon-badge-draft" />
+                </span>
+                <span className="button-text-new">Saved Drafts</span>
               </div>
             </button>
             <button className="but-um" onClick={() => navigate("/FrontendDMS/generatedInductionInfo")}>
               <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                <span className="button-text">Published Inductions</span>
+                <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
+                <span className="button-text-new">Published Visitor Induction</span>
               </div>
             </button>
             <div className="horizontal-divider-with-icon">
@@ -856,7 +931,7 @@ const InductionCreationPage = () => {
 
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{"Induction Content"}</p>
+            <p className="logo-text-dm-fi">{"Visitor Induction"}</p>
           </div>
         </div>
       )}
@@ -948,6 +1023,29 @@ const InductionCreationPage = () => {
                 rows="5"
                 placeholder="Insert Visitor Induction Introduction"
               />
+
+              {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                <FontAwesomeIcon
+                  icon={faMagicWandSparkles}
+                  className="aim-textarea-icon-ibra"
+                  title="AI Rewrite"
+                  style={{ fontSize: "15px" }}
+                  onClick={() => AiRewriteIntro()}
+                />
+              )}
+
+              <FontAwesomeIcon
+                icon={faRotateLeft}
+                className="aim-textarea-icon-ibra-undo"
+                title="Undo AI Rewrite"
+                onClick={() => undoAiRewrite('introduction')}
+                style={{
+                  marginLeft: '8px',
+                  opacity: rewriteHistory.introduction.length ? 1 : 0.3,
+                  cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
+                  fontSize: "15px"
+                }}
+              />
             </div>
           </div>
 
@@ -963,6 +1061,29 @@ const InductionCreationPage = () => {
                 onChange={handleInputChange}
                 rows="5"
                 placeholder="The objective of the visitor induction is to: "
+              />
+
+              {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                <FontAwesomeIcon
+                  icon={faMagicWandSparkles}
+                  className="aim-textarea-icon-ibra"
+                  title="AI Rewrite"
+                  style={{ fontSize: "15px" }}
+                  onClick={() => AiRewriteObjectives()}
+                />
+              )}
+
+              <FontAwesomeIcon
+                icon={faRotateLeft}
+                className="aim-textarea-icon-ibra-undo"
+                title="Undo AI Rewrite"
+                onClick={() => undoAiRewrite('objectives')}
+                style={{
+                  marginLeft: '8px',
+                  opacity: rewriteHistory.objectives.length ? 1 : 0.3,
+                  cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
+                  fontSize: "15px"
+                }}
               />
             </div>
           </div>

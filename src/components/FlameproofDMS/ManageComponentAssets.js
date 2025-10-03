@@ -116,7 +116,7 @@ const ManageComponentAssets = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FMM</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}${getIcon(type)}`} alt="Logo" className="icon-risk-rm" />
@@ -207,6 +207,7 @@ const ManageComponentAssets = () => {
                     assetType={updateType}
                 />
             )}
+            <ToastContainer />
         </div >
     );
 };

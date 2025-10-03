@@ -186,7 +186,7 @@ const GeneratedStandardsInfo = () => {
                     <div className="button-container-create">
                         <button className="but-um" onClick={() => navigate('/FrontendDMS/deletedStandardDocs')}>
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                                <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
                                 <span className="button-text">Deleted Documents</span>
                             </div>
                         </button>

@@ -197,7 +197,7 @@ const ManageComponentDates = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Flameproof Component Management</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
                 </div>
             )}

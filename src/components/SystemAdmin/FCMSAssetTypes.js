@@ -137,13 +137,13 @@ const FCMSAssetTypes = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FMM</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
                     <div className="filter-dm-fi-2">
                         <div className="button-container-dm-fi">
                             <button className="but-dm-fi" onClick={openNewAsset}>
                                 <div className="button-content">
-                                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                                     <span className="button-text">Register Asset Type</span>
                                 </div>
                             </button>

@@ -103,6 +103,8 @@ import GeneratedInductionInfo from './components/VisitorsInduction/InductionCrea
 import ManageComponentDates from './components/FlameproofDMS/ManageComponentDates';
 import TMSHomePage from './components/TrainingManagement/TMSHomePage';
 import ManageComponentAssets from './components/FlameproofDMS/ManageComponentAssets';
+import FutureEnhancementPageEPAC from './components/FutureEnhancementPages/FutureEnhancementPageEPAC';
+import VisitorInductionMainPage from './components/VisitorsInduction/VisitorInductionMainPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -235,6 +237,7 @@ function App() {
         <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
         <Route path='FrontendDMS/futureEnhancement' element={<FutureEnhancementPage />} />
         <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />
+        <Route path='FrontendDMS/futureEnhancementEPAC' element={<FutureEnhancementPageEPAC />} />
         <Route path='FrontendDMS/userProfile' element={<UserProfile />} />
         <Route path='FrontendDMS/tmsAdmin' element={<TMSAdminPage />} />
         <Route path='FrontendDMS/tmsAdmin/manageTraining' element={<TrainingAdminPage />} />
@@ -257,6 +260,7 @@ function App() {
         <Route path='FrontendDMS/visitorHomePage' element={<VisitorInductionHomePage />} />
         <Route path='FrontendDMS/visitor-profile' element={<VisitorsInductionSite />} />
         <Route path='FrontendDMS/inductionCreation' element={<InductionCreationPage />} />
+        <Route path='FrontendDMS/visitorInductionHome' element={<VisitorInductionMainPage />} />
         <Route path='FrontendDMS/generatedInductionInfo' element={<GeneratedInductionInfo />} />
         <Route path='FrontendDMS/flameproofComponents/:type/:id' element={<ManageComponentAssets />} />
 

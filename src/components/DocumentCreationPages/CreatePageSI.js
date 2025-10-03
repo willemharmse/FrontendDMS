@@ -1087,22 +1087,17 @@ const CreatePageSI = () => {
           <div className="button-container-create">
             <button className="but-um" onClick={() => setLoadPopupOpen(true)}>
               <div className="button-content">
-                {/* base floppy-disk, full size */}
-                <FontAwesomeIcon icon={faFolderOpenSolid} className="fa-regular button-icon" />
-                {/* pen, shrunk & nudged down/right into corner */}
-                <FontAwesomeIcon
-                  icon={faArrowUp}
-                  transform="shrink-2 up-8 left-20"
-                  color="#002060"   /* or whatever contrast you need */
-                  fontSize={"16px"}
-                />
+                <span className="button-logo-custom" aria-hidden="true">
+                  <FontAwesomeIcon icon={faFolderOpenSolid} className="icon-base-draft" />
+                  <FontAwesomeIcon icon={faArrowUp} className="icon-badge-draft" />
+                </span>
                 <span className="button-text">Saved Drafts</span>
               </div>
             </button>
             {canIn(access, "DDS", ["systemAdmin", "contributor"]) && (
               <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedSpecialFiles')}>
                 <div className="button-content">
-                  <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
                   <span className="button-text">Published Documents</span>
                 </div>
               </button>
@@ -1118,7 +1113,7 @@ const CreatePageSI = () => {
 
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/specialInstInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{type}</p>
+            <p className="logo-text-dm-fi">{type}s</p>
           </div>
         </div>
       )}

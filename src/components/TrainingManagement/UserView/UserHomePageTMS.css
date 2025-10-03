@@ -72,10 +72,7 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* NEW: fill remaining height */
     min-height: 0;
-    /* IMPORTANT: allow inner scroll area to shrink */
-    /* REMOVE: height/max-height/min-height calcs */
 }
 
 .course-home-info-table {
@@ -93,10 +90,21 @@
 
 .button-logo-custom {
     position: absolute;
-    left: -20px;
+    left: -25px;
+    height: 16px;
+}
+
+.button-logo-custom-design {
+    position: absolute;
+    left: -28px;
     height: auto;
-    width: 30px;
-    /* Adjust icon size as needed */
+    width: 22px;
+}
+
+.button-icon {
+    position: absolute;
+    left: -20px;
+    font-size: 16px;
 }
 
 .course-home-info-tr {

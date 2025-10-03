@@ -306,7 +306,7 @@ const InductionViewPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Visitor Induction Management</p>
+                        <p className="logo-text-um">Training Management</p>
                     </div>
 
                     <div className="button-container-create">
@@ -315,6 +315,11 @@ const InductionViewPage = () => {
                         <SidebarButton icon={faBookOpen} text="Course Material" onClick={() => setViewMode('material')} />
                         <SidebarButton icon={faClipboardList} text="Course Recap" onClick={() => setViewMode('recap')} />
                         <SidebarButton icon={faClipboard} text="Assessment" onClick={() => setViewMode('assessment')} />
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">Visitor Induction</p>
                     </div>
                 </div>
             )}

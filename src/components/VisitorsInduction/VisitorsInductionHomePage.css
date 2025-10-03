@@ -25,6 +25,45 @@
     text-align: center;
 }
 
+.limit-table-height-visitor {
+    border-collapse: collapse;
+    width: 100%;
+    display: block;
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+    /* Firefox */
+    scrollbar-width: thin;
+    /* "auto" | "thin" | "none" */
+    scrollbar-color: #888 #f1f1f1;
+    /* thumb color | track color */
+}
+
+/* Chrome, Edge, Safari */
+.limit-table-height-visitor::-webkit-scrollbar {
+    width: 6px;
+    /* vertical scrollbar */
+    height: 6px;
+    /* horizontal scrollbar */
+}
+
+.limit-table-height-visitor::-webkit-scrollbar-thumb {
+    background: #888;
+    /* scrollbar handle color */
+    border-radius: 4px;
+    /* rounded edges */
+}
+
+.limit-table-height-visitor::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* darker on hover */
+}
+
+.limit-table-height-visitor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* track color */
+    border-radius: 4px;
+}
+
 .visitor-ind-company-filter {
     word-wrap: break-word;
     word-break: break-word;

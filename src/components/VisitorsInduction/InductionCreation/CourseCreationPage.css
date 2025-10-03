@@ -1,0 +1,13 @@
+.induction-textarea-icon-ai-rewrite {
+    position: absolute;
+    bottom: 27px;
+    /* tweak as needed for vertical offset */
+    right: 10px;
+    /* tweak for horizontal offset */
+    cursor: pointer;
+    font-size: 18px;
+    /* adjust size to suit */
+    color: black;
+    /* light grey by default */
+    transition: color 0.2s;
+}

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor } from '@fortawesome/free-solid-svg-icons';
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor, faCirclePlus, faTableList } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 import ChangePassword from "../UserManagement/ChangePassword";
 import { getCurrentUser, can, isAdmin, canIn } from "../../utils/auth";
@@ -28,6 +28,24 @@ const FlameProofHome = () => {
     const [register, setRegister] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+    const [siteName, setSiteName] = useState("");
+
+    const getSiteName = async () => {
+        const route = `/api/flameproof/getSiteNameFromID/${site}`;
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                headers: {
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch files');
+            }
+            const data = await response.json();
+            setSiteName(data.siteName);
+        } catch (error) {
+            setError(error.message);
+        }
+    }
 
     useEffect(() => {
         let timer;
@@ -89,7 +107,6 @@ const FlameProofHome = () => {
         setRegister(!register);
     };
 
-
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -130,6 +147,7 @@ const FlameProofHome = () => {
     useEffect(() => {
         if (loggedInUserId) {
             fetchCount();
+            getSiteName();
         }
     }, [loggedInUserId]);
 
@@ -142,6 +160,11 @@ const FlameProofHome = () => {
         "Load Haul Dumper": "/FCMS_LHD.png",
         "Tractor": "/FCMS_T.png",
     }
+
+    const assetTypeCount = React.useMemo(
+        () => filteredDocs.filter(doc => !isAllRow(doc)).length,
+        [filteredDocs]
+    );
 
     const getIcon = (type) => {
         if (isAllRow(type)) {
@@ -163,7 +186,7 @@ const FlameProofHome = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Flameproof Management</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
 
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
@@ -171,31 +194,26 @@ const FlameProofHome = () => {
                             <div className="button-container-create">
                                 <button className="but-um" onClick={openUpload}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                                         <span className="button-text">Upload Single Certificate</span>
                                     </div>
                                 </button>
                                 <button className="but-um" onClick={openRegister}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faTableList} className="button-logo-custom" />
                                         <span className="button-text">Register Single Asset</span>
                                     </div>
                                 </button>
                             </div>
-                            <div className="sidebar-logo-dm-fi">
-                                <div className="risk-button-container-create-bot">
-                                    <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
-                                        <div className="button-content">
-                                            <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FMM</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
                         </>
                     )}
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/fmsSiteIcon2.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{siteName}</p>
+                    </div>
                 </div>
-            )}
+            )
+            }
 
             {
                 !isSidebarVisible && (
@@ -225,7 +243,7 @@ const FlameProofHome = () => {
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Asset Types: {filteredDocs.length !== 0 ? filteredDocs.length - 1 : filteredDocs.length}</div>
+                    <div className="info-box-fih">Number of Asset Types: {assetTypeCount}</div>
 
                     <div className="spacer"></div>
 

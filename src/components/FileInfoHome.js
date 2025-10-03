@@ -6,7 +6,7 @@ import "./FileInfoHome.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faGripVertical, faBars } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "./Notifications/TopBar";
 import ChangePassword from "./UserManagement/ChangePassword";
 import { getCurrentUser, can, isAdmin, canIn } from "../utils/auth";
@@ -127,13 +127,12 @@ const FileInfoHome = () => {
                     </div>
 
                     {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
-                        <div className="filter-fih">
-                            <p className="filter-text-um">Upload</p>
-                            <div className="button-container-fih">
-                                <button className="but-um" onClick={openUpload}>
+                        <div className="filter-dm-fi-2">
+                            <div className="button-container-dm-fi">
+                                <button className="but-dm-fi" onClick={openUpload}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                                        <span className="button-text">Single Document</span>
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
+                                        <span className="button-text">Upload Single Document</span>
                                     </div>
                                 </button>
                             </div>
@@ -145,7 +144,7 @@ const FileInfoHome = () => {
                             <div className="risk-button-container-create-bot">
                                 <button className="but-um" onClick={() => navigate("/FrontendDMS/dmsAdmin")}>
                                     <div className="button-content">
-                                        <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
+                                        <FontAwesomeIcon icon={faBars} src={"/dmsAdmin.svg"} size="xs" className={"button-logo-custom"} />
                                         <span className="button-text">Manage DMS</span>
                                     </div>
                                 </button>

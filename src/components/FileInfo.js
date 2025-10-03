@@ -494,17 +494,17 @@ const FileInfo = () => {
             <div className="button-container-dm-fi">
               {(type === "All Document" || isTrashView) && (
                 <div className="fi-info-popup-page-select-container">
-                  <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Document Types"
+                  <Select options={docTypes.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Document Type"
                     classNamePrefix="sb" />
                 </div>
               )}
               <div className="fi-info-popup-page-select-container">
-                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Discipline Types"
+                <Select options={disciplines.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedDiscipline(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Discipline"
                   classNamePrefix="sb" />
               </div>
               {can(access, "DMS", "systemAdmin") && (
                 <div className="fi-info-popup-page-select-container">
-                  <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="All Status Types"
+                  <Select options={docStatus.map(d => ({ value: d, label: formatStatus(d) }))} isMulti onChange={(selected) => setSelectedStatus(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Status"
                     classNamePrefix="sb" />
                 </div>
               )}
@@ -512,12 +512,11 @@ const FileInfo = () => {
           </div>
           {!isTrashView && canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2">
-              <p className="filter-text-dm-fi">Upload</p>
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi" onClick={openUpload}>
                   <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
-                    <span className="button-text">Single Document</span>
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
+                    <span className="button-text">Upload Single Document</span>
                   </div>
                 </button>
               </div>

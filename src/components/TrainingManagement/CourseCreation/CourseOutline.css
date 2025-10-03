@@ -56,8 +56,9 @@
 }
 
 .course-outline-input {
-    width: calc(100% - 20px);
+    width: calc(100% - 45px);
     padding: 10px;
+    padding-right: 35px;
     height: 19px;
     font-family: Arial;
     border: 1px solid #ccc;
@@ -142,4 +143,40 @@
     text-align: center;
     background-color: #D9D9D9;
     color: black;
+}
+
+/* wrapper creates positioning context and spans full cell width */
+.input-with-icon {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* reserve space on the right for the icon */
+.input-with-icon__field {
+    padding-right: 36px;
+    /* adjust if you change icon size */
+    box-sizing: border-box;
+}
+
+/* place the icon inside the input, right side, vertically centered */
+.input-with-icon__icon {
+    position: absolute;
+    right: 10px;
+    /* distance from input's right edge */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 14px;
+    /* tweak to taste */
+    color: black;
+    z-index: 1;
+    /* keep it above the input */
+    pointer-events: auto;
+    /* clickable */
+}
+
+/* optional hover feedback */
+.input-with-icon__icon:hover {
+    color: #444;
 }

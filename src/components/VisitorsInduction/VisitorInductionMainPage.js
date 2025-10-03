@@ -3,46 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faBookOpen, faBullhorn, faChalkboardTeacher, faDownload, faLaptop } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
-import BatchUpload from "../FileInfo/BatchUpload";
-import BatchCertificates from "../FlameproofDMS/Popups/BatchCertificates";
-import BatchAssets from "../FlameproofDMS/Popups/BatchAssets";
-import AddSite from "../FlameproofDMS/Popups/AddSite";
-import FCMSTemplates from "../FlameproofDMS/Popups/FCMSTemplates";
-import ManageSites from "../FlameproofDMS/Popups/ManageSites";
-import ManageAssetTypes from "../FlameproofDMS/Popups/ManageAssetTypes";
-import ManageDeletedSites from "../FlameproofDMS/Popups/ManageDeletedSites";
+import CreateProfilePopup from "./Popups/CreateProfilePopup";
 
-const FCMSSiteAdmin = () => {
+const VisitorInductionMainPage = () => {
     const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
-    const [batch, setBatch] = useState(false);
-    const [assets, setAssets] = useState(false);
-    const [site, setSite] = useState(false);
-    const [manageSite, setManageSite] = useState(false);
-    const [manageDeletedSite, setManageDeletedSite] = useState(false);
-    const [manageAsset, setManageAsset] = useState(false);
-    const [template, setTemplate] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
 
-    const openManageSite = () => {
-        setManageSite(true);
-    };
-
-    const closeManageSite = () => {
-        setManageSite(!manageSite);
-    };
-
-    const openManageDeletedSite = () => {
-        setManageDeletedSite(true);
-    };
-
-    const closeManageDeletedSite = () => {
-        setManageDeletedSite(!manageDeletedSite);
+    const clearSearch = () => {
+        setSearchQuery("");
     };
 
     useEffect(() => {
@@ -76,11 +51,7 @@ const FCMSSiteAdmin = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">EPA Management</p>
-                    </div>
-                    <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/fmsManageSites2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Manage Sites"}</p>
+                        <p className="logo-text-um">Training Management</p>
                     </div>
                 </div>
             )}
@@ -106,31 +77,27 @@ const FCMSSiteAdmin = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openManageSite} >
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/inductionCreation")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Active Sites</h3>
+                            <h3 className="document-title-fi-home">Visitor Induction</h3>
                         </>
                     </div>
-
-                    <div className={`document-card-fi-home`} onClick={openManageDeletedSite} >
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/visitorView")}>
                         <>
-                            <div className="icon-dept-deleted-sites">
-                                <img src={`${process.env.PUBLIC_URL}/fmsSiteDelete.svg`} className={"icon-dept-deleted-sites"} />
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/visitorInductionIcon.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Deleted Sites</h3>
+                            <h3 className="document-title-fi-home">Visitor Profiles</h3>
                         </>
                     </div>
                 </div>
             </div>
             <ToastContainer />
-
-            {manageDeletedSite && (<ManageDeletedSites closePopup={closeManageDeletedSite} />)}
-            {manageSite && (<ManageSites closePopup={closeManageSite} />)}
         </div>
     );
 };
 
-export default FCMSSiteAdmin;
+export default VisitorInductionMainPage;

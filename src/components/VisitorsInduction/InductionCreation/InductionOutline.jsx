@@ -1,3 +1,5 @@
+import { faDownload, faMagicWandSparkles } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useEffect } from "react";
 
 // --- helpers -------------------------------------------------
@@ -31,8 +33,10 @@ const formatMinutes = (min) => {
     return `${m}m`;
 };
 
-const getSlideMeta = (outline, slideId) =>
-    (outline?.slideMeta && outline.slideMeta[slideId]) || { duration: "", description: "" };
+const getTopicMeta = (outline, topicId) =>
+    (outline?.topicMeta && outline.topicMeta[topicId]) ||
+    (outline?.slideMeta && outline.slideMeta[topicId]) || // legacy fallback (same key but for topic)
+    { duration: "", description: "" };
 
 const buildOutlineTable = (modules, outline) => {
     const rows = [];
@@ -54,19 +58,37 @@ const buildOutlineTable = (modules, outline) => {
             text: `Module ${mIdx + 1}: ${mod.title || "Module Title"}`,
         });
 
-        (mod.slides || []).forEach((slide, sIdx) => {
-            const meta = getSlideMeta(outline, slide.id);
-            rows.push({
-                kind: "slide",
-                moduleIndex: mIdx,
-                slideIndex: sIdx,
-                slideId: slide.id,
-                nr: `${mIdx + 1}.${sIdx + 1}`,
-                topic: slide.title || "Slide Title",
-                duration: meta.duration || "",
-                description: meta.description || "",
+        const topics = Array.isArray(mod.topics) ? mod.topics : [];
+        if (topics.length) {
+            topics.forEach((topic, tIdx) => {
+                const meta = getTopicMeta(outline, topic.id);
+                rows.push({
+                    kind: "topic",
+                    moduleIndex: mIdx,
+                    topicIndex: tIdx,
+                    topicId: topic.id,
+                    nr: `${mIdx + 1}.${tIdx + 1}`,
+                    topic: topic.title || "Topic Title",
+                    duration: meta.duration || "",
+                    description: meta.description || "",
+                });
             });
-        });
+        } else {
+            // legacy fallback: show slides as topics
+            (mod.slides || []).forEach((slide, sIdx) => {
+                const meta = getTopicMeta(outline, slide.id);
+                rows.push({
+                    kind: "topic",
+                    moduleIndex: mIdx,
+                    topicIndex: sIdx,
+                    topicId: slide.id,
+                    nr: `${mIdx + 1}.${sIdx + 1}`,
+                    topic: slide.title || "Topic Title",
+                    duration: meta.duration || "",
+                    description: meta.description || "",
+                });
+            });
+        }
     });
 
     return rows;
@@ -85,13 +107,22 @@ const InductionOutline = ({ formData, setFormData }) => {
         let sum = introMin;
 
         for (const mod of modules) {
-            for (const slide of mod.slides || []) {
-                const meta = getSlideMeta(outline, slide.id);
-                sum += parseDurationToMinutes(meta?.duration);
+            const topics = Array.isArray(mod.topics) ? mod.topics : [];
+            if (topics.length) {
+                for (const topic of topics) {
+                    const meta = getTopicMeta(outline, topic.id);
+                    sum += parseDurationToMinutes(meta?.duration);
+                }
+            } else {
+                // legacy fallback: treat slides as topics
+                for (const slide of mod.slides || []) {
+                    const meta = getTopicMeta(outline, slide.id);
+                    sum += parseDurationToMinutes(meta?.duration);
+                }
             }
         }
         return sum;
-    }, [outline?.introDuration, outline?.slideMeta, modules]);
+    }, [outline?.introDuration, outline?.topicMeta, outline?.slideMeta, modules]);
 
     const totalPretty = useMemo(() => formatMinutes(totalMinutes), [totalMinutes]);
 
@@ -119,7 +150,7 @@ const InductionOutline = ({ formData, setFormData }) => {
             };
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [modules, outline?.introDuration, outline?.introDescription, outline?.slideMeta]);
+    }, [modules, outline?.introDuration, outline?.introDescription, outline?.topicMeta, outline?.slideMeta]);
 
     // ---- updaters that ONLY touch courseOutline ----
     const updateOutline = (patch) =>
@@ -131,21 +162,25 @@ const InductionOutline = ({ formData, setFormData }) => {
     const updateIntro = (field, value) =>
         updateOutline({ [field]: value });
 
-    const updateSlideMeta = (slideId, field, value) =>
+    const updateTopicMeta = (topicId, field, value) =>
         setFormData((prev) => {
             const co = prev.courseOutline || {};
-            const cur = (co.slideMeta && co.slideMeta[slideId]) || {};
-            const nextSlideMeta = {
-                ...(co.slideMeta || {}),
-                [slideId]: { ...cur, [field]: value },
+            const cur = (co.topicMeta && co.topicMeta[topicId]) ||
+                (co.slideMeta && co.slideMeta[topicId]) || {};
+            const nextTopicMeta = {
+                ...(co.topicMeta || {}),
+                [topicId]: { ...cur, [field]: value },
             };
-            return { ...prev, courseOutline: { ...co, slideMeta: nextSlideMeta } };
+            return { ...prev, courseOutline: { ...co, topicMeta: nextTopicMeta } };
         });
 
     return (
         <div className="input-row">
             <div className="input-box-ref">
                 <h3 className="font-fam-labels">Outline</h3>
+                <button className="top-right-button-proc" title="Download">
+                    <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                </button>
 
                 {/* Top bar: Department + Auto Duration */}
                 <div className="course-outline-row-split">
@@ -204,14 +239,21 @@ const InductionOutline = ({ formData, setFormData }) => {
                                     />
                                 </td>
                                 <td className="col-um">
-                                    <input
-                                        type="text"
-                                        autoComplete="off"
-                                        value={outline.introDescription || ""}
-                                        onChange={(e) => updateIntro("introDescription", e.target.value)}
-                                        className="course-outline-input"
-                                        placeholder="Insert Topic Description"
-                                    />
+                                    <div className="input-with-icon">
+                                        <input
+                                            type="text"
+                                            autoComplete="off"
+                                            value={outline.introDescription || ""}
+                                            onChange={(e) => updateIntro("introDescription", e.target.value)}
+                                            className="course-outline-input"
+                                            placeholder="Insert Topic Description"
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faMagicWandSparkles}
+                                            className="input-with-icon__icon"
+                                            title="AI Rewrite"
+                                        />
+                                    </div>
                                 </td>
                             </tr>
 
@@ -225,40 +267,86 @@ const InductionOutline = ({ formData, setFormData }) => {
                                         </td>
                                     </tr>
 
-                                    {/* Slides */}
-                                    {(mod.slides || []).map((slide, sIdx) => {
-                                        const meta = getSlideMeta(outline, slide.id);
-                                        return (
-                                            <tr key={slide.id || sIdx}>
-                                                <td className="col-um">{`${mIdx + 1}.${sIdx + 1}`}</td>
-                                                <td className="col-um" style={{ textAlign: "left" }}>
-                                                    {slide.title || "Slide Title"}
-                                                </td>
-                                                <td className="col-um" style={{ textAlign: "left" }}>
-                                                    <input
-                                                        type="text"
-                                                        autoComplete="off"
-                                                        value={meta.duration || ""}
-                                                        onChange={(e) => updateSlideMeta(slide.id, "duration", e.target.value)}
-                                                        className="course-outline-input"
-                                                        placeholder="Insert Duration"
-                                                    />
-                                                </td>
-                                                <td className="col-um">
-                                                    <input
-                                                        type="text"
-                                                        autoComplete="off"
-                                                        value={meta.description || ""}
-                                                        onChange={(e) =>
-                                                            updateSlideMeta(slide.id, "description", e.target.value)
-                                                        }
-                                                        className="course-outline-input"
-                                                        placeholder="Insert Topic Description"
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                    {(
+                                        Array.isArray(mod.topics) && mod.topics.length
+                                            ? mod.topics.map((topic, tIdx) => {
+                                                const meta = getTopicMeta(outline, topic.id);
+                                                return (
+                                                    <tr key={topic.id || `${mIdx}-${tIdx}`}>
+                                                        <td className="col-um">{`${mIdx + 1}.${tIdx + 1}`}</td>
+                                                        <td className="col-um" style={{ textAlign: "left" }}>
+                                                            {topic.title || "Topic Title"}
+                                                        </td>
+                                                        <td className="col-um" style={{ textAlign: "left" }}>
+                                                            <input
+                                                                type="text"
+                                                                autoComplete="off"
+                                                                value={meta.duration || ""}
+                                                                onChange={(e) => updateTopicMeta(topic.id, "duration", e.target.value)}
+                                                                className="course-outline-input"
+                                                                placeholder="Insert Duration"
+                                                            />
+                                                        </td>
+                                                        <td className="col-um">
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    autoComplete="off"
+                                                                    value={meta.description || ""}
+                                                                    onChange={(e) => updateTopicMeta(topic.id, "description", e.target.value)}
+                                                                    className="course-outline-input"
+                                                                    placeholder="Insert Topic Description"
+                                                                />
+                                                                <FontAwesomeIcon
+                                                                    icon={faMagicWandSparkles}
+                                                                    className="input-with-icon__icon"
+                                                                    title="AI Rewrite"
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                            // legacy fallback: slides shown as topics
+                                            : (mod.slides || []).map((slide, sIdx) => {
+                                                const meta = getTopicMeta(outline, slide.id);
+                                                return (
+                                                    <tr key={slide.id || `${mIdx}-legacy-${sIdx}`}>
+                                                        <td className="col-um">{`${mIdx + 1}.${sIdx + 1}`}</td>
+                                                        <td className="col-um" style={{ textAlign: "left" }}>
+                                                            {slide.title || "Topic Title"}
+                                                        </td>
+                                                        <td className="col-um" style={{ textAlign: "left" }}>
+                                                            <input
+                                                                type="text"
+                                                                autoComplete="off"
+                                                                value={meta.duration || ""}
+                                                                onChange={(e) => updateTopicMeta(slide.id, "duration", e.target.value)}
+                                                                className="course-outline-input"
+                                                                placeholder="Insert Duration"
+                                                            />
+                                                        </td>
+                                                        <td className="col-um">
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    autoComplete="off"
+                                                                    value={meta.description || ""}
+                                                                    onChange={(e) => updateTopicMeta(slide.id, "description", e.target.value)}
+                                                                    className="course-outline-input"
+                                                                    placeholder="Insert Topic Description"
+                                                                />
+                                                                <FontAwesomeIcon
+                                                                    icon={faMagicWandSparkles}
+                                                                    className="input-with-icon__icon"
+                                                                    title="AI Rewrite"
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                    )}
                                 </React.Fragment>
                             ))}
                         </tbody>

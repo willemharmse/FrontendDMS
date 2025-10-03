@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faEdit, faHardHat, faMagnifyingGlass, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faEdit, faHardHat, faMagnifyingGlass, faTableList, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faX, faFileCirclePlus, faSearch, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
@@ -131,14 +131,48 @@ const FlameProofInfoAll = () => {
     }
   }, [token]);
 
+  // put these above handleSort (inside component is fine)
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+  const getByPath = (obj, path) =>
+    path.split(".").reduce((o, k) => (o && o[k] != null ? o[k] : undefined), obj);
+
+  const normalizeForSort = (raw) => {
+    if (raw == null) return null;
+    if (typeof raw === "number") return raw;
+
+    const s = String(raw).trim();
+
+    // percentage like "85%" or "85.5%"
+    const pct = s.match(/^(-?\d+(?:\.\d+)?)\s*%$/);
+    if (pct) return parseFloat(pct[1]);
+
+    // ISO-ish date or parseable date -> timestamp
+    const ts = Date.parse(s);
+    if (!Number.isNaN(ts)) return ts;
+
+    return s.toLowerCase(); // plain string
+  };
+
+  const makeComparator = (field, order) => (a, b) => {
+    const av = normalizeForSort(getByPath(a, field));
+    const bv = normalizeForSort(getByPath(b, field));
+    const dir = order === "ascending" ? 1 : -1;
+
+    // null/undefined last
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+
+    // numbers (includes percentages + dates)
+    if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+
+    // strings
+    return collator.compare(String(av), String(bv)) * dir;
+  };
+
   const handleSort = () => {
-    const sortedFiles = [...files].sort((a, b) => {
-      const fieldA = a[sortField]?.toString().toLowerCase() || "";
-      const fieldB = b[sortField]?.toString().toLowerCase() || "";
-      if (sortOrder === "ascending") return fieldA.localeCompare(fieldB);
-      return fieldB.localeCompare(fieldA);
-    });
-    setFiles(sortedFiles);
+    setFiles((prev) => [...prev].sort(makeComparator(sortField, sortOrder)));
     closeSortModal();
   };
 
@@ -276,7 +310,7 @@ const FlameProofInfoAll = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Management</p>
+            <p className="logo-text-um">EPA Management</p>
           </div>
 
           <div className="filter-dm-fi">
@@ -301,13 +335,13 @@ const FlameProofInfoAll = () => {
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi">
                   <div className="button-content" onClick={openUpload}>
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                     <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
                 <button className="but-dm-fi" onClick={openRegister}>
                   <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <FontAwesomeIcon icon={faTableList} className="button-logo-custom" />
                     <span className="button-text">Register Single Asset</span>
                   </div>
                 </button>
@@ -435,7 +469,7 @@ const FlameProofInfoAll = () => {
       </div>
 
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
-      {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+      {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} site={true} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} />)}
       {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} exit={exitRegister} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}

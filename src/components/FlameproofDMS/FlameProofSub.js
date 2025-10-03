@@ -58,7 +58,9 @@ const FlameProofSub = () => {
   const [assetType, setAssetType] = useState("");
   const [isLoadingTable, setIsLoadingTable] = useState(true);
   const [showNoAssets, setShowNoAssets] = useState(false);
+  const [types, setTypes] = useState([]);
   const [siteTitle, setSiteTitle] = useState("");
+  const [selectedType, setSelectedType] = useState([]);
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -143,37 +145,25 @@ const FlameProofSub = () => {
     closeSortModal();
   };
 
-  const fetchFiles = async () => {
-    setIsLoadingTable(true);
-    const route = isTrashView ? `/api/flameproof/trash/load` : `/api/flameproof/certificates/by-asset/${assetId}`;
+  const deleteFileFromTrash = async () => {
+    if (!selectedFileId) return;
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/trash/delete/${selectedFileId}`, {
         headers: {
-        }
+          Authorization: `Bearer ${token}`,
+        },
+        method: 'DELETE',
       });
-      if (!response.ok) {
-        throw new Error('Failed to fetch files');
-      }
-      const data = await response.json();
-
-      console.log(data);
-
-      const uniqueOpAreas = [...new Set(data.certificates.map(file => file.asset.operationalArea))].sort();
-      const uniqueStatus = [...new Set(data.certificates.map(file => file.status))].sort();
-
-      setAreas(uniqueOpAreas);
-      setStatus(uniqueStatus);
-
-      setFiles(data.certificates);
+      if (!response.ok) throw new Error('Failed to delete file from trash');
+      setIsModalOpen(false);
+      setSelectedFileId(null);
+      fetchFiles();
     } catch (error) {
-      setError(error.message);
+      console.error('Error deleting file from trash:', error);
     } finally {
-      setIsLoadingTable(false);
+      setLoading(false); // Reset loading state after response
     }
-  };
-
-  const clearSearch = () => {
-    setSearchQuery("");
   };
 
   const restoreFile = async (fileId) => {
@@ -221,6 +211,39 @@ const FlameProofSub = () => {
         style: { textAlign: "center" },
       });
     }
+  };
+
+  const fetchFiles = async () => {
+    setIsLoadingTable(true);
+    const route = isTrashView ? `/api/flameproof/trash/load` : `/api/flameproof/certificates/by-asset/${assetId}`;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+        headers: {
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch files');
+      }
+      const data = await response.json();
+
+      const uniqueOpAreas = [...new Set(data.certificates.map(file => file.asset.operationalArea))].sort();
+      const uniqueStatus = [...new Set(data.certificates.map(file => file.status))].sort();
+      const uniqueTypes = [...new Set(data.certificates.map(file => file.asset.assetType))].sort();
+
+      setAreas(uniqueOpAreas);
+      setStatus(uniqueStatus);
+      setTypes(uniqueTypes);
+
+      setFiles(data.certificates);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoadingTable(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   const downloadFile = async (fileId, fileName) => {
@@ -272,27 +295,6 @@ const FlameProofSub = () => {
       fetchFiles();
     } catch (error) {
       console.error('Error deleting file:', error);
-    } finally {
-      setLoading(false); // Reset loading state after response
-    }
-  };
-
-  const deleteFileFromTrash = async () => {
-    if (!selectedFileId) return;
-    try {
-      setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/trash/delete/${selectedFileId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete file from trash');
-      setIsModalOpen(false);
-      setSelectedFileId(null);
-      fetchFiles();
-    } catch (error) {
-      console.error('Error deleting file from trash:', error);
     } finally {
       setLoading(false); // Reset loading state after response
     }
@@ -355,8 +357,8 @@ const FlameProofSub = () => {
       const data = await response.json();
       setAssetType(data.assets.assetType);
       const key = data.assets.assetType.replace(/\s+/g, " ");
-      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || "/genericAssetType2.svg");
-      setVersionIcon(versionAssetIconMap[key] || "/genericAssetType2.svg");
+      setIcon(`${process.env.PUBLIC_URL}/${assetIconMap[key]}` || `${process.env.PUBLIC_URL}//genericAssetType2.svg`);
+      setVersionIcon(`${process.env.PUBLIC_URL}/${versionAssetIconMap[key]}` || `${process.env.PUBLIC_URL}/genericAssetType2.svg`);
     } catch (error) {
       setError(error.message);
     }
@@ -403,72 +405,96 @@ const FlameProofSub = () => {
     if (status === "not uploaded") return "status-missing"
   };
 
+  const getField = (file, field) => {
+    switch (field) {
+      case "assetNr": return file.asset?.assetNr ?? "";
+      case "area": return file.asset?.operationalArea ?? "";
+      case "owner": return file.asset?.assetOwner ?? "";
+      case "certAuth": return file.certAuth ?? "";
+      case "certNr": return file.certNr ?? "";
+      case "component": return file.component ?? "";
+      case "departmentHead": return file.asset?.departmentHead ?? "";
+      case "status": return (file.status ?? "").toLowerCase() === "missing" ? "not uploaded" : (file.status ?? "");
+      case "issueDate": return file.issueDate ? new Date(file.issueDate).getTime() : null;
+      case "expiryDate": return file.certificateExipryDate ? new Date(file.certificateExipryDate).getTime() : null; // note your key is "Exipry" here
+      default: return "";
+    }
+  };
+
   const filteredFiles = useMemo(() => {
-    // normalize "missing" -> "not uploaded" for consistent UI behavior
     const normStatus = (s) => {
       const v = (s || "").toLowerCase();
       return v === "missing" ? "not uploaded" : v;
     };
 
-    // 1) same initial filter (search + area + status)
+    // 1) filter
     const fs = files.filter((file) => {
       const q = searchQuery.toLowerCase();
-
-      const matchesSearchQuery = (
+      const matchesSearchQuery =
         (file.asset.assetNr || "").toLowerCase().includes(q) ||
         (file.asset.operationalArea || "").toLowerCase().includes(q) ||
         (file.asset.assetOwner || "").toLowerCase().includes(q) ||
         (file.certAuth || "").toLowerCase().includes(q) ||
         (file.certNr || "").toLowerCase().includes(q) ||
         (file.asset.departmentHead || "").toLowerCase().includes(q) ||
-        ((file.component || "").toLowerCase().includes(q))
-      );
+        ((file.component || "").toLowerCase().includes(q));
 
       const fileStatusNorm = normStatus(file.status);
 
       const matchesFilters =
         (selectedArea.length === 0 || selectedArea.includes(file.asset.operationalArea)) &&
-        (selectedStatus.length === 0 || selectedStatus.includes(fileStatusNorm));
+        (selectedStatus.length === 0 || selectedStatus.includes(fileStatusNorm)) &&
+        (selectedType.length === 0 || selectedType.includes(file.asset.assetType));
 
       return matchesSearchQuery && matchesFilters;
     });
 
-    // 2) sort: not uploaded first, then master, then components (alpha), then assetNr
-    const isMaster = (f) => {
-      const c = (f.component || "").trim().toLowerCase();
-      return c === "master" || c === "master component";
-    };
+    // 2) sort
+    const arr = [...fs];
 
-    const statusPriority = (f) => (normStatus(f.status) === "not uploaded" ? 0 : 1);
-    const componentPriority = (f) => (isMaster(f) ? 0 : 1);
+    // default grouping (as you had) if no explicit sort chosen
+    if (!sortField) {
+      const isMaster = (f) => {
+        const c = (f.component || "").trim().toLowerCase();
+        return c === "master" || c === "master component";
+      };
+      const statusPriority = (f) => (normStatus(f.status) === "not uploaded" ? 0 : 1);
+      const componentPriority = (f) => (isMaster(f) ? 0 : 1);
 
-    const cmp = (a, b) => {
-      // A) not uploaded group first
-      const spA = statusPriority(a);
-      const spB = statusPriority(b);
-      if (spA !== spB) return spA - spB;
+      arr.sort((a, b) => {
+        const sp = statusPriority(a) - statusPriority(b);
+        if (sp) return sp;
 
-      // B) master before other components
-      const cpA = componentPriority(a);
-      const cpB = componentPriority(b);
-      if (cpA !== cpB) return cpA - cpB;
+        const cp = componentPriority(a) - componentPriority(b);
+        if (cp) return cp;
 
-      // C) alphabetical by component (case-insensitive, numeric-aware)
-      const ca = (a.component || "").toLowerCase();
-      const cb = (b.component || "").toLowerCase();
-      if (ca || cb) {
-        const byComp = ca.localeCompare(cb, undefined, { numeric: true, sensitivity: "base" });
-        if (byComp !== 0) return byComp;
-      }
+        const byComp = (a.component || "").localeCompare((b.component || ""), undefined, { numeric: true, sensitivity: "base" });
+        if (byComp) return byComp;
 
-      // D) tiebreaker: assetNr
-      const an = (a.asset?.assetNr || "").toLowerCase();
-      const bn = (b.asset?.assetNr || "").toLowerCase();
-      return an.localeCompare(bn, undefined, { numeric: true, sensitivity: "base" });
-    };
+        return (a.asset?.assetNr || "").localeCompare((b.asset?.assetNr || ""), undefined, { numeric: true, sensitivity: "base" });
+      });
 
-    return [...fs].sort(cmp);
-  }, [files, searchQuery, selectedArea, selectedStatus]);
+      return arr;
+    }
+
+    const dir = sortOrder === "ascending" ? 1 : -1;
+
+    arr.sort((a, b) => {
+      const av = getField(a, sortField);
+      const bv = getField(b, sortField);
+
+      // null/undefined last
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+
+      return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: "base" }) * dir;
+    });
+
+    return arr;
+  }, [files, searchQuery, selectedArea, selectedStatus, sortField, sortOrder, selectedType]);
 
   const invalidCount = filteredFiles.filter(f => {
     const status = (f.status || "").toLowerCase();
@@ -503,12 +529,16 @@ const FlameProofSub = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Management</p>
+            <p className="logo-text-um">EPA Management</p>
           </div>
 
           <div className="filter-dm-fi">
             <p className="filter-text-dm-fi">Filter</p>
             <div className="button-container-dm-fi">
+              {isTrashView && (<div className="fi-info-popup-page-select-container">
+                <Select options={types.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedType(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Asset Type"
+                  classNamePrefix="sb" />
+              </div>)}
               <div className="fi-info-popup-page-select-container">
                 <Select options={areas.map(d => ({ value: d, label: d }))} isMulti onChange={(selected) => setSelectedArea(selected.map(s => s.value))} className="sidebar-select remove-default-styling" placeholder="Area"
                   classNamePrefix="sb" />
@@ -524,7 +554,7 @@ const FlameProofSub = () => {
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi" onClick={openUpload}>
                   <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                     <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
@@ -534,7 +564,7 @@ const FlameProofSub = () => {
           <div className="sidebar-logo-dm-fi">
             <img src={icon} className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{isTrashView ? `Trashed Certificates` : (type)}</p>
-            <p className="logo-text-dm-fi" style={{ marginTop: "0px" }}>{siteTitle}</p>
+            {!isTrashView && (<p className="logo-text-dm-fi" style={{ marginTop: "0px" }}>{siteTitle}</p>)}
           </div>
         </div>
       )}
@@ -589,7 +619,7 @@ const FlameProofSub = () => {
                 <th className={`flame-sub-head-filter`}>Department Head</th>
                 <th className={`flame-sub-status-filter col`}>Status</th>
                 <th className="flame-sub-date-filter col">Issue Date</th>
-                <th className="flame-sub-date-filter col">Expiry Date</th>
+                {!isTrashView && (<th className="flame-sub-date-filter col">Expiry Date</th>)}
                 {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
               </tr>
             </thead>
@@ -617,6 +647,7 @@ const FlameProofSub = () => {
               {filteredFiles.map((file, index) => (
                 <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
+                  {isTrashView && (<th className="col" style={{ fontWeight: "normal" }}>{file.asset.assetType}</th>)}
                   <td
 
                     style={{ textAlign: "center", position: "relative" }}
@@ -634,11 +665,20 @@ const FlameProofSub = () => {
                   <td className="col">{file.asset.departmentHead}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
                   <td className={`col`}>{formatDate(file.issueDate)}</td>
-                  <td className={`col`}>{formatDate(file.certificateExipryDate)}</td>
+                  {!isTrashView && (<td className={`col`}>{formatDate(file.certificateExipryDate)}</td>)}
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
-                    <td className={"col-act"}>
+                    <td className={`col-act ${isTrashView ? "trashed" : ""}`}>
+
+                      {isTrashView && (
+                        <button
+                          className={"delete-button-fi col-but-res trashed-color"}
+                          onClick={() => restoreFile(file._id)}
+                        >
+                          <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                        </button>
+                      )}
                       {!file.isPlaceholder && (<button
-                        className={"delete-button-fi col-but"}
+                        className={`delete-button-fi col-but ${isTrashView ? "trashed-color" : ""}`}
                         onClick={(e) => {
                           e.stopPropagation();         // ⛔ prevent row click
                           openModal(file._id, file.fileName);
@@ -655,7 +695,7 @@ const FlameProofSub = () => {
         </div>
       </div>
 
-      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
+      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFileFromTrash={deleteFileFromTrash} deleteFile={deleteFile} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}

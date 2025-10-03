@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faClipboardCheck, faEdit, faFileAlt, faFileSignature, faHardHat, faHome, faIndustry, faListOl, faMagnifyingGlass, faScaleBalanced, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faCirclePlus, faClipboardCheck, faEdit, faFileAlt, faFileSignature, faHardHat, faHome, faIndustry, faListOl, faMagnifyingGlass, faScaleBalanced, faTableList, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
@@ -179,14 +179,48 @@ const FlameProofMain = () => {
     }
   };
 
+  // put these above handleSort (inside component is fine)
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+  const getByPath = (obj, path) =>
+    path.split(".").reduce((o, k) => (o && o[k] != null ? o[k] : undefined), obj);
+
+  const normalizeForSort = (raw) => {
+    if (raw == null) return null;
+    if (typeof raw === "number") return raw;
+
+    const s = String(raw).trim();
+
+    // percentage like "85%" or "85.5%"
+    const pct = s.match(/^(-?\d+(?:\.\d+)?)\s*%$/);
+    if (pct) return parseFloat(pct[1]);
+
+    // ISO-ish date or parseable date -> timestamp
+    const ts = Date.parse(s);
+    if (!Number.isNaN(ts)) return ts;
+
+    return s.toLowerCase(); // plain string
+  };
+
+  const makeComparator = (field, order) => (a, b) => {
+    const av = normalizeForSort(getByPath(a, field));
+    const bv = normalizeForSort(getByPath(b, field));
+    const dir = order === "ascending" ? 1 : -1;
+
+    // null/undefined last
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+
+    // numbers (includes percentages + dates)
+    if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+
+    // strings
+    return collator.compare(String(av), String(bv)) * dir;
+  };
+
   const handleSort = () => {
-    const sortedFiles = [...files].sort((a, b) => {
-      const fieldA = a[sortField]?.toString().toLowerCase() || "";
-      const fieldB = b[sortField]?.toString().toLowerCase() || "";
-      if (sortOrder === "ascending") return fieldA.localeCompare(fieldB);
-      return fieldB.localeCompare(fieldA);
-    });
-    setFiles(sortedFiles);
+    setFiles((prev) => [...prev].sort(makeComparator(sortField, sortOrder)));
     closeSortModal();
   };
 
@@ -326,7 +360,7 @@ const FlameProofMain = () => {
           </div>
           <div className="sidebar-logo-um">
             <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-            <p className="logo-text-um">Flameproof Management</p>
+            <p className="logo-text-um">EPA Management</p>
           </div>
 
           <div className="filter-dm-fi">
@@ -351,13 +385,13 @@ const FlameProofMain = () => {
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi" onClick={openUpload}>
                   <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                     <span className="button-text">Upload Single Certificate</span>
                   </div>
                 </button>
                 <button className="but-dm-fi" onClick={openRegister}>
                   <div className="button-content">
-                    <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                    <FontAwesomeIcon icon={faTableList} className="button-logo-custom" />
                     <span className="button-text">Register Single Asset</span>
                   </div>
                 </button>
@@ -498,9 +532,9 @@ const FlameProofMain = () => {
       </div>
 
       {isModalOpen && (<DeleteAsset closeModal={closeModal} deleteAsset={deleteAsset} asset={selectedAsset} />)}
-      {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+      {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} assetType={type.includes("All") ? true : false} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetType={type.includes("All") ? "" : type} />)}
-      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type} exit={exitRegister} />)}
+      {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchFiles} preSelectedSite={site} assetType={type.includes("All") ? "" : type} exit={exitRegister} />)}
       {modifyAsset && (<ModifyAssetPopup onClose={closeModify} asset={modifyingAsset} refresh={fetchFiles} />)}
       {modifyDate && <ModifyComponentsPopup onClose={closeModifyDate} asset={assetID} />}
       {openComponentUpdate && (<ModifyComponentsPopup asset={componentAssetUpdate} onClose={closeComponentModify} refresh={fetchFiles} />)}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faX, faFileCirclePlus, faSearch, faArrowLeft, faEdit, faTrash, faShare, faShareAlt, faCirclePlay, faCirclePlus, faBookOpen } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faX, faFileCirclePlus, faSearch, faArrowLeft, faEdit, faTrash, faShare, faShareAlt, faCirclePlay, faCirclePlus, faBookOpen, faDownload, faBook, faUser, faUserGroup } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -205,7 +205,7 @@ const VisitorsInductionHomePage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Visitor Induction Management</p>
+                        <p className="logo-text-um">Training Management</p>
                     </div>
 
                     {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (
@@ -213,20 +213,14 @@ const VisitorsInductionHomePage = () => {
                             <div className="button-container-dm-fi">
                                 <button className="but-dm-fi" onClick={openUpload}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faUser} className="button-icon" />
                                         <span className="button-text">Create Visitor Profile</span>
                                     </div>
                                 </button>
                                 <button className="but-dm-fi" onClick={openBatchProg}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faUserGroup} className="button-icon" />
                                         <span className="button-text">Create Visitor Group</span>
-                                    </div>
-                                </button>
-                                <button className="but-dm-fi" onClick={() => navigate("/FrontendDMS/inductionCreation")}>
-                                    <div className="button-content">
-                                        <FontAwesomeIcon icon={faBookOpen} className="button-icon" />
-                                        <span className="button-text">Induction Content</span>
                                     </div>
                                 </button>
                             </div>
@@ -234,7 +228,7 @@ const VisitorsInductionHomePage = () => {
                     )}
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/visitorInductionIcon2.svg`} alt="Logo" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">Manage Visitor Induction</p>
+                        <p className="logo-text-dm-fi">Visitor Profiles</p>
                     </div>
                 </div>
             )}
@@ -270,8 +264,13 @@ const VisitorsInductionHomePage = () => {
                     <TopBarFP openSort={openSortModal} />
                 </div>
 
-                <div className="table-container-file">
-                    <table>
+                <div className="table-container-risk-control-attributes">
+                    <div className="risk-control-label-wrapper">
+                        <label className="risk-control-label">Visitor Profiles</label>
+                        <FontAwesomeIcon icon={faDownload} title="" className="top-right-button-control-att-2" />
+                        <FontAwesomeIcon icon={faBookOpen} title="Download" className="top-right-button-control-att" />
+                    </div>
+                    <table className="limit-table-height-visitor">
                         <thead>
                             <tr>
                                 <th className="visitor-ind-num-filter col">Nr</th>

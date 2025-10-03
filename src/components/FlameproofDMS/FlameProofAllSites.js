@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor, faBuilding } from '@fortawesome/free-solid-svg-icons';
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor, faBuilding, faBars, faCirclePlus, faTableList } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 import ChangePassword from "../UserManagement/ChangePassword";
 import { getCurrentUser, can, isAdmin, canIn } from "../../utils/auth";
@@ -81,7 +81,6 @@ const FlameProofAllSites = () => {
         setRegister(!register);
     };
 
-
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
@@ -132,6 +131,14 @@ const FlameProofAllSites = () => {
 
     const getIcon = (site) => `/${iconMap[site] ?? iconMap.default}`;
 
+    const ALL_SITE_LABEL = "All Organisation Assets";
+
+    // use the raw data (not padded) to avoid null placeholders affecting the count
+    const siteCount = count
+        .filter(d => d && d.site && d.site.toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter(d => d.site !== ALL_SITE_LABEL)
+        .length;
+
     return (
         <div className="user-info-container">
             {isSidebarVisible && (
@@ -141,7 +148,7 @@ const FlameProofAllSites = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Flameproof Management</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
 
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
@@ -149,35 +156,31 @@ const FlameProofAllSites = () => {
                             <div className="button-container-create">
                                 <button className="but-um" onClick={openUpload}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-logo-custom" />
                                         <span className="button-text">Upload Single Certificate</span>
                                     </div>
                                 </button>
                                 <button className="but-um" onClick={openRegister}>
                                     <div className="button-content">
-                                        <FontAwesomeIcon icon={faFileCirclePlus} className="button-icon" />
+                                        <FontAwesomeIcon icon={faTableList} className="button-logo-custom" />
                                         <span className="button-text">Register Single Asset</span>
                                     </div>
                                 </button>
                             </div>
-                            <div className="sidebar-logo-dm-fi">
-                                <div className="risk-button-container-create-bot">
-
-                                    <button className="but-um" onClick={() => navigate("/FrontendDMS/flameTrash")}>
-                                        <div className="button-content">
-                                            <img src={`${process.env.PUBLIC_URL}/fmsTrashNorm.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Trash</span>
-                                        </div>
-                                    </button>
-                                    <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
-                                        <div className="button-content">
-                                            <img src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} className={"button-logo-custom"} />
-                                            <span className="button-text">Manage FMM</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
                         </>
+                    )}
+                    {canIn(access, "FCMS", ["systemAdmin"]) && (<>
+                        <div className="sidebar-logo-dm-fi">
+                            <div className="risk-button-container-create-bot">
+                                <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
+                                    <div className="button-content">
+                                        <FontAwesomeIcon icon={faBars} src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} size="xs" className={"button-logo-custom"} />
+                                        <span className="button-text">Manage FMM</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </>
                     )}
                 </div>
             )}
@@ -208,7 +211,7 @@ const FlameProofAllSites = () => {
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Sites: {filteredDocs.length === 0 ? 0 : filteredDocs.length - 1}</div>
+                    <div className="info-box-fih">Number of Sites: {siteCount}</div>
 
                     <div className="spacer"></div>
 

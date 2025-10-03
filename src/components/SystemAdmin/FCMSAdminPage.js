@@ -101,16 +101,21 @@ const FCMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Manage FMM</p>
+                        <p className="logo-text-um">EPA Management</p>
                     </div>
 
                     <div className="button-container-create">
                         <button className="but-um" onClick={openTemplate}>
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faDownload} className="button-icon" />
+                                <FontAwesomeIcon icon={faDownload} className="button-logo-custom" />
                                 <span className="button-text">Templates</span>
                             </div>
                         </button>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/fmsAdminPage.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"Manage FMM"}</p>
                     </div>
                 </div>
             )}

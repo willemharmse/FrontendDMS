@@ -1,4 +1,4 @@
-const SortPopupAsset = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort }) => {
+const SortPopupAsset = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort, site = false, assetType = true }) => {
     return (
         <div className="sort-popup-overlay">
             <div className="sort-popup-content">
@@ -21,8 +21,10 @@ const SortPopupAsset = ({ setSortField, setSortOrder, closeSortModal, sortField,
                             <option value="operationalArea" style={{ color: "black" }}>Area</option>
                             <option value="assetNr" style={{ color: "black" }}>Asset Nr</option>
                             <option value="assetOwner" style={{ color: "black" }}>Asset Owner</option>
+                            {assetType && (<option value="assetType" style={{ color: "black" }}>Asset Type</option>)}
                             <option value="complianceStatus" style={{ color: "black" }}>Compliance Status</option>
                             <option value="departmentHead" style={{ color: "black" }}>Department Head</option>
+                            {site && (<option value="siteName" style={{ color: "black" }}>Site</option>)}
                         </select>
                     </div>
                 </div>

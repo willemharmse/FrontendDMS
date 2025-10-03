@@ -66,13 +66,13 @@ const DMSAdminPage = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
-                        <p className="logo-text-um">Admin Page</p>
+                        <p className="logo-text-um">Document Management</p>
                     </div>
 
                     <div className="button-container-create">
                         <button className="but-um" onClick={openTemplate}>
                             <div className="button-content">
-                                <FontAwesomeIcon icon={faDownload} className="button-icon" />
+                                <FontAwesomeIcon icon={faDownload} className="button-logo-custom" />
                                 <span className="button-text">Templates</span>
                             </div>
                         </button>
@@ -80,7 +80,7 @@ const DMSAdminPage = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/dmsAdmin2.svg`} alt="Logo" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"DMS Admin"}</p>
+                        <p className="logo-text-dm-fi">{"Manage DMS"}</p>
                     </div>
                 </div>
             )}

@@ -77,20 +77,12 @@ const TMSHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home-all`}>
-                        <>
-                            <div className="all-icon-fi-home">
-                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
-                            </div>
-                            <h3 className="document-title-fi-home">My Training</h3>
-                        </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorView")}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorInductionHome")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/visitorInductionIcon.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon.svg`} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Manage Visitor Induction</h3>
+                            <h3 className="document-title-fi-home">Visitor Induction Management</h3>
                         </>
                     </div>
                 </div>
