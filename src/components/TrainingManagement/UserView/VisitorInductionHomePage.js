@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faTrash, faBookOpen, faAward, faBook, faCertificate } from '@fortawesome/free-solid-svg-icons';
@@ -7,6 +7,9 @@ import "./UserHomePageTMS.css";
 import { faSearch, faSort } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../../Notifications/TopBar";
 import { canIn, getCurrentUser } from "../../../utils/auth";
+import { saveAs } from "file-saver";
+import PopupMenuPubInduction from "../../VisitorsInduction/InductionCreation/PopupMenuPubInduction";
+import PopupMenuCertificateOptions from "../../VisitorsInduction/InductionCreation/PopupMenuCertificateOptions";
 
 const VisitorInductionHomePage = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -16,6 +19,9 @@ const VisitorInductionHomePage = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState("");
     const [courses, setCourses] = useState([]);
+    const [traineeData, setTraineeData] = useState([]);
+    const [hoveredFileId, setHoveredFileId] = useState(null);
+    const [indcutionData, setInductionData] = useState([]);
 
     const fetchUser = async () => {
         const route = `/api/visitors/visitorInfo/`;
@@ -34,6 +40,43 @@ const VisitorInductionHomePage = () => {
             setUser(data.user);
         } catch (error) {
             setError(error.message);
+        }
+    };
+
+    const handlePreview = (course) => {
+        navigate("/FrontendDMS/inductionPreview", {
+            state: {
+                traineeData: course.trainee,
+                inductionName: course.formData.courseTitle
+            }
+        });
+    };
+
+    const handleGenerateCertificateDocument = async (course) => {
+        const inductionTitle = course?.formData?.courseTitle;
+        const dataToStore = {
+            traineeData: course.trainee,
+            inductionName: inductionTitle
+        };
+
+        const documentName = course?.trainee?.user?.name + " " + course?.trainee?.user?.surname + " " + (inductionTitle || "Induction") + " Certificate";
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskGenerate/generate-pdf`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.pdf`);
+        } catch (error) {
+            console.error("Error generating document:", error);
         }
     };
 
@@ -65,11 +108,31 @@ const VisitorInductionHomePage = () => {
         return user?.name;
     }
 
+    const getDetailCertificate = async (data) => {
+        setTraineeData(data.trainee);
+
+        setInductionData(data);
+
+        handlePreview();
+    }
+
+    const handleCertificateClick = (course) => (e) => {
+        if (!course.trainee.passed) return;
+        e.stopPropagation();        // ⛔ don't let the row click fire
+        setHoveredFileId(hoveredFileId === course._id ? null : course._id)
+    };
+
     // rename + fix
     const getVisitorInitials = () => {
         const f = user?.name?.[0]?.toUpperCase() ?? "";
         const l = user?.surname?.[0]?.toUpperCase() ?? "";
         return (f + l) || "??";
+    };
+
+    const formatStatus = (type) => {
+        return type
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, char => char.toUpperCase());
     };
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
@@ -87,6 +150,7 @@ const VisitorInductionHomePage = () => {
     }, [navigate]);
 
     const formatDate = (dateString) => {
+        if (dateString === "" || dateString === null) return "N/A"
         const date = new Date(dateString);
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -94,17 +158,36 @@ const VisitorInductionHomePage = () => {
         return `${year}-${month}-${day}`;
     };
 
+    const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
     const renderProgress = (status) => {
-        const lower = status.toLowerCase();
-        const match = lower.match(/(\d+)\s*%/);
-        const percent = match ? Math.min(100, Math.max(0, parseInt(match[1], 10))) : 0;
+        const isNum = typeof status === "number";
+        const text = String(status ?? "").toLowerCase();
+
+        // derive percent
+        let percent = 0;
+        if (isNum && Number.isFinite(status)) {
+            percent = clamp(status, 0, 100);
+        } else {
+            // prefer an explicit % if present
+            let m = text.match(/(\d+(?:\.\d+)?)\s*%/);
+            if (m) {
+                percent = clamp(parseFloat(m[1]), 0, 100);
+            } else {
+                // fallback: first 1–3 digit number (to catch "50" or "50 of 100")
+                m = text.match(/\b(\d{1,3})\b/);
+                if (m) percent = clamp(parseInt(m[1], 10), 0, 100);
+            }
+        }
+
+        console.log("renderProgress", status, percent);
 
         // defaults
         let label = `In Progress ${percent}%`;
         let fill = "#FFFF89";  // yellow-ish (progress)
         let cls = "course-home-info-progress-badge";
 
-        if (lower.includes("completed")) {
+        if (text.includes("completed") || percent === 100) {
             label = "Completed 100%";
             cls += " is-complete";
             return (
@@ -116,17 +199,7 @@ const VisitorInductionHomePage = () => {
             );
         }
 
-        if (lower.includes("in progress")) {
-            return (
-                <div className="course-home-info-progress-wrap">
-                    <div className={cls} style={{ "--p": `${percent}%`, "--fill": fill }}>
-                        <span className="label-course-info">{label}</span>
-                    </div>
-                </div>
-            );
-        }
-
-        if (lower.includes("overdue")) {
+        if (text.includes("overdue")) {
             label = "Overdue";
             cls += " is-overdue";
             return (
@@ -138,11 +211,22 @@ const VisitorInductionHomePage = () => {
             );
         }
 
-        if (lower.includes("not passed")) {
+        if (text.includes("not passed")) {
             label = "Not Passed";
             return (
                 <div className="course-home-info-progress-wrap">
                     <div className={cls} style={{ "--p": "100%", "--fill": "#FFC000" }}>
+                        <span className="label-course-info">{label}</span>
+                    </div>
+                </div>
+            );
+        }
+
+        // Treat any numeric percent as in-progress even if "in progress" text is missing
+        if (text.includes("in progress") || percent > 0) {
+            return (
+                <div className="course-home-info-progress-wrap">
+                    <div className={cls} style={{ "--p": `${percent}%`, "--fill": fill }}>
                         <span className="label-course-info">{label}</span>
                     </div>
                 </div>
@@ -159,7 +243,6 @@ const VisitorInductionHomePage = () => {
         );
     };
 
-
     const filtered = courses;
     return (
         <div className="course-home-info-container">
@@ -170,8 +253,13 @@ const VisitorInductionHomePage = () => {
                     </div>
 
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Visitor Induction Management</p>
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" title="Home" />
+                        <p className="logo-text-um">Training Management</p>
+                    </div>
+
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">Visitor Induction</p>
                     </div>
                 </div>
             )}
@@ -186,13 +274,10 @@ const VisitorInductionHomePage = () => {
 
             <div className="main-box-course-home-info">
                 <div className="top-section-um">
-                    <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
-                    </div>
 
                     <div className="spacer"></div>
 
-                    <TopBar />
+                    <TopBar visitor={true} />
                 </div>
                 <div className="course-home-info-wrapper">
                     {/* Welcome header (avatar + name) */}
@@ -214,9 +299,9 @@ const VisitorInductionHomePage = () => {
                                             <th className="course-home-info-name" style={{ width: "10%" }}>Version Nr</th>
                                             <th className="course-home-info-progress" style={{ width: "10%" }}>Progress</th>
                                             <th className="course-home-info-access" style={{ width: "10%" }}>Last Access Date</th>
-                                            <th className="course-home-info-name" style={{ width: "10%" }}>Validity</th>
-                                            <th className="course-home-info-access" style={{ width: "10%" }}>Expiry Date</th>
-                                            <th className="course-home-info-act" style={{ width: "5%" }}>Action</th>
+                                            <th className="course-home-info-name" style={{ width: "8%" }}>Validity</th>
+                                            <th className="course-home-info-access" style={{ width: "9%" }}>Expiry Date</th>
+                                            <th className="course-home-info-act" style={{ width: "8%" }}>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -228,7 +313,11 @@ const VisitorInductionHomePage = () => {
                                                 return true; // View / All
                                             })
                                             .map((course, index) => (
-                                                <tr key={`${course.formData.courseTitle}-${index}`} className="course-home-info-tr" onClick={() => navigate(`/inductionView/${course._id}`)}>
+                                                <tr key={`${course.formData.courseTitle}-${index}`} className="course-home-info-tr"
+                                                    onClick={(e) => {
+                                                        if (e.target.closest('[data-no-row-click]')) return;
+                                                        navigate(`/FrontendDMS/inductionView/${course._id}`);
+                                                    }}>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{index + 1}</td>
                                                     <td style={{ fontSize: "14px", textAlign: "left", fontFamily: "Arial" }}>{course.formData.courseTitle}</td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{course.version}</td>
@@ -236,16 +325,39 @@ const VisitorInductionHomePage = () => {
                                                         {renderProgress(course.trainee.progress)}
                                                     </td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.dateAccessed) || "N/A"}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{"Invalid"}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{course.expiryDate || "N/A"}</td>
-                                                    <td className="col-um">
-                                                        <div className='inline-actions-um'>
-                                                            <button
-                                                                style={{ padding: "10px 0px", width: "100%" }}
-                                                                className={"action-button-user delete-button-user"}
-                                                            >
-                                                                <FontAwesomeIcon icon={faCertificate} title="Delete Course" />
-                                                            </button>
+                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatStatus(course.trainee.validity)}</td>
+                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.expiryDate) || "N/A"}</td>
+                                                    <td className="col-um" style={{ position: "relative" }} data-no-row-click>
+                                                        <div className='inline-actions-um' style={{ position: "relative" }} data-no-row-click>
+                                                            <div className="popup-anchor" data-no-row-click>
+                                                                <button
+                                                                    type="button"
+                                                                    style={{ padding: "10px 0px", width: "100%" }}
+                                                                    className="action-button-user edit-button-user"
+                                                                    onClick={handleCertificateClick(course)}
+                                                                    data-no-row-click
+                                                                >
+                                                                    <FontAwesomeIcon icon={faCertificate} title="Certificate Options" />
+                                                                </button>
+                                                                {(hoveredFileId === course._id) && (
+                                                                    <PopupMenuCertificateOptions
+                                                                        file={course}
+                                                                        downloadCertficate={handleGenerateCertificateDocument}
+                                                                        previewCertificate={handlePreview}
+                                                                        typeDoc={"standard"}
+                                                                        risk={false}
+                                                                        isOpen={hoveredFileId === course._id}
+                                                                        setHoveredFileId={setHoveredFileId}
+                                                                        id={course._id}
+                                                                        wrapperProps={{
+                                                                            'data-no-row-click': true,
+                                                                            onClick: (e) => e.stopPropagation(),
+                                                                            onMouseDown: (e) => e.stopPropagation(),     // prevents mousedown from triggering focus/row click
+                                                                            onPointerDown: (e) => e.stopPropagation(),
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>

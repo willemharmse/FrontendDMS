@@ -110,6 +110,13 @@ const TermPopup = ({ isOpen, onClose, userID, setTermData, onAdd }) => {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="term-popup-scrollable">
+                        {/* Success/Error Message Box */}
+                        {message.text && (
+                            <div className={`term-message ${message.type}`} style={{ marginTop: "0px", marginBottom: "10px" }}>
+                                {message.text}
+                            </div>
+                        )}
+
                         <div className="term-popup-group">
                             <label className="term-popup-label">Term</label>
                             <input
@@ -157,14 +164,6 @@ const TermPopup = ({ isOpen, onClose, userID, setTermData, onAdd }) => {
                                 </select>
                             </div>
                         </div>
-
-                        {/* Success/Error Message Box */}
-                        {message.text && (
-                            <div className={`term-message ${message.type}`}>
-                                {message.text}
-                            </div>
-                        )}
-
                     </div>
                     <div className="term-popup-buttons">
                         <button type="submit" className="term-popup-button">

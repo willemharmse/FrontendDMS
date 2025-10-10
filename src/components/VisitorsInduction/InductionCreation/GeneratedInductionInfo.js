@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import PopupMenuPubFiles from "../../PublishedDocuments/PopupMenuPubFiles";
 import TopBar from "../../Notifications/TopBar";
 import DeletePopup from "../../FileInfo/DeletePopup";
+import PopupMenuPubInduction from "./PopupMenuPubInduction";
 
 const GeneratedInductionInfo = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
@@ -194,7 +195,7 @@ const GeneratedInductionInfo = () => {
                         <thead className="gen-head">
                             <tr>
                                 <th className="gen-th ibraGenNr">Nr</th>
-                                <th className="gen-th ibraGenFN">Induction Name</th>
+                                <th className="gen-th ibraGenFN">Visitor Induction Name</th>
                                 <th className="gen-th ibraGenVer">Version</th>
                                 <th className="gen-th ibraGenStatus">Induction Status</th>
                                 <th className="gen-th ibraGenPB">First Published By</th>
@@ -208,16 +209,25 @@ const GeneratedInductionInfo = () => {
                             {filteredFiles.map((file, index) => (
                                 <tr key={file._id} className={`file-info-row-height gen-tr`}>
                                     <td className="cent-values-gen gen-point">{index + 1}</td>
-                                    <td className="gen-point">
+                                    <td className="gen-point" onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                                         <div className="popup-anchor">
-                                            <span onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                                            <span >
                                                 {removeFileExtension(file.formData.courseTitle)}
                                             </span>
 
-
+                                            {(hoveredFileId === file._id) && (
+                                                <PopupMenuPubInduction
+                                                    file={file}
+                                                    typeDoc={"standard"}
+                                                    risk={false}
+                                                    isOpen={hoveredFileId === file._id}
+                                                    setHoveredFileId={setHoveredFileId}
+                                                    id={file._id}
+                                                />
+                                            )}
                                         </div>
                                     </td>
-                                    <td className="cent-values-gen gen-point">{file.formData.version || "1"}</td>
+                                    <td className="cent-values-gen gen-point">{file.version}</td>
                                     <td className={`${getStatusClass(file.documentStatus)} cent-values-gen  gen-point`}>{file.documentStatus}</td>
                                     <td className="cent-values-gen  gen-point">{file.publisher.username}</td>
                                     <td className="cent-values-gen  gen-point">{formatDate(file.datePublished)}</td>

@@ -117,7 +117,7 @@ const VisitorLogin = () => {
 
                 sessionStorage.setItem("visitorToken", data.token);
 
-                navigate('/FrontendDMS/visitorHomePage');
+                navigate(`/FrontendDMS/visitorLoginOTP/${userId}`);
             } else {
                 throw new Error('Invalid login attempt.');
             }

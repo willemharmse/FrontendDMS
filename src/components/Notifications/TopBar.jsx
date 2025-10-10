@@ -5,7 +5,7 @@ import { faArrowLeft, faBell, faCircleUser, faHome } from "@fortawesome/free-sol
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 
-const TopBar = ({ menu, setReset, isProfile = false }) => {
+const TopBar = ({ menu, setReset, isProfile = false, visitor = false }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,14 +43,14 @@ const TopBar = ({ menu, setReset, isProfile = false }) => {
     return (
         <div className="icons-container">
             <div className="burger-menu-icon-um-home">
-                <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faHome} title="Home" />
+                <FontAwesomeIcon onClick={() => navigate(!visitor ? "/FrontendDMS/home" : "/FrontendDMS/visitorHomePage")} icon={faHome} title="Home" />
             </div>
-            <div className="burger-menu-icon-um notifications-bell-wrapper">
+            {!visitor && (<div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
                 {count != 0 && <div className="notifications-badge"></div>}{/* Replace with unread count from backend later */}
-            </div>
+            </div>)}
             <div className="burger-menu-icon-um" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
-                {profilePic ? (
+                {profilePic && !visitor ? (
                     <img
                         src={profilePic}
                         alt="Profile"
@@ -68,7 +68,7 @@ const TopBar = ({ menu, setReset, isProfile = false }) => {
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
             {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
-            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} />)}
+            {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} visitor={visitor} />)}
         </div>
     );
 };

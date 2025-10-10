@@ -85,7 +85,7 @@ const VisitorInductionMainPage = () => {
                             <h3 className="document-title-fi-home">Visitor Induction</h3>
                         </>
                     </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/visitorView")}>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorView")}>
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/visitorInductionIcon.svg`} className={"icon-dept"} />

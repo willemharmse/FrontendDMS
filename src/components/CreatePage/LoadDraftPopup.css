@@ -26,6 +26,26 @@
     border-radius: 10px;
 }
 
+.draft-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    /* ensures the box is tall enough to center nicely */
+    font-weight: 600;
+    font-size: 28px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Search bar above "Select draft to load" */
 .draft-searchbar {
     position: relative;

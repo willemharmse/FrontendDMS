@@ -7,7 +7,7 @@ import axios from 'axios';
 import "./CreateProfilePopup.css"
 import { toast } from 'react-toastify';
 
-const CreateProfilePopup = ({ onClose, refresh }) => {
+const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [surname, setSurname] = useState("");
@@ -43,9 +43,9 @@ const CreateProfilePopup = ({ onClose, refresh }) => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token'); // adjust if you store it differently
-            await axios.post(
-                `${process.env.REACT_APP_URL}/api/visitors/createVisitorProfile`, // adjust base/path to match your server mount
+            const token = localStorage.getItem('token');
+            const res = await axios.post(
+                `${process.env.REACT_APP_URL}/api/visitors/createVisitorProfile`,
                 {
                     name: name.trim(),
                     surname: surname.trim(),
@@ -59,8 +59,14 @@ const CreateProfilePopup = ({ onClose, refresh }) => {
                 }
             );
 
-            toast.success('Visitor Profile Created', { autoClose: 800, closeButton: false });
+            const { message, user } = res.data;
+
+            toast.success(message || 'Visitor Profile Created', { autoClose: 800, closeButton: false });
+
+            console.log("New visitor created:", user);
+
             refresh();
+            openUserLinkShare(user);
             onClose?.();
         } catch (err) {
             const status = err?.response?.status;

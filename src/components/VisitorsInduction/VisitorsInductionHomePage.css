@@ -27,15 +27,22 @@
 
 .limit-table-height-visitor {
     border-collapse: collapse;
-    width: 100%;
-    display: block;
+    min-width: 2000px;
+    width: max-content;
+    display: table;
+}
+
+.limit-table-height-visitor-wrap {
     max-height: calc(100% - 60px);
     overflow-y: auto;
+    overflow-x: auto;
+    background: inherit;
     /* Firefox */
     scrollbar-width: thin;
     /* "auto" | "thin" | "none" */
     scrollbar-color: #888 #f1f1f1;
     /* thumb color | track color */
+    display: block;
 }
 
 /* Chrome, Edge, Safari */
@@ -113,7 +120,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 7%;
+    width: 10%;
     font-size: 16px;
     text-align: center;
 }
@@ -196,4 +203,12 @@
     .vihr-details-grid {
         grid-template-columns: 1fr;
     }
+}
+
+
+/* While dragging, show grabbing hand and disable text selection */
+.limit-table-height-visitor-wrap.dragging {
+    cursor: grabbing;
+    user-select: none;
+    opacity: 1;
 }

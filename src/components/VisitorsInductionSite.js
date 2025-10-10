@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./VisitorsInductionSite.css";
 import { ToastContainer, toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faPhone, faIdCard, faBuilding } from "@fortawesome/free-solid-svg-icons";
 import "react-toastify/dist/ReactToastify.css";
+import VisitorOTPLink from "./VisitorsInduction/VisitorOTPLink";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,7 +31,7 @@ const VisitorsInductionSite = ({
 
     const visitorId = qs.get("id") || "";
     const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-
+    const [visitor, setVisitor] = useState(null);
     const [form, setForm] = useState({
         name: "",
         surname: "",
@@ -39,6 +40,8 @@ const VisitorsInductionSite = ({
         idNumber: "",
         company: "",
     });
+    const navigate = useNavigate();
+    const [otpCompleted, setOTPCompleted] = useState(false);
 
     const [consent1, setConsent1] = useState(false);
     const [consent2, setConsent2] = useState(false);
@@ -46,19 +49,6 @@ const VisitorsInductionSite = ({
     const [isValidating, setIsValidating] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false); // when true, the page is disabled
     const [submitting, setSubmitting] = useState(false);
-
-    // Prefill from query string
-    useEffect(() => {
-        const get = (k) => (qs.get(k) || "").trim();
-        setForm({
-            name: get("name"),
-            surname: get("surname"),
-            email: get("email"),
-            contact: get("contact") || get("contactNumber"),
-            idNumber: get("idNumber") || get("passport") || "",
-            company: get("company"),
-        });
-    }, [qs]);
 
     // Validate the link BEFORE allowing any interaction
     useEffect(() => {
@@ -74,11 +64,15 @@ const VisitorsInductionSite = ({
 
             try {
                 const res = await fetch(
-                    `${validateUrlBase}/${encodeURIComponent(visitorId)}?link=${encodeURIComponent(currentUrl)}`
+                    `${validateUrlBase}/${visitorId}`
                 );
 
+                if (res.status === 201) {
+                    navigate("/FrontendDMS/visitorLogin");
+                    return;
+                }
+
                 if (!res.ok) {
-                    // backend returns JSON with { valid:false, reason, expiredAt? }
                     const data = await res.json().catch(() => ({}));
                     const msg = reasonToMessage(data?.reason, data?.expiredAt);
                     toast.error(msg, { autoClose: 4000 });
@@ -88,17 +82,6 @@ const VisitorsInductionSite = ({
                     return;
                 }
 
-                const data = await res.json().catch(() => null);
-                if (!data?.valid) {
-                    const msg = reasonToMessage(data?.reason, data?.expiredAt);
-                    toast.error(msg, { autoClose: 4000 });
-                    setIsBlocked(true);
-                    setIsValidating(false);
-                    setTimeout(() => (window.location.href = loginRedirectPath), 5000);
-                    return;
-                }
-
-                // Valid link — allow interaction
                 setIsBlocked(false);
                 setIsValidating(false);
             } catch (e) {
@@ -109,12 +92,23 @@ const VisitorsInductionSite = ({
                 setTimeout(() => (window.location.href = loginRedirectPath), 5000);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visitorId, validateUrlBase, loginRedirectPath, currentUrl]);
 
     const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-    // Validations
+    useEffect(() => {
+        if (visitor) {
+            setForm({
+                name: visitor.name || "",
+                surname: visitor.surname || "",
+                email: visitor.email || "",
+                contact: visitor.contactNr || visitor.contact || "",
+                idNumber: visitor.idNumber || visitor.passport || "",
+                company: visitor.company || "",
+            });
+        }
+    }, [visitor]);
+
     const validate = () => {
         const f = {
             name: form.name.trim(),
@@ -148,8 +142,6 @@ const VisitorsInductionSite = ({
             return;
         }
 
-        // Backend expects PATCH + whitelisted keys (name, surname, email, contactNr, idNumber, company)
-        // and requires the ?link= to match what was validated. :contentReference[oaicite:2]{index=2}
         const payload = {
             name: form.name.trim(),
             surname: form.surname.trim(),
@@ -162,7 +154,7 @@ const VisitorsInductionSite = ({
         try {
             setSubmitting(true);
             const res = await fetch(
-                `${submitUrlBase}/${encodeURIComponent(visitorId)}?link=${encodeURIComponent(currentUrl)}`,
+                `${submitUrlBase}/${visitorId}`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
@@ -176,6 +168,10 @@ const VisitorsInductionSite = ({
             }
 
             toast.success("Submitted!", { autoClose: 1500 });
+
+            setTimeout(() => {
+                navigate("/FrontendDMS/visitorLogin");
+            }, 1500);
         } catch (err) {
             console.error("Submit failed:", err);
             toast.error("Submission failed. Please try again.", { autoClose: 1600 });
@@ -208,7 +204,7 @@ const VisitorsInductionSite = ({
             )}
 
             <div className="visitors-induction-card visitors-induction-card-wide" aria-disabled={pageDisabled}>
-                <img src="/CH_Logo.svg" alt="ComplianceHub" className="visitors-induction-logo-img" />
+                <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="ComplianceHub" className="visitors-induction-logo-img" />
                 <div className="visitors-induction-login-title">ComplianceHub{"\u2122"}</div>
                 <div className="visitor-info-heading">Visitor Information</div>
 
@@ -316,6 +312,7 @@ const VisitorsInductionSite = ({
                     </div>
                 </form>
             </div>
+            {!otpCompleted && (<VisitorOTPLink otpCompleted={otpCompleted} setOtpCompleted={setOTPCompleted} userID={visitorId} setVisitor={setVisitor} />)}
             <ToastContainer />
         </div>
     );

@@ -1,39 +1,28 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { saveAs } from "file-saver";
 import TermTable from "../../CreatePage/TermTable";
 import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
-import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import TopBarDD from "../../Notifications/TopBarDD";
-import SaveAsPopup from "../../Popups/SaveAsPopup";
-import GenerateDraftPopup from "../../Popups/GenerateDraftPopup";
-import DraftPopup from "../../Popups/DraftPopup";
-import DocumentWorkflow from "../../Popups/DocumentWorkflow";
 import { v4 as uuidv4 } from "uuid";
 import { canIn, getCurrentUser } from "../../../utils/auth";
 import InductionAssessment from "./InductionAssessment";
 import InductionContent from "./InductionContent";
 import InductionSummary from "./InductionSummary";
-import LoadDraftPopup from "../../CreatePage/LoadDraftPopup";
-import SharePage from "../../CreatePage/SharePage";
 import InductionOutline from "./InductionOutline";
-import LoadIndcutionDraftPopup from "./LoadIndcutionDraftPopup";
 import SaveAsInductionPopup from "./SaveAsInductionPopup";
 
-const InductionCreationPage = () => {
+const InductionReviewPage = () => {
   const navigate = useNavigate();
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [share, setShare] = useState(false);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
   const access = getCurrentUser();
   const [loadedID, setLoadedID] = useState('');
-  const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
@@ -42,12 +31,16 @@ const InductionCreationPage = () => {
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
-  const [generatePopup, setGeneratePopup] = useState(false);
-  const [draftNote, setDraftNote] = useState(null);
-  const [showWorkflow, setShowWorkflow] = useState(null);
   const [loadingIntro, setLoadingIntro] = useState(false);
   const [loadingObj, setLoadingObj] = useState(false);
-  const [publishable, setPublishable] = useState(false);
+  const [publishable, setPublishable] = useState(true);
+  const fileID = useParams().fileId;
+
+  useEffect(() => {
+    if (fileID) {
+      loadData(fileID);
+    }
+  }, [fileID]);
 
   const [rewriteHistory, setRewriteHistory] = useState({
     introduction: [],
@@ -121,7 +114,7 @@ const InductionCreationPage = () => {
     }
   }
 
-  const objectUrlCacheRef = useRef(new Map()); // fileId -> objectURL
+  const objectUrlCacheRef = useRef(new Map());
 
   function revokeAllObjectUrls() {
     for (const url of objectUrlCacheRef.current.values()) URL.revokeObjectURL(url);
@@ -152,7 +145,7 @@ const InductionCreationPage = () => {
             continue;
           }
 
-          const url = `${apiBase}/api/visitorDrafts/media/${encodeURIComponent(media.fileId)}`;
+          const url = `${apiBase}/api/visitorDrafts/mediaPublished/${encodeURIComponent(media.fileId)}`;
           jobs.push(
             fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
               .then(async (res) => {
@@ -177,26 +170,9 @@ const InductionCreationPage = () => {
     return draft;
   }
 
-  // Clean up created ObjectURLs when the component unmounts or when you load a different draft
   useEffect(() => {
     return () => revokeAllObjectUrls();
   }, []);
-
-  const openWorkflow = () => {
-    setShowWorkflow(true);
-  }
-
-  const closeWorkflow = () => {
-    setShowWorkflow(false);
-  }
-
-  const openDraftNote = () => {
-    setDraftNote(true);
-  }
-
-  const closeDraftNote = () => {
-    setDraftNote(false);
-  }
 
   const openSaveAs = () => {
     if (!titleSet) {
@@ -233,10 +209,7 @@ const InductionCreationPage = () => {
     loadedIDRef.current = '';
     setLoadedID('');
 
-    const newId = await saveData();           // <-- returns the new draft id
-    if (newId) {
-      await loadData(newId);
-    }
+    saveAsData();
 
     toast.dismiss();
     toast.clearWaitingQueue();
@@ -298,44 +271,19 @@ const InductionCreationPage = () => {
     return fd;
   }
 
-  const openShare = () => {
-    if (loadedID) {
-      setShare(true);
-    } else {
+  const handleSave = () => {
+    if (formData.courseTitle !== "") {
+      updateData();
+
       toast.dismiss();
       toast.clearWaitingQueue();
-      toast.warn("Please save a draft before sharing.", {
+      toast.success("Draft has been successfully saved", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
       });
-    }
-  };
-
-  const closeShare = () => { setShare(false); };
-  const openLoadPopup = () => setLoadPopupOpen(true);
-  const closeLoadPopup = () => setLoadPopupOpen(false);
-
-  const handleSave = () => {
-    if (formData.courseTitle !== "") {
-      if (loadedIDRef.current === '') {
-        saveData();
-
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("Draft has been successfully saved", {
-          closeButton: true,
-          autoClose: 1500, // 1.5 seconds
-          style: {
-            textAlign: 'center'
-          }
-        });
-      }
-      else if (loadedIDRef.current !== '') {
-        updateData(userIDsRef.current);
-      }
     }
     else {
       toast.dismiss();
@@ -350,21 +298,24 @@ const InductionCreationPage = () => {
     }
   };
 
-  async function saveData() {
+  const saveAsData = async () => {
     const fd = buildDraftFormData(formDataRef.current);
 
-    const res = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/safe`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` },
-      body: fd
-    });
-    const result = await res.json();
-    if (result.id) { setLoadedID(result.id); loadedIDRef.current = result.id; }
-    return result.id || null;
-  }
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/safe`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: fd,
+      });
+      const result = await response.json();
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  };
 
-
-  async function updateData(selectedUserIDs) {
+  async function updateData() {
     const wire = structuredClone(formDataRef.current);
     const fd = new FormData();
 
@@ -372,7 +323,6 @@ const InductionCreationPage = () => {
       usedAbbrCodes: usedAbbrCodesRef.current,
       usedTermCodes: usedTermCodesRef.current,
       formData: wire,
-      userIDs: selectedUserIDs,
       updater: userIDRef.current,
       dateUpdated: new Date().toISOString(),
       userID
@@ -398,62 +348,11 @@ const InductionCreationPage = () => {
 
     fd.append("draft", JSON.stringify(payload));
 
-    const res = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/modifySafe/${loadedIDRef.current}`, {
+    await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/modifyPublishedInduction/${loadedIDRef.current}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` },
       body: fd
     });
-
-    if (!res.ok) {
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Failure when saving draft", {
-        closeButton: true,
-        autoClose: 800,
-        style: { textAlign: "center" }
-      });
-    }
-
-    toast.dismiss();
-    toast.clearWaitingQueue();
-    toast.success("Draft has been successfully updated", {
-      closeButton: true,
-      autoClose: 800, // 1.5 seconds
-      style: {
-        textAlign: 'center'
-      }
-    });
-  }
-
-  const handleClick = () => {
-    const newErrors = validateForm();
-
-    if (Object.keys(newErrors).length > 0) {
-      if (titleSet)
-        setGeneratePopup(true);
-
-      if (!titleSet) {
-        toast.error("Please fill in a title", {
-          closeButton: true,
-          autoClose: 800, // 1.5 seconds
-          style: {
-            textAlign: 'center'
-          }
-        });
-      }
-    } else {
-      handleGeneratePDF();  // Call your function when the form is valid
-    }
-  };
-
-  const cancelGenerate = () => {
-    const newErrors = validateForm();
-    setErrors(newErrors);
-    setGeneratePopup(false);
-  }
-
-  const closeGenerate = () => {
-    setGeneratePopup(false);
   }
 
   const handlePubClick = () => {
@@ -489,7 +388,7 @@ const InductionCreationPage = () => {
 
   const loadData = async (loadID) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/load/${loadID}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/loadPublishedInduction/${loadID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` } // if your load route is protected
       });
       const storedData = await response.json();
@@ -497,8 +396,6 @@ const InductionCreationPage = () => {
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
       setUserIDs(storedData.userIDs || []);
-      console.log(storedData)
-      setPublishable(storedData.publishable);
 
       const rawForm = storedData.formData || {};
       const normalizedForm = {
@@ -517,23 +414,6 @@ const InductionCreationPage = () => {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  };
-
-  const capitalizeWords = (text) =>
-    text
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
-  const updateRefRow = (index, field, value) => {
-    const updatedRefRows = [...formData.references];
-    updatedRefRows[index][field] = value;  // Update the specific field in the row
-
-    setFormData({
-      ...formData,
-      references: updatedRefRows,  // Update the procedure rows in state
-    });
   };
 
   const [formData, setFormData] = useState({
@@ -616,19 +496,10 @@ const InductionCreationPage = () => {
   const autoSaveDraft = () => {
     if (formData.courseTitle.trim() === "") return;
 
-    if (loadedIDRef.current === '') {
-      saveData();
-      console.log("📝 autoSaveDraft() triggered 1");
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Draft has been auto-saved", {
-        closeButton: true,
-        style: {
-          textAlign: 'center'
-        }
-      });
-    } else {
-      updateData(userIDsRef.current);
+
+
+    if (loadedIDRef.current !== '') {
+      updateData();
       console.log("📝 autoSaveDraft() triggered 2");
       toast.dismiss();
       toast.clearWaitingQueue();
@@ -728,53 +599,8 @@ const InductionCreationPage = () => {
     }
   };
 
-  const updateRefRows = (newRef) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      references: newRef, // Update procedureRows with new data
-    }));
-  };
-
   const validateForm = () => {
     const newErrors = {};
-    return newErrors;
-
-    if (!formData.courseTitle) newErrors.title = true;
-    if (!formData.documentType) newErrors.documentType = true;
-    if (!formData.aim) newErrors.aim = true;
-    if (!formData.scope) newErrors.scope = true;
-    if (!formData.reviewDate) newErrors.reviewDate = true;
-    if (formData.abbrRows.length === 0) newErrors.abbrs = true;
-    if (formData.termRows.length === 0) newErrors.terms = true;
-
-    if (formData.procedureRows.length === 0) {
-      newErrors.procedureRows = true;
-    } else {
-      formData.procedureRows.forEach((row, index) => {
-        if (!row.mainStep) newErrors.procedureRows = true;
-        if (!row.SubStep) newErrors.procedureRows = true;
-        if (!row.accountable) newErrors.procedureRows = true;
-        if (!row.responsible) newErrors.procedureRows = true;
-      });
-    }
-
-    if (formData.rows.length === 0) {
-      newErrors.signs = true;
-    } else {
-      formData.rows.forEach((row, index) => {
-        if (!row.name) newErrors.signs = true;
-      });
-    }
-
-    if (formData.references.length === 0) {
-      newErrors.reference = true;
-    } else {
-      formData.references.forEach((row, index) => {
-        if (!row.ref) newErrors.reference = true;
-        if (!row.refDesc) newErrors.reference = true;
-      });
-    }
-
     return newErrors;
   };
 
@@ -804,81 +630,18 @@ const InductionCreationPage = () => {
     }
   };
 
-  const addRefRow = () => {
-    const lastNr = formData.references.length > 0 && typeof formData.references[formData.references.length - 1].nr === 'number'
-      ? formData.references[formData.references.length - 1].nr
-      : 0; // Safely get the last nr value or 0 if no rows exist or nr is not a number
-
-    setFormData({
-      ...formData,
-      references: [
-        ...formData.references,
-        {
-          nr: lastNr + 1,
-          ref: '',
-          refDesc: ''
-        }
-      ]
-    });
-  };
-
-  const removeRefRow = (indexToRemove) => {
-    setFormData({
-      ...formData,
-      references: formData.references.filter((_, index) => index !== indexToRemove),
-    });
-  };
-
-  const handleGeneratePDF = async () => {
-    const dataToStore = {
-      usedAbbrCodes,       // your current state values
-      usedTermCodes,
-      formData,
-      userID,
-      azureFN: ""
-    };
-
-    if (generatePopup) {
-      setGeneratePopup(false);
-    }
-    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/docCreate/generate-docx`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify(dataToStore),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate document");
-
-      const blob = await response.blob();
-      saveAs(blob, `${documentName}.docx`);
-      setLoading(false);
-      openDraftNote();
-    } catch (error) {
-      console.error("Error generating document:", error);
-      setLoading(false);
-    }
-  };
-
   const handlePublish = async () => {
     const dataToStore = {
       usedAbbrCodes,       // your current state values
       usedTermCodes,
       formData,
-      userID,
-      draftID: loadedIDRef.current
+      userID
     };
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/publish-induction`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/republishInduction/${fileID}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -898,10 +661,6 @@ const InductionCreationPage = () => {
       });
 
       setLoading(false);
-
-      setTimeout(() => {
-        navigate('/FrontendDMS/generatedInductionInfo');
-      }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);
       setLoading(false);
@@ -920,31 +679,6 @@ const InductionCreationPage = () => {
             <p className="logo-text-um" onClick={() => console.log(formData)}>Training Management</p>
           </div>
 
-          <div className="button-container-create">
-            <button className="but-um" onClick={() => openLoadPopup()} style={{ height: "62px" }}>
-              <div className="button-content">
-                <span className="button-logo-custom" aria-hidden="true">
-                  <FontAwesomeIcon icon={faFolderOpenSolid} className="icon-base-draft" />
-                  <FontAwesomeIcon icon={faArrowUp} className="icon-badge-draft" />
-                </span>
-                <span className="button-text">Saved Drafts</span>
-              </div>
-            </button>
-            <button className="but-um" onClick={() => navigate("/FrontendDMS/generatedInductionInfo")}>
-              <div className="button-content">
-                <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                <span className="button-text">Published Visitor Induction</span>
-              </div>
-            </button>
-            <div className="horizontal-divider-with-icon">
-              <hr />
-              <div className="divider-icon">
-                <FontAwesomeIcon icon={faInfo} onClick={openWorkflow} />
-              </div>
-              <hr />
-            </div>
-          </div>
-
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">{"Visitor Induction"}</p>
@@ -959,9 +693,6 @@ const InductionCreationPage = () => {
           </div>
         </div>
       )}
-
-      {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
-      {isLoadPopupOpen && <LoadIndcutionDraftPopup isOpen={isLoadPopupOpen} onClose={closeLoadPopup} setLoadedID={setLoadedID} loadData={loadData} userID={userID} />}
 
       <div className="main-box-create">
         <div className="top-section-create-page">
@@ -993,10 +724,6 @@ const InductionCreationPage = () => {
               <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-            </div>
-
             {publishable && (<div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
             </div>)}
@@ -1021,6 +748,7 @@ const InductionCreationPage = () => {
                   value={formData.courseTitle}
                   onChange={handleInputChange}
                   placeholder="Insert Visitor Induction Title"
+                  readOnly
                 />
               </div>
             </div>
@@ -1112,13 +840,10 @@ const InductionCreationPage = () => {
           <InductionAssessment formData={formData} setFormData={setFormData} />
         </div>
         {isSaveAsModalOpen && (<SaveAsInductionPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.courseTitle} type={""} userID={userID} create={true} />)}
-        {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
-        {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
-        {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
       </div>
       <ToastContainer />
     </div>
   );
 };
 
-export default InductionCreationPage;
+export default InductionReviewPage;

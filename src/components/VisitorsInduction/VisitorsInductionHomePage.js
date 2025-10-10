@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faX, faFileCirclePlus, faSearch, faArrowLeft, faEdit, faTrash, faShare, faShareAlt, faCirclePlay, faCirclePlus, faBookOpen, faDownload, faBook, faUser, faUserGroup } from '@fortawesome/free-solid-svg-icons';
@@ -15,9 +15,68 @@ import CreateBatchProfiles from "./Popups/CreateBatchProfiles";
 import BatchExcelUpload from "./Popups/BatchExcelUpload";
 import CreateProfileLink from "./Popups/CreateProfileLink";
 import DeleteVisitor from "./Popups/DeleteVisitor";
+import SortPopupVisitors from "./Popups/SortPopupVisitors";
 
 const VisitorsInductionHomePage = () => {
     const [expandedRow, setExpandedRow] = useState(null);
+    const scrollerRef = React.useRef(null);
+    const dragRef = React.useRef({
+        active: false,
+        startX: 0,
+        startScrollLeft: 0,
+        hasDragged: false
+    });
+    const [isDraggingX, setIsDraggingX] = useState(false);
+
+    const DRAG_THRESHOLD = 5;
+
+    const isInteractive = (el) =>
+        !!el.closest('button, a, input, textarea, select, [role="button"], .no-drag');
+
+    const onPointerDownX = (e) => {
+        const el = scrollerRef.current;
+        if (!el) return;
+
+        // If the press is on an interactive element, don't start drag logic
+        if (isInteractive(e.target)) return;
+
+        dragRef.current.active = true;
+        dragRef.current.hasDragged = false;
+        dragRef.current.startX = e.clientX;
+        dragRef.current.startScrollLeft = el.scrollLeft;
+        // IMPORTANT: do NOT set isDraggingX yet; wait until we cross threshold
+    };
+
+    const onPointerMoveX = (e) => {
+        const el = scrollerRef.current;
+        if (!el || !dragRef.current.active) return;
+
+        const dx = e.clientX - dragRef.current.startX;
+
+        if (!dragRef.current.hasDragged) {
+            if (Math.abs(dx) >= DRAG_THRESHOLD) {
+                dragRef.current.hasDragged = true;
+                setIsDraggingX(true);
+                try { el.setPointerCapture?.(e.pointerId); } catch { }
+            } else {
+                return; // still a click, do nothing
+            }
+        }
+
+        el.scrollLeft = dragRef.current.startScrollLeft - dx;
+        // prevent text selection while actually dragging
+        e.preventDefault();
+    };
+
+    const endDragX = (e) => {
+        const el = scrollerRef.current;
+        if (dragRef.current.active && dragRef.current.hasDragged && e?.pointerId != null) {
+            try { el?.releasePointerCapture?.(e.pointerId); } catch { }
+        }
+        dragRef.current.active = false;
+        dragRef.current.hasDragged = false;
+        setIsDraggingX(false);
+    };
 
     const toggleRow = (rowKey) => {
         setExpandedRow((prev) => (prev === rowKey ? null : rowKey));
@@ -124,6 +183,13 @@ const VisitorsInductionHomePage = () => {
         setEmail("");
         setLinkId("");
         setShareLink(false);
+    }
+
+    const openUserLinkShare = (user) => {
+        setUsername(user.name);
+        setEmail(user.email);
+        setShareLink(true);
+        setLinkId(user._id);
     }
 
     const [files, setFiles] = useState([]);
@@ -267,112 +333,105 @@ const VisitorsInductionHomePage = () => {
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper">
                         <label className="risk-control-label">Visitor Profiles</label>
-                        <FontAwesomeIcon icon={faDownload} title="" className="top-right-button-control-att-2" />
-                        <FontAwesomeIcon icon={faBookOpen} title="Download" className="top-right-button-control-att" />
+                        <FontAwesomeIcon icon={faDownload} title="Download" className="top-right-button-control-att-2" />
+                        <FontAwesomeIcon icon={faBookOpen} title="Visitor" className="top-right-button-control-att" />
                     </div>
-                    <table className="limit-table-height-visitor">
-                        <thead>
-                            <tr>
-                                <th className="visitor-ind-num-filter col">Nr</th>
-                                <th className="visitor-ind-name-filter col">Name</th>
-                                <th className="visitor-ind-surname-filter col">Surname</th>
-                                <th className={`visitor-ind-company-filter col`}>Company</th>
-                                <th className={`visitor-ind-profileBy-filter col`}>Profile Created By</th>
-                                <th className={`visitor-ind-valid-filter col`}>Induction Validity</th>
-                                <th className={`visitor-ind-exp-filter col`}>Induction Expiry Date</th>
-                                <th className={`visitor-ind-vers-filter col`}>Induction Version Nr</th>
-                                {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (<th className="visitor-ind-act-filter col">Action</th>)}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map((file, index) => {
-                                const isExpanded = expandedRow === index;
+                    <div
+                        className={`limit-table-height-visitor-wrap ${isDraggingX ? 'dragging' : ''}`}
+                        ref={scrollerRef}
+                        onPointerDown={onPointerDownX}
+                        onPointerMove={onPointerMoveX}
+                        onPointerUp={endDragX}
+                        onPointerLeave={endDragX}
+                        onDragStart={(e) => e.preventDefault()}
+                    >
+                        <table className="limit-table-height-visitor">
+                            <thead>
+                                <tr>
+                                    <th className="visitor-ind-num-filter col">Nr</th>
+                                    <th className="visitor-ind-name-filter col">Name</th>
+                                    <th className="visitor-ind-surname-filter col">Surname</th>
+                                    <th className="visitor-ind-email-filter col">Email</th>
+                                    <th className="visitor-ind-company-filter col">Contact Number</th>
+                                    <th className="visitor-ind-company-filter col">ID/Passport</th>
+                                    <th className={`visitor-ind-company-filter col`}>Company</th>
+                                    <th className={`visitor-ind-profileBy-filter col`}>Profile Created By</th>
+                                    <th className={`visitor-ind-valid-filter col`}>Induction Validity</th>
+                                    <th className={`visitor-ind-exp-filter col`}>Induction Expiry Date</th>
+                                    <th className={`visitor-ind-vers-filter col`}>Induction Version Nr</th>
+                                    {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (<th className="visitor-ind-act-filter col">Action</th>)}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredFiles.map((file, index) => {
+                                    const isExpanded = expandedRow === index;
 
-                                return (
-                                    <React.Fragment key={index}>
-                                        <tr
-                                            className={`file-info-row-height vihr-expandable-row ${isExpanded ? "vihr-expandable-row--open" : ""}`}
-                                            style={{ cursor: "pointer" }}
-                                            onClick={() => toggleRow(index)}
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" || e.key === " ") {
-                                                    e.preventDefault();
-                                                    toggleRow(index);
-                                                }
-                                            }}
-                                            aria-expanded={isExpanded}
-                                        >
-                                            {/* keep your existing cells + classes exactly as they are */}
-                                            <td className="col">{index + 1}</td>
-                                            <td className="file-name-cell" style={{ textAlign: "center" }}>{file.name}</td>
-                                            <td className="col">{file.surname}</td>
-                                            <td className="col">{file.company}</td>
-                                            <td className="col">{file.profileCreatedBy?.username}</td>
-                                            <td className={`col ${getComplianceColor(file.validity)}`}>{formatStatus(file.validity)}</td>
-                                            <td className="col">{formatDate(file.expiryDate)}</td>
-                                            <td className="col">{file.indicationVersion}</td>
+                                    return (
+                                        <React.Fragment key={index}>
+                                            <tr
+                                                className={`file-info-row-height vihr-expandable-row ${isExpanded ? "vihr-expandable-row--open" : ""}`}
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => toggleRow(index)}
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" || e.key === " ") {
+                                                        e.preventDefault();
+                                                        toggleRow(index);
+                                                    }
+                                                }}
+                                                aria-expanded={isExpanded}
+                                            >
+                                                {/* keep your existing cells + classes exactly as they are */}
+                                                <td className="col">{index + 1}</td>
+                                                <td className="file-name-cell" style={{ textAlign: "center" }}>{file.name}</td>
+                                                <td className="col">{file.surname}</td>
+                                                <td className="col">{file.email}</td>
+                                                <td className="col">{file.contactNr}</td>
+                                                <td className="col">{file.idNumber}</td>
+                                                <td className="col">{file.company}</td>
+                                                <td className="col">{file.profileCreatedBy?.username}</td>
+                                                <td className={`col ${getComplianceColor(file.validity)}`}>{formatStatus(file.validity)}</td>
+                                                <td className="col">{formatDate(file.expiryDate)}</td>
+                                                <td className="col">{file.indicationVersion}</td>
 
-                                            {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (
-                                                <td className="col-act">
-                                                    <button
-                                                        className={"flame-delete-button-fi col-but-res"}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openShareLink(file.name, file.email, file._id);
-                                                        }}
-                                                    >
-                                                        <FontAwesomeIcon icon={faShareAlt} title="Share Link" />
-                                                    </button>
-                                                    <button
-                                                        className={"flame-delete-button-fi col-but"}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openDelete(file.name, file._id)
-                                                        }}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} title="Delete Account" />
-                                                    </button>
-                                                </td>
-                                            )}
-                                        </tr>
-
-                                        {isExpanded && (
-                                            <tr className="vihr-row-details">
-                                                <td colSpan={totalCols} className="vihr-row-details__cell">
-                                                    <div className="vihr-row-details__content">
-                                                        <div className="vihr-details-grid">
-                                                            <div>
-                                                                <div className="vihr-details__label">Email</div>
-                                                                <div className="vihr-details__value">{file.email}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="vihr-details__label">Contact Number</div>
-                                                                <div className="vihr-details__value">{file.contactNr}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="vihr-details__label">ID/Passport</div>
-                                                                <div className="vihr-details__value">{file.idNumber}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (
+                                                    <td className="col-act">
+                                                        <button
+                                                            className={"flame-delete-button-fi col-but-res"}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openShareLink(file.name, file.email, file._id);
+                                                            }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faShareAlt} title="Share Link" />
+                                                        </button>
+                                                        <button
+                                                            className={"flame-delete-button-fi col-but"}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openDelete(file.name, file._id)
+                                                            }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} title="Delete Account" />
+                                                        </button>
+                                                    </td>
+                                                )}
                                             </tr>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            {upload && (<CreateProfilePopup onClose={closeUpload} refresh={fetchFiles} />)}
+            {upload && (<CreateProfilePopup onClose={closeUpload} refresh={fetchFiles} openUserLinkShare={openUserLinkShare} />)}
             {batchProg && <CreateBatchProfiles onClose={closeBatchProg} openExcel={openBatchExcel} refresh={fetchFiles} />}
             {batchExcel && (<BatchExcelUpload onClose={closeBatchExcel} refresh={fetchFiles} />)}
             {shareLink && (<CreateProfileLink onClose={closeShareLink} visitorEmail={email} visitorName={username} profileId={linkId} />)}
             {deleteVisitor && (<DeleteVisitor closeModal={closeDelete} deleteVisitor={deleteVisitorInstance} name={deleteName} />)}
-            {isSortModalOpen && (<SortPopupAsset closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
+            {isSortModalOpen && (<SortPopupVisitors closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
             <ToastContainer />
         </div >
     );

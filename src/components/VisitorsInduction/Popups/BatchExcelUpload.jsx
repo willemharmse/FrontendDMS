@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import axios from "axios";
 
@@ -24,6 +24,15 @@ const BatchExcelUpload = ({ onClose, refresh }) => {
         setFile(event.target.files[0] ?? null);
         setMessage("");
         setErrors([]);
+    };
+
+    const downloadTemplateAsset = () => {
+        const link = document.createElement('a');
+        link.href = `${process.env.PUBLIC_URL}/TAU5 - Visitor Group List V0.2 (06.10.2025).xlsx`; // Adjust path as needed
+        link.setAttribute('download', 'TAU5 - Visitor Group List V0.2 (06.10.2025).xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const createErrorFile = (errLines) => {
@@ -99,6 +108,21 @@ const BatchExcelUpload = ({ onClose, refresh }) => {
                 <div className="batch-file-header">
                     <h2 className="batch-file-title">Create Visitor Group</h2>
                     <button className="batch-file-close" onClick={onClose} title="Close Popup">×</button>
+                </div>
+
+                <div className="import-si-file-group" style={{ position: "relative" }}>
+                    <button
+                        className="top-right-button-rsi"
+                        title="Download Template"
+                        onClick={() => downloadTemplateAsset()}
+                    >
+                        <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                    </button>
+                    <div className="import-si-file-text">Download Visitor Group List Template</div>
+                    <div className="import-si-label">Version</div>
+                    <div className="import-si-value">V0.2</div>
+                    <div className="import-si-label">Date Uploaded</div>
+                    <div className="import-si-value">2025-10-06</div>
                 </div>
 
                 <div className="batch-file-group-assets">

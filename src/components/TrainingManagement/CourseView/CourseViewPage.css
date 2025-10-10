@@ -1,26 +1,41 @@
+:root {
+    /* sensible default */
+    --media-max-h: 42vh;
+}
+
+/* Short viewports: allow taller media */
+@media (max-height: 700px) {
+    :root {
+        --media-max-h: 38vh;
+        --text-max-h: 42vh;
+    }
+}
+
+@media (min-height: 900px) {
+    :root {
+        --media-max-h: 55vh;
+        --text-max-h: 60vh;
+    }
+}
+
 .course-view-box {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    padding-top: 5px;
     background-color: #F0F0F0;
     border-radius: 8px;
     width: calc(100% - 40px);
-    height: calc(100% - 40px);
+    height: calc(100% - 75px);
 }
 
 .course-view-content {
     display: flex;
     flex-direction: column;
-    /* stack title on top of content */
-    background-color: #dadada;
-    border-radius: 8px;
     width: 100%;
-    height: 100%;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    color: white;
-    height: calc(100% - 50px);
-    /* adjust height to fit within box */
+    /* let inner children control scroll; prevent parent blowout */
+    flex: 1 1 auto;
+    height: calc(100% - 253px);
 }
 
 .course-view-title {
@@ -57,28 +72,44 @@
 
 /* Optional: if text column itself can be very long, make it scrollable too */
 .inductionView-text-box {
-    max-height: min(60vh, 520px);
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
+    max-height: var(--text-max-h);
+    min-width: 0;
     overflow: auto;
+    color: black;
+    font-size: 12px;
+}
+
+.inductionView-text-box-text {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    min-width: 0;
+    overflow: auto;
+    width: 100%;
+    font-size: 12px;
+    color: black;
 }
 
 .course-content-body {
-    font-size: 24px;
-    font-weight: bold;
     color: #002060;
-    text-align: center;
-    padding: 15px 20px;
-    background-color: #002060;
-    /* slightly different to stand out */
-    border-radius: 8px;
+    background: #002060;
     border: 1px solid #ccc;
+    border-radius: 8px;
     margin-bottom: 15px;
-    height: calc(100% - 0px);
-    /* adjust height to fit within box */
+
+    /* NEW: behave as a flexible card that lets children scroll */
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 15px 20px;
 }
 
-/* parent that wraps the text + table — fixed height, never grows */
 .course-content-body-outline {
-    /* existing aesthetics */
     font-size: 24px;
     font-weight: bold;
     color: black;
@@ -87,16 +118,46 @@
     background-color: #dadada;
     border-radius: 8px;
 
-    /* layout */
     display: flex;
     flex-direction: column;
     gap: 16px;
-
-    /* 🚩 fixed height; adjust to taste or use a CSS var */
-    height: calc(100% - 0px);
     flex: 1 1 auto;
-    overflow: hidden;
-    /* hide overflow here; inner area will scroll */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.recap-body {
+    background: #fff;
+    border-radius: 8px;
+    padding: 14px;
+
+    /* be a flex child that scrolls */
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    /* <-- recap text scrolls here */
+}
+
+.course-content-body-outline::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 5px;
+    height: 5px;
+}
+
+.course-content-body-outline::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.course-content-body-outline::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.course-content-body-outline::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 8px;
 }
 
 /* keep the labels stacked */
@@ -112,17 +173,27 @@
     font-size: 17px;
 }
 
+/* keep only ONE coherent rule set for this selector */
 .inductionView-slide-content {
     display: flex;
     flex-direction: column;
-    /* keep children stacked */
-    justify-content: center;
-    /* center them vertically */
-    height: calc(100% - 53px);
+    justify-content: flex-start;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    /* remove any fixed height so it truly fills below its own title */
+    height: auto !important;
+    overscroll-behavior: contain;
 }
 
 .inductionView-card-module-info {
-    height: calc(100% - 30px);
+    height: calc(100% - 0px);
+    display: flex;
+    /* NEW */
+    flex-direction: column;
+    /* NEW */
+    min-height: 0;
+    /* NEW: allow inner scroll area to shrink */
 }
 
 .inductionView-module-course-content {
@@ -130,11 +201,18 @@
     border-radius: 8px;
     padding: 14px;
     height: 100%;
+
+    display: flex;
+    /* NEW: title row + content column */
+    flex-direction: column;
+    /* NEW */
+    min-height: 0;
+    /* NEW */
 }
 
 /* Constrain oversized media and allow scrolling if it's too tall */
 .inductionView-media-box {
-    max-height: min(60vh, 520px);
+    max-height: var(--media-max-h);
     /* fits most screens without overwhelming */
     overflow: auto;
     /* scroll if the media is taller */
@@ -142,6 +220,7 @@
     /* center the media nicely within the box */
     align-items: center;
     justify-content: center;
+    padding-top: 5px;
 }
 
 /* Make media fit inside the box without stretching */
@@ -156,9 +235,9 @@
     border-radius: 6px;
 }
 
-.course-outline-table {
+.course-outline-table-visitorView {
     position: relative;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
     overflow-y: auto;
     overflow-x: auto;
@@ -166,7 +245,7 @@
     background: white;
 }
 
-.course-outline-table table {
+.course-outline-table-visitorView table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -176,24 +255,43 @@
 .inductionView-intro-center {
     display: flex;
     flex-direction: column;
-    /* keep children stacked */
-    justify-content: center;
-    /* center them vertically */
-    height: 100%;
+    gap: 12px;
+    flex: 1 1 auto;
+    /* take all space below the title */
+    min-height: 0;
+    /* critical for flex overflow */
+    overflow: auto;
+    /* scroll inside here */
+    padding-right: 6px;
+    justify-content: flex-start;
+    /* start at the top, not centered */
+
+    /* stop scroll from bubbling to parents (prevents the "freeze") */
+    overscroll-behavior: contain;
+    -ms-scroll-chaining: none;
+    /* legacy Edge */
+    touch-action: pan-y;
+    /* smoother touch scroll on mobile */
 }
 
 .inductionView-intro {
-    min-height: calc(100% - 30px);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    /* allow inner child to shrink */
+    overflow: hidden;
+    /* card itself shouldn't scroll */
 }
 
-.course-outline-table th {
+.course-outline-table-visitorView th {
     border: 1px solid #ccc;
     padding: 8px 12px;
     text-align: left;
     color: #000;
 }
 
-.course-outline-table td {
+.course-outline-table-visitorView td {
     border: 1px solid #ccc;
     padding: 8px 12px;
     text-align: left;
@@ -201,14 +299,14 @@
     font-size: 14px;
 }
 
-.course-outline-table thead th {
+.course-outline-table-visitorView thead th {
     background: rgb(190, 190, 190);
     font-weight: 600;
     font-size: 16px;
 }
 
 /* (optional) keep header visible while table scrolls */
-.course-outline-table thead th {
+.course-outline-table-visitorView thead th {
     position: sticky;
     top: 0;
     z-index: 1;
@@ -221,15 +319,38 @@
     align-items: center;
     background-color: #c4c4c4;
     /* grey bar */
+    padding: 10px 0;
+    border-radius: 4px;
+    gap: 20px;
+    /* gap between buttons for the "split" effect */
+}
+
+.course-nav-bar-subScreen {
+    display: flex;
+    justify-content: center;
+    /* center the button group */
+    align-items: center;
+    /* grey bar */
     padding: 15px 0;
     border-radius: 4px;
     gap: 20px;
     /* gap between buttons for the "split" effect */
 }
 
+.nav-text-title {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    color: #002060;
+    font-size: 20px;
+    font-weight: 500;
+}
+
 .course-nav-button {
     height: 100% !important;
-    width: 10%;
+    width: 20%;
     /* 10% of the bar width */
     background: linear-gradient(to bottom,
             #6688cc 0%,
@@ -248,6 +369,126 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
+}
+
+.course-nav-button-startAss {
+    height: 100% !important;
+    width: 20%;
+    /* 10% of the bar width */
+    background: linear-gradient(to bottom,
+            #6688cc 0%,
+            #003080 25%,
+            #002060 50%,
+            #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.course-nav-button-startAss2 {
+    height: 100% !important;
+    width: 30%;
+    /* 10% of the bar width */
+    background: linear-gradient(to bottom,
+            #6688cc 0%,
+            #003080 25%,
+            #002060 50%,
+            #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.course-nav-button-disabled {
+    height: 100% !important;
+    width: 20%;
+    /* 10% of the bar width */
+    background: lightgray;
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: not-allowed;
+    font-size: 14px;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.but-um-sidebar-button {
+    background: linear-gradient(180deg,
+            #ffffff 0%,
+            /* Bright highlight */
+            #d9d9d9 30%,
+            /* Light silver */
+            #a8a8a8 60%,
+            /* Mid-tone silver */
+            #707070 100%
+            /* Darker base */
+        );
+    border: none;
+    color: #002060;
+    /* White text for contrast */
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+        inset -3px -3px 5px rgba(0, 0, 0, 0.6),
+        /* Inner bottom-right shadow */
+        2px 2px 4px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    width: 85%;
+    margin: 5px 0;
+    /* Adds spacing between buttons */
+    display: flex;
+    justify-content: center;
+    /* Centers text inside button */
+    align-items: center;
+    /* Centers vertically */
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 40px;
+    /* Add extra padding on the left to accommodate the icon */
+    padding-right: 20px;
+}
+
+.but-um-sidebar-button.active {
+    background: linear-gradient(180deg,
+            #c0c0c0 0%,
+            /* darker highlight */
+            #a0a0a0 30%,
+            /* mid-grey */
+            #808080 60%,
+            /* darker mid */
+            #505050 100%
+            /* darkest */
+        );
+    color: #fff;
+    /* white text when active */
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .course-nav-button:hover {
@@ -342,9 +583,9 @@
 
 /* Full green pass screen */
 .assessment-pass-screen {
-    background: #7EAC89;
+    background: #CBDECF;
     /* rich green */
-    color: #fff;
+    color: black;
     border-radius: 8px;
     height: 100%;
     display: flex;
@@ -359,13 +600,25 @@
 
 .assessment-pass-title {
     font-size: 28px;
-    font-weight: 800;
+    font-weight: normal;
     margin-bottom: 8px;
 }
 
+.assessment-fail-screen {
+    background: #EAC5C5;
+    /* strong red */
+    color: black;
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
 .assessment-pass-grade {
-    font-size: clamp(48px, 10vw, 96px);
-    font-weight: 900;
+    font-size: 28px;
+    font-weight: normal;
     line-height: 1;
     margin: 6px 0 10px 0;
 }
@@ -380,4 +633,141 @@
     display: flex;
     gap: 12px;
     justify-content: center;
+}
+
+/* ====== Title row with progress on the right ====== */
+.course-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.viewer-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.viewer-progress-bar {
+    position: relative;
+    width: 180px;
+    /* adjust width as you like */
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.viewer-progress-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: #002060;
+    /* same green vibe as your pass screen */
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.viewer-progress-bar-fill-ip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: #FFFF89;
+    /* same green vibe as your pass screen */
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.viewer-progress-label {
+    color: #002060;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* slide title row with right-aligned duration */
+.slide-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.slide-title-left {
+    font-weight: 800;
+    font-size: 22px;
+    color: #0b2f6b;
+    text-align: left;
+}
+
+/* right-most duration chip */
+.slide-title-right {
+    display: flex;
+    align-items: center;
+}
+
+.slide-duration-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 14px;
+    background: #eaeaea;
+    color: #002060;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* White recap card wrapper */
+.recap-card {
+    background: transparent;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    /* critical so inner overflow works in flex parents */
+    overflow: hidden;
+}
+
+/* Title sits on the white box and does NOT scroll */
+.recap-title {
+    font-weight: 800;
+    font-size: 22px;
+    color: #0b2f6b;
+    text-align: left;
+    padding: 12px 14px;
+    padding-bottom: 0px;
+    position: sticky;
+    /* <- the magic */
+    top: 0;
+    z-index: 1;
+    background: transparent;
+}
+
+/* Only the recap text scrolls */
+.recap-content {
+    padding: 12px 14px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.45;
+    color: black;
+    text-align: left;
+}
+
+.course-view-content,
+.inductionView-card-module-info,
+.inductionView-module-course-content {
+    min-height: 0;
+    /* already present in places, enforce consistently */
+}
+
+.inductionView-module-course-content {
+    overflow: hidden;
+    /* keeps the card visually intact */
 }

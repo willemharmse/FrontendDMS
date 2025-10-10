@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faChevronDown, faCirclePlus, faTrash, faMagicWandSparkles } from "@fortawesome/free-solid-svg-icons";
+import {
+    faChevronRight,
+    faChevronDown,
+    faCirclePlus,
+    faTrash,
+    faMagicWandSparkles,
+    faRotateLeft,
+    faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import "./CourseCreationPage.css";
 import TypeSelectorPopup from "./TypeSelectorPopup";
 
@@ -10,6 +18,8 @@ const SLIDE_TYPES = {
     TEXT_MEDIA: "TEXT_MEDIA",
     MEDIA: "MEDIA",
 };
+
+const CONTENT_REWRITE_ENDPOINT = `${process.env.REACT_APP_URL}/api/openai/chatInduction/content`;
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -124,8 +134,56 @@ const InductionContent = ({ formData, setFormData }) => {
         topics: Array.isArray(m.topics) ? m.topics : [],
     })), [formData?.courseModules]);
 
-    const [slidePickerFor, setSlidePickerFor] = useState(null);   // { moduleIndex, topicIndex } | null
+    const [slidePickerFor, setSlidePickerFor] = useState(null); // { moduleIndex, topicIndex } | null
     const [inlineSlidePicker, setInlineSlidePicker] = useState(null); // { moduleIndex, topicIndex, slideIndex } | null
+
+    // ---------- AI rewrite state (per-slide) ----------
+    const [contentHistory, setContentHistory] = useState({}); // { [slideId]: [prev1, prev2, ...] }
+    const [loadingMap, setLoadingMap] = useState({}); // { [slideId]: boolean }
+
+    const pushHistory = (slideId, value) =>
+        setContentHistory((prev) => ({
+            ...prev,
+            [slideId]: [...(prev[slideId] || []), value],
+        }));
+
+    const hasHistory = (slideId) => (contentHistory[slideId]?.length || 0) > 0;
+
+    const setLoading = (slideId, val) =>
+        setLoadingMap((prev) => ({ ...prev, [slideId]: !!val }));
+
+    const rewriteSlideContent = async (mIdx, tIdx, slide) => {
+        try {
+            const prompt = slide.content || "";
+            pushHistory(slide.id, prompt);
+            setLoading(slide.id, true);
+
+            const resp = await fetch(CONTENT_REWRITE_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const { response: newText } = await resp.json();
+            changeSlideField(mIdx, tIdx, slide.id, "content", newText || "");
+        } catch (err) {
+            console.error("AI rewrite error:", err);
+        } finally {
+            setLoading(slide.id, false);
+        }
+    };
+
+    const undoSlideContent = (mIdx, tIdx, slideId) =>
+        setContentHistory((prev) => {
+            const stack = prev[slideId] || [];
+            if (!stack.length) return prev;
+            const last = stack[stack.length - 1];
+            changeSlideField(mIdx, tIdx, slideId, "content", last);
+            return { ...prev, [slideId]: stack.slice(0, -1) };
+        });
 
     const updateModules = (next) =>
         setFormData((prev) => ({ ...(prev || {}), courseModules: next }));
@@ -137,11 +195,18 @@ const InductionContent = ({ formData, setFormData }) => {
         next.splice(mIdx + 1, 0, emptyModule(""));
         updateModules(next);
     };
-    const removeModule = (moduleId) => updateModules(safeModules.filter(m => m.id !== moduleId));
+    const removeModule = (moduleId) =>
+        updateModules(safeModules.filter((m) => m.id !== moduleId));
     const changeModuleField = (moduleId, field, value) =>
-        updateModules(safeModules.map(m => m.id === moduleId ? { ...m, [field]: value } : m));
+        updateModules(
+            safeModules.map((m) => (m.id === moduleId ? { ...m, [field]: value } : m))
+        );
     const toggleModuleCollapse = (moduleId) =>
-        updateModules(safeModules.map(m => m.id === moduleId ? { ...m, collapsed: !m.collapsed } : m));
+        updateModules(
+            safeModules.map((m) =>
+                m.id === moduleId ? { ...m, collapsed: !m.collapsed } : m
+            )
+        );
 
     // ----- Topic ops -----
     const addTopicToModule = (mIdx) => {
@@ -160,19 +225,26 @@ const InductionContent = ({ formData, setFormData }) => {
     };
     const changeTopicField = (mIdx, topicId, field, value) => {
         const next = [...safeModules];
-        const topics = next[mIdx].topics.map(t => t.id === topicId ? { ...t, [field]: value } : t);
+        const topics = next[mIdx].topics.map((t) =>
+            t.id === topicId ? { ...t, [field]: value } : t
+        );
         next[mIdx] = { ...next[mIdx], topics };
         updateModules(next);
     };
     const toggleTopicCollapse = (mIdx, topicId) => {
         const next = [...safeModules];
-        const topics = next[mIdx].topics.map(t => t.id === topicId ? { ...t, collapsed: !t.collapsed } : t);
+        const topics = next[mIdx].topics.map((t) =>
+            t.id === topicId ? { ...t, collapsed: !t.collapsed } : t
+        );
         next[mIdx] = { ...next[mIdx], topics };
         updateModules(next);
     };
     const removeTopic = (mIdx, topicId) => {
         const next = [...safeModules];
-        next[mIdx] = { ...next[mIdx], topics: next[mIdx].topics.filter(t => t.id !== topicId) };
+        next[mIdx] = {
+            ...next[mIdx],
+            topics: next[mIdx].topics.filter((t) => t.id !== topicId),
+        };
         updateModules(next);
     };
 
@@ -194,28 +266,34 @@ const InductionContent = ({ formData, setFormData }) => {
     };
     const changeSlideField = (mIdx, tIdx, slideId, field, value) => {
         const next = [...safeModules];
-        const slides = next[mIdx].topics[tIdx].slides.map(s => s.id === slideId ? { ...s, [field]: value } : s);
+        const slides = next[mIdx].topics[tIdx].slides.map((s) =>
+            s.id === slideId ? { ...s, [field]: value } : s
+        );
         next[mIdx].topics[tIdx] = { ...next[mIdx].topics[tIdx], slides };
         updateModules(next);
     };
     const toggleSlideCollapse = (mIdx, tIdx, slideId) => {
         const next = [...safeModules];
-        const slides = next[mIdx].topics[tIdx].slides.map(s => s.id === slideId ? { ...s, collapsed: !s.collapsed } : s);
+        const slides = next[mIdx].topics[tIdx].slides.map((s) =>
+            s.id === slideId ? { ...s, collapsed: !s.collapsed } : s
+        );
         next[mIdx].topics[tIdx] = { ...next[mIdx].topics[tIdx], slides };
         updateModules(next);
     };
     const removeSlide = (mIdx, tIdx, slideId) => {
         const next = [...safeModules];
-        const slides = next[mIdx].topics[tIdx].slides.filter(s => s.id !== slideId);
+        const slides = next[mIdx].topics[tIdx].slides.filter((s) => s.id !== slideId);
         next[mIdx].topics[tIdx] = { ...next[mIdx].topics[tIdx], slides };
         updateModules(next);
     };
     const onMediaChange = (mIdx, tIdx, slideId, file) => {
         const next = [...safeModules];
-        const slides = next[mIdx].topics[tIdx].slides.map(s => {
+        const slides = next[mIdx].topics[tIdx].slides.map((s) => {
             if (s.id !== slideId) return s;
             if (s.mediaPreview && s.mediaPreview.startsWith("blob:")) {
-                try { URL.revokeObjectURL(s.mediaPreview); } catch { }
+                try {
+                    URL.revokeObjectURL(s.mediaPreview);
+                } catch { }
             }
             return {
                 ...s,
@@ -241,7 +319,11 @@ const InductionContent = ({ formData, setFormData }) => {
                     const hasTopics = topics.length > 0;
 
                     return (
-                        <div key={mod.id} className={`courseCont-card${mod.collapsed ? " courseCont-card--collapsed" : ""}`}>
+                        <div
+                            key={mod.id}
+                            className={`courseCont-card-module${mod.collapsed ? " courseCont-card--collapsed" : ""
+                                }`}
+                        >
                             {/* Module header */}
                             <div className="courseCont-cardHeader">
                                 <button
@@ -251,25 +333,42 @@ const InductionContent = ({ formData, setFormData }) => {
                                     aria-expanded={!mod.collapsed}
                                     onClick={() => toggleModuleCollapse(mod.id)}
                                 >
-                                    <FontAwesomeIcon icon={mod.collapsed ? faChevronRight : faChevronDown} />
+                                    <FontAwesomeIcon
+                                        icon={mod.collapsed ? faChevronRight : faChevronDown}
+                                    />
                                 </button>
 
                                 <div className="courseCont-titleRow">
-                                    <span className="courseCont-slideLabel">{`Module ${mIdx + 1} :`}</span>
+                                    <span className="courseCont-slideLabel">{`Module ${mIdx + 1
+                                        } :`}</span>
                                     <textarea
                                         className="courseCont-titleInput"
                                         rows={1}
                                         placeholder="Insert Module Title"
                                         value={mod.title}
-                                        onChange={(e) => changeModuleField(mod.id, "title", e.target.value)}
+                                        onChange={(e) =>
+                                            changeModuleField(mod.id, "title", e.target.value)
+                                        }
                                     />
                                 </div>
 
                                 <div className="courseCont-actions">
-                                    <button type="button" className="courseCont-iconBtn" title="Remove module" onClick={() => removeModule(mod.id)} aria-label={`Remove module ${mIdx + 1}`}>
+                                    <button
+                                        type="button"
+                                        className="courseCont-iconBtn"
+                                        title="Remove module"
+                                        onClick={() => removeModule(mod.id)}
+                                        aria-label={`Remove module ${mIdx + 1}`}
+                                    >
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
-                                    <button type="button" className="courseCont-iconBtn" title="Add module after" onClick={() => addModuleAfter(mIdx)} aria-label={`Add module after ${mIdx + 1}`}>
+                                    <button
+                                        type="button"
+                                        className="courseCont-iconBtn"
+                                        title="Add module after"
+                                        onClick={() => addModuleAfter(mIdx)}
+                                        aria-label={`Add module after ${mIdx + 1}`}
+                                    >
                                         <FontAwesomeIcon icon={faCirclePlus} />
                                     </button>
                                 </div>
@@ -283,37 +382,68 @@ const InductionContent = ({ formData, setFormData }) => {
                                         const slides = topic.slides || [];
                                         const hasSlides = slides.length > 0;
                                         return (
-                                            <div key={topic.id} className={`courseCont-card${topic.collapsed ? " courseCont-card--collapsed" : ""}`} style={{ marginTop: 12 }}>
+                                            <div
+                                                key={topic.id}
+                                                className={`courseCont-card${topic.collapsed ? " courseCont-card--collapsed" : ""
+                                                    }`}
+                                                style={{ marginTop: 12 }}
+                                            >
                                                 {/* Topic header */}
                                                 <div className="courseCont-cardHeader">
                                                     <button
                                                         type="button"
                                                         className="courseCont-toggleBtn"
-                                                        aria-label={topic.collapsed ? "Expand topic" : "Collapse topic"}
+                                                        aria-label={
+                                                            topic.collapsed ? "Expand topic" : "Collapse topic"
+                                                        }
                                                         aria-expanded={!topic.collapsed}
                                                         onClick={() => toggleTopicCollapse(mIdx, topic.id)}
                                                     >
-                                                        <FontAwesomeIcon icon={topic.collapsed ? faChevronRight : faChevronDown} />
+                                                        <FontAwesomeIcon
+                                                            icon={topic.collapsed ? faChevronRight : faChevronDown}
+                                                        />
                                                     </button>
 
                                                     <div className="courseCont-titleRow">
-                                                        <span className="courseCont-slideLabel">{`Topic ${mIdx + 1}.${tIdx + 1} :`}</span>
+                                                        <span className="courseCont-slideLabel">{`Topic ${mIdx + 1
+                                                            }.${tIdx + 1} :`}</span>
                                                         <textarea
                                                             className="courseCont-titleInput"
                                                             rows={1}
                                                             placeholder="Insert Topic Title"
                                                             value={topic.title}
-                                                            onChange={(e) => changeTopicField(mIdx, topic.id, "title", e.target.value)}
+                                                            onChange={(e) =>
+                                                                changeTopicField(
+                                                                    mIdx,
+                                                                    topic.id,
+                                                                    "title",
+                                                                    e.target.value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
 
                                                     <div className="courseCont-actions">
-                                                        <button type="button" className="courseCont-iconBtn" title="Remove topic" onClick={() => removeTopic(mIdx, topic.id)} aria-label={`Remove topic ${mIdx + 1}.${tIdx + 1}`}>
+                                                        <button
+                                                            type="button"
+                                                            className="courseCont-iconBtn"
+                                                            title="Remove topic"
+                                                            onClick={() => removeTopic(mIdx, topic.id)}
+                                                            aria-label={`Remove topic ${mIdx + 1}.${tIdx + 1}`}
+                                                        >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
-                                                        {false && (<button type="button" className="courseCont-iconBtn" title="Add topic after" onClick={() => addTopicAfter(mIdx, tIdx)} aria-label={`Add topic after ${mIdx + 1}.${tIdx + 1}`}>
-                                                            <FontAwesomeIcon icon={faCirclePlus} />
-                                                        </button>)}
+                                                        {false && (
+                                                            <button
+                                                                type="button"
+                                                                className="courseCont-iconBtn"
+                                                                title="Add topic after"
+                                                                onClick={() => addTopicAfter(mIdx, tIdx)}
+                                                                aria-label={`Add topic after ${mIdx + 1}.${tIdx + 1}`}
+                                                            >
+                                                                <FontAwesomeIcon icon={faCirclePlus} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -324,7 +454,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                         {slides.map((slide, sIdx) => (
                                                             <div
                                                                 key={slide.id}
-                                                                className={`courseCont-card${slide.collapsed ? " courseCont-card--collapsed" : ""}`}
+                                                                className={`courseCont-card-module${slide.collapsed ? " courseCont-card--collapsed" : ""
+                                                                    }`}
                                                                 style={{ marginTop: 12 }}
                                                             >
                                                                 {/* Slide header */}
@@ -332,11 +463,21 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                     <button
                                                                         type="button"
                                                                         className="courseCont-toggleBtn"
-                                                                        aria-label={slide.collapsed ? "Expand slide" : "Collapse slide"}
+                                                                        aria-label={
+                                                                            slide.collapsed
+                                                                                ? "Expand slide"
+                                                                                : "Collapse slide"
+                                                                        }
                                                                         aria-expanded={!slide.collapsed}
-                                                                        onClick={() => toggleSlideCollapse(mIdx, tIdx, slide.id)}
+                                                                        onClick={() =>
+                                                                            toggleSlideCollapse(mIdx, tIdx, slide.id)
+                                                                        }
                                                                     >
-                                                                        <FontAwesomeIcon icon={slide.collapsed ? faChevronRight : faChevronDown} />
+                                                                        <FontAwesomeIcon
+                                                                            icon={
+                                                                                slide.collapsed ? faChevronRight : faChevronDown
+                                                                            }
+                                                                        />
                                                                     </button>
 
                                                                     <div className="courseCont-titleRow">
@@ -346,7 +487,15 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                             rows={1}
                                                                             placeholder="Insert Slide Title"
                                                                             value={slide.title}
-                                                                            onChange={(e) => changeSlideField(mIdx, tIdx, slide.id, "title", e.target.value)}
+                                                                            onChange={(e) =>
+                                                                                changeSlideField(
+                                                                                    mIdx,
+                                                                                    tIdx,
+                                                                                    slide.id,
+                                                                                    "title",
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
                                                                         />
                                                                     </div>
 
@@ -356,35 +505,48 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                             type="button"
                                                                             className="courseCont-iconBtn"
                                                                             title="Remove slide"
-                                                                            onClick={() => removeSlide(mIdx, tIdx, slide.id)}
-                                                                            aria-label={`Remove slide ${mIdx + 1}.${tIdx + 1}.${sIdx + 1}`}
+                                                                            onClick={() =>
+                                                                                removeSlide(mIdx, tIdx, slide.id)
+                                                                            }
+                                                                            aria-label={`Remove slide ${mIdx + 1}.${tIdx + 1
+                                                                                }.${sIdx + 1}`}
                                                                         >
                                                                             <FontAwesomeIcon icon={faTrash} />
                                                                         </button>
 
-                                                                        {false && (<button
-                                                                            type="button"
-                                                                            className="courseCont-iconBtn"
-                                                                            title="Add slide after"
-                                                                            aria-haspopup="menu"
-                                                                            aria-expanded={!!(inlineSlidePicker &&
-                                                                                inlineSlidePicker.moduleIndex === mIdx &&
-                                                                                inlineSlidePicker.topicIndex === tIdx &&
-                                                                                inlineSlidePicker.slideIndex === sIdx)}
-                                                                            aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
-                                                                            onClick={() =>
-                                                                                setInlineSlidePicker((cur) =>
-                                                                                    cur &&
-                                                                                        cur.moduleIndex === mIdx &&
-                                                                                        cur.topicIndex === tIdx &&
-                                                                                        cur.slideIndex === sIdx
-                                                                                        ? null
-                                                                                        : { moduleIndex: mIdx, topicIndex: tIdx, slideIndex: sIdx }
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faCirclePlus} />
-                                                                        </button>)}
+                                                                        {false && (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="courseCont-iconBtn"
+                                                                                title="Add slide after"
+                                                                                aria-haspopup="menu"
+                                                                                aria-expanded={
+                                                                                    !!(
+                                                                                        inlineSlidePicker &&
+                                                                                        inlineSlidePicker.moduleIndex === mIdx &&
+                                                                                        inlineSlidePicker.topicIndex === tIdx &&
+                                                                                        inlineSlidePicker.slideIndex === sIdx
+                                                                                    )
+                                                                                }
+                                                                                aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
+                                                                                onClick={() =>
+                                                                                    setInlineSlidePicker((cur) =>
+                                                                                        cur &&
+                                                                                            cur.moduleIndex === mIdx &&
+                                                                                            cur.topicIndex === tIdx &&
+                                                                                            cur.slideIndex === sIdx
+                                                                                            ? null
+                                                                                            : {
+                                                                                                moduleIndex: mIdx,
+                                                                                                topicIndex: tIdx,
+                                                                                                slideIndex: sIdx,
+                                                                                            }
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faCirclePlus} />
+                                                                            </button>
+                                                                        )}
 
                                                                         {inlineSlidePicker &&
                                                                             inlineSlidePicker.moduleIndex === mIdx &&
@@ -395,13 +557,49 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                     className="courseCont-typePicker-inline"
                                                                                     role="menu"
                                                                                 >
-                                                                                    <button type="button" className="courseCont-typeItem" onClick={() => addSlideAfter(mIdx, tIdx, sIdx, SLIDE_TYPES.TEXT)} role="menuitem">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="courseCont-typeItem"
+                                                                                        onClick={() =>
+                                                                                            addSlideAfter(
+                                                                                                mIdx,
+                                                                                                tIdx,
+                                                                                                sIdx,
+                                                                                                SLIDE_TYPES.TEXT
+                                                                                            )
+                                                                                        }
+                                                                                        role="menuitem"
+                                                                                    >
                                                                                         Text only
                                                                                     </button>
-                                                                                    <button type="button" className="courseCont-typeItem" onClick={() => addSlideAfter(mIdx, tIdx, sIdx, SLIDE_TYPES.TEXT_MEDIA)} role="menuitem">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="courseCont-typeItem"
+                                                                                        onClick={() =>
+                                                                                            addSlideAfter(
+                                                                                                mIdx,
+                                                                                                tIdx,
+                                                                                                sIdx,
+                                                                                                SLIDE_TYPES.TEXT_MEDIA
+                                                                                            )
+                                                                                        }
+                                                                                        role="menuitem"
+                                                                                    >
                                                                                         Text + Media
                                                                                     </button>
-                                                                                    <button type="button" className="courseCont-typeItem" onClick={() => addSlideAfter(mIdx, tIdx, sIdx, SLIDE_TYPES.MEDIA)} role="menuitem">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="courseCont-typeItem"
+                                                                                        onClick={() =>
+                                                                                            addSlideAfter(
+                                                                                                mIdx,
+                                                                                                tIdx,
+                                                                                                sIdx,
+                                                                                                SLIDE_TYPES.MEDIA
+                                                                                            )
+                                                                                        }
+                                                                                        role="menuitem"
+                                                                                    >
                                                                                         Media only
                                                                                     </button>
                                                                                 </div>
@@ -409,7 +607,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Slide body (editor unchanged) */}
+                                                                {/* Slide body */}
                                                                 {!slide.collapsed && (
                                                                     <div className="courseCont-body">
                                                                         {slide.type === SLIDE_TYPES.TEXT && (
@@ -419,45 +617,158 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                     placeholder="Insert content."
                                                                                     rows={8}
                                                                                     value={slide.content}
-                                                                                    onChange={(e) => changeSlideField(mIdx, tIdx, slide.id, "content", e.target.value)}
+                                                                                    onChange={(e) =>
+                                                                                        changeSlideField(
+                                                                                            mIdx,
+                                                                                            tIdx,
+                                                                                            slide.id,
+                                                                                            "content",
+                                                                                            e.target.value
+                                                                                        )
+                                                                                    }
+                                                                                    style={{ paddingBottom: "35px" }}
                                                                                 />
-                                                                                <FontAwesomeIcon
-                                                                                    icon={faMagicWandSparkles}
-                                                                                    className="induction-textarea-icon-ai-rewrite"
-                                                                                    title="AI Rewrite"
-                                                                                    style={{ fontSize: "15px" }}
-                                                                                />
+
+                                                                                {/* AI icons (TEXT) */}
+                                                                                {loadingMap[slide.id] ? (
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faSpinner}
+                                                                                        className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                        title="Rewriting…"
+                                                                                        style={{
+                                                                                            fontSize: "15px",
+                                                                                            bottom: 23
+                                                                                        }}
+                                                                                    />
+                                                                                ) : (
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faMagicWandSparkles}
+                                                                                        className="induction-textarea-icon-ai-rewrite"
+                                                                                        title="AI Rewrite"
+                                                                                        style={{
+                                                                                            fontSize: "15px", cursor: "pointer",
+                                                                                            bottom: 23
+                                                                                        }}
+                                                                                        onClick={() =>
+                                                                                            rewriteSlideContent(mIdx, tIdx, slide)
+                                                                                        }
+                                                                                    />
+                                                                                )}
+
+                                                                                {hasHistory(slide.id) && (
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faRotateLeft}
+                                                                                        title="Undo AI Rewrite"
+                                                                                        style={{
+                                                                                            position: "absolute",
+                                                                                            right: 34,
+                                                                                            bottom: 23,
+                                                                                            fontSize: "15px",
+                                                                                            cursor: "pointer",
+                                                                                        }}
+                                                                                        onClick={() =>
+                                                                                            undoSlideContent(mIdx, tIdx, slide.id)
+                                                                                        }
+                                                                                    />
+                                                                                )}
                                                                             </section>
                                                                         )}
 
                                                                         {slide.type === SLIDE_TYPES.TEXT_MEDIA && (
                                                                             <section className="courseCont-twoCol">
-                                                                                <div className="courseCont-col" style={{ position: "relative" }}>
-                                                                                    <textarea
-                                                                                        className="courseCont-textarea"
-                                                                                        placeholder="Insert content."
-                                                                                        rows={10}
-                                                                                        value={slide.content}
-                                                                                        onChange={(e) => changeSlideField(mIdx, tIdx, slide.id, "content", e.target.value)}
-                                                                                    />
-                                                                                    <FontAwesomeIcon
-                                                                                        icon={faMagicWandSparkles}
-                                                                                        className="induction-textarea-icon-ai-rewrite"
-                                                                                        title="AI Rewrite"
-                                                                                        style={{ fontSize: "15px" }}
-                                                                                    />
+                                                                                <div
+                                                                                    className="courseCont-col"
+                                                                                    style={{ position: "relative" }}
+                                                                                >
+                                                                                    <div style={{ position: "relative" }}>
+                                                                                        <textarea
+                                                                                            className="courseCont-textarea"
+                                                                                            placeholder="Insert content."
+                                                                                            rows={10}
+                                                                                            value={slide.content}
+                                                                                            onChange={(e) =>
+                                                                                                changeSlideField(
+                                                                                                    mIdx,
+                                                                                                    tIdx,
+                                                                                                    slide.id,
+                                                                                                    "content",
+                                                                                                    e.target.value
+                                                                                                )
+                                                                                            }
+                                                                                            style={{ paddingBottom: "35px" }}
+                                                                                        />
+
+                                                                                        {/* AI icons (TEXT_MEDIA) */}
+                                                                                        {loadingMap[slide.id] ? (
+                                                                                            <FontAwesomeIcon
+                                                                                                icon={faSpinner}
+                                                                                                className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                title="Rewriting…"
+                                                                                                style={{ fontSize: "15px", bottom: 23 }}
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <FontAwesomeIcon
+                                                                                                icon={faMagicWandSparkles}
+                                                                                                className="induction-textarea-icon-ai-rewrite"
+                                                                                                title="AI Rewrite"
+                                                                                                style={{
+                                                                                                    fontSize: "15px",
+                                                                                                    cursor: "pointer",
+                                                                                                    bottom: 23
+                                                                                                }}
+                                                                                                onClick={() =>
+                                                                                                    rewriteSlideContent(mIdx, tIdx, slide)
+                                                                                                }
+                                                                                            />
+                                                                                        )}
+
+                                                                                        {hasHistory(slide.id) && (
+                                                                                            <FontAwesomeIcon
+                                                                                                icon={faRotateLeft}
+                                                                                                title="Undo AI Rewrite"
+                                                                                                style={{
+                                                                                                    position: "absolute",
+                                                                                                    right: 34,
+                                                                                                    bottom: 23,
+                                                                                                    fontSize: "15px",
+                                                                                                    cursor: "pointer",
+                                                                                                }}
+                                                                                                onClick={() =>
+                                                                                                    undoSlideContent(
+                                                                                                        mIdx,
+                                                                                                        tIdx,
+                                                                                                        slide.id
+                                                                                                    )
+                                                                                                }
+                                                                                            />
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div className="courseCont-col">
-                                                                                    <label className="courseCont-mediaDrop">
+                                                                                    <label
+                                                                                        className="courseCont-mediaDrop"
+                                                                                        style={{ marginTop: "8px", paddingBottom: "30px", paddingTop: "29px" }}
+                                                                                    >
                                                                                         <input
                                                                                             type="file"
                                                                                             accept="image/*,video/*,audio/*"
-                                                                                            onChange={(e) => onMediaChange(mIdx, tIdx, slide.id, e.target.files?.[0] || null)}
+                                                                                            onChange={(e) =>
+                                                                                                onMediaChange(
+                                                                                                    mIdx,
+                                                                                                    tIdx,
+                                                                                                    slide.id,
+                                                                                                    e.target.files?.[0] || null
+                                                                                                )
+                                                                                            }
                                                                                         />
                                                                                         {slide.mediaPreview ? (
-                                                                                            <div className="courseCont-mediaPreview">{renderPreview(slide)}</div>
+                                                                                            <div className="courseCont-mediaPreview">
+                                                                                                {renderPreview(slide)}
+                                                                                            </div>
                                                                                         ) : (
-                                                                                            <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            <span className="courseCont-mediaHint">
+                                                                                                Select Media.
+                                                                                            </span>
                                                                                         )}
                                                                                     </label>
                                                                                 </div>
@@ -470,7 +781,14 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                     <input
                                                                                         type="file"
                                                                                         accept="image/*,video/*,audio/*"
-                                                                                        onChange={(e) => onMediaChange(mIdx, tIdx, slide.id, e.target.files?.[0] || null)}
+                                                                                        onChange={(e) =>
+                                                                                            onMediaChange(
+                                                                                                mIdx,
+                                                                                                tIdx,
+                                                                                                slide.id,
+                                                                                                e.target.files?.[0] || null
+                                                                                            )
+                                                                                        }
                                                                                     />
                                                                                     {slide.mediaPreview ? (
                                                                                         <div className="courseCont-mediaPreview">{renderPreview(slide)}</div>

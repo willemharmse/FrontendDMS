@@ -1,26 +1,23 @@
-import { faDownload, faMagicWandSparkles } from "@fortawesome/free-solid-svg-icons";
+// InductionOutline.jsx
+import { faDownload, faMagicWandSparkles, faSpinner, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 
-// --- helpers -------------------------------------------------
 const parseDurationToMinutes = (raw) => {
     if (raw == null) return 0;
     const s = String(raw).trim();
     if (!s) return 0;
 
-    // Support "H:MM"
     if (/^\d+:\d{1,2}$/.test(s)) {
         const [h, m] = s.split(":").map(Number);
         return (h || 0) * 60 + (m || 0);
     }
-    // Support "1.5h", "2h", "90m", "45 min"
     const h = s.match(/^(\d+(\.\d+)?)\s*h/i);
     if (h) return Math.round(parseFloat(h[1]) * 60);
 
     const m = s.match(/^(\d+(\.\d+)?)\s*m(in)?/i);
     if (m) return Math.round(parseFloat(m[1]));
 
-    // Plain number -> minutes
     const n = parseFloat(s);
     return Number.isFinite(n) ? Math.round(n) : 0;
 };
@@ -35,13 +32,12 @@ const formatMinutes = (min) => {
 
 const getTopicMeta = (outline, topicId) =>
     (outline?.topicMeta && outline.topicMeta[topicId]) ||
-    (outline?.slideMeta && outline.slideMeta[topicId]) || // legacy fallback (same key but for topic)
+    (outline?.slideMeta && outline.slideMeta[topicId]) ||
     { duration: "", description: "" };
 
 const buildOutlineTable = (modules, outline) => {
     const rows = [];
 
-    // Row 0 — Introduction
     rows.push({
         kind: "intro",
         nr: "0",
@@ -50,7 +46,6 @@ const buildOutlineTable = (modules, outline) => {
         description: outline?.introDescription || "",
     });
 
-    // Modules & slides
     modules.forEach((mod, mIdx) => {
         rows.push({
             kind: "module",
@@ -74,7 +69,6 @@ const buildOutlineTable = (modules, outline) => {
                 });
             });
         } else {
-            // legacy fallback: show slides as topics
             (mod.slides || []).forEach((slide, sIdx) => {
                 const meta = getTopicMeta(outline, slide.id);
                 rows.push({
@@ -95,13 +89,59 @@ const buildOutlineTable = (modules, outline) => {
 };
 
 const shallowEqualJSON = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-// -------------------------------------------------------------
+
+const INTRO_KEY = "__INTRO_DESC__";
+const REWRITE_ENDPOINT = `${process.env.REACT_APP_URL}/api/openai/chatInduction/description`;
+const isBlank = (v) => !String(v ?? "").trim();
 
 const InductionOutline = ({ formData, setFormData }) => {
     const modules = formData?.courseModules || [];
     const outline = formData?.courseOutline || {};
 
-    // minutes from Introduction + all slideMeta durations
+    // Per-item rewrite history + loading flags
+    const [descHistory, setDescHistory] = useState({});           // { [idKey]: [prev1, prev2, ...] }
+    const [loadingMap, setLoadingMap] = useState({});             // { [idKey]: boolean }
+    const hasHistory = (idKey) => (descHistory[idKey]?.length || 0) > 0;
+
+    const pushHistory = (idKey, value) =>
+        setDescHistory(prev => ({ ...prev, [idKey]: [...(prev[idKey] || []), value] }));
+
+    const undoHistory = (idKey, apply) =>
+        setDescHistory(prev => {
+            const stack = prev[idKey] || [];
+            if (!stack.length) return prev;
+            const last = stack[stack.length - 1];
+            apply(last);
+            return { ...prev, [idKey]: stack.slice(0, -1) };
+        });
+
+    const setLoading = (idKey, val) =>
+        setLoadingMap(prev => ({ ...prev, [idKey]: !!val }));
+
+    const aiRewrite = async ({ idKey, prompt, apply }) => {
+        if (prompt === "") return;
+        try {
+            pushHistory(idKey, prompt);          // save current value before rewrite
+            setLoading(idKey, true);
+
+            const response = await fetch(REWRITE_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ prompt }), // prompt is always the current value
+            });
+
+            const { response: newText } = await response.json();
+            apply(newText || "");
+        } catch (err) {
+            console.error("AI rewrite error:", err);
+        } finally {
+            setLoading(idKey, false);
+        }
+    };
+
     const totalMinutes = useMemo(() => {
         const introMin = parseDurationToMinutes(outline?.introDuration);
         let sum = introMin;
@@ -114,7 +154,6 @@ const InductionOutline = ({ formData, setFormData }) => {
                     sum += parseDurationToMinutes(meta?.duration);
                 }
             } else {
-                // legacy fallback: treat slides as topics
                 for (const slide of mod.slides || []) {
                     const meta = getTopicMeta(outline, slide.id);
                     sum += parseDurationToMinutes(meta?.duration);
@@ -126,7 +165,6 @@ const InductionOutline = ({ formData, setFormData }) => {
 
     const totalPretty = useMemo(() => formatMinutes(totalMinutes), [totalMinutes]);
 
-    // Keep courseOutline.duration in sync (read-only UI)
     useEffect(() => {
         setFormData((prev) => {
             const prevOutline = prev?.courseOutline || {};
@@ -138,7 +176,6 @@ const InductionOutline = ({ formData, setFormData }) => {
         });
     }, [totalPretty, setFormData]);
 
-    // Maintain a denormalized snapshot table under courseOutline.table
     useEffect(() => {
         const nextTable = buildOutlineTable(modules, outline);
         setFormData((prev) => {
@@ -149,10 +186,8 @@ const InductionOutline = ({ formData, setFormData }) => {
                 courseOutline: { ...prevOutline, table: nextTable },
             };
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [modules, outline?.introDuration, outline?.introDescription, outline?.topicMeta, outline?.slideMeta]);
+    }, [modules, outline?.introDuration, outline?.introDescription, outline?.topicMeta, outline?.slideMeta, setFormData]);
 
-    // ---- updaters that ONLY touch courseOutline ----
     const updateOutline = (patch) =>
         setFormData((prev) => ({
             ...prev,
@@ -174,15 +209,38 @@ const InductionOutline = ({ formData, setFormData }) => {
             return { ...prev, courseOutline: { ...co, topicMeta: nextTopicMeta } };
         });
 
+    // Helpers bound to UI
+    const rewriteIntroDescription = () => {
+        const prompt = outline?.introDescription || "";
+        if (prompt === "") return;
+        aiRewrite({
+            idKey: INTRO_KEY,
+            prompt,
+            apply: (text) => updateIntro("introDescription", text),
+        });
+    };
+
+    const undoIntroDescription = () =>
+        undoHistory(INTRO_KEY, (prevText) => updateIntro("introDescription", prevText));
+
+    const rewriteTopicDescription = (topicId, currentText) =>
+        aiRewrite({
+            idKey: topicId,
+            prompt: currentText || "",
+            apply: (text) => updateTopicMeta(topicId, "description", text),
+        });
+
+    const undoTopicDescription = (topicId) =>
+        undoHistory(topicId, (prevText) => updateTopicMeta(topicId, "description", prevText));
+
     return (
         <div className="input-row">
             <div className="input-box-ref">
                 <h3 className="font-fam-labels">Outline</h3>
-                <button className="top-right-button-proc" title="Download">
+                {false && (<button className="top-right-button-proc" title="Download">
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
-                </button>
+                </button>)}
 
-                {/* Top bar: Department + Auto Duration */}
                 <div className="course-outline-row-split">
                     <div className="course-outline-type-split-1">
                         <h3 className="font-fam-labels">Department</h3>
@@ -209,7 +267,6 @@ const InductionOutline = ({ formData, setFormData }) => {
                     </div>
                 </div>
 
-                {/* Table */}
                 <div className="course-outline-table-content table-borders">
                     <table>
                         <thead>
@@ -222,7 +279,6 @@ const InductionOutline = ({ formData, setFormData }) => {
                         </thead>
 
                         <tbody>
-                            {/* 0 — Introduction */}
                             <tr>
                                 <td className="col-um">0</td>
                                 <td className="col-um" style={{ textAlign: "left" }}>
@@ -239,28 +295,47 @@ const InductionOutline = ({ formData, setFormData }) => {
                                     />
                                 </td>
                                 <td className="col-um">
-                                    <div className="input-with-icon">
-                                        <input
+                                    <div className="input-with-icon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                        <textarea
                                             type="text"
                                             autoComplete="off"
                                             value={outline.introDescription || ""}
                                             onChange={(e) => updateIntro("introDescription", e.target.value)}
-                                            className="course-outline-input"
+                                            className="course-outline-textarea"
                                             placeholder="Insert Topic Description"
+                                            style={{ paddingRight: hasHistory(INTRO_KEY) ? "55px" : "" }}
                                         />
-                                        <FontAwesomeIcon
-                                            icon={faMagicWandSparkles}
-                                            className="input-with-icon__icon"
-                                            title="AI Rewrite"
-                                        />
+                                        {loadingMap[INTRO_KEY] ? (
+                                            <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
+                                        ) : (
+                                            <FontAwesomeIcon
+                                                icon={faMagicWandSparkles}
+                                                className="input-with-icon__icon"
+                                                title="AI Rewrite"
+                                                onClick={rewriteIntroDescription}
+                                                style={{ cursor: "pointer" }}
+
+                                            />
+                                        )}
+                                        {hasHistory(INTRO_KEY) && (
+                                            <FontAwesomeIcon
+                                                icon={faRotateLeft}
+                                                className="input-with-icon__icon"
+                                                title="Undo AI Rewrite"
+                                                onClick={undoIntroDescription}
+                                                style={{
+                                                    cursor: (descHistory[INTRO_KEY]?.length ? "pointer" : "not-allowed"),
+                                                    opacity: (descHistory[INTRO_KEY]?.length ? 1 : 0.3),
+                                                    marginRight: "25px"
+                                                }}
+                                            />
+                                        )}
                                     </div>
                                 </td>
                             </tr>
 
-                            {/* Modules */}
                             {modules.map((mod, mIdx) => (
                                 <React.Fragment key={mod.id || mIdx}>
-                                    {/* Module header row (merged) */}
                                     <tr>
                                         <td colSpan={4} style={{ textAlign: "center", fontWeight: 600, backgroundColor: "#d6d6d6ff" }}>
                                             {`Module ${mIdx + 1}: ${mod.title || "Module Title"}`}
@@ -271,6 +346,8 @@ const InductionOutline = ({ formData, setFormData }) => {
                                         Array.isArray(mod.topics) && mod.topics.length
                                             ? mod.topics.map((topic, tIdx) => {
                                                 const meta = getTopicMeta(outline, topic.id);
+                                                const idKey = topic.id;
+                                                const histLen = descHistory[idKey]?.length || 0;
                                                 return (
                                                     <tr key={topic.id || `${mIdx}-${tIdx}`}>
                                                         <td className="col-um">{`${mIdx + 1}.${tIdx + 1}`}</td>
@@ -288,28 +365,49 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                             />
                                                         </td>
                                                         <td className="col-um">
-                                                            <div className="input-with-icon">
+                                                            <div className="input-with-icon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                 <input
                                                                     type="text"
                                                                     autoComplete="off"
                                                                     value={meta.description || ""}
                                                                     onChange={(e) => updateTopicMeta(topic.id, "description", e.target.value)}
-                                                                    className="course-outline-input"
+                                                                    className="course-outline-textarea"
                                                                     placeholder="Insert Topic Description"
+                                                                    style={{ paddingRight: hasHistory(idKey) ? "55px" : "" }}
                                                                 />
-                                                                <FontAwesomeIcon
-                                                                    icon={faMagicWandSparkles}
-                                                                    className="input-with-icon__icon"
-                                                                    title="AI Rewrite"
-                                                                />
+                                                                {loadingMap[idKey] ? (
+                                                                    <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
+                                                                ) : (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faMagicWandSparkles}
+                                                                        className="input-with-icon__icon"
+                                                                        title="AI Rewrite"
+                                                                        onClick={() => rewriteTopicDescription(topic.id, meta.description)}
+                                                                        style={{ cursor: "pointer" }}
+                                                                    />
+                                                                )}
+                                                                {hasHistory(idKey) && (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faRotateLeft}
+                                                                        className="input-with-icon__icon"
+                                                                        title="Undo AI Rewrite"
+                                                                        onClick={() => undoTopicDescription(topic.id)}
+                                                                        style={{
+                                                                            cursor: (histLen ? "pointer" : "not-allowed"),
+                                                                            opacity: (histLen ? 1 : 0.3),
+                                                                            marginRight: "25px"
+                                                                        }}
+                                                                    />
+                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>
                                                 );
                                             })
-                                            // legacy fallback: slides shown as topics
                                             : (mod.slides || []).map((slide, sIdx) => {
                                                 const meta = getTopicMeta(outline, slide.id);
+                                                const idKey = slide.id;
+                                                const histLen = descHistory[idKey]?.length || 0;
                                                 return (
                                                     <tr key={slide.id || `${mIdx}-legacy-${sIdx}`}>
                                                         <td className="col-um">{`${mIdx + 1}.${sIdx + 1}`}</td>
@@ -327,7 +425,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                             />
                                                         </td>
                                                         <td className="col-um">
-                                                            <div className="input-with-icon">
+                                                            <div className="input-with-icon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                 <input
                                                                     type="text"
                                                                     autoComplete="off"
@@ -336,10 +434,26 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                     className="course-outline-input"
                                                                     placeholder="Insert Topic Description"
                                                                 />
+                                                                {loadingMap[idKey] ? (
+                                                                    <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." />
+                                                                ) : (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faMagicWandSparkles}
+                                                                        className="input-with-icon__icon"
+                                                                        title="AI Rewrite"
+                                                                        onClick={() => rewriteTopicDescription(slide.id, meta.description)}
+                                                                        style={{ cursor: "pointer" }}
+                                                                    />
+                                                                )}
                                                                 <FontAwesomeIcon
-                                                                    icon={faMagicWandSparkles}
+                                                                    icon={faRotateLeft}
                                                                     className="input-with-icon__icon"
-                                                                    title="AI Rewrite"
+                                                                    title="Undo AI Rewrite"
+                                                                    onClick={() => undoTopicDescription(slide.id)}
+                                                                    style={{
+                                                                        cursor: (histLen ? "pointer" : "not-allowed"),
+                                                                        opacity: (histLen ? 1 : 0.3)
+                                                                    }}
                                                                 />
                                                             </div>
                                                         </td>

@@ -8,9 +8,9 @@ const TypeSelectorPopup = ({
     onSelect,
     options = [
         // Expecting THREE options; can pass your own via props
-        { id: "TEXT", label: "Text", imgSrc: "/txt.png", alt: "Text" },
-        { id: "TEXT_MEDIA", label: "Text + Media", imgSrc: "/txtMed.png", alt: "Text and Media" },
-        { id: "MEDIA", label: "Media", imgSrc: "/Med.png", alt: "Media" },
+        { id: "TEXT", label: "Text", imgSrc: `${process.env.PUBLIC_URL}/txt.png`, alt: "Text" },
+        { id: "TEXT_MEDIA", label: "Text + Media", imgSrc: `${process.env.PUBLIC_URL}/txtMed.png`, alt: "Text and Media" },
+        { id: "MEDIA", label: "Media", imgSrc: `${process.env.PUBLIC_URL}/Med.png`, alt: "Media" },
     ],
     closeOnBackdrop = true,
 }) => {

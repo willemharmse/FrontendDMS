@@ -14,6 +14,7 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
     const [title, setTitle] = useState("");
     const [sortBy, setSortBy] = useState(null);
     const [sortDir, setSortDir] = useState(null);
+    const [isLoadingDraft, setIsLoadingDraft] = useState(false);
 
     const toggleSort = (field) => {
         if (sortBy !== field) {
@@ -43,7 +44,6 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
 
     const displayDrafts = useMemo(() => {
         const list = [...filteredDrafts];
-        if (!sortBy || !sortDir) return list;
 
         const getTime = (d) => {
             if (sortBy === 'created') return new Date(d.dateCreated).getTime();
@@ -52,6 +52,13 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
         };
 
         return list.sort((a, b) => {
+            // 1) Publishable first
+            if (a.publishable && !b.publishable) return -1;
+            if (!a.publishable && b.publishable) return 1;
+
+            // 2) Then apply current sort (if any)
+            if (!sortBy || !sortDir) return 0;
+
             const at = getTime(a);
             const bt = getTime(b);
 
@@ -92,6 +99,7 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
                 }
 
                 const data = await response.json();
+                console.log(data);
                 setDrafts(data);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
@@ -134,9 +142,16 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
     };
 
     const handleLoad = async (draftId) => {
-        await setLoadedID(draftId);
-        await loadData(draftId);
-        onClose();
+        if (isLoadingDraft) return;
+        setIsLoadingDraft(true);
+        try {
+            await setLoadedID(draftId);
+            await loadData(draftId);
+            onClose();
+        } finally {
+            // usually closes, but keep this for safety
+            setIsLoadingDraft(false);
+        }
     };
 
     const confirmDelete = (draftId, title, creator) => {
@@ -195,105 +210,116 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
                     <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
                 </div>
                 <div className="draft-table-group">
-                    <div className="draft-select-header">
-                        <div className="draft-select-text">Select draft to load</div>
-                    </div>
-                    <div className="draft-searchbar draft-searchbar--full">
-                        <input
-                            type="text"
-                            className="draft-search-input"
-                            placeholder="Search"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Escape') setQuery(''); }}
-                        />
-                        <div className="draft-search-icons">
-                            {query && (
-                                <span className="icon-static" title="Clear Search" onClick={() => setQuery('')}>
-                                    <FontAwesomeIcon icon={faX} />
-                                </span>
-                            )}
-                            {!query && (
-                                <span className="icon-static" title="Search">
-                                    <FontAwesomeIcon icon={faMagnifyingGlass} />
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                    {!isLoadingDraft && (
+                        <>
+                            <div className="draft-select-header">
+                                <div className="draft-select-text">Select draft to load</div>
+                            </div>
+                            <div className="draft-searchbar draft-searchbar--full">
+                                <input
+                                    type="text"
+                                    className="draft-search-input"
+                                    placeholder="Search"
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Escape') setQuery(''); }}
+                                />
+                                <div className="draft-search-icons">
+                                    {query && (
+                                        <span className="icon-static" title="Clear Search" onClick={() => setQuery('')}>
+                                            <FontAwesomeIcon icon={faX} />
+                                        </span>
+                                    )}
+                                    {!query && (
+                                        <span className="icon-static" title="Search">
+                                            <FontAwesomeIcon icon={faMagnifyingGlass} />
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
                     <div className="popup-table-wrapper-draft">
-                        <table className="popup-table font-fam">
-                            <thead className="draft-headers">
-                                <tr>
-                                    <th className="draft-nr">Nr</th>
-                                    <th className="draft-name">Draft Visitor Induction {query && (<FontAwesomeIcon icon={faFilter} style={{ marginLeft: "10px" }} />)}</th>
-                                    <th
-                                        className="draft-created"
-                                        onClick={() => toggleSort('created')}
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                    >
-                                        Created By <SortIcon field="created" />
-                                    </th>
-
-                                    <th
-                                        className="draft-updated"
-                                        onClick={() => toggleSort('modified')}
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                    >
-                                        Modified By <SortIcon field="modified" />
-                                    </th>
-                                    <th className="draft-actions-load">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
-                                    displayDrafts
-                                        .map((item, index) => (
-                                            <tr key={item._id}>
-                                                <td className="draft-nr">
-                                                    {index + 1}
-                                                </td>
-                                                <td onClick={() => handleLoad(item._id)} className="load-draft-td">{`${item.formData.courseTitle}`}</td>
-                                                <td className="cent-draft-class">
-                                                    <div>{item.creator?.username || "Unknown"}</div>
-                                                    <div style={{ fontSize: "12px", color: "#667" }}>
-                                                        {formatDateTime(item.dateCreated)}
-                                                    </div>
-                                                </td>
-                                                <td className="cent-draft-class">
-                                                    <div>{item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}</div>
-                                                    <div style={{ fontSize: "12px", color: item.lockActive ? "#7EAC89" : "#667", fontWeight: item.lockActive ? "bolder" : "" }}>
-                                                        {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
-                                                    </div>
-                                                </td>
-                                                <td className="load-draft-delete">
-                                                    <button
-                                                        className={"action-button-load-draft delete-button-load-draft"}
-                                                        onClick={() => confirmDelete(item._id, item.formData.title, item?.creator?._id)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} title="Remove Draft" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                )}
-
-                                {isLoading && (
+                        {isLoadingDraft ? (
+                            <div className="draft-loading" aria-live="polite">
+                                <FontAwesomeIcon icon={faSpinner} className="spin" />
+                                <span style={{ marginLeft: 10 }}>Loading draft…</span>
+                            </div>
+                        ) : (
+                            <table className="popup-table font-fam">
+                                <thead className="draft-headers">
                                     <tr>
-                                        <td colSpan="5" className="cent">
-                                            Loading drafts…
-                                        </td>
-                                    </tr>
-                                )}
+                                        <th className="draft-nr">Nr</th>
+                                        <th className="draft-name">Draft Visitor Induction {query && (<FontAwesomeIcon icon={faFilter} style={{ marginLeft: "10px" }} />)}</th>
+                                        <th
+                                            className="draft-created"
+                                            onClick={() => toggleSort('created')}
+                                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                                        >
+                                            Created By <SortIcon field="created" />
+                                        </th>
 
-                                {!isLoading && drafts.length === 0 && showNoDrafts && (
-                                    <tr>
-                                        <td colSpan="5" className="cent">
-                                            No Drafts Available
-                                        </td>
+                                        <th
+                                            className="draft-updated"
+                                            onClick={() => toggleSort('modified')}
+                                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                                        >
+                                            Modified By <SortIcon field="modified" />
+                                        </th>
+                                        <th className="draft-actions-load">Action</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
+                                        displayDrafts
+                                            .map((item, index) => (
+                                                <tr key={item._id} style={{ backgroundColor: item.publishable ? "#7EAC89" : "transparent" }}>
+                                                    <td className="draft-nr" style={{ color: item.publishable ? "white" : "black" }}>
+                                                        {index + 1}
+                                                    </td>
+                                                    <td onClick={() => handleLoad(item._id)} className="load-draft-td" style={{ color: item.publishable ? "white" : "black" }}>{`${item.formData.courseTitle}`}</td>
+                                                    <td className="cent-draft-class" style={{ color: item.publishable ? "white" : "black" }}>
+                                                        <div>{item.creator?.username || "Unknown"}</div>
+                                                        <div style={{ fontSize: "12px", color: item.publishable ? "white" : "#667" }}>
+                                                            {formatDateTime(item.dateCreated)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="cent-draft-class" style={{ color: item.publishable ? "white" : "black" }}>
+                                                        <div>{item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}</div>
+                                                        <div style={{ fontSize: "12px", color: item.publishable ? "white" : "#667", fontWeight: item.lockActive ? "bolder" : "" }}>
+                                                            {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
+                                                        </div>
+                                                    </td>
+                                                    <td className="load-draft-delete" >
+                                                        <button
+                                                            className={"action-button-load-draft delete-button-load-draft"}
+                                                            onClick={() => confirmDelete(item._id, item.formData.title, item?.creator?._id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} title="Remove Draft" style={{ color: item.publishable ? "white" : "black" }} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                    )}
+
+                                    {isLoading && (
+                                        <tr>
+                                            <td colSpan="5" className="cent">
+                                                Loading drafts…
+                                            </td>
+                                        </tr>
+                                    )}
+
+                                    {!isLoading && drafts.length === 0 && showNoDrafts && (
+                                        <tr>
+                                            <td colSpan="5" className="cent">
+                                                No Drafts Available
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             </div>

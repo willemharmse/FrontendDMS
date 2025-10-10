@@ -7,6 +7,17 @@
     background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
 }
 
+.nl-login-container-otp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: rgb(0, 3, 8);
+    background: linear-gradient(158deg, rgba(0, 3, 8, 1) 0%, rgba(0, 16, 49, 1) 55%, rgba(0, 32, 96, 1) 100%);
+    z-index: 1000;
+    width: 100vw;
+}
+
 .nl-login-card {
     background-color: transparent;
     padding: 2rem;

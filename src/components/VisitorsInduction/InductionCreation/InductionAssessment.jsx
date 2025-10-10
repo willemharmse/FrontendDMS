@@ -116,20 +116,9 @@ const InductionAssessment = ({ formData, setFormData }) => {
                             <div className="course-ass-file-qactions">
                                 <button
                                     className="course-ass-file-icon-btn"
-                                    aria-label="Remove question"
-                                    title={onlyOneQuestionLeft ? "At least one question is required" : "Remove question"}
-                                    onClick={() => removeQuestion(question.id)}
-                                    type="button"
-                                    disabled={onlyOneQuestionLeft}
-                                >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                </button>
-
-                                {/* Duplicate question */}
-                                <button
-                                    className="course-ass-file-icon-btn"
                                     aria-label="Duplicate question"
                                     type="button"
+                                    title="Duplicate Question"
                                     onClick={() =>
                                         setFormData(prev => {
                                             const list = [...prev.assessment];
@@ -151,8 +140,20 @@ const InductionAssessment = ({ formData, setFormData }) => {
 
                                 <button
                                     className="course-ass-file-icon-btn"
+                                    aria-label="Remove question"
+                                    title={onlyOneQuestionLeft ? "At least one question is required" : "Remove question"}
+                                    onClick={() => removeQuestion(question.id)}
+                                    type="button"
+                                    disabled={onlyOneQuestionLeft}
+                                >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                </button>
+
+                                <button
+                                    className="course-ass-file-icon-btn"
                                     aria-label="Add question"
                                     onClick={addQuestion}
+                                    title="Add Question"
                                     type="button"
                                 >
                                     <FontAwesomeIcon icon={faPlusCircle} />
@@ -192,6 +193,7 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                             <button
                                                 className="course-ass-file-icon-btn"
                                                 aria-label="Remove option"
+                                                title="Remove option"
                                                 onClick={() => removeOption(question.id, optIndex)}
                                                 type="button"
                                             >
@@ -200,6 +202,7 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                             <button
                                                 className="course-ass-file-icon-btn"
                                                 aria-label="Add option"
+                                                title="Add option"
                                                 onClick={() => addOption(question.id, optIndex)}
                                                 type="button"
                                             >

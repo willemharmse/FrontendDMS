@@ -33,7 +33,7 @@ const InductionSummary = ({ formData, setFormData }) => {
             pushAiRewriteHistory('summary');
             setLoadingSummary(true);
 
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatInduction/summary`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

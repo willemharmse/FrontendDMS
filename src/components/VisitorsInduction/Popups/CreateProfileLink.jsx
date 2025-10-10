@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { faCopy } from '@fortawesome/free-regular-svg-icons';
+import { toast } from 'react-toastify';
 
 function safeFrontendBase() {
     try {
@@ -18,7 +19,6 @@ const CreateProfileLink = ({
     visitorEmail = '',
     profileLink = '',
     profileId = '',
-    onShare,
     // 👇 Set this to your router mount path, e.g. '/visitorsInduction'
     apiBase = `${process.env.REACT_APP_URL}/api/visitors`
 }) => {
@@ -30,6 +30,36 @@ const CreateProfileLink = ({
     const inputRef = useRef(null);
 
     const FRONTEND_BASE = useMemo(() => safeFrontendBase(), []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_URL}/api/visitors/shareLink/${profileId}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}),
+                }
+            );
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                toast.error(data?.message || 'OTP verification failed');
+            }
+
+            toast.success(data?.message || 'OTP verification failed');
+        } catch (err) {
+            setError(err.message || 'Something went wrong');
+            setTimeout(() => setError(''), 3000);
+        } finally {
+            setTimeout(() => setLoading(false), 500);
+        }
+    };
 
     useEffect(() => {
         let ignore = false;
@@ -109,16 +139,6 @@ const CreateProfileLink = ({
             setCopied(true);
             setTimeout(() => setCopied(false), 1400);
         } catch { }
-    };
-
-    const handleSubmit = async () => {
-        setLoading(true);
-        try {
-            onShare?.({ visitorName, visitorEmail, link });
-            onClose?.();
-        } finally {
-            setLoading(false);
-        }
     };
 
     return (

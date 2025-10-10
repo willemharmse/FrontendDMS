@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="en-ZA">
 
+<script>
+  /*! spa-github-pages | https://github.com/rafgraph/spa-github-pages */
+  (function () {
+    var l = window.location;
+    if (l.search && l.search[1] === '/') {
+      // Decode original path+query from 404 redirect
+      var decoded = l.search.slice(1).split('&').map(function (s) {
+        return s.replace(/~and~/g, '&');
+      }).join('?'); // e.g. "/visitor-profile?id=..."
+
+      // Ensure the repo prefix is present exactly once
+      var repo = "/FrontendDMS";
+      var withRepo = decoded.startsWith(repo + "/")
+        ? decoded
+        : (decoded.startsWith("/") ? repo + decoded : repo + "/" + decoded);
+
+      window.history.replaceState(null, null, withRepo + l.hash);
+    }
+  })();
+</script>
+
+
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="%PUBLIC_URL%/logo.ico" />
