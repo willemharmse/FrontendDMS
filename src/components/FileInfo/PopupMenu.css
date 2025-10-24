@@ -5,12 +5,28 @@
     z-index: 1000;
 }
 
+.popup-menu-audio-player {
+    position: absolute;
+    top: -10px;
+    left: -300px;
+    z-index: 1000;
+}
+
 .popup-content-FI {
     position: absolute;
     background: white;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     width: 150px;
+    text-align: center;
+}
+
+.popup-content-audio {
+    position: absolute;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 360px;
     text-align: center;
 }
 
@@ -52,4 +68,50 @@
 
 .popup-content-FI li:hover {
     background: #cfcece;
+}
+
+/* Make the player look like a single round Play/Pause button */
+.rhap_container {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    width: calc(100% - 20px) !important;
+}
+
+.rhap_main-controls-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+}
+
+.rhap_play-pause-button {
+    /* tint the icon if you want */
+    color: #1f6fff;
+}
+
+/* Keep delete button aligned nicely */
+.delete-audio-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.delete-audio-btn:hover {
+    background: #f6f6f6;
+}
+
+.rhap_controls-section {
+    flex: 0;
+}
+
+.popup-audio {
+    width: calc(100% - 0px);
+}
+
+.popup-audio .rhap_controls-section:empty {
+    display: none;
 }

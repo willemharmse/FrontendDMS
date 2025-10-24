@@ -6,6 +6,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faPhone, faIdCard, faBuilding } from "@fortawesome/free-solid-svg-icons";
 import "react-toastify/dist/ReactToastify.css";
 import VisitorOTPLink from "./VisitorsInduction/VisitorOTPLink";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import { parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
+import 'react-phone-number-input/style.css';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -49,8 +52,55 @@ const VisitorsInductionSite = ({
     const [isValidating, setIsValidating] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false); // when true, the page is disabled
     const [submitting, setSubmitting] = useState(false);
+    const [country, setCountry] = useState('ZA'); // default to ZA
 
-    // Validate the link BEFORE allowing any interaction
+    const normalizeToE164 = (val, ctry) => {
+        if (!val) return '';
+        const parsed = ctry ? parsePhoneNumberFromString(val, ctry) : parsePhoneNumberFromString(val);
+        return parsed ? parsed.number : val;
+    };
+
+    const handleCountryChange = (newCountry) => {
+        // react-phone-number-input may pass undefined — keep a safe fallback.
+        const nextCountry = newCountry || 'ZA';
+        setCountry(nextCountry);
+
+        setForm(f => {
+            const v = f.contact || '';
+            if (!v) return f;
+
+            const currentParsed = parsePhoneNumberFromString(v);
+            // Guard getCountryCallingCode against undefined/bad input.
+            let newCcode = '';
+            try {
+                newCcode = getCountryCallingCode(nextCountry);
+            } catch {
+                // fallback to ZA if library throws
+                newCcode = getCountryCallingCode('ZA');
+            }
+
+            let next = v;
+
+            if (currentParsed && currentParsed.countryCallingCode) {
+                const oldCode = currentParsed.countryCallingCode;
+                next = v.replace(new RegExp(`^\\+${oldCode}`), `+${newCcode}`);
+            } else if (/^\+?\d+$/.test(v)) {
+                next = v.replace(/^\+?0+/, ''); // strip leading zeros if any
+                next = `+${newCcode}${next}`;
+            }
+
+            next = normalizeToE164(next, newCountry);
+            return { ...f, contact: next };
+        });
+    };
+
+    useEffect(() => {
+        if (!form.contact) return;
+        const parsed = parsePhoneNumberFromString(form.contact);
+        if (parsed?.country) setCountry(parsed.country);
+        // if no parsed country, keep existing state
+    }, [form.contact]);
+
     useEffect(() => {
         (async () => {
             // No id in query? Treat as invalid.
@@ -114,7 +164,7 @@ const VisitorsInductionSite = ({
             name: form.name.trim(),
             surname: form.surname.trim(),
             email: form.email.trim(),
-            contact: form.contact.replace(/\s+/g, ""),
+            contact: form.contact,
             idNumber: form.idNumber.replace(/\s+/g, ""),
             company: form.company.trim(),
         };
@@ -126,10 +176,28 @@ const VisitorsInductionSite = ({
         }
 
         if (!EMAIL_RE.test(f.email)) return "Please enter a valid email address.";
-        if (f.contact.length !== 10) return "Contact number must be exactly 10 digits.";
-        if (f.idNumber.length !== 13) return "ID number must be exactly 13 characters.";
-
         return null;
+    };
+
+    const handleResendOTP = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_URL}/api/visitors/resendOTP/${visitorId}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                }
+            );
+
+            if (!res.ok) {
+                const msg = await res.text().catch(() => "");
+                throw new Error(msg || `HTTP ${res.status}`);
+            }
+
+            toast.success("OTP Resent to email.", { autoClose: 1500 });
+        } catch (err) {
+            toast.error("Could not resend OTP.", { autoClose: 1600 });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -146,7 +214,7 @@ const VisitorsInductionSite = ({
             name: form.name.trim(),
             surname: form.surname.trim(),
             email: form.email.trim(),
-            contactNr: form.contact.replace(/\s+/g, ""),
+            contactNr: form.contact,
             idNumber: form.idNumber.replace(/\s+/g, ""),
             company: form.company.trim(),
         };
@@ -170,7 +238,7 @@ const VisitorsInductionSite = ({
             toast.success("Submitted!", { autoClose: 1500 });
 
             setTimeout(() => {
-                navigate("/FrontendDMS/visitorLogin");
+                navigate(`/FrontendDMS/visitorPasswordSetup/${visitorId}`);
             }, 1500);
         } catch (err) {
             console.error("Submit failed:", err);
@@ -233,15 +301,23 @@ const VisitorsInductionSite = ({
 
                         <div className="visitors-induction-form-group">
                             <div className="visitors-induction-input-container">
-                                <i><FontAwesomeIcon icon={faPhone} /></i>
-                                <input
-                                    type="tel"
-                                    name="contact"
+                                <PhoneInput
+                                    international
+                                    country={country || 'ZA'}                 // controlled country
+                                    onCountryChange={handleCountryChange}
+                                    defaultCountry="ZA"
                                     placeholder="Contact Number"
-                                    value={form.contact}
-                                    onChange={onChange}
+                                    countryCallingCodeEditable={false}
+                                    value={form.contact || undefined} // controlled value
+                                    onChange={(value) =>
+                                        setForm(f => ({ ...f, contact: normalizeToE164(value || '', country || 'ZA') }))
+                                    }
+                                    onBlur={() =>
+                                        setForm(f => ({ ...f, contact: normalizeToE164(f.contact, country || 'ZA') }))
+                                    }
+                                    name="contact"
+                                    id="contact"
                                     required
-                                    maxLength={20}
                                 />
                             </div>
                         </div>
@@ -312,7 +388,7 @@ const VisitorsInductionSite = ({
                     </div>
                 </form>
             </div>
-            {!otpCompleted && (<VisitorOTPLink otpCompleted={otpCompleted} setOtpCompleted={setOTPCompleted} userID={visitorId} setVisitor={setVisitor} />)}
+            {!otpCompleted && (<VisitorOTPLink otpCompleted={otpCompleted} setOtpCompleted={setOTPCompleted} userID={visitorId} setVisitor={setVisitor} resendOTP={handleResendOTP} />)}
             <ToastContainer />
         </div>
     );

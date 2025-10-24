@@ -148,6 +148,11 @@ body {
     height: 100px;
 }
 
+.future-enhancement-page-tms-section-2-block-image-2 {
+    width: 150px;
+    height: 100px;
+}
+
 .fi-card {
     background: linear-gradient(180deg,
             #ffffff 0%,
@@ -188,7 +193,7 @@ body {
 }
 
 .fi-card-2-epac {
-    margin-top: 50px;
+    margin-top: 10px;
     background: linear-gradient(180deg,
             #ffffff 0%,
             /* Bright highlight */

@@ -105,7 +105,7 @@ const VersionHistoryInductions = () => {
                                     <tr key={index} className={`file-info-row-height dc-version-history-file-info-tr`}>
                                         <td className="dc-version-history-file-nr">{index + 1}</td>
                                         <td className="dc-version-history-file-fn">{ver.title}</td>
-                                        <td className="dc-version-history-file-ver">{ver.version}</td>
+                                        <td className="dc-version-history-file-ver">V{ver.version}</td>
                                     </tr>
                                 ))
                             ) : (

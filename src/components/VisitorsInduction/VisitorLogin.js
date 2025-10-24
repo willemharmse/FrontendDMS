@@ -21,6 +21,8 @@ const VisitorLogin = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [loadingScreen, setLoadingScreen] = useState(true);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     const secret = process.env.REACT_APP_SECRET;
 
@@ -104,7 +106,7 @@ const VisitorLogin = () => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/visitors/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, surname, id }),
+                body: JSON.stringify({ email, password }),
             });
 
             if (!response.ok) throw new Error('Login failed. Please check your credentials.');
@@ -117,7 +119,7 @@ const VisitorLogin = () => {
 
                 sessionStorage.setItem("visitorToken", data.token);
 
-                navigate(`/FrontendDMS/visitorLoginOTP/${userId}`);
+                navigate(`/FrontendDMS/visitorHomePage`);
             } else {
                 throw new Error('Invalid login attempt.');
             }
@@ -135,6 +137,9 @@ const VisitorLogin = () => {
         }
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword((prev) => !prev);
+    };
 
     return (
         <div className="nl-login-container">
@@ -147,10 +152,10 @@ const VisitorLogin = () => {
                             <i><FontAwesomeIcon icon={faUser} /></i>
                             <input
                                 type="text"
-                                id="username"
-                                placeholder="Name"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                id="email"
+                                placeholder="Insert Registered Email Address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className={error.length !== 0 ? `nl-surround` : ""}
                             />
@@ -159,32 +164,28 @@ const VisitorLogin = () => {
 
                     <div className="nl-form-group">
                         <div className="nl-input-container">
-                            <i><FontAwesomeIcon icon={faUser} /></i>
+                            <i><FontAwesomeIcon icon={faLock} /></i>
                             <input
-                                type="text"
-                                id="surname"
-                                placeholder="Surname"
-                                value={surname}
-                                onChange={(e) => setSurname(e.target.value)}
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                placeholder="Insert your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className={error.length !== 0 ? `nl-surround` : ""}
                             />
+                            <button
+                                type="button"
+                                className="nl-password-toggle"
+                                onClick={togglePasswordVisibility}
+                            >
+                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                            </button>
                         </div>
                     </div>
 
-                    <div className="nl-form-group">
-                        <div className="nl-input-container">
-                            <i><FontAwesomeIcon icon={faIdBadge} /></i>
-                            <input
-                                type="text"
-                                id="id"
-                                placeholder="ID / Passport Number"
-                                value={id}
-                                onChange={(e) => setId(e.target.value)}
-                                required
-                                className={error.length !== 0 ? `nl-surround` : ""}
-                            />
-                        </div>
+                    <div className="nl-options-row" style={{ marginBottom: "5px" }}>
+                        <a onClick={() => navigate("/FrontendDMS/resetVisitorPassword")} className="nl-forgot-password-visitor">Reset Password</a>
                     </div>
 
                     <div className="nl-login-error">{error}</div>

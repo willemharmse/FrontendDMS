@@ -106,10 +106,12 @@ import ManageComponentAssets from './components/FlameproofDMS/ManageComponentAss
 import FutureEnhancementPageEPAC from './components/FutureEnhancementPages/FutureEnhancementPageEPAC';
 import VisitorInductionMainPage from './components/VisitorsInduction/VisitorInductionMainPage';
 import FutureEnhancementPageTMS from './components/FutureEnhancementPages/FutureEnhancementPageTMS';
-import VisitorOTPLogin from './components/VisitorsInduction/VisitorOTPLogin';
 import InductionReviewPage from './components/VisitorsInduction/InductionCreation/InductionReviewPage';
 import VersionHistoryInductions from './components/VisitorsInduction/InductionCreation/VersionHistoryInductions';
 import PreviewCertificateInduction from './components/VisitorsInduction/PreviewCertificateInduction';
+import VisitorPasswordSetup from './components/VisitorsInduction/VisitorPasswordSetup';
+import ResetVisitorPassword from './components/VisitorsInduction/ResetVisitorPassword';
+import InductionDrafts from './components/VisitorsInduction/InductionCreation/InductionDrafts';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -122,10 +124,23 @@ function App() {
   const [showWarning, setShowWarning] = useState(false);
 
   const logout = () => {
-    // Clear auth data (adjust to your app)
-    localStorage.removeItem('token');
-    console.log('Logged out due to inactivity');
-    navigate('/FrontendDMS/');
+    const localToken = localStorage.getItem('token');
+    const sessionToken = sessionStorage.getItem('visitorToken');
+
+    if (localToken) {
+      localStorage.removeItem('token');
+      console.log('Logged out (localStorage token) due to inactivity');
+      navigate('/');
+    } else if (sessionToken) {
+      sessionStorage.removeItem('token');
+      console.log('Logged out (sessionStorage token) due to inactivity');
+      navigate('/visitorLogin');
+    } else {
+      console.log('No token found to log out.');
+      navigate('/');
+    }
+
+    // Common cleanup
     setShowWarning(false);
   };
 
@@ -172,7 +187,6 @@ function App() {
         {/* Desktop Routes */}
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
         <Route path="FrontendDMS/visitorLogin" element={<VisitorLogin />} />
-        <Route path="FrontendDMS/visitorLoginOTP/:id" element={<VisitorOTPLogin />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
         <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
@@ -266,7 +280,10 @@ function App() {
         <Route path='FrontendDMS/visitorView' element={<VisitorsInductionHomePage />} />
         <Route path='FrontendDMS/visitorHomePage' element={<VisitorInductionHomePage />} />
         <Route path='FrontendDMS/visitor-profile' element={<VisitorsInductionSite />} />
-        <Route path='FrontendDMS/inductionCreation' element={<InductionCreationPage />} />
+        <Route path='FrontendDMS/visitorPasswordSetup/:id' element={<VisitorPasswordSetup />} />
+        <Route path='FrontendDMS/resetVisitorPassword' element={<ResetVisitorPassword />} />
+        <Route path='FrontendDMS/inductionCreation/:id' element={<InductionCreationPage />} />
+        <Route path='FrontendDMS/inductionDrafts' element={<InductionDrafts />} />
         <Route path='FrontendDMS/inductionReview/:fileId' element={<InductionReviewPage />} />
         <Route path='FrontendDMS/inductionHistory/:id' element={<VersionHistoryInductions />} />
         <Route path="FrontendDMS/inductionPreview" element={<PreviewCertificateInduction />} />

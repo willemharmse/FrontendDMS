@@ -7,10 +7,14 @@ const TypeSelectorPopup = ({
     onClose,
     onSelect,
     options = [
-        // Expecting THREE options; can pass your own via props
-        { id: "TEXT", label: "Text", imgSrc: `${process.env.PUBLIC_URL}/txt.png`, alt: "Text" },
-        { id: "TEXT_MEDIA", label: "Text + Media", imgSrc: `${process.env.PUBLIC_URL}/txtMed.png`, alt: "Text and Media" },
-        { id: "MEDIA", label: "Media", imgSrc: `${process.env.PUBLIC_URL}/Med.png`, alt: "Media" },
+        { id: "TEXT", label: "Text Only", imgSrc: "/Content_Text.png", alt: "Text" },
+        { id: "TEXT_MEDIA", label: "Text + Media (Split)", imgSrc: "/Content_TextMedia_Split.png", alt: "Text and Media" },
+        { id: "MEDIAX2_TEXT", label: "Text + Media (Stacked)", imgSrc: "/Content_TextMedia_Stacked.png", alt: "Media" },
+        { id: "TEXT_MEDIA_2X2", label: "Text + Media (Grid)", imgSrc: "/Content_TextMedia_Grid.png", alt: "Text and Media 2x2" },
+        { id: "MEDIA", label: "Media Only", imgSrc: "/Content_Media.png", alt: "Media" },
+        { id: "MEDIA_GALLERY", label: "Media (Collage Split)", imgSrc: "/Content_Media_CollageSplit.png", alt: "Media" },
+        { id: "MEDIA_2X2", label: "Media (Collage Grid)", imgSrc: "/Content_Media_CollageGrid.png", alt: "Text and Media 2x2" },
+        { id: "PDF_VIEW", label: "PDF View", imgSrc: "/Content_PDF.png", alt: "Text and Media 2x2" },
     ],
     closeOnBackdrop = true,
 }) => {
@@ -44,7 +48,7 @@ const TypeSelectorPopup = ({
                 {/* Content group (no middle text, no footer buttons) */}
                 <div className="type-selector-group">
                     <div className="type-selector-tiles">
-                        {options.slice(0, 3).map(({ id, label, imgSrc, alt }) => (
+                        {options.slice(0, 8).map(({ id, label, imgSrc, alt }) => (
                             <button
                                 key={id}
                                 type="button"

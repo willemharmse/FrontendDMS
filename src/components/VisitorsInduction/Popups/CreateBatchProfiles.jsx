@@ -141,7 +141,7 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                         <div className="cbp-td">
                                             <input
                                                 className="cbp-input"
-                                                placeholder="Insert Visitor Name"
+                                                placeholder="Insert Name"
                                                 value={r.name}
                                                 onChange={e => updateCell(idx, 'name', e.target.value)}
                                             />
@@ -149,7 +149,7 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                         <div className="cbp-td">
                                             <input
                                                 className="cbp-input"
-                                                placeholder="Insert Visitor Surname"
+                                                placeholder="Insert Surname"
                                                 value={r.surname}
                                                 onChange={e => updateCell(idx, 'surname', e.target.value)}
                                             />
@@ -158,7 +158,7 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                             <input
                                                 className="cbp-input"
                                                 type="email"
-                                                placeholder="Insert Visitor Email"
+                                                placeholder="Insert Email"
                                                 value={r.email}
                                                 onChange={e => updateCell(idx, 'email', e.target.value)}
                                             />
@@ -166,7 +166,7 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                         <div className="cbp-td">
                                             <input
                                                 className="cbp-input"
-                                                placeholder="Insert Visitor Contact Number"
+                                                placeholder="Insert Contact Number"
                                                 value={r.contactNumber}
                                                 onChange={e => updateCell(idx, 'contactNumber', e.target.value)}
                                             />
@@ -182,7 +182,7 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                         <div className="cbp-td">
                                             <input
                                                 className="cbp-input"
-                                                placeholder="Insert Visitor Company Name"
+                                                placeholder="Insert Company Name"
                                                 value={r.company}
                                                 onChange={e => updateCell(idx, 'company', e.target.value)}
                                             />

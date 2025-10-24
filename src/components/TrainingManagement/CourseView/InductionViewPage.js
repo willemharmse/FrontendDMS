@@ -8,17 +8,33 @@ import {
 import { jwtDecode } from 'jwt-decode';
 import "./CourseViewPage.css";
 import TopBar from "../../Notifications/TopBar";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { saveAs } from "file-saver";
+import StartAssessmentPopup from "../../VisitorsInduction/Popups/StartAssessmentPopup";
+import IncompleteAssessmentPopup from "../../VisitorsInduction/Popups/IncompleteAssessmentPopup";
+import ReviewAssessmentPopup from "../../VisitorsInduction/Popups/ReviewAssessmentPopup";
 
+import AudioPlayer, { RHAP_UI } from "react-h5-audio-player";
+import "react-h5-audio-player/lib/styles.css";
 /** Keep slide type names aligned with the editor */
 const SLIDE_TYPES = {
     TEXT: "TEXT",
     TEXT_MEDIA: "TEXT_MEDIA",
     MEDIA: "MEDIA",
+    MEDIA_GALLERY: "MEDIA_GALLERY",
+    TEXT_MEDIA_2X2: "TEXT_MEDIA_2X2",
+    MEDIAX2_TEXT: "MEDIAX2_TEXT",
+    MEDIA_2X2: "MEDIA_2X2",
+    PDF_VIEW: "PDF_VIEW"
 };
 
 const InductionViewPage = () => {
+    const assessScrollRef = useRef(null);
+    const questionRefs = useRef([]);
+    const [popupAssessment, setPopupAssessment] = useState(false);
+    const [submissionIncomplete, setSubmissionIncomplete] = useState(false);
+    const [submissionReview, setSubmissionReview] = useState(false);
+
     const { id } = useParams();
     const navigate = useNavigate();
     // at the top of your component
@@ -151,11 +167,24 @@ const InductionViewPage = () => {
                 console.log(data);
 
                 const p = readPercentFromBackend(data);
-                setProgress(p);
+                setProgress(data?.trainee?.passed ? 100 : p);
+                if (data?.trainee?.passed) { try { persistProgress(100); } catch { } }
 
-                // initialise "highest visited" to whatever matches that backend percent,
-                // so we don't re-increment if they land in the middle.
-                const initialIdxFromPercent = Math.round(((data?.formData ? p : 0) / 100) * Math.max(1, (data?.formData ? ((data?.formData?.courseModules || []).flatMap(m => (m.topics || []).flatMap(t => t.slides || [])).length) : 0)));
+                // total items for mapping (slides + assessment if present)
+                const slidesCount = (data?.formData?.courseModules || [])
+                    .flatMap(m => (m.topics || []).flatMap(t => t.slides || []))
+                    .length + (data?.formData?.assessment?.length ? 1 : 0);
+
+                // Convert percent back to a 0-based "item index"
+                const approxItemIdx = Math.round((p / 100) * Math.max(1, slidesCount - 1));
+
+                // Our "currentIndex" is a *slide* index, so cap to last slide (exclude the assessment item)
+                const lastSlideIndex = Math.max(0,
+                    ((data?.formData?.courseModules || [])
+                        .flatMap(m => (m.topics || []).flatMap(t => t.slides || [])).length) // slides only
+                );
+                const initialIdxFromPercent = Math.min(approxItemIdx, Math.max(0, lastSlideIndex - 1));
+
                 highestVisitedIndexRef.current = initialIdxFromPercent || 0;
                 setErr('');
             } catch (e) {
@@ -206,11 +235,14 @@ const InductionViewPage = () => {
         _slideIndex: 0
     } : null;
 
-    // Flat slides with intro at the start
     const allSlides = useMemo(() => {
         const slides = topicGroups.flatMap(g => g.slides);
         return introSlide ? [introSlide, ...slides] : slides;
     }, [topicGroups, introSlide]);
+
+    const hasAssessment = useMemo(() => {
+        return Array.isArray(course?.formData?.assessment) && course.formData.assessment.length > 0;
+    }, [course?.formData?.assessment]);
 
     const total = allSlides.length;
     const canBack = currentIndex > 0;
@@ -218,28 +250,36 @@ const InductionViewPage = () => {
     const currentSlide = total > 0 ? allSlides[currentIndex] : null;
 
     const mediaIds = useMemo(() => {
-        const out = [];
+        const out = new Set();
         for (const mod of viewModules) {
             for (const topic of mod.topics || []) {
                 for (const slide of topic.slides || []) {
+                    // legacy single-media
                     const fid = slide?.media?.fileId;
-                    if (fid) out.push(fid);
+                    if (fid) out.add(fid);
+
+                    // new multi-media
+                    if (Array.isArray(slide?.mediaItems)) {
+                        for (const it of slide.mediaItems) {
+                            const fid2 = it?.media?.fileId;
+                            if (fid2) out.add(fid2);
+                        }
+                    }
                 }
             }
         }
-        // unique & stable order
-        return Array.from(new Set(out));
+        return Array.from(out);
     }, [viewModules]);
 
-    // Hydrate media previews for viewer (similar to Creation page)
     useEffect(() => {
         let cancelled = false;
-        const apiBase = process.env.REACT_APP_URL;
+
         async function hydrate() {
             const jobs = [];
             for (const fid of mediaIds) {
-                if (objectUrlCacheRef.current.has(fid)) continue; // already hydrated
-                const url = `${process.env.REACT_APP_URL}/api/visitorDrafts/media/${encodeURIComponent(fid)}`;
+                if (objectUrlCacheRef.current.has(fid)) continue;
+
+                const url = `${process.env.REACT_APP_URL}/api/visitorDrafts/mediaNew/${encodeURIComponent(fid)}`; // <-- new route
                 jobs.push(
                     fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
                         .then(async (res) => {
@@ -256,14 +296,13 @@ const InductionViewPage = () => {
             }
             await Promise.all(jobs);
             if (!cancelled) {
-                // trigger re-render by replacing course shallowly
-                setCourse((prev) => ({ ...(prev || {}) }));
+                setCourse((prev) => ({ ...(prev || {}) })); // trigger render
             }
         }
 
         if (mediaIds.length) hydrate();
         return () => { cancelled = true; };
-    }, [mediaIds.join(','), token]);// eslint-disable-line react-hooks/exhaustive-deps
+    }, [mediaIds.join(','), token]);
 
     // Cleanup object URLs
     useEffect(() => {
@@ -275,7 +314,14 @@ const InductionViewPage = () => {
         };
     }, []);
 
-    const goBack = () => { if (canBack) setCurrentIndex((i) => i - 1); };
+    const goBack = () => {
+        // On first content slide, BACK should go to Outline
+        if (viewMode === 'material' && currentIndex === 0) {
+            setViewMode('outline');
+            return;
+        }
+        if (currentIndex > 0) setCurrentIndex((i) => i - 1);
+    };
     const goNext = async () => {
         if (!canNext) return;
 
@@ -285,15 +331,11 @@ const InductionViewPage = () => {
         if (targetIndex > highestVisitedIndexRef.current) {
             highestVisitedIndexRef.current = targetIndex;
 
-            const nextPercent = indexToPercent(targetIndex, total);
-
-            if (nextPercent > progress) {
-                setProgress(nextPercent);
-
-                const { ok, percent } = await persistProgress(nextPercent);
-                if (!ok) {
-                    setProgress(percent);
-                }
+            const nextWeighted = computeWeightedProgress();
+            if (nextWeighted > progress) {
+                setProgress(nextWeighted);
+                const { ok, percent } = await persistProgress(nextWeighted);
+                if (!ok) setProgress(percent);
             }
         }
     };
@@ -356,31 +398,63 @@ const InductionViewPage = () => {
     const isLastContentSlide = currentIndex === total - 1;     // last in allSlides
     const hasNextOrRecap = !isLastContentSlide || viewMode !== 'material';
 
-    const renderMedia = (slide) => {
-        const fid = slide?.media?.fileId;
-        const src = slide.mediaPreview || (fid ? objectUrlCacheRef.current.get(fid) : null);
-        let type = (slide.mediaType ||
-            slide.media?.contentType ||
-            (fid ? mediaTypeCacheRef.current.get(fid) : "") ||
-            ""
-        ).toLowerCase();
+    // expects objectUrlCacheRef + mediaTypeCacheRef in scope
+    const renderMedia = (slide, index = 0) => {
+        // pick the specific item by index
+        const item = Array.isArray(slide?.mediaItems)
+            ? slide.mediaItems[index]
+            : (index === 0 && slide?.media ? { media: slide.media } : null); // legacy fallback only for index 0
 
+        const fid = item?.media?.fileId;
+        if (!fid) return null;
+
+        const src = objectUrlCacheRef.current.get(fid);
         if (!src) return null;
-        if (!type && slide.media?.filename) {
-            const name = slide.media.filename.toLowerCase();
-            if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".gif") || name.endsWith(".webp")) type = "image/*";
-            else if (name.endsWith(".mp4") || name.endsWith(".webm") || name.endsWith(".mov")) type = "video/*";
-            else if (name.endsWith(".mp3") || name.endsWith(".wav") || name.endsWith(".m4a") || name.endsWith(".ogg")) type = "audio/*";
+
+        // pick a mime
+        let type = (item.media?.contentType || mediaTypeCacheRef.current.get(fid) || "").toLowerCase();
+
+        // dumb filename-based inference if needed
+        if (!type && item.media?.filename) {
+            const n = item.media.filename.toLowerCase();
+            if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(n)) type = "image/*";
+            else if (/\.(mp4|webm|mov|m4v)$/.test(n)) type = "video/*";
+            else if (/\.(mp3|wav|m4a|ogg)$/.test(n)) type = "audio/*";
+            else if (/\.(pdf)$/.test(n)) type = "pdf"
         }
 
-        if (type.startsWith("image/"))
-            return <img src={src} alt={slide.title || "slide media"} style={{ width: "100%", height: "auto", borderRadius: 6 }} />;
-        if (type.startsWith("video/"))
-            return <video src={src} controls style={{ width: "100%", borderRadius: 6 }} />;
-        if (type.startsWith("audio/")) return <audio src={src} controls style={{ width: "100%" }} />;
-        // Fallback: download link
-        const name = slide.media?.filename || "file";
-        return <a href={src} download={name}>{name}</a>;
+        if (type.startsWith("image/")) return <img src={src} alt={item.media?.filename || "image"} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />;
+        if (type.startsWith("video/")) return <video src={src} controls style={{ width: "100%", height: "100%" }} />;
+        if (type.startsWith("audio/")) return (<AudioPlayer
+            className="popup-audio"
+            src={src}
+            layout="horizontal"
+            showJumpControls={false}
+            customAdditionalControls={[]}
+            customVolumeControls={[]}
+            customControlsSection={[]} // <- intentionally empty
+            autoPlayAfterSrcChange={false}
+            preload="metadata"
+            customProgressBarSection={[
+                RHAP_UI.MAIN_CONTROLS,
+                RHAP_UI.CURRENT_TIME,
+                RHAP_UI.PROGRESS_BAR,
+                RHAP_UI.DURATION,
+            ]}
+        />);
+
+        if (type.includes("pdf")) {
+            return (
+                <iframe
+                    src={src}
+                    title="PDF preview"
+                    className="courseCont-pdfFrame-view"
+                />
+            );
+        }
+
+        // fallback: generic file link
+        return <a href={src} download={item.media?.filename || "file"}>{item.media?.filename || "file"}</a>;
     };
 
     // --- Sidebar click handling (no design changes) ---
@@ -407,10 +481,30 @@ const InductionViewPage = () => {
 
     const [assessmentAnswers, setAssessmentAnswers] = useState({});
 
-    const onSelectAnswer = (qid, qIndex, optIndex) => {
-        const key = qid || `idx_${qIndex}`;
-        setAssessmentAnswers(prev => ({ ...prev, [key]: optIndex }));
+    /** Single-question flow state */
+    const [qIndex, setQIndex] = useState(0);                 // current question (0-based)
+    const totalQuestions = (course?.formData?.assessment || []).length;
+
+    // convenience guards
+    const hasPrevQ = qIndex > 0;
+    const hasNextQ = qIndex < Math.max(0, totalQuestions - 1);
+    const isLastQ = totalQuestions > 0 && qIndex === totalQuestions - 1;
+
+    // labels for the nav bar sides
+    const prevQLabel = hasPrevQ ? `Question ${qIndex}` : "";                // previous (1-based)
+    const nextQLabel = isLastQ ? "Submit Assessment"
+        : (hasNextQ ? `Question ${qIndex + 2}` : "");
+
+    // actions
+    const goPrevQ = () => { if (hasPrevQ) setQIndex(i => i - 1); };
+    const goNextQ = () => {
+        if (isLastQ) {
+            onSubmitClick();           // your existing submit flow
+        } else if (hasNextQ) {
+            setQIndex(i => i + 1);
+        }
     };
+
 
     const getVisitorToken = () => sessionStorage.getItem("visitorToken") || "";
     const getVisitorId = () => {
@@ -422,7 +516,44 @@ const InductionViewPage = () => {
         } catch { return null; }
     };
 
-    const handleSubmitAssessment = async () => {
+    const getAnsweredCount = () => {
+        // Count keys that have a number (0-based option index) selected
+        return (course?.formData?.assessment || []).reduce((acc, q, i) => {
+            const key = q.id || `idx_${i}`;
+            const v = assessmentAnswers[key];
+            return acc + (typeof v === 'number' ? 1 : 0);
+        }, 0);
+    };
+
+    const hasUnanswered = () => getAnsweredCount() < totalQuestions;
+
+    const onSubmitClick = () => {
+        if (isSubmitting) return;
+        if (totalQuestions === 0) return; // nothing to submit
+
+        if (hasUnanswered()) {
+            setSubmissionIncomplete(true);
+        } else {
+            setSubmissionReview(true);
+        }
+    };
+
+    const cancelIncomplete = () => setSubmissionIncomplete(false);
+    const continueWithIncomplete = () => {
+        // Close incomplete, then open review
+        setSubmissionIncomplete(false);
+        setSubmissionReview(true);
+    };
+
+    // User actions on the "review" popup
+    const cancelReview = () => setSubmissionReview(false);
+    const confirmReviewAndSubmit = () => {
+        setSubmissionReview(false);
+        // Perform the actual submit now
+        doSubmitAssessment();
+    };
+
+    const doSubmitAssessment = async () => {
         const answers = (course?.formData?.assessment || []).map((q, i) => {
             const key = q.id || `idx_${i}`;
             const selectedIndex = assessmentAnswers[key] ?? null;
@@ -462,20 +593,21 @@ const InductionViewPage = () => {
             // Expecting: { total, correctCount, scorePercent, passed, passMark, trainee }
             setSubmitResult(json);
 
-            // Rich toast (JSX) so you see line breaks nicely
-            toast.success(
-                <div>
-                    <div><b>Submitted!</b></div>
-                    <div>Score: {json.correctCount}/{json.total} ({json.scorePercent}%)</div>
-                    <div>Pass mark: {json.passMark}%</div>
-                    <div>Status: <b>{json.passed ? "Passed ✅" : "Not passed ❌"}</b></div>
-                </div>
-            );
+            console.log("Submit result", json);
+
+            if (hasAssessment && json?.passed) {
+                try {
+                    const newWeighted = computeWeightedProgress();
+                    setProgress(100);
+                    try { await persistProgress(100); } catch { }
+                } catch { /* swallow persist errors; toast already handled elsewhere */ }
+            }
         } catch (e) {
             console.error(e);
             toast.error(e.message || "Submission failed");
         } finally {
             setIsSubmitting(false);
+            setLockAssessment(false);
         }
     };
 
@@ -496,6 +628,33 @@ const InductionViewPage = () => {
     };
 
     const clamp = (n, lo = 0, hi = 100) => Math.min(hi, Math.max(lo, n));
+
+    const getContentCompletionPercent = () => {
+        // allSlides includes INTRO as index 0
+        if (!allSlides.length) return 0;
+        const maxIndex = Math.max(1, allSlides.length - 1); // avoid divide-by-zero
+        const furthest = clamp(highestVisitedIndexRef.current, 0, maxIndex);
+        return clamp(Math.round((furthest / maxIndex) * 100));
+    };
+
+    const getAssessmentRawPercent = () => {
+        if (typeof submitResult?.scorePercent === "number") return clamp(Math.round(submitResult.scorePercent));
+        if (course?.trainee?.passed === false) {
+            return 0;
+        }
+        else {
+            return 100;
+        }
+
+    };
+
+    /** final weighted progress (0-100) */
+    const computeWeightedProgress = () => {
+        const contentPct = getContentCompletionPercent();       // 0..100
+        const assessPct = getAssessmentRawPercent();            // 0..100
+        const combined = Math.round(contentPct * 0.5 + assessPct * 0.5);
+        return clamp(combined);
+    };
 
     const parsePercent = (val) => {
         if (val == null) return null;
@@ -581,11 +740,6 @@ const InductionViewPage = () => {
         }
     };
 
-    const indexToPercent = (idx, total) => {
-        if (!total || total <= 1) return 0;
-        return clamp(Math.round((idx / (total - 1)) * 100));
-    };
-
     const [progress, setProgress] = useState(0);
 
     // Track the furthest slide the learner has *ever* reached in this session,
@@ -636,6 +790,187 @@ const InductionViewPage = () => {
         return formatMinutes(val);
     };
 
+    // lock navigation away from Assessment after they enter it (unless already passed)
+    const [lockAssessment, setLockAssessment] = useState(false);
+
+    // Are they allowed to view content? True if they already passed before,
+    // or if they just passed in this session.
+    const allowContent = useMemo(() => {
+        const alreadyPassed = Boolean(course?.trainee?.passed);
+        const freshlySubmitted = Boolean(submitResult);
+        const passedNow = freshlySubmitted ? Boolean(submitResult?.passed) : false;
+        return alreadyPassed || passedNow;
+    }, [course?.trainee?.passed, submitResult]);
+
+    // If they pass (now or previously), release the lock automatically
+    useEffect(() => {
+        if (allowContent) setLockAssessment(false);
+    }, [allowContent]);
+
+    const enterAssessment = () => {
+        if (!allowContent) {
+            setPopupAssessment(true);
+        } else {
+            setViewMode('assessment');
+        }
+    };
+
+    const closePopupAssessment = () => setPopupAssessment(false);
+
+    const startAssessment = () => {
+        setLockAssessment(true);
+        setPopupAssessment(false);
+        setViewMode('assessment');
+    }
+
+    // Wrap any navigation that should be blocked while locked-in
+    const guardNavigation = (action) => {
+        if (lockAssessment && !allowContent) {
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.info("Please submit your assessment to continue.", {
+                autoClose: 1500,
+            });
+            return;
+        }
+        action();
+    };
+
+    const canShowTopBack = useMemo(() => {
+        if (viewMode === 'outline') return false;
+        if (viewMode === 'assessment') return allowContent; // only when completed
+        return true;
+    }, [viewMode, allowContent]);
+
+    const handleTopBack = () => {
+        if (viewMode === 'outline') navigate(-1); // should never trigger because button hidden
+        // Assessment: only allowed when completed; otherwise the icon isn't shown
+        if (viewMode === 'assessment') {
+            if (!allowContent) return;      // should never trigger because button hidden
+            setViewMode('recap');
+            return;
+        }
+
+        // Recap -> Material (go to the last content slide)
+        if (viewMode === 'recap') {
+            setViewMode('material');
+            if (total > 0) setCurrentIndex(Math.max(0, total - 1));
+            return;
+        }
+
+        // Material (includes Introduction at index 0)
+        if (viewMode === 'material') {
+            if (currentIndex > 0) {
+                setCurrentIndex(i => i - 1);  // slide-by-slide back
+            } else {
+                setViewMode('outline');       // from Intro back to Outline
+            }
+            return;
+        }
+
+        // Fallback
+        setViewMode('outline');
+    };
+
+    // Returns the highest index of a question that is (even partially) visible
+    const getLastVisibleIndex = () => {
+        const container = assessScrollRef.current;
+        if (!container) return -1;
+        const cRect = container.getBoundingClientRect();
+        let lastVisible = -1;
+
+        questionRefs.current.forEach((el, idx) => {
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            const verticallyVisible = r.top < cRect.bottom && r.bottom > cRect.top; // partial visibility OK
+            if (verticallyVisible) lastVisible = Math.max(lastVisible, idx);
+        });
+
+        return lastVisible;
+    };
+
+    const scrollQuestionIntoView = (index) => {
+        const container = assessScrollRef.current;
+        const el = questionRefs.current[index];
+        if (!container || !el) return;
+
+        // Prefer container-relative scroll for consistent UX
+        const containerTop = container.getBoundingClientRect().top;
+        const targetTop = el.getBoundingClientRect().top;
+        const delta = targetTop - containerTop;
+
+        container.scrollTo({
+            top: container.scrollTop + delta - 8, // small offset for spacing
+            behavior: 'smooth',
+        });
+    };
+
+    const onSelectAnswer = (qid, qIndex, optIndex) => {
+        const key = qid || `idx_${qIndex}`;
+        setAssessmentAnswers(prev => ({ ...prev, [key]: optIndex }));
+    };
+
+    const prevLabel =
+        viewMode === 'material' && currentIndex === 0
+            ? 'Induction Outline'
+            : getNavTitle(prevSlide);
+
+    const nextLabel =
+        viewMode === 'material' && isLastContentSlide
+            ? 'Induction Recap'
+            : getNavTitle(nextSlide);
+
+    const lastMaterialIndex = Math.max(0, total - 1);
+
+    // Back from Recap → Material (last slide)
+    const handleRecapBack = () => {
+        setViewMode('material');
+        if (total > 0) setCurrentIndex(lastMaterialIndex);
+    };
+
+    // Labels for the recap nav bar
+    const recapPrevLabel = total > 0 ? getNavTitle(allSlides[lastMaterialIndex]) : 'Induction Material';
+    const recapNextLabel = 'Start Assessment';
+
+    // Return the media item for a given slide + slot
+    const getItemAt = (slide, idx) => {
+        if (!slide) return null;
+        if (Array.isArray(slide.mediaItems)) return slide.mediaItems[idx] || null;
+        // legacy single-media fallback (only for slot 0)
+        if (idx === 0 && slide.media) return { media: slide.media };
+        return null;
+    };
+
+    // Best-effort MIME type for an item
+    const getTypeForItem = (item) => {
+        if (!item?.media) return "";
+        let t = (item.media.contentType || "").toLowerCase();
+
+        // fallback from filename
+        if (!t && item.media.filename) {
+            const n = item.media.filename.toLowerCase();
+            if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(n)) t = "image/*";
+            else if (/\.(mp4|webm|mov|m4v)$/.test(n)) t = "video/*";
+            else if (/\.(mp3|wav|m4a|ogg)$/.test(n)) t = "audio/*";
+            else if (/\.(pdf)$/.test(n)) t = "application/pdf";
+        }
+
+        // fallback from loaded blob type cache (you already fill this)
+        if (!t && item.media.fileId) {
+            const bt = (mediaTypeCacheRef.current.get(item.media.fileId) || "").toLowerCase();
+            if (bt) t = bt;
+        }
+
+        return t || "";
+    };
+
+    // Is the given slot an audio file?
+    const isAudioAt = (slide, idx) => {
+        const it = getItemAt(slide, idx);
+        const t = getTypeForItem(it);
+        return t.startsWith("audio/");
+    };
+
     return (
         <div className="risk-admin-draft-info-container">
             {isSidebarVisible && (
@@ -644,7 +979,7 @@ const InductionViewPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" title="Home" />
                         <p className="logo-text-um">Training Management</p>
                     </div>
 
@@ -652,100 +987,31 @@ const InductionViewPage = () => {
                         <SidebarButton
                             icon={faClipboardList}
                             text="Induction Outline"
-                            onClick={() => setViewMode('outline')}
+                            onClick={() => guardNavigation(() => setViewMode('outline'))}
                             active={viewMode === 'outline'}
                         />
                         <SidebarButton
                             icon={faInfoCircle}
                             text="Introduction"
-                            onClick={() => { setViewMode('material'); setCurrentIndex(0); }}
+                            onClick={() => guardNavigation(() => { setViewMode('material'); setCurrentIndex(0); })}
                             active={viewMode === 'material' && currentIndex === 0}
                         />
                         <SidebarButton
                             icon={faBookOpen}
                             text="Induction Material"
-                            onClick={() => { setViewMode('material'); setCurrentIndex(1); }}
+                            onClick={() => guardNavigation(() => { setViewMode('material'); setCurrentIndex(1); })}
                             active={viewMode === 'material' && currentIndex > 0}
                         />
-                        {/* Scrollable Modules list shown when Induction Material is selected */}
-                        {viewMode === 'material' && currentIndex !== 0 && (
-                            <div
-                                style={{
-                                    width: "78.30%",
-                                    marginTop: 3,
-                                    borderRadius: 6,
-                                    backgroundColor: "transparent",
-                                    maxHeight: 45,          // <- set height
-                                    overflowY: "auto",       // <- scrollable
-                                    padding: 8,
-                                    paddingLeft: 0,
-                                    paddingTop: 0,
-                                    paddingBottom: 0,
-                                }}
-                                aria-label="Modules list"
-                            >
-                                {Array.isArray(viewModules) && viewModules.length > 0 ? (
-                                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                                        {viewModules.map((mod, mIdx) => {
-                                            const nr = mIdx + 1;
-                                            const title = (mod?.title && String(mod.title).trim()) || `Module ${nr}`;
-                                            const firstIdx = moduleFirstSlideIndexMap.get(mIdx);
-                                            const isClickable = typeof firstIdx === 'number';
-
-                                            return (
-                                                <li
-                                                    key={mod?.id || mIdx}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 8,
-                                                        padding: "2px 6px",
-                                                        borderRadius: 4,
-                                                        cursor: isClickable ? "pointer" : "default",
-                                                        userSelect: "none"
-                                                    }}
-                                                    onClick={() => isClickable && goToModule(mIdx)}
-                                                    role={isClickable ? "button" : undefined}
-                                                    tabIndex={isClickable ? 0 : -1}
-                                                    onKeyDown={(e) => {
-                                                        if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
-                                                            e.preventDefault();
-                                                            goToModule(mIdx);
-                                                        }
-                                                    }}
-                                                    title={isClickable ? "Go to first slide" : "No slides available"}
-                                                >
-                                                    <span style={{ minWidth: 28, textAlign: "right", fontWeight: 700, color: "white" }}>
-                                                        {nr}.
-                                                    </span>
-                                                    <span
-                                                        style={{
-                                                            flex: 1,
-                                                            textDecoration: isClickable ? "underline" : "none",
-                                                            color: isClickable ? "white" : "#666"
-                                                        }}
-                                                    >
-                                                        {title}
-                                                    </span>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <div style={{ color: "#666", fontSize: 13 }}>No modules found.</div>
-                                )}
-                            </div>
-                        )}
                         <SidebarButton
                             icon={faClipboardList}
                             text="Induction Recap"
-                            onClick={() => setViewMode('recap')}
+                            onClick={() => guardNavigation(() => setViewMode('recap'))}
                             active={viewMode === 'recap'}
                         />
                         <SidebarButton
                             icon={faClipboard}
                             text="Assessment"
-                            onClick={() => setViewMode('assessment')}
+                            onClick={enterAssessment}
                             active={viewMode === 'assessment'}
                         />
                     </div>
@@ -768,7 +1034,12 @@ const InductionViewPage = () => {
             <div className="main-box-gen-info">
                 <div className="top-section-um">
                     <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                        <FontAwesomeIcon
+                            onClick={handleTopBack}
+                            icon={faArrowLeft}
+                            title="Back"
+                            style={{ cursor: "pointer" }}
+                        />
                     </div>
                     <div className="spacer"></div>
                     <TopBar visitor={true} />
@@ -783,11 +1054,11 @@ const InductionViewPage = () => {
                             </div>
 
                             {/* Progress only for slides viewer (intro + material live inside 'material') */}
-                            {viewMode === 'material' && total > 0 && (
+                            {(viewMode === 'material' || viewMode === "assessment" || viewMode === "recap") && total > 0 && (
                                 <div className="viewer-progress">
                                     <div className="viewer-progress-bar">
                                         <div
-                                            className={`viewer-progress-bar-fill`}
+                                            className={`${progress === 100 ? `viewer-progress-bar-fill` : `viewer-progress-bar-fill-ip`}`}
                                             style={{ width: `${progress}%` }}
                                         />
                                     </div>
@@ -798,159 +1069,217 @@ const InductionViewPage = () => {
 
                         {/* === OUTLINE (existing) === */}
                         {viewMode === 'outline' && (
-                            <div className="course-content-body-outline">
-                                <div className="course-outline-text">
-                                    <span style={{ fontWeight: "normal" }}><strong>Department:</strong> {courseOutline?.department || course?.dept || ""}</span>
-                                    <span style={{ fontWeight: "normal" }}><strong>Duration:</strong> {formatDuration(courseOutline?.duration)}</span>
-                                    <span style={{ fontWeight: "normal" }}><strong>Version Number:</strong> {course?.versionNumber ?? course?.version ?? ""}</span>
-                                </div>
+                            <>
+                                <div className="course-content-body-outline">
+                                    <div className="course-outline-text">
+                                        <span style={{ fontWeight: "normal" }}><strong>Department:</strong> {courseOutline?.department || course?.dept || ""}</span>
+                                        <span style={{ fontWeight: "normal" }}><strong>Duration:</strong> {formatDuration(courseOutline?.duration)}</span>
+                                        <span style={{ fontWeight: "normal" }}><strong>Version Number:</strong> {course?.versionNumber ?? course?.version ?? ""}</span>
+                                    </div>
 
-                                <div className="course-outline-text" style={{ marginBottom: "0px" }}>
-                                    <span style={{ color: "#002060", fontSize: "20px" }}>INDUCTION OUTLINE </span>
-                                </div>
+                                    <div className="course-outline-text" style={{ marginBottom: "0px" }}>
+                                        <span style={{ color: "#002060", fontSize: "20px" }}>INDUCTION OUTLINE </span>
+                                    </div>
 
-                                <div className="course-outline-table-visitorView">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ width: "6%", textAlign: "center" }}>Nr</th>
-                                                <th style={{ width: "26%", textAlign: "center" }}>Topic</th>
-                                                <th style={{ width: "8%", textAlign: "center" }}>Duration</th>
-                                                <th style={{ width: "60%", textAlign: "center" }}>Description</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {(courseOutline?.table || []).map((row, i) => {
-                                                const fmt = (d) => {
-                                                    if (d == null || d === "") return "";
-                                                    const n = Number(d);
-                                                    return Number.isFinite(n) ? `${n} min` : d;
-                                                };
-
-                                                if (row.kind === "module") {
-                                                    return (
-                                                        <tr key={`m-${i}`}>
-                                                            <td colSpan={4} style={{ textAlign: "center", fontWeight: 700, backgroundColor: "lightgray" }}>
-                                                                {row.text}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                if (row.kind === "intro") {
-                                                    const duration = row.duration ?? courseOutline?.introDuration;
-                                                    const description = row.description ?? courseOutline?.introDescription;
-                                                    return (
-                                                        <tr key={`i-${i}`} style={{ fontWeight: "normal" }}>
-                                                            <td style={{ textAlign: "center" }}>{row.nr ?? "0"}</td>
-                                                            <td>{row.topic ?? "Introduction"}</td>
-                                                            <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
-                                                            <td>{description || ""}</td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                /* ✅ NEW: render topic rows under their modules */
-                                                if (row.kind === "topic") {
-                                                    const meta = (courseOutline?.topicMeta || {})[row.topicId] || {};
-                                                    const duration = row.duration ?? meta.duration;
-                                                    const description = row.description ?? meta.description;
-
-                                                    return (
-                                                        <tr key={row.topicId || `t-${i}`} style={{ fontWeight: "normal" }}>
-                                                            <td style={{ textAlign: "center" }}>
-                                                                {row.nr ?? `${(row.moduleIndex ?? 0) + 1}.${(row.topicIndex ?? 0) + 1}`}
-                                                            </td>
-                                                            <td /* slight indent so topics sit “under” modules */ style={{ paddingLeft: 12 }}>
-                                                                {row.topic}
-                                                            </td>
-                                                            <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
-                                                            <td>{description || ""}</td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                if (row.kind === "slide") {
-                                                    const meta = (courseOutline?.slideMeta || {})[row.slideId] || {};
-                                                    const duration = row.duration ?? meta.duration;
-                                                    const description = row.description ?? meta.description;
-                                                    return (
-                                                        <tr key={row.slideId || `s-${i}`}>
-                                                            <td style={{ textAlign: "center" }}>
-                                                                {row.nr ?? `${(row.moduleIndex ?? 0) + 1}.${(row.slideIndex ?? 0) + 1}`}
-                                                            </td>
-                                                            <td style={{ paddingLeft: 24 /* deeper indent for slides (optional) */ }}>
-                                                                {row.topic}
-                                                            </td>
-                                                            <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
-                                                            <td>{description || ""}</td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                return null;
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="course-outline-text" style={{ marginBottom: "0px" }}>
-                                    <span style={{ color: "#002060", fontSize: "20px" }}>ABBREVIATIONS </span>
-                                </div>
-
-                                <div className="course-outline-table-visitorView">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ width: "20%", textAlign: "center" }}>Abbreviation</th>
-                                                <th style={{ width: "80%", textAlign: "center" }}>Description</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {abbrs.map((row, i) => (
-                                                <tr key={i} style={{ fontWeight: "normal" }}>
-                                                    <td>{row.abbr}</td>
-                                                    <td>{row.meaning}</td>
+                                    <div className="course-outline-table-visitorView">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{ width: "6%", textAlign: "center" }}>Nr</th>
+                                                    <th style={{ width: "26%", textAlign: "center" }}>Topic</th>
+                                                    <th style={{ width: "8%", textAlign: "center" }}>Duration</th>
+                                                    <th style={{ width: "60%", textAlign: "center" }}>Description</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                {(courseOutline?.table || []).map((row, i) => {
+                                                    const fmt = (d) => {
+                                                        if (d == null || d === "") return "";
+                                                        const n = Number(d);
+                                                        return Number.isFinite(n) ? `${n} min` : d;
+                                                    };
 
-                                <div className="course-outline-text" style={{ marginBottom: "0px" }}>
-                                    <span style={{ color: "#002060", fontSize: "20px" }}>TERMS & DEFINITIONS </span>
-                                </div>
+                                                    if (row.kind === "module") {
+                                                        return (
+                                                            <tr key={`m-${i}`}>
+                                                                <td colSpan={4} style={{ textAlign: "center", fontWeight: 700, backgroundColor: "lightgray" }}>
+                                                                    {row.text}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }
 
-                                <div className="course-outline-table-visitorView">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ width: "20%", textAlign: "center" }}>Term</th>
-                                                <th style={{ width: "80%", textAlign: "center" }}>Definition</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {terms.map((row, i) => (
-                                                <tr key={i} style={{ fontWeight: "normal" }}>
-                                                    <td>{row.term}</td>
-                                                    <td>{row.definition}</td>
+                                                    if (row.kind === "intro") {
+                                                        const duration = row.duration ?? courseOutline?.introDuration;
+                                                        const description = row.description ?? courseOutline?.introDescription;
+                                                        return (
+                                                            <tr key={`i-${i}`} style={{ fontWeight: "normal" }}>
+                                                                <td style={{ textAlign: "center" }}>{row.nr ?? "0"}</td>
+                                                                <td>{row.topic ?? "Introduction"}</td>
+                                                                <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
+                                                                <td>{description || ""}</td>
+                                                            </tr>
+                                                        );
+                                                    }
+
+                                                    /* ✅ NEW: render topic rows under their modules */
+                                                    if (row.kind === "topic") {
+                                                        const meta = (courseOutline?.topicMeta || {})[row.topicId] || {};
+                                                        const duration = row.duration ?? meta.duration;
+                                                        const description = row.description ?? meta.description;
+
+                                                        return (
+                                                            <tr key={row.topicId || `t-${i}`} style={{ fontWeight: "normal" }}>
+                                                                <td style={{ textAlign: "center" }}>
+                                                                    {row.nr ?? `${(row.moduleIndex ?? 0) + 1}.${(row.topicIndex ?? 0) + 1}`}
+                                                                </td>
+                                                                <td /* slight indent so topics sit “under” modules */ style={{ paddingLeft: 12 }}>
+                                                                    {row.topic}
+                                                                </td>
+                                                                <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
+                                                                <td>{description || ""}</td>
+                                                            </tr>
+                                                        );
+                                                    }
+
+                                                    if (row.kind === "slide") {
+                                                        const meta = (courseOutline?.slideMeta || {})[row.slideId] || {};
+                                                        const duration = row.duration ?? meta.duration;
+                                                        const description = row.description ?? meta.description;
+                                                        return (
+                                                            <tr key={row.slideId || `s-${i}`}>
+                                                                <td style={{ textAlign: "center" }}>
+                                                                    {row.nr ?? `${(row.moduleIndex ?? 0) + 1}.${(row.slideIndex ?? 0) + 1}`}
+                                                                </td>
+                                                                <td style={{ paddingLeft: 24 /* deeper indent for slides (optional) */ }}>
+                                                                    {row.topic}
+                                                                </td>
+                                                                <td style={{ textAlign: "center" }}>{fmt(duration)}</td>
+                                                                <td>{description || ""}</td>
+                                                            </tr>
+                                                        );
+                                                    }
+
+                                                    return null;
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="course-outline-text" style={{ marginBottom: "0px" }}>
+                                        <span style={{ color: "#002060", fontSize: "20px" }}>ABBREVIATIONS </span>
+                                    </div>
+
+                                    <div className="course-outline-table-visitorView">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{ width: "20%", textAlign: "center" }}>Abbreviation</th>
+                                                    <th style={{ width: "80%", textAlign: "center" }}>Description</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {abbrs.map((row, i) => (
+                                                    <tr key={i} style={{ fontWeight: "normal" }}>
+                                                        <td>{row.abbr}</td>
+                                                        <td>{row.meaning}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="course-outline-text" style={{ marginBottom: "0px" }}>
+                                        <span style={{ color: "#002060", fontSize: "20px" }}>TERMS & DEFINITIONS </span>
+                                    </div>
+
+                                    <div className="course-outline-table-visitorView">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{ width: "20%", textAlign: "center" }}>Term</th>
+                                                    <th style={{ width: "80%", textAlign: "center" }}>Definition</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {terms.map((row, i) => (
+                                                    <tr key={i} style={{ fontWeight: "normal" }}>
+                                                        <td>{row.term}</td>
+                                                        <td>{row.definition}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="course-outline-text">
+                                        <span style={{ color: "#002060", fontSize: "20px" }}>ASSESSMENT & CERTIFICATION</span>
+                                        <span style={{ fontWeight: "normal" }}><strong>Assessment Pass Mark:</strong> 80%</span>
+                                        <span style={{ fontWeight: "normal" }}><strong>Certificate Validity:</strong> 12 months</span>
+                                    </div>
                                 </div>
 
-                                <div className="course-outline-text">
-                                    <span style={{ color: "#002060", fontSize: "20px" }}>ASSESSMENT & CERTIFICATION</span>
-                                    <span style={{ fontWeight: "normal" }}><strong>Assessment Pass Mark:</strong> 80%</span>
-                                    <span style={{ fontWeight: "normal" }}><strong>Certificate Validity:</strong> 12 months</span>
+                                <div className="course-nav-bar">
+                                    <div className="nav-text-title" style={{ textAlign: "left" }}>{""}</div>
+                                    <button
+                                        className={`${viewMode !== 'outline'
+                                            ? 'course-nav-button' : 'course-nav-button-disabled'} back`}
+                                        onClick={goBack}
+                                        disabled={(viewMode === 'outline')}
+                                        title="Back"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        className={`${(canNext || isLastContentSlide) ? 'course-nav-button' : 'course-nav-button-disabled'} back`}
+                                        onClick={() => {
+                                            setViewMode("material")
+                                            setCurrentIndex(0);
+                                        }}
+                                        title={isLastContentSlide ? "Go to Induction Recap" : "Next"}
+                                    >
+                                        Next
+                                    </button>
+                                    <div className="nav-text-title" style={{ textAlign: "right" }}>
+                                        {"Introduction"}
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {/* === COURSE MATERIAL (slides viewer) === */}
                         {viewMode === 'material' && (
                             <>
+                                {viewMode === "material" && currentIndex !== 0 && Array.isArray(viewModules) && viewModules.length > 0 &&
+                                    <div className="module-rail" aria-label="Module navigation">
+                                        {viewModules.map((mod, mIdx) => {
+                                            const firstIdx = moduleFirstSlideIndexMap.get(mIdx);
+                                            const isActive = currentSlide._moduleIndex === mIdx;
+                                            const isClickable = typeof firstIdx === 'number';
+                                            const titleRaw = (mod && mod.title) ? String(mod.title) : '';
+                                            const nr = mIdx + 1;
+                                            const title = titleRaw.trim() || `Module ${nr}`;
+                                            return (
+                                                <div
+                                                    key={mod?.id || mIdx}
+                                                    className={`module-box${isActive ? ' active' : ''}${!isClickable ? ' disabled' : ''}`}
+                                                    title={title}
+                                                    role={isClickable ? 'button' : undefined}
+                                                    tabIndex={isClickable ? 0 : -1}
+                                                    onClick={() => isClickable && !isActive && goToModule(mIdx)}
+                                                    onKeyDown={(e) => {
+                                                        if (isClickable && !isActive && (e.key === 'Enter' || e.key === ' ')) {
+                                                            e.preventDefault();
+                                                            goToModule(mIdx);
+                                                        }
+                                                    }}
+                                                >
+                                                    {title}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                }
                                 <div className="course-content-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                                     {!loading && total > 0 && currentSlide && (
                                         <>
@@ -1010,11 +1339,71 @@ const InductionViewPage = () => {
                                                                     <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         {currentSlide.content || ""}
                                                                     </div>
-                                                                    <div className="inductionView-media-box">{renderMedia(currentSlide)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                                </div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.MEDIA_GALLERY) && (
+                                                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
                                                                 </div>
                                                             )}
                                                             {currentSlide.type === SLIDE_TYPES.MEDIA && (
-                                                                <div className="inductionView-media-box">{renderMedia(currentSlide)}</div>
+                                                                <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
+                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        {currentSlide.contentLeft || ""}
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        {currentSlide.contentRight || ""}
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
+                                                                </div>
+                                                            )}
+
+                                                            {currentSlide.type === SLIDE_TYPES.MEDIAX2_TEXT && (
+                                                                <div className="limitHeightInductionView" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                                                    {/* Column 1: Text box (no changes needed here) */}
+                                                                    <div
+                                                                        className="inductionView-text-box"
+                                                                        style={{
+                                                                            whiteSpace: "pre-wrap",
+                                                                            fontSize: 14,
+                                                                            lineHeight: 1.45,
+                                                                            textAlign: "left",
+                                                                            paddingTop: "10px",
+                                                                        }}
+                                                                    >
+                                                                        {currentSlide.content || ""}
+                                                                    </div>
+
+                                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+                                                                        <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"} style={{ flex: 1, minHeight: 0 }}>
+                                                                            {renderMedia(currentSlide, 0)}
+                                                                        </div>
+                                                                        <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"} style={{ flex: 1, minHeight: 0 }}>
+                                                                            {renderMedia(currentSlide, 1)}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.MEDIA_2X2) && (
+                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 2) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 2)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 3) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 3)}</div>
+                                                                </div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.PDF_VIEW) && (
+                                                                <div className="inductionView-media-box-pdf">{renderMedia(currentSlide, 0)}</div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1025,8 +1414,14 @@ const InductionViewPage = () => {
                                 </div>
 
                                 <div className="course-nav-bar">
-                                    <div className="nav-text-title" style={{ textAlign: "left" }}>{getNavTitle(prevSlide)}</div>
-                                    <button className={`${canBack ? `course-nav-button` : `course-nav-button-disabled`} back`} onClick={goBack} disabled={!canBack} title="Back">
+                                    <div className="nav-text-title" style={{ textAlign: "left" }}>{prevLabel}</div>
+                                    <button
+                                        className={`${(currentIndex > 0 || (viewMode === 'material' && currentIndex === 0))
+                                            ? 'course-nav-button' : 'course-nav-button-disabled'} back`}
+                                        onClick={goBack}
+                                        disabled={!(currentIndex > 0 || (viewMode === 'material' && currentIndex === 0))}
+                                        title="Back"
+                                    >
                                         Back
                                     </button>
                                     <button
@@ -1038,37 +1433,65 @@ const InductionViewPage = () => {
                                         Next
                                     </button>
                                     <div className="nav-text-title" style={{ textAlign: "right" }}>
-                                        {isLastContentSlide ? "Induction Recap" : getNavTitle(nextSlide)}
+                                        {nextLabel}
                                     </div>
                                 </div>
                             </>
                         )}
 
                         {viewMode === 'recap' && (
-                            <div className="course-content-body-outline">
-                                <div className="recap-card">
-                                    <div className="recap-title">INDUCTION RECAP</div>
+                            <>
+                                <div className="course-content-body">
+                                    <div className="inductionView-module-course-content" style={{ marginTop: "0px" }}>
+                                        <div className="slide-title-row">
+                                            <div className="slide-title-left">
+                                                {`INDUCTION RECAP`}
+                                            </div>
+                                        </div>
+                                        <div style={{ height: 4, background: "#0b2f6b", borderRadius: 2, marginTop: 8, marginBottom: 10 }} />
 
-                                    <div className="recap-content">
-                                        {course?.formData?.summary || "No summary provided."}
+                                        <div className="recap-content">
+
+                                            {course?.formData?.summary || "No summary provided."}
+                                        </div>
                                     </div>
                                 </div>
 
+
                                 <div className="course-nav-bar">
+                                    <div className="nav-text-title" style={{ textAlign: "left" }}>
+                                        {recapPrevLabel}
+                                    </div>
+
                                     <button
                                         type="button"
-                                        className="course-nav-button-startAss"
-                                        onClick={() => setViewMode('assessment')}
-                                        title="Start Assessment"
+                                        className="course-nav-button back"
+                                        onClick={handleRecapBack}
+                                        title="Back to material"
+                                        disabled={total === 0}
                                     >
-                                        Start Assessment
+                                        Back
                                     </button>
+
+                                    <button
+                                        type="button"
+                                        className="course-nav-button back"
+                                        onClick={enterAssessment}
+                                        title="Start Assessment"
+                                        disabled={false}
+                                    >
+                                        Next
+                                    </button>
+
+                                    <div className="nav-text-title" style={{ textAlign: "right" }}>
+                                        {recapNextLabel}
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {viewMode === 'assessment' && (
-                            <div className="course-content-body-outline">
+                            <div className="course-content-body-outline" style={{ marginBottom: "0px", gap: "8px" }}>
                                 {(() => {
                                     const alreadyPassed = Boolean(course?.trainee?.passed);
                                     const freshlySubmitted = Boolean(submitResult);
@@ -1082,8 +1505,8 @@ const InductionViewPage = () => {
                                             : (typeof course?.trainee?.mark === 'number' ? course.trainee.mark : null);
 
                                     if (showPass) {
+                                        // ✅ PASS SCREEN (unchanged)
                                         return (
-                                            // ✅ PASS SCREEN
                                             <div className="assessment-pass-screen">
                                                 <div className="assessment-pass-content">
                                                     <div className="assessment-pass-title">
@@ -1115,6 +1538,7 @@ const InductionViewPage = () => {
                                     }
 
                                     if (freshlySubmitted) {
+                                        // ❌ FAIL SCREEN (unchanged)
                                         return (
                                             <div className="assessment-fail-screen">
                                                 <div className="assessment-pass-content">
@@ -1145,54 +1569,99 @@ const InductionViewPage = () => {
                                         );
                                     }
 
-                                    // ❓ NOT SUBMITTED YET → show assessment card
+                                    // ❓ SINGLE-QUESTION VIEW
+                                    const questions = course?.formData?.assessment || [];
+                                    if (!questions.length) {
+                                        return (
+                                            <div className="assessment-card">
+                                                <div className="assessment-header">ASSESSMENT</div>
+                                                <div className="assessment-divider" />
+                                                <div style={{ padding: 12 }}>No questions available.</div>
+                                            </div>
+                                        );
+                                    }
+
+                                    const q = questions[qIndex];
+                                    const key = q.id || `idx_${qIndex}`;
+
                                     return (
-                                        <div className="assessment-card">
-                                            <div className="assessment-header">ASSESSMENT</div>
-                                            <div className="assessment-divider" />
-                                            <div className="assessment-meta">
-                                                <div style={{ fontWeight: "normal" }}><strong>Assessment Type:</strong> Multi Question Quiz (80% pass mark required)</div>
-                                                <div style={{ fontWeight: "normal" }}><strong>Certification:</strong> {course?.formData?.courseTitle || "Induction"} Induction Certificate valid for 12 months</div>
-                                            </div>
+                                        <>
+                                            <div className="assessment-card">
+                                                {/* Header with compact progress */}
+                                                <div className="assessment-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                    <div>ASSESSMENT</div>
+                                                </div>
+                                                <div className="assessment-divider" />
 
-                                            <div className="assessment-scroll">
-                                                {(course?.formData?.assessment || []).map((q, i) => {
-                                                    const key = q.id || `idx_${i}`;
-                                                    return (
-                                                        <div className="assessment-q" key={key}>
-                                                            <div className="assessment-q-title" style={{ marginTop: 10 }}>
-                                                                {i + 1}. {q.question}
-                                                            </div>
-                                                            <div className="assessment-options">
-                                                                {(q.options || []).map((opt, oi) => (
-                                                                    <label className="assessment-option" key={oi}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`q_${key}`}
-                                                                            value={oi}
-                                                                            checked={assessmentAnswers[key] === oi}
-                                                                            onChange={() => onSelectAnswer(q.id, i, oi)}
-                                                                        />
-                                                                        <span>{opt}</span>
-                                                                    </label>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
+                                                {/* ONE question only */}
+                                                <div className="assessment-q" key={key}>
+                                                    <div className="assessment-q-title" style={{ marginTop: 10 }}>
+                                                        {qIndex + 1}. {q.question}
+                                                    </div>
 
-                                            <div className="assessment-footer">
+                                                    <div className="assessment-options">
+                                                        {(q.options || []).map((opt, oi) => (
+                                                            <label className="assessment-option" key={oi}>
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`q_${key}`}
+                                                                    value={oi}
+                                                                    checked={assessmentAnswers[key] === oi}
+                                                                    onChange={() => onSelectAnswer(q.id, qIndex, oi)}
+                                                                />
+                                                                <span>{opt}</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Footer nav bar with prev/next labels */}
+
+                                            </div>
+                                            <div className="course-nav-bar" style={{ marginTop: 0 }}>
+                                                <div className="nav-text-title" style={{ textAlign: "left" }}>{prevQLabel}</div>
+
                                                 <button
-                                                    className="course-nav-button next assessment-submit"
-                                                    onClick={handleSubmitAssessment}
-                                                    title="Submit Assessment"
-                                                    disabled={isSubmitting}
+                                                    type="button"
+                                                    className={` ${hasPrevQ ? 'course-nav-button back' : 'course-nav-button-disabled'}`}
+                                                    onClick={goPrevQ}
+                                                    disabled={!hasPrevQ}
+                                                    title="Back"
                                                 >
-                                                    {isSubmitting ? "Submitting…" : "Submit Assessment"}
+                                                    Back
                                                 </button>
+
+                                                <button
+                                                    type="button"
+                                                    className={` ${!isLastQ ? 'course-nav-button back' : 'course-nav-button-disabled'}`}
+                                                    onClick={goNextQ}
+                                                    disabled={(isLastQ || !hasNextQ)}
+                                                    title={"Next"}
+                                                >
+                                                    {"Next"}
+                                                </button>
+
+                                                {!isLastQ && (
+                                                    <div className="nav-text-title" style={{ textAlign: "right" }}>
+                                                        {nextQLabel}
+                                                    </div>
+                                                )}
+
+                                                {isLastQ && (
+                                                    <div className="nav-text-title-button" style={{ textAlign: "right" }}>
+                                                        <button
+                                                            type="button"
+                                                            className={`course-nav-button-submit`}
+                                                            onClick={goNextQ}
+                                                            disabled={!(isLastQ || hasNextQ)}
+                                                            title={isLastQ ? "Submit Assessment" : "Next"}
+                                                        >
+                                                            {isSubmitting ? "Submitting…" : "Submit Assessment"}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
+                                        </>
                                     );
                                 })()}
                             </div>
@@ -1200,6 +1669,10 @@ const InductionViewPage = () => {
                     </div>
                 </div>
             </div>
+            {popupAssessment && (<StartAssessmentPopup closeModal={closePopupAssessment} startAssessment={startAssessment} />)}
+            {submissionIncomplete && (<IncompleteAssessmentPopup closeModal={cancelIncomplete} submit={continueWithIncomplete} />)}
+            {submissionReview && (<ReviewAssessmentPopup closeModal={cancelReview} submit={confirmReviewAndSubmit} />)}
+            <ToastContainer />
         </div >
     );
 };

@@ -151,7 +151,7 @@ const GeneratedInductionInfo = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Visitor Induction"}</p>
+                        <p className="logo-text-dm-fi">{"Published Visitor Induction"}</p>
                     </div>
                 </div>
             )}
@@ -208,7 +208,7 @@ const GeneratedInductionInfo = () => {
                         <tbody>
                             {filteredFiles.map((file, index) => (
                                 <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="cent-values-gen gen-point">{index + 1}</td>
+                                    <td className="cent-values-gen">{index + 1}</td>
                                     <td className="gen-point" onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                                         <div className="popup-anchor">
                                             <span >
@@ -227,13 +227,13 @@ const GeneratedInductionInfo = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="cent-values-gen gen-point">{file.version}</td>
-                                    <td className={`${getStatusClass(file.documentStatus)} cent-values-gen  gen-point`}>{file.documentStatus}</td>
-                                    <td className="cent-values-gen  gen-point">{file.publisher.username}</td>
-                                    <td className="cent-values-gen  gen-point">{formatDate(file.datePublished)}</td>
-                                    <td className="cent-values-gen  gen-point">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
-                                    <td className="cent-values-gen  gen-point">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
-                                    <td className="cent-values-gen gen-point">
+                                    <td className="cent-values-gen">{file.version}</td>
+                                    <td className={`${getStatusClass(file.documentStatus)} cent-values-gen`}>{file.documentStatus}</td>
+                                    <td className="cent-values-gen">{file.publisher.username}</td>
+                                    <td className="cent-values-gen">{formatDate(file.datePublished)}</td>
+                                    <td className="cent-values-gen">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
+                                    <td className="cent-values-gen">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
+                                    <td className="cent-values-gen">
                                         <button
                                             className={"delete-button-fi col-but"}
                                         >

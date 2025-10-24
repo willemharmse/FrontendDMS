@@ -6,16 +6,62 @@
 /* Short viewports: allow taller media */
 @media (max-height: 700px) {
     :root {
-        --media-max-h: 38vh;
-        --text-max-h: 42vh;
+        --media-max-h: 45vh;
+        --text-max-h: 45vh;
+        --text-only-max-h: 47vh;
+        --pdf-only-max-h: 49vh;
     }
 }
 
-@media (min-height: 900px) {
+@media (min-height: 701px) {
     :root {
-        --media-max-h: 55vh;
-        --text-max-h: 60vh;
+        --media-max-h: 52vh;
+        --text-max-h: 51vh;
+        --text-only-max-h: 51vh;
+        --pdf-only-max-h: 55vh;
     }
+}
+
+@media (min-height: 801px) {
+    :root {
+        --media-max-h: 57vh;
+        --text-max-h: 57vh;
+        --text-only-max-h: 64vh;
+        --pdf-only-max-h: 65vh;
+    }
+}
+
+@media (min-height: 901px) {
+    :root {
+        --media-max-h: 64vh;
+        --text-max-h: 64vh;
+        --text-only-max-h: 64vh;
+        --pdf-only-max-h: 65vh;
+    }
+}
+
+.courseCont-pdfFrame-view {
+    width: 100%;
+    height: var(--pdf-only-max-h);
+    /* ✅ Fix: Scales with the screen's height */
+    border: none;
+}
+
+.risk-admin-draft-info-container-popup {
+    position: fixed;
+    /* <-- make it overlay */
+    inset: 0;
+    /* top:0; right:0; bottom:0; left:0 */
+    z-index: 1100;
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    padding: 20px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, rgba(191, 191, 191, 1) 0%, rgba(242, 242, 242, 1) 100%);
+    font-family: Arial;
+    overflow: auto;
+    padding-right: 15px;
 }
 
 .course-view-box {
@@ -85,7 +131,7 @@
 .inductionView-text-box-text {
     display: flex;
     flex-direction: column;
-    max-height: 100%;
+    max-height: var(--text-only-max-h);
     min-width: 0;
     overflow: auto;
     width: 100%;
@@ -95,10 +141,8 @@
 
 .course-content-body {
     color: #002060;
-    background: #002060;
-    border: 1px solid #ccc;
+    background: #dadada;
     border-radius: 8px;
-    margin-bottom: 15px;
 
     /* NEW: behave as a flexible card that lets children scroll */
     display: flex;
@@ -106,7 +150,9 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    padding: 15px 20px;
+    padding: 10px 10px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 .course-content-body-outline {
@@ -117,13 +163,14 @@
     padding: 15px 20px;
     background-color: #dadada;
     border-radius: 8px;
-
     display: flex;
     flex-direction: column;
     gap: 16px;
     flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 .recap-body {
@@ -201,6 +248,7 @@
     border-radius: 8px;
     padding: 14px;
     height: 100%;
+    margin-top: 15px;
 
     display: flex;
     /* NEW: title row + content column */
@@ -213,6 +261,42 @@
 /* Constrain oversized media and allow scrolling if it's too tall */
 .inductionView-media-box {
     max-height: var(--media-max-h);
+    /* fits most screens without overwhelming */
+    overflow: auto;
+    /* scroll if the media is taller */
+    display: flex;
+    /* center the media nicely within the box */
+    align-items: center;
+    justify-content: center;
+    padding-top: 5px;
+}
+
+.inductionView-media-box-2 {
+    max-height: var(--media-max-h);
+    /* fits most screens without overwhelming */
+    overflow: auto;
+    /* scroll if the media is taller */
+    display: flex;
+    /* center the media nicely within the box */
+    align-items: center;
+    justify-content: center;
+    padding-top: 5px;
+    background-color: lightgray;
+}
+
+.inductionView-media-box-2 img,
+.inductionView-media-box-2 video,
+.inductionView-media-box-2 audio {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    object-fit: contain;
+    /* keep aspect ratio inside the box */
+    border-radius: 6px;
+}
+
+.inductionView-media-box-pdf {
+    max-height: var(--pdf-only-max-h);
     /* fits most screens without overwhelming */
     overflow: auto;
     /* scroll if the media is taller */
@@ -317,10 +401,12 @@
     justify-content: center;
     /* center the button group */
     align-items: center;
-    background-color: #c4c4c4;
+    background-color: #dadada;
     /* grey bar */
     padding: 10px 0;
     border-radius: 4px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
     gap: 20px;
     /* gap between buttons for the "split" effect */
 }
@@ -348,9 +434,47 @@
     font-weight: 500;
 }
 
+.nav-text-title-button {
+    display: flex;
+    /* still a block-level element */
+    justify-content: flex-end;
+    /* push the button to the right */
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: #002060;
+    font-size: 20px;
+    font-weight: 500;
+}
+
 .course-nav-button {
     height: 100% !important;
     width: 20%;
+    /* 10% of the bar width */
+    background: linear-gradient(to bottom,
+            #6688cc 0%,
+            #003080 25%,
+            #002060 50%,
+            #001040 100%);
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.course-nav-button-submit {
+    height: 100% !important;
+    width: 40%;
     /* 10% of the bar width */
     background: linear-gradient(to bottom,
             #6688cc 0%,
@@ -542,16 +666,47 @@
     /* keep text away from scrollbar */
 }
 
+.assessment-scroll::-webkit-scrollbar {
+    border-radius: 8px;
+    width: 5px;
+    height: 5px;
+}
+
+.assessment-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.assessment-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.assessment-scroll::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 8px;
+}
+
+/* make the question section fill the available height and center its contents vertically */
 .assessment-q {
     color: #000;
     margin-bottom: 18px;
+
+    /* new lines: */
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* vertical centering */
+    align-items: flex-start;
+    /* keep it left aligned */
 }
 
 .assessment-q-title {
     font-weight: 700;
     font-size: 18px;
     color: #0b2f6b;
-    margin-bottom: 8px;
+    margin-bottom: 23px;
+    font-family: Arial;
 }
 
 .assessment-options {
@@ -559,12 +714,15 @@
     gap: 6px;
     color: #000;
     font-size: 16px;
+    font-family: Arial;
 }
 
 .assessment-option {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-weight: normal;
+    font-family: Arial;
 }
 
 .assessment-footer {
@@ -665,7 +823,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    background: #002060;
+    background: #7EAC89;
     /* same green vibe as your pass screen */
     width: 0%;
     transition: width 0.3s ease;
@@ -748,7 +906,6 @@
 
 /* Only the recap text scrolls */
 .recap-content {
-    padding: 12px 14px;
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
@@ -770,4 +927,181 @@
 .inductionView-module-course-content {
     overflow: hidden;
     /* keeps the card visually intact */
+}
+
+/* Make the white slide card a positioning context */
+.inductionView-module-course-content {
+    position: relative;
+}
+
+/* The module bar that sits ABOVE the white card, left-aligned */
+.module-rail {
+    position: absolute;
+    left: 30px;
+    top: 100px;
+    /* sits above the card without pushing layout */
+    display: flex;
+    flex-wrap: wrap;
+    /* allow wrap on narrow screens */
+    gap: 8px;
+    max-width: 100%;
+    z-index: 10000;
+    /* above slide chrome */
+    pointer-events: auto;
+
+}
+
+/* Individual module boxes (titles) */
+.module-box {
+    background: #dadada;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* nice truncation for long titles */
+    cursor: pointer;
+    user-select: none;
+    color: black;
+    font-size: 14px;
+}
+
+/* Hover state */
+.module-box:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Current module = solid blue block */
+.module-box.active {
+    background: #002060;
+    border-color: #002060;
+    color: #fff;
+    cursor: default;
+}
+
+/* Modules with no slides (if any) */
+.module-box.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Optional: keep the bar readable if the page gets very tight */
+@media (max-width: 600px) {
+    .module-rail {
+        top: -48px;
+        gap: 6px;
+    }
+
+    .module-box {
+        max-width: 38vw;
+    }
+}
+
+.limitHeightInductionView {
+    height: calc(100% - 2px);
+}
+
+/* Footer container stays the same but thinner */
+.slide-audio-footer {
+    flex: 0 0 auto;
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* Mini player */
+.mini-audio {
+    display: grid;
+    grid-template-columns: auto 48px 1fr 48px;
+    /* btn | time | seek | duration */
+    align-items: center;
+    column-gap: 8px;
+    height: 28px;
+    /* nice & thin */
+    padding: 2px 8px;
+    background: #f6f6f6;
+    border-radius: 6px;
+    border: 1px solid #e8e8e8;
+    user-select: none;
+}
+
+/* Hide native audio element but keep it in the tree for semantics */
+.mini-audio audio {
+    display: none;
+}
+
+/* Play/Pause button */
+.mini-audio__btn {
+    grid-column: 1;
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    text-align: center;
+    font-size: 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mini-audio__btn:hover {
+    background: #fafafa;
+}
+
+/* Time labels */
+.mini-audio__times {
+    font-size: 11px;
+    color: #555;
+    white-space: nowrap;
+}
+
+.mini-audio__times--end {
+    text-align: right;
+}
+
+/* Seek bar: compact range styling */
+.mini-audio__seek {
+    appearance: none;
+    height: 4px;
+    background: #ddd;
+    border-radius: 999px;
+    outline: none;
+    cursor: pointer;
+}
+
+/* WebKit */
+.mini-audio__seek::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #666;
+    border: none;
+    margin-top: -3px;
+    /* centers the thumb on the 4px track */
+}
+
+/* Firefox */
+.mini-audio__seek::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #666;
+    border: none;
+}
+
+.mini-audio__seek::-moz-range-track {
+    height: 4px;
+    background: #ddd;
+    border-radius: 999px;
+}
+
+/* Ensure slide content still scrolls above this footer */
+.inductionView-slide-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
 }

@@ -49,10 +49,11 @@ const CreateProfileLink = ({
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                toast.error(data?.message || 'OTP verification failed');
+                toast.error(data?.message || 'Could not share link');
+                return;
             }
 
-            toast.success(data?.message || 'OTP verification failed');
+            toast.success(data?.message);
         } catch (err) {
             setError(err.message || 'Something went wrong');
             setTimeout(() => setError(''), 3000);

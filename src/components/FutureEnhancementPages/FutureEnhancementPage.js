@@ -53,7 +53,6 @@ const FutureEnhancementPage = () => {
                 className="future-enhancement-page-section future-enhancement-page-section-2"
             >
                 <h2 className="future-enhancement-page-section-2-header">What’s Next
-                    <br /><span style={{ marginTop: "20px", fontSize: "28px", textAlign: "center", color: "white" }}>Next 6 Months (Starting 01 July 2025)</span>
                 </h2>
                 <p className="future-enhancement-page-section-2-line">_______</p>
                 <div className="future-enhancement-page-section-2-blocks">
@@ -106,7 +105,6 @@ const FutureEnhancementPage = () => {
                 className="future-enhancement-page-section future-enhancement-page-section-3"
             >
                 <h2 className="future-enhancement-page-section-3-header">Coming Soon
-                    <br /><span style={{ marginTop: "20px", fontSize: "28px", textAlign: "center", color: "#002060" }}>Next 12 Months (Starting 01 July 2025)</span>
                 </h2>
                 <p className="future-enhancement-page-section-3-line">_______</p>
                 <div className="future-enhancement-page-section-3-blocks">

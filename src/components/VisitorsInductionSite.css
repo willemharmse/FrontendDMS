@@ -437,3 +437,58 @@
 .visitors-submit {
     width: 220px;
 }
+
+.visitors-induction-input-container .PhoneInput {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.visitors-induction-input-container .PhoneInputInput {
+    width: 100%;
+    border: none;
+    /* let your container provide the border */
+    outline: none;
+    background: white;
+    padding: 10px 12px;
+    /* match your existing input paddings */
+}
+
+.visitors-induction-input-container .PhoneInputCountry {
+    background: white;
+    border-right: 1px solid #ccc;
+    /* subtle separator from input */
+    border-radius: 4px 0 0 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    margin-right: 0px;
+}
+
+.visitors-induction-input-container .PhoneInputCountrySelect {
+    background: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* Keep input aligned & full width */
+.visitors-induction-input-container .PhoneInputInput {
+    background: white;
+    /* ensures full input background is white */
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Optional: adjust overall container to match look */
+.visitors-induction-input-container .PhoneInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    /* keeps corners clean */
+    width: 100%;
+}

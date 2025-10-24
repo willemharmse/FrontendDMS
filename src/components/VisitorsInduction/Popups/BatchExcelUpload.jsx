@@ -29,7 +29,7 @@ const BatchExcelUpload = ({ onClose, refresh }) => {
     const downloadTemplateAsset = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/TAU5 - Visitor Group List V0.2 (06.10.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Visitor Group List V0.2 (06.10.2025).xlsx');
+        link.setAttribute('download', 'Visitor Group List V0.2 (06.10.2025).xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -126,7 +126,7 @@ const BatchExcelUpload = ({ onClose, refresh }) => {
                 </div>
 
                 <div className="batch-file-group-assets">
-                    <div className="batch-file-text">Import TAU5 Visitor Group List</div>
+                    <div className="batch-file-text">Import Visitor Group List</div>
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">

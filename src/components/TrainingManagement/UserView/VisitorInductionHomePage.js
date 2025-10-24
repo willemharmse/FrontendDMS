@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faTrash, faBookOpen, faAward, faBook, faCertificate } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faTrash, faBookOpen, faAward, faBook, faCertificate, faInfo, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import "./UserHomePageTMS.css";
 import { faSearch, faSort } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +10,8 @@ import { canIn, getCurrentUser } from "../../../utils/auth";
 import { saveAs } from "file-saver";
 import PopupMenuPubInduction from "../../VisitorsInduction/InductionCreation/PopupMenuPubInduction";
 import PopupMenuCertificateOptions from "../../VisitorsInduction/InductionCreation/PopupMenuCertificateOptions";
+import ProgressNote from "./ProgressNote";
+import ValidityNote from "./ValidityNote";
 
 const VisitorInductionHomePage = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +24,24 @@ const VisitorInductionHomePage = () => {
     const [traineeData, setTraineeData] = useState([]);
     const [hoveredFileId, setHoveredFileId] = useState(null);
     const [indcutionData, setInductionData] = useState([]);
+    const [progressInfo, setProgressInfo] = useState(false);
+    const [validInfo, setValidInfo] = useState(false);
+
+    const openProgess = () => {
+        setProgressInfo(true);
+    }
+
+    const openValid = () => {
+        setValidInfo(true);
+    }
+
+    const closeProgess = () => {
+        setProgressInfo(false);
+    }
+
+    const closeValid = () => {
+        setValidInfo(false);
+    }
 
     const fetchUser = async () => {
         const route = `/api/visitors/visitorInfo/`;
@@ -117,7 +137,6 @@ const VisitorInductionHomePage = () => {
     }
 
     const handleCertificateClick = (course) => (e) => {
-        if (!course.trainee.passed) return;
         e.stopPropagation();        // ⛔ don't let the row click fire
         setHoveredFileId(hoveredFileId === course._id ? null : course._id)
     };
@@ -130,6 +149,7 @@ const VisitorInductionHomePage = () => {
     };
 
     const formatStatus = (type) => {
+        if (type === "Invalid" || type === "invalid") return "-"
         return type
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());
@@ -243,6 +263,12 @@ const VisitorInductionHomePage = () => {
         );
     };
 
+    const getComplianceColor = (status) => {
+        if (status === "valid") return "status-good";
+        if (status === "invalid") return "status-missing";
+        if (status === "-") return "status-missing"
+    };
+
     const filtered = courses;
     return (
         <div className="course-home-info-container">
@@ -295,13 +321,18 @@ const VisitorInductionHomePage = () => {
                                     <thead className="course-home-info-head">
                                         <tr className="course-home-info-tr">
                                             <th className="course-home-info-num" style={{ width: "5%" }}>Nr</th>
-                                            <th className="course-home-info-code" style={{ width: "20%" }}>Visitor Induction</th>
+                                            <th className="course-home-info-code" style={{ width: "25%" }}>Visitor Induction</th>
                                             <th className="course-home-info-name" style={{ width: "10%" }}>Version Nr</th>
-                                            <th className="course-home-info-progress" style={{ width: "10%" }}>Progress</th>
-                                            <th className="course-home-info-access" style={{ width: "10%" }}>Last Access Date</th>
-                                            <th className="course-home-info-name" style={{ width: "8%" }}>Validity</th>
-                                            <th className="course-home-info-access" style={{ width: "9%" }}>Expiry Date</th>
-                                            <th className="course-home-info-act" style={{ width: "8%" }}>Action</th>
+                                            <th className="course-home-info-progress" style={{ width: "15%" }}>
+                                                <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openProgess} />
+                                                Induction Progress
+                                            </th>
+
+                                            <th className="course-home-info-name" style={{ width: "10%" }}>
+                                                <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openValid} />
+                                                Validity
+                                            </th>
+                                            <th className="course-home-info-access" style={{ width: "15%" }}>Expiry Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -314,52 +345,30 @@ const VisitorInductionHomePage = () => {
                                             })
                                             .map((course, index) => (
                                                 <tr key={`${course.formData.courseTitle}-${index}`} className="course-home-info-tr"
-                                                    onClick={(e) => {
-                                                        if (e.target.closest('[data-no-row-click]')) return;
-                                                        navigate(`/FrontendDMS/inductionView/${course._id}`);
-                                                    }}>
+                                                    onClick={
+                                                        handleCertificateClick(course)
+                                                    }>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{index + 1}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "left", fontFamily: "Arial" }}>{course.formData.courseTitle}</td>
+                                                    <td style={{ fontSize: "14px", textAlign: "left", fontFamily: "Arial", position: "relative" }}>
+                                                        {course.formData.courseTitle}
+
+                                                        {(hoveredFileId === course._id) && (
+                                                            <PopupMenuCertificateOptions
+                                                                file={course}
+                                                                downloadCertficate={handleGenerateCertificateDocument}
+                                                                previewCertificate={handlePreview}
+                                                                isOpen={hoveredFileId === course._id}
+                                                                setHoveredFileId={setHoveredFileId}
+                                                                id={course._id}
+                                                            />
+                                                        )}
+                                                    </td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{course.version}</td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>
                                                         {renderProgress(course.trainee.progress)}
                                                     </td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.dateAccessed) || "N/A"}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatStatus(course.trainee.validity)}</td>
+                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }} className={`${getComplianceColor(course.trainee.validity)}`}>{formatStatus(course.trainee.validity)}</td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.expiryDate) || "N/A"}</td>
-                                                    <td className="col-um" style={{ position: "relative" }} data-no-row-click>
-                                                        <div className='inline-actions-um' style={{ position: "relative" }} data-no-row-click>
-                                                            <div className="popup-anchor" data-no-row-click>
-                                                                <button
-                                                                    type="button"
-                                                                    style={{ padding: "10px 0px", width: "100%" }}
-                                                                    className="action-button-user edit-button-user"
-                                                                    onClick={handleCertificateClick(course)}
-                                                                    data-no-row-click
-                                                                >
-                                                                    <FontAwesomeIcon icon={faCertificate} title="Certificate Options" />
-                                                                </button>
-                                                                {(hoveredFileId === course._id) && (
-                                                                    <PopupMenuCertificateOptions
-                                                                        file={course}
-                                                                        downloadCertficate={handleGenerateCertificateDocument}
-                                                                        previewCertificate={handlePreview}
-                                                                        typeDoc={"standard"}
-                                                                        risk={false}
-                                                                        isOpen={hoveredFileId === course._id}
-                                                                        setHoveredFileId={setHoveredFileId}
-                                                                        id={course._id}
-                                                                        wrapperProps={{
-                                                                            'data-no-row-click': true,
-                                                                            onClick: (e) => e.stopPropagation(),
-                                                                            onMouseDown: (e) => e.stopPropagation(),     // prevents mousedown from triggering focus/row click
-                                                                            onPointerDown: (e) => e.stopPropagation(),
-                                                                        }}
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
                                                 </tr>
                                             ))}
                                     </tbody>
@@ -369,6 +378,9 @@ const VisitorInductionHomePage = () => {
                     </div>
                 </div>
             </div>
+
+            {progressInfo && (<ProgressNote setClose={closeProgess} />)}
+            {validInfo && (<ValidityNote setClose={closeValid} />)}
         </div>
     );
 };

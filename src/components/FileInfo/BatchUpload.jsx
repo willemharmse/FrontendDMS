@@ -131,7 +131,7 @@ const BatchUpload = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-group">
-                    <div className="batch-file-text">Upload the TAU5 Site Document List</div>
+                    <div className="batch-file-text">Upload the Site Document List</div>
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">

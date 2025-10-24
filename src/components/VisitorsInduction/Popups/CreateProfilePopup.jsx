@@ -6,6 +6,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import "./CreateProfilePopup.css"
 import { toast } from 'react-toastify';
+import { parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
+import 'react-phone-number-input/style.css';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 
 const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
     const [loading, setLoading] = useState(false);
@@ -15,6 +18,13 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
     const [number, setNumber] = useState("");
     const [id, setID] = useState("");
     const [company, setCompany] = useState("");
+    const [country, setCountry] = useState('ZA');
+
+    const normalizeToE164 = (val, ctry) => {
+        if (!val) return '';
+        const parsed = ctry ? parsePhoneNumberFromString(val, ctry) : parsePhoneNumberFromString(val);
+        return parsed ? parsed.number : val;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -145,15 +155,27 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
                                     <div className="create-visitor-profile-page-column-half">
                                         <div className="create-visitor-profile-page-component-wrapper">
                                             <div className="create-visitor-profile-page-form-group">
-                                                <label style={{ fontSize: "15px" }}>Contact Number <span className="required-field">*</span>
+                                                <label style={{ fontSize: "15px", marginBottom: "7px" }}>Contact Number <span className="required-field">*</span>
                                                 </label>
-                                                <input
-                                                    type='text'
-                                                    placeholder='Insert Visitor Contact Number'
-                                                    className="cea-popup-page-input"
-                                                    onChange={(e) => setNumber(e.target.value)}
-                                                    value={number}
-                                                />
+                                                <div className="visitors-induction-input-container">
+                                                    <PhoneInput
+                                                        international
+                                                        country={country || 'ZA'}
+                                                        defaultCountry="ZA"
+                                                        placeholder="Contact Number"
+                                                        countryCallingCodeEditable={false}
+                                                        value={number || undefined} // controlled value
+                                                        onChange={(value) =>
+                                                            setNumber(normalizeToE164(value || '', country || 'ZA'))
+                                                        }
+                                                        onBlur={() =>
+                                                            setNumber(normalizeToE164(number, country || 'ZA'))
+                                                        }
+                                                        name="contact"
+                                                        id="contact"
+                                                        required
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

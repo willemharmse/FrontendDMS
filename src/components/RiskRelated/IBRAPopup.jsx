@@ -280,14 +280,14 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
         };
 
         const handleScroll = (e) => {
-            const isInsidePopup = e.target.closest(popupSelector);
-            if (!isInsidePopup) {
-                closeDropdowns();
-            }
+            // If the user is scrolling inside an input/textarea, do nothing.
+            if (e.target.closest('textarea, input')) return;
 
-            if (document.activeElement instanceof HTMLElement) {
-                document.activeElement.blur();
-            }
+            // If the scroll target is the floating dropdown itself, also do nothing.
+            if (e.target.closest(popupSelector)) return;
+
+            // Otherwise (page/parent scroll), just close dropdowns. Don't blur.
+            closeDropdowns();
         };
 
         const closeDropdowns = () => {

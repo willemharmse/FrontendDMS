@@ -71,7 +71,6 @@ const FutureEnhancementPageRMS = () => {
                     {/* Block 1 */}
                     <div className="future-enhancement-page-rms-section-2-block">
                         <h2 className="future-enhancement-page-section-rms-2-header-2">What’s next
-                            <br /><span style={{ marginTop: "20px", fontSize: "20px", textAlign: "center", color: "white" }}>Next 6 Months (Starting 01 July 2025)</span>
                             <br /><span style={{ marginTop: "20px", fontSize: "20px", textAlign: "center", color: "white", top: "-10px", position: "relative" }}>_______</span>
                         </h2>
                         <div className='fi-card-2'>
@@ -97,7 +96,6 @@ const FutureEnhancementPageRMS = () => {
                     {/* Block 2 */}
                     <div className="future-enhancement-page-rms-section-2-block">
                         <h2 className="future-enhancement-page-section-rms-2-header-2">Coming Soon
-                            <br /><span style={{ marginTop: "20px", fontSize: "20px", textAlign: "center", color: "white" }}>Next 12 Months (Starting 01 July 2025)</span>
                             <br /><span style={{ marginTop: "20px", fontSize: "20px", textAlign: "center", color: "white", top: "-10px", position: "relative" }}>_______</span>
                         </h2>
                         <div className='fi-card-2'>

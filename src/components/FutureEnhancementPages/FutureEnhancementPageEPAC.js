@@ -68,7 +68,6 @@ const FutureEnhancementPageEPAC = () => {
                 </div>
                 <div className="future-enhancement-page-rms-section-2-block">
                     <h2 className="future-enhancement-page-epac-section-2-header">What’s Next
-                        <br /><span style={{ marginTop: "20px", fontSize: "28px", textAlign: "center", color: "white" }}>Next 6 Months (Starting 01 July 2025)</span>
                     </h2>
                     <div className='fi-card-2-epac'>
                         <img

@@ -8,15 +8,24 @@ import {
     faMagicWandSparkles,
     faRotateLeft,
     faSpinner,
+    faMusic,
 } from "@fortawesome/free-solid-svg-icons";
 import "./CourseCreationPage.css";
 import TypeSelectorPopup from "./TypeSelectorPopup";
+import AudioPicker from "./AudioPicker";
+import PopupAudioPlayer from "./PopupAudioPlayer";
+import ImageCropPopup from "./ImageCropPopup";
 
 /** Slide content types */
 const SLIDE_TYPES = {
-    TEXT: "TEXT",
-    TEXT_MEDIA: "TEXT_MEDIA",
-    MEDIA: "MEDIA",
+    TEXT: "TEXT", //Done
+    TEXT_MEDIA: "TEXT_MEDIA", //Done
+    MEDIA: "MEDIA", //Done
+    MEDIA_GALLERY: "MEDIA_GALLERY", //Done
+    TEXT_MEDIA_2X2: "TEXT_MEDIA_2X2", //Done
+    MEDIAX2_TEXT: "MEDIAX2_TEXT", //Done
+    MEDIA_2X2: "MEDIA_2X2", //Done
+    PDF_VIEW: "PDF_VIEW"
 };
 
 const CONTENT_REWRITE_ENDPOINT = `${process.env.REACT_APP_URL}/api/openai/chatInduction/content`;
@@ -32,14 +41,25 @@ const getMime = (slide) => {
     return type.toLowerCase();
 };
 
-const renderPreview = (slide) => {
-    if (!slide.mediaPreview) return <span className="courseCont-mediaHint">Select Media.</span>;
-    const mime = getMime(slide);
-    if (mime.startsWith("image/")) return <img src={slide.mediaPreview} alt="preview" />;
-    if (mime.startsWith("video/")) return <video src={slide.mediaPreview} controls style={{ width: "100%" }} />;
-    if (mime.startsWith("audio/")) return <audio src={slide.mediaPreview} controls />;
-    const name = slide.media?.filename || slide.mediaFile?.name || "file";
-    return <a href={slide.mediaPreview} download={name}>{name}</a>;
+const renderPreview = (item) => {
+    if (!item?.mediaPreview) return <span className="courseCont-mediaHint">Select Media.</span>;
+    const mime = (item.mediaFile?.type || item.media?.contentType || item.mediaType || "").toLowerCase();
+    if (mime.startsWith("image/")) return <img src={item.mediaPreview} alt="preview" />;
+    if (mime.startsWith("video/")) return <video src={item.mediaPreview} controls style={{ width: "100%" }} />;
+    if (mime.startsWith("audio/")) return <audio src={item.mediaPreview} controls />;
+
+    if (mime.includes("pdf")) {
+        return (
+            <iframe
+                src={item.mediaPreview}
+                title="PDF preview"
+                className="courseCont-pdfFrame"
+            />
+        );
+    }
+
+    const name = item.media?.filename || item.mediaFile?.name || "file";
+    return <a href={item.mediaPreview} download={name}>{name}</a>;
 };
 
 const emptySlide = (type) => ({
@@ -47,6 +67,9 @@ const emptySlide = (type) => ({
     type,
     title: "",
     content: "",
+    contentLeft: "",
+    contentRight: "",
+    mediaItems: [],
     media: null,
     mediaFile: null,
     mediaPreview: null,
@@ -71,6 +94,46 @@ const emptyModule = (title = "") => ({
 const InductionContent = ({ formData, setFormData }) => {
     const modules = formData?.courseModules ?? [];
     const flatSlides = formData?.courseContent ?? []; // legacy
+    const [mediaPicker, setMediaPicker] = useState(false);
+    const [audioPlayer, setAudioPlayer] = useState(false);
+    const [moduleIndex, setModuleIndex] = useState("");
+    const [topicIndex, setTopicIndex] = useState("");
+    const [slideID, setSlideID] = useState("");
+    const [audioFile, setAudioFile] = useState("");
+
+    const openMediaPicker = (module, topic, slide) => {
+        setModuleIndex(module);
+        setTopicIndex(topic);
+        setSlideID(slide);
+
+        setMediaPicker(true);
+    }
+
+    const openAudioPlayer = (module, topic, slide, file) => {
+        setModuleIndex(module);
+        setTopicIndex(topic);
+        setSlideID(slide);
+        setAudioFile(file);
+
+        setAudioPlayer(true);
+    }
+
+    const closeMediaPicker = () => {
+        setModuleIndex("");
+        setTopicIndex("");
+        setSlideID("");
+
+        setMediaPicker(false);
+    }
+
+    const closeAudioPlayer = () => {
+        setModuleIndex("");
+        setTopicIndex("");
+        setSlideID("");
+        setAudioFile("");
+
+        setAudioPlayer(false);
+    }
 
     // ---------- Migration ----------
     useEffect(() => {
@@ -286,28 +349,158 @@ const InductionContent = ({ formData, setFormData }) => {
         next[mIdx].topics[tIdx] = { ...next[mIdx].topics[tIdx], slides };
         updateModules(next);
     };
-    const onMediaChange = (mIdx, tIdx, slideId, file) => {
+    const [croppingState, setCroppingState] = useState(null);
+
+    const EMPTY_MEDIA_ITEM = {
+        mediaFile: null,
+        mediaPreview: null,
+        mediaType: null,
+        media: null
+    };
+
+    const commitMediaChange = (mIdx, tIdx, slideId, slotIndex, file) => {
         const next = [...safeModules];
-        const slides = next[mIdx].topics[tIdx].slides.map((s) => {
+        const topic = next[mIdx].topics[tIdx];
+        const slides = topic.slides.map(s => {
             if (s.id !== slideId) return s;
-            if (s.mediaPreview && s.mediaPreview.startsWith("blob:")) {
-                try {
-                    URL.revokeObjectURL(s.mediaPreview);
-                } catch { }
+            const items = [...(s.mediaItems || [])];
+
+            // clean up old blob URLs for that slot
+            const prev = items[slotIndex];
+            if (prev?.mediaPreview?.startsWith?.("blob:")) {
+                try { URL.revokeObjectURL(prev.mediaPreview); } catch { }
             }
-            return {
-                ...s,
-                media: null,
-                mediaType: file?.type || null,
-                mediaFile: file || null,
-                mediaPreview: file ? URL.createObjectURL(file) : null,
-            };
+
+            items[slotIndex] = file
+                ? {
+                    mediaFile: file,
+                    mediaPreview: URL.createObjectURL(file),
+                    mediaType: file.type || "",
+                    media: null,
+                }
+                : { ...EMPTY_MEDIA_ITEM };;
+
+            return { ...s, mediaItems: items };
         });
-        next[mIdx].topics[tIdx] = { ...next[mIdx].topics[tIdx], slides };
+
+        next[mIdx].topics[tIdx] = { ...topic, slides };
         updateModules(next);
     };
 
+    const onMediaChange = (mIdx, tIdx, slideId, slotIndex, file) => {
+        if (!file) {
+            // If file is null (e.g., cleared), commit immediately
+            commitMediaChange(mIdx, tIdx, slideId, slotIndex, null);
+            return;
+        }
+
+        // Not an image (video, audio, pdf), commit immediately
+
+
+        // If it's an image, open the cropper
+        if (file.type.startsWith("image/")) {
+            setCroppingState({
+                mIdx,
+                tIdx,
+                slideId,
+                slotIndex,
+                file: file, // We pass the original file to get the name
+                preview: URL.createObjectURL(file) // We pass the preview URL to the popup
+            });
+        } else {
+            commitMediaChange(mIdx, tIdx, slideId, slotIndex, file);
+        }
+
+    };
+
+    const onCropComplete = (croppedFile) => {
+        if (!croppingState) return;
+        const { mIdx, tIdx, slideId, slotIndex, preview } = croppingState;
+
+        // Now call the original function with the *new cropped file*
+        commitMediaChange(mIdx, tIdx, slideId, slotIndex, croppedFile);
+
+        // Clean up
+        try { URL.revokeObjectURL(preview); } catch { } // Revoke the *original* preview
+        setCroppingState(null);
+    };
+
+    const onCropCancel = () => {
+        if (!croppingState) return;
+        // Revoke the temporary URL
+        try { URL.revokeObjectURL(croppingState.preview); } catch { }
+        setCroppingState(null);
+    };
+
     const hasModules = safeModules.length > 0;
+
+    /** ---------- AI rewrite: generic per-field (works for 2x2) ---------- */
+    const keyFor = (slideId, field) => `${slideId}::${field}`;
+
+    const pushHistoryField = (slideId, field, value) =>
+        setContentHistory(prev => ({
+            ...prev,
+            [keyFor(slideId, field)]: [...(prev[keyFor(slideId, field)] || []), value],
+        }));
+
+    const hasHistoryField = (slideId, field) =>
+        (contentHistory[keyFor(slideId, field)]?.length || 0) > 0;
+
+    const setLoadingField = (slideId, field, val) =>
+        setLoadingMap(prev => ({ ...prev, [keyFor(slideId, field)]: !!val }));
+
+    const isLoadingField = (slideId, field) =>
+        !!loadingMap[keyFor(slideId, field)];
+
+    const rewriteField = async (mIdx, tIdx, slide, field) => {
+        try {
+            const prompt = slide?.[field] || "";
+            pushHistoryField(slide.id, field, prompt);
+            setLoadingField(slide.id, field, true);
+
+            const resp = await fetch(CONTENT_REWRITE_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            const { response: newText } = await resp.json();
+            changeSlideField(mIdx, tIdx, slide.id, field, newText || "");
+        } catch (err) {
+            console.error("AI rewrite error:", err);
+        } finally {
+            setLoadingField(slide.id, field, false);
+        }
+    };
+
+    const undoField = (mIdx, tIdx, slideId, field) =>
+        setContentHistory(prev => {
+            const k = keyFor(slideId, field);
+            const stack = prev[k] || [];
+            if (!stack.length) return prev;
+            const last = stack[stack.length - 1];
+            changeSlideField(mIdx, tIdx, slideId, field, last);
+            return { ...prev, [k]: stack.slice(0, -1) };
+        });
+
+    /** Convenience wrappers for 2x2 fields */
+    const rewriteLeft = (mIdx, tIdx, slide) => rewriteField(mIdx, tIdx, slide, "contentLeft");
+    const rewriteRight = (mIdx, tIdx, slide) => rewriteField(mIdx, tIdx, slide, "contentRight");
+    const undoLeft = (mIdx, tIdx, slideId) => undoField(mIdx, tIdx, slideId, "contentLeft");
+    const undoRight = (mIdx, tIdx, slideId) => undoField(mIdx, tIdx, slideId, "contentRight");
+
+    const handleFileSelect = (mIdx, tIdx, slideId, slotIndex) => (e) => {
+        const file = e.target.files?.[0] || null;
+
+        // call your existing logic (this triggers cropper / etc)
+        onMediaChange(mIdx, tIdx, slideId, slotIndex, file);
+
+        // critical: allow selecting the *same* file again later
+        e.target.value = "";
+    };
 
     return (
         <div className="input-row">
@@ -433,17 +626,15 @@ const InductionContent = ({ formData, setFormData }) => {
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
-                                                        {false && (
-                                                            <button
-                                                                type="button"
-                                                                className="courseCont-iconBtn"
-                                                                title="Add topic after"
-                                                                onClick={() => addTopicAfter(mIdx, tIdx)}
-                                                                aria-label={`Add topic after ${mIdx + 1}.${tIdx + 1}`}
-                                                            >
-                                                                <FontAwesomeIcon icon={faCirclePlus} />
-                                                            </button>
-                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="courseCont-iconBtn"
+                                                            title="Add topic after"
+                                                            onClick={() => addTopicAfter(mIdx, tIdx)}
+                                                            aria-label={`Add topic after ${mIdx + 1}.${tIdx + 1}`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faCirclePlus} />
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -501,6 +692,7 @@ const InductionContent = ({ formData, setFormData }) => {
 
                                                                     {/* Slide actions: delete + inline type picker (insert after) */}
                                                                     <div className="courseCont-actions">
+
                                                                         <button
                                                                             type="button"
                                                                             className="courseCont-iconBtn"
@@ -514,96 +706,77 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                             <FontAwesomeIcon icon={faTrash} />
                                                                         </button>
 
-                                                                        {false && (
-                                                                            <button
-                                                                                type="button"
-                                                                                className="courseCont-iconBtn"
-                                                                                title="Add slide after"
-                                                                                aria-haspopup="menu"
-                                                                                aria-expanded={
-                                                                                    !!(
-                                                                                        inlineSlidePicker &&
-                                                                                        inlineSlidePicker.moduleIndex === mIdx &&
-                                                                                        inlineSlidePicker.topicIndex === tIdx &&
-                                                                                        inlineSlidePicker.slideIndex === sIdx
+                                                                        {false && (<button
+                                                                            type="button"
+                                                                            className="courseCont-iconBtn"
+                                                                            title="Add Audio File"
+                                                                            aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
+                                                                            onClick={() => {
+                                                                                if (slide.mediaItems?.[10]?.mediaPreview) {
+                                                                                    openAudioPlayer(
+                                                                                        mIdx,
+                                                                                        tIdx,
+                                                                                        slide.id,
+                                                                                        slide.mediaItems?.[10]?.mediaPreview
                                                                                     )
                                                                                 }
-                                                                                aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
-                                                                                onClick={() =>
-                                                                                    setInlineSlidePicker((cur) =>
-                                                                                        cur &&
-                                                                                            cur.moduleIndex === mIdx &&
-                                                                                            cur.topicIndex === tIdx &&
-                                                                                            cur.slideIndex === sIdx
-                                                                                            ? null
-                                                                                            : {
-                                                                                                moduleIndex: mIdx,
-                                                                                                topicIndex: tIdx,
-                                                                                                slideIndex: sIdx,
-                                                                                            }
+                                                                                else {
+                                                                                    openMediaPicker(
+                                                                                        mIdx,
+                                                                                        tIdx,
+                                                                                        slide.id,
                                                                                     )
                                                                                 }
-                                                                            >
-                                                                                <FontAwesomeIcon icon={faCirclePlus} />
-                                                                            </button>
+                                                                            }
+                                                                            }
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faMusic} />
+                                                                        </button>)}
+
+                                                                        {audioPlayer && (
+                                                                            <PopupAudioPlayer
+                                                                                audioFile={slide.mediaItems?.[10]?.mediaPreview}
+                                                                                closePopup={closeAudioPlayer}
+                                                                                module={moduleIndex}
+                                                                                slide={slideID}
+                                                                                topic={topicIndex}
+                                                                                isOpen={true}
+                                                                                onDelete={(m, t, s, slot) => {
+                                                                                    // ✅ Use the existing onMediaChange to clear it
+                                                                                    onMediaChange(m, t, s, slot, null);
+                                                                                }}
+                                                                            />
                                                                         )}
 
-                                                                        {inlineSlidePicker &&
-                                                                            inlineSlidePicker.moduleIndex === mIdx &&
-                                                                            inlineSlidePicker.topicIndex === tIdx &&
-                                                                            inlineSlidePicker.slideIndex === sIdx && (
-                                                                                <div
-                                                                                    id={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
-                                                                                    className="courseCont-typePicker-inline"
-                                                                                    role="menu"
-                                                                                >
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        className="courseCont-typeItem"
-                                                                                        onClick={() =>
-                                                                                            addSlideAfter(
-                                                                                                mIdx,
-                                                                                                tIdx,
-                                                                                                sIdx,
-                                                                                                SLIDE_TYPES.TEXT
-                                                                                            )
-                                                                                        }
-                                                                                        role="menuitem"
-                                                                                    >
-                                                                                        Text only
-                                                                                    </button>
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        className="courseCont-typeItem"
-                                                                                        onClick={() =>
-                                                                                            addSlideAfter(
-                                                                                                mIdx,
-                                                                                                tIdx,
-                                                                                                sIdx,
-                                                                                                SLIDE_TYPES.TEXT_MEDIA
-                                                                                            )
-                                                                                        }
-                                                                                        role="menuitem"
-                                                                                    >
-                                                                                        Text + Media
-                                                                                    </button>
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        className="courseCont-typeItem"
-                                                                                        onClick={() =>
-                                                                                            addSlideAfter(
-                                                                                                mIdx,
-                                                                                                tIdx,
-                                                                                                sIdx,
-                                                                                                SLIDE_TYPES.MEDIA
-                                                                                            )
-                                                                                        }
-                                                                                        role="menuitem"
-                                                                                    >
-                                                                                        Media only
-                                                                                    </button>
-                                                                                </div>
-                                                                            )}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="courseCont-iconBtn"
+                                                                            title="Add slide after"
+                                                                            aria-haspopup="menu"
+                                                                            aria-expanded={
+                                                                                !!(
+                                                                                    inlineSlidePicker &&
+                                                                                    inlineSlidePicker.moduleIndex === mIdx &&
+                                                                                    inlineSlidePicker.topicIndex === tIdx &&
+                                                                                    inlineSlidePicker.slideIndex === sIdx
+                                                                                )
+                                                                            }
+                                                                            aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
+                                                                            onClick={() => {
+                                                                                if (
+                                                                                    inlineSlidePicker &&
+                                                                                    inlineSlidePicker.moduleIndex === mIdx &&
+                                                                                    inlineSlidePicker.topicIndex === tIdx &&
+                                                                                    inlineSlidePicker.slideIndex === sIdx
+                                                                                ) {
+                                                                                    setInlineSlidePicker(null);
+                                                                                } else {
+                                                                                    setInlineSlidePicker({ moduleIndex: mIdx, topicIndex: tIdx, slideIndex: sIdx });
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faCirclePlus} />
+                                                                        </button>
                                                                     </div>
                                                                 </div>
 
@@ -752,18 +925,11 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         <input
                                                                                             type="file"
                                                                                             accept="image/*,video/*,audio/*"
-                                                                                            onChange={(e) =>
-                                                                                                onMediaChange(
-                                                                                                    mIdx,
-                                                                                                    tIdx,
-                                                                                                    slide.id,
-                                                                                                    e.target.files?.[0] || null
-                                                                                                )
-                                                                                            }
+                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
                                                                                         />
-                                                                                        {slide.mediaPreview ? (
+                                                                                        {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
-                                                                                                {renderPreview(slide)}
+                                                                                                {renderPreview(slide.mediaItems[0])}
                                                                                             </div>
                                                                                         ) : (
                                                                                             <span className="courseCont-mediaHint">
@@ -781,24 +947,430 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                     <input
                                                                                         type="file"
                                                                                         accept="image/*,video/*,audio/*"
-                                                                                        onChange={(e) =>
-                                                                                            onMediaChange(
-                                                                                                mIdx,
-                                                                                                tIdx,
-                                                                                                slide.id,
-                                                                                                e.target.files?.[0] || null
-                                                                                            )
-                                                                                        }
+                                                                                        onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
                                                                                     />
-                                                                                    {slide.mediaPreview ? (
-                                                                                        <div className="courseCont-mediaPreview">{renderPreview(slide)}</div>
+                                                                                    {slide.mediaItems?.[0]?.mediaPreview ? (
+                                                                                        <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
                                                                                     ) : (
                                                                                         <span className="courseCont-mediaHint">Select Media.</span>
                                                                                     )}
                                                                                 </label>
                                                                             </section>
                                                                         )}
+
+                                                                        {slide.type === SLIDE_TYPES.MEDIA_GALLERY && (
+                                                                            <section className="courseCont-twoCol">
+                                                                                <div
+                                                                                    className="courseCont-col"
+                                                                                    style={{ position: "relative" }}
+                                                                                >
+                                                                                    <label
+                                                                                        className="courseCont-mediaDrop"
+                                                                                        style={{ marginTop: "8px", paddingBottom: "30px", paddingTop: "29px" }}
+                                                                                    >
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            accept="image/*,video/*,audio/*"
+                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                        />
+                                                                                        {slide.mediaItems?.[0]?.mediaPreview ? (
+                                                                                            <div className="courseCont-mediaPreview">
+                                                                                                {renderPreview(slide.mediaItems[0])}
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <span className="courseCont-mediaHint">
+                                                                                                Select Media.
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </label>
+                                                                                </div>
+                                                                                <div className="courseCont-col">
+                                                                                    <label
+                                                                                        className="courseCont-mediaDrop"
+                                                                                        style={{ marginTop: "8px", paddingBottom: "30px", paddingTop: "29px" }}
+                                                                                    >
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            accept="image/*,video/*,audio/*"
+                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                        />
+                                                                                        {slide.mediaItems?.[1]?.mediaPreview ? (
+                                                                                            <div className="courseCont-mediaPreview">
+                                                                                                {renderPreview(slide.mediaItems[1])}
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <span className="courseCont-mediaHint">
+                                                                                                Select Media.
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </section>
+                                                                        )}
+
+                                                                        {slide.type === SLIDE_TYPES.TEXT_MEDIA_2X2 && (
+                                                                            // A new parent container that stacks the two rows vertically
+                                                                            <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+                                                                                {/* --- Row 1: Text Left + Media Top --- */}
+                                                                                <div className="courseCont-twoCol" style={{ gap: 16 }}>
+                                                                                    <div className="courseCont-col">
+                                                                                        <div style={{ position: "relative" }}>
+                                                                                            <textarea
+                                                                                                className="courseCont-textarea"
+                                                                                                placeholder="Insert content (top)."
+                                                                                                rows={8}
+                                                                                                value={slide.contentLeft || ""}
+                                                                                                onChange={(e) =>
+                                                                                                    changeSlideField(mIdx, tIdx, slide.id, "contentLeft", e.target.value)
+                                                                                                }
+                                                                                                style={{ paddingBottom: "20px" }}
+                                                                                            />
+
+                                                                                            {/* AI icons for LEFT field */}
+                                                                                            {isLoadingField(slide.id, "contentLeft") ? (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faSpinner}
+                                                                                                    className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                    title="Rewriting…"
+                                                                                                    style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                />
+                                                                                            ) : (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faMagicWandSparkles}
+                                                                                                    className="induction-textarea-icon-ai-rewrite"
+                                                                                                    title="AI Rewrite"
+                                                                                                    style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
+                                                                                                    onClick={() => rewriteLeft(mIdx, tIdx, slide)}
+                                                                                                />
+                                                                                            )}
+
+                                                                                            {hasHistoryField(slide.id, "contentLeft") && (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faRotateLeft}
+                                                                                                    title="Undo AI Rewrite"
+                                                                                                    style={{
+                                                                                                        position: "absolute",
+                                                                                                        right: 34,
+                                                                                                        bottom: 23,
+                                                                                                        fontSize: "15px",
+                                                                                                        cursor: "pointer",
+                                                                                                    }}
+                                                                                                    onClick={() => undoLeft(mIdx, tIdx, slide.id)}
+                                                                                                />
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 15, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[0]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* --- Row 2: Text Right + Media Bottom --- */}
+                                                                                <div className="courseCont-twoCol" style={{ gap: 16 }}>
+                                                                                    <div className="courseCont-col">
+                                                                                        <div style={{ position: "relative" }}>
+                                                                                            <textarea
+                                                                                                className="courseCont-textarea"
+                                                                                                placeholder="Insert content (bottom)."
+                                                                                                rows={8}
+                                                                                                value={slide.contentRight || ""}
+                                                                                                onChange={(e) =>
+                                                                                                    changeSlideField(mIdx, tIdx, slide.id, "contentRight", e.target.value)
+                                                                                                }
+                                                                                                style={{ paddingBottom: "20px" }}
+                                                                                            />
+
+                                                                                            {/* AI icons for RIGHT field */}
+                                                                                            {isLoadingField(slide.id, "contentRight") ? (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faSpinner}
+                                                                                                    className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                    title="Rewriting…"
+                                                                                                    style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                />
+                                                                                            ) : (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faMagicWandSparkles}
+                                                                                                    className="induction-textarea-icon-ai-rewrite"
+                                                                                                    title="AI Rewrite"
+                                                                                                    style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
+                                                                                                    onClick={() => rewriteRight(mIdx, tIdx, slide)}
+                                                                                                />
+                                                                                            )}
+
+                                                                                            {hasHistoryField(slide.id, "contentRight") && (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faRotateLeft}
+                                                                                                    title="Undo AI Rewrite"
+                                                                                                    style={{
+                                                                                                        position: "absolute",
+                                                                                                        right: 34,
+                                                                                                        bottom: 23,
+                                                                                                        fontSize: "15px",
+                                                                                                        cursor: "pointer",
+                                                                                                    }}
+                                                                                                    onClick={() => undoRight(mIdx, tIdx, slide.id)}
+                                                                                                />
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 15, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[1]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </section>
+                                                                        )}
+
+                                                                        {slide.type === SLIDE_TYPES.MEDIAX2_TEXT && (
+                                                                            <section className="courseCont-twoCol" style={{ gap: 16 }}>
+                                                                                {/* LEFT column */}
+                                                                                <div className="courseCont-col" style={{ position: "relative" }}>
+                                                                                    <textarea
+                                                                                        className="courseCont-textarea-stacked"
+                                                                                        placeholder="Insert content."
+                                                                                        rows={8}
+                                                                                        value={slide.content || ""}
+                                                                                        onChange={(e) =>
+                                                                                            changeSlideField(mIdx, tIdx, slide.id, "content", e.target.value)
+                                                                                        }
+                                                                                        style={{ paddingBottom: "35px", position: "relative" }}
+                                                                                    />
+
+                                                                                    {loadingMap[slide.id] ? (
+                                                                                        <FontAwesomeIcon
+                                                                                            icon={faSpinner}
+                                                                                            className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                            title="Rewriting…"
+                                                                                            style={{ fontSize: "15px", bottom: 13 }}
+                                                                                        />
+                                                                                    ) : (
+                                                                                        <FontAwesomeIcon
+                                                                                            icon={faMagicWandSparkles}
+                                                                                            className="induction-textarea-icon-ai-rewrite"
+                                                                                            title="AI Rewrite"
+                                                                                            style={{
+                                                                                                fontSize: "15px",
+                                                                                                cursor: "pointer",
+                                                                                                bottom: 13
+                                                                                            }}
+                                                                                            onClick={() =>
+                                                                                                rewriteSlideContent(mIdx, tIdx, slide)
+                                                                                            }
+                                                                                        />
+                                                                                    )}
+
+                                                                                    {hasHistory(slide.id) && (
+                                                                                        <FontAwesomeIcon
+                                                                                            icon={faRotateLeft}
+                                                                                            title="Undo AI Rewrite"
+                                                                                            style={{
+                                                                                                position: "absolute",
+                                                                                                right: 30,
+                                                                                                bottom: 13,
+                                                                                                fontSize: "15px",
+                                                                                                cursor: "pointer",
+                                                                                            }}
+                                                                                            onClick={() =>
+                                                                                                undoSlideContent(
+                                                                                                    mIdx,
+                                                                                                    tIdx,
+                                                                                                    slide.id
+                                                                                                )
+                                                                                            }
+                                                                                        />
+                                                                                    )}
+                                                                                </div>
+
+                                                                                {/* RIGHT column */}
+                                                                                <div className="courseCont-col">
+                                                                                    <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            accept="image/*,video/*,audio/*"
+                                                                                            onChange={(e) =>
+                                                                                                onMediaChange(mIdx, tIdx, slide.id, 0, e.target.files?.[0] || null)
+                                                                                            }
+                                                                                        />
+                                                                                        {slide.mediaItems?.[0]?.mediaPreview ? (
+                                                                                            <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
+                                                                                        ) : (
+                                                                                            <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                        )}
+                                                                                    </label>
+                                                                                    <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            accept="image/*,video/*,audio/*"
+                                                                                            onChange={(e) =>
+                                                                                                onMediaChange(mIdx, tIdx, slide.id, 1, e.target.files?.[0] || null)
+                                                                                            }
+                                                                                        />
+                                                                                        {slide.mediaItems?.[1]?.mediaPreview ? (
+                                                                                            <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
+                                                                                        ) : (
+                                                                                            <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                        )}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </section>
+                                                                        )}
+
+                                                                        {slide.type === SLIDE_TYPES.MEDIA_2X2 && (
+                                                                            // A new parent container that stacks the two rows vertically
+                                                                            <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+                                                                                {/* --- Row 1: Top-Left Media + Top-Right Media --- */}
+                                                                                <div className="courseCont-twoCol" style={{ gap: 16 }}>
+                                                                                    {/* Top-Left column */}
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[0]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                    {/* Top-Right column */}
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[1]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* --- Row 2: Bottom-Left Media + Bottom-Right Media --- */}
+                                                                                <div className="courseCont-twoCol" style={{ gap: 16 }}>
+                                                                                    {/* Bottom-Left column */}
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 2)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[2]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[2])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                    {/* Bottom-Right column */}
+                                                                                    <div className="courseCont-col">
+                                                                                        <label className="courseCont-mediaDrop" style={{ marginTop: 8, paddingBottom: 30, paddingTop: 29 }}>
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                accept="image/*,video/*,audio/*"
+                                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 3)}
+                                                                                            />
+                                                                                            {slide.mediaItems?.[3]?.mediaPreview ? (
+                                                                                                <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[3])}</div>
+                                                                                            ) : (
+                                                                                                <span className="courseCont-mediaHint">Select Media.</span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </section>
+                                                                        )}
                                                                     </div>
+                                                                )}
+
+                                                                {slide.type === SLIDE_TYPES.PDF_VIEW && (
+                                                                    <section className="courseCont-pdfWrap">
+                                                                        {/* 1. Use a div as a positioning container instead of a label */}
+                                                                        <div className="courseCont-mediaDrop courseCont-mediaOnly" style={{ position: 'relative' }}>
+
+                                                                            {/* 2. The file input is now hidden and referenced by the label */}
+                                                                            <input
+                                                                                id={`pdf-upload-${slide.id}`}
+                                                                                type="file"
+                                                                                accept="application/pdf"
+                                                                                style={{ display: 'none' }}
+                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                            />
+
+                                                                            {/* 3. This label acts as a clickable background */}
+                                                                            <label
+                                                                                htmlFor={`pdf-upload-${slide.id}`}
+                                                                                style={{
+                                                                                    position: 'absolute',
+                                                                                    top: 0,
+                                                                                    left: 0,
+                                                                                    width: '100%',
+                                                                                    height: '100%',
+                                                                                    zIndex: 1, // Place it behind the iframe
+                                                                                    cursor: 'pointer',
+                                                                                    display: 'flex',
+                                                                                    justifyContent: 'center',
+                                                                                    alignItems: 'center',
+                                                                                }}
+                                                                            >
+                                                                                {/* Show hint text only when no PDF is selected */}
+                                                                                {!slide.mediaItems?.[0]?.mediaPreview && (
+                                                                                    <span className="courseCont-mediaHint">Select PDF.</span>
+                                                                                )}
+                                                                            </label>
+
+                                                                            {/* 4. The iframe is rendered in a container on top of the label */}
+                                                                            {slide.mediaItems?.[0]?.mediaPreview && (
+                                                                                <div
+                                                                                    className="courseCont-mediaPreview"
+                                                                                    style={{
+                                                                                        position: 'relative', // Ensure z-index applies correctly
+                                                                                        zIndex: 2, // Place it in front of the background label
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                    }}
+                                                                                >
+                                                                                    <iframe
+                                                                                        src={slide.mediaItems[0].mediaPreview}
+                                                                                        title="PDF preview"
+                                                                                        className="courseCont-pdfFrame"
+                                                                                        style={{ width: '100%', height: '100%', border: 'none' }}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </section>
                                                                 )}
                                                             </div>
                                                         ))}
@@ -854,11 +1426,52 @@ const InductionContent = ({ formData, setFormData }) => {
                     addSlideToTopic(slidePickerFor.moduleIndex, slidePickerFor.topicIndex, typeId);
                 }}
                 options={[
-                    { id: SLIDE_TYPES.TEXT, label: "Text", imgSrc: "/txt.png", alt: "Text" },
-                    { id: SLIDE_TYPES.TEXT_MEDIA, label: "Text + Media", imgSrc: "/txtMed.png", alt: "Text and Media" },
-                    { id: SLIDE_TYPES.MEDIA, label: "Media", imgSrc: "/Med.png", alt: "Media" },
+                    { id: SLIDE_TYPES.TEXT, label: "Text Only", imgSrc: "/Content_Text.png", alt: "Text" },
+                    { id: SLIDE_TYPES.TEXT_MEDIA, label: "Text + Media (Split)", imgSrc: "/Content_TextMedia_Split.png", alt: "Text and Media" },
+                    { id: SLIDE_TYPES.MEDIAX2_TEXT, label: "Text + Media (Stacked)", imgSrc: "/Content_TextMedia_Stacked.png", alt: "Media" },
+                    { id: SLIDE_TYPES.TEXT_MEDIA_2X2, label: "Text + Media (Grid)", imgSrc: "/Content_TextMedia_Grid.png", alt: "Text and Media 2x2" },
+                    { id: SLIDE_TYPES.MEDIA, label: "Media Only", imgSrc: "/Content_Media.png", alt: "Media" },
+                    { id: SLIDE_TYPES.MEDIA_GALLERY, label: "Media (Collage Split)", imgSrc: "/Content_Media_CollageSplit.png", alt: "Media" },
+                    { id: SLIDE_TYPES.MEDIA_2X2, label: "Media (Collage Grid)", imgSrc: "/Content_Media_CollageGrid.png", alt: "Text and Media 2x2" },
+                    { id: SLIDE_TYPES.PDF_VIEW, label: "PDF View", imgSrc: "/Content_PDF.png", alt: "Text and Media 2x2" },
                 ]}
             />
+
+            <TypeSelectorPopup
+                isOpen={!!inlineSlidePicker}
+                title="Select slide type"
+                onClose={() => setInlineSlidePicker(null)}
+                onSelect={(typeId) => {
+                    if (!inlineSlidePicker) return;
+                    addSlideAfter(
+                        inlineSlidePicker.moduleIndex,
+                        inlineSlidePicker.topicIndex,
+                        inlineSlidePicker.slideIndex,
+                        typeId
+                    );
+                    // addSlideAfter already closes with setInlineSlidePicker(null)
+                }}
+                options={[
+                    { id: SLIDE_TYPES.TEXT, label: "Text Only", imgSrc: "/Content_Text.png", alt: "Text" },
+                    { id: SLIDE_TYPES.TEXT_MEDIA, label: "Text + Media (Split)", imgSrc: "/Content_TextMedia_Split.png", alt: "Text and Media" },
+                    { id: SLIDE_TYPES.MEDIAX2_TEXT, label: "Text + Media (Stacked)", imgSrc: "/Content_TextMedia_Stacked.png", alt: "Media" },
+                    { id: SLIDE_TYPES.TEXT_MEDIA_2X2, label: "Text + Media (Grid)", imgSrc: "/Content_TextMedia_Grid.png", alt: "Text and Media 2x2" },
+                    { id: SLIDE_TYPES.MEDIA, label: "Media Only", imgSrc: "/Content_Media.png", alt: "Media" },
+                    { id: SLIDE_TYPES.MEDIA_GALLERY, label: "Media (Collage Split)", imgSrc: "/Content_Media_CollageSplit.png", alt: "Media" },
+                    { id: SLIDE_TYPES.MEDIA_2X2, label: "Media (Collage Grid)", imgSrc: "/Content_Media_CollageGrid.png", alt: "Text and Media 2x2" },
+                    { id: SLIDE_TYPES.PDF_VIEW, label: "PDF View", imgSrc: "/Content_PDF.png", alt: "Text and Media 2x2" },
+                ]}
+            />
+
+            {mediaPicker && (<AudioPicker changeMedia={onMediaChange} module={moduleIndex} slide={slideID} topic={topicIndex} onClose={closeMediaPicker} />)}
+            {croppingState && (
+                <ImageCropPopup
+                    previewUrl={croppingState.preview}
+                    originalFile={croppingState.file}
+                    onClose={onCropCancel}
+                    onUpload={onCropComplete}
+                />
+            )}
         </div>
     );
 };

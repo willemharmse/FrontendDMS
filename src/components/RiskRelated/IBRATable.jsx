@@ -823,13 +823,16 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                                 icon={faPlusCircle}
                                                                                 onClick={() => handleAddAction(row.id, p.id, a.id)}
                                                                                 className="control-icon-add-ibra magic-icon"
-                                                                                title="Add action required" />
+                                                                                title="Add action required"
+                                                                                style={{ zIndex: 0 }}
+                                                                            />
                                                                             {p.actions.length > 1 && (
                                                                                 <FontAwesomeIcon
                                                                                     icon={faTrash}
                                                                                     className="control-icon-remove-ibra magic-icon"
                                                                                     onClick={() => handleRemoveAction(row.id, p.id, a.id)}
                                                                                     title="Remove this action"
+                                                                                    style={{ zIndex: 0 }}
                                                                                 />
                                                                             )}
                                                                         </>)}

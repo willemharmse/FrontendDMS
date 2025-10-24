@@ -123,7 +123,7 @@ const BatchAssets = ({ onClose }) => {
                 </div>
 
                 <div className="batch-file-group-assets">
-                    <div className="batch-file-text">Upload the TAU5 Site Asset List</div>
+                    <div className="batch-file-text">Upload the Site Asset List</div>
                     <div className="batch-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="batch-file-buttons">
                         <label className="batch-file-button">

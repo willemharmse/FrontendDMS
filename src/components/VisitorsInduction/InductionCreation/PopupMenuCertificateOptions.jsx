@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PopupMenuCertificateOptions.css"
 
-const PopupMenuCertificateOptions = ({ isOpen, file, setHoveredFileId, previewCertificate, downloadCertficate, printCertificate, type, risk = false, typeDoc = "", id = null }) => {
+const PopupMenuCertificateOptions = ({ isOpen, file, setHoveredFileId, previewCertificate, downloadCertficate }) => {
     const navigate = useNavigate();
 
     return (
@@ -12,15 +12,27 @@ const PopupMenuCertificateOptions = ({ isOpen, file, setHoveredFileId, previewCe
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    <ul>
-                        <li onClick={() => previewCertificate(file)}>View Certificate</li>
-                    </ul>
-                    <ul>
-                        <li onClick={() => downloadCertficate(file)}>Download Certificate</li>
-                    </ul>
-                    {false && (<ul>
-                        <li onClick={() => printCertificate(file)}>Print Certificate</li>
-                    </ul>)}
+                    {file.trainee.passed && (
+                        <>
+                            <ul>
+                                <li onClick={() => navigate(`/FrontendDMS/inductionView/${file._id}`)}>View Induction</li>
+                            </ul>
+                            <ul>
+                                <li onClick={() => previewCertificate(file)}>View Certificate</li>
+                            </ul>
+                            <ul>
+                                <li onClick={() => downloadCertficate(file)}>Download Certificate</li>
+                            </ul>
+                        </>
+                    )}
+
+                    {!file.trainee.passed && (
+                        <>
+                            <ul>
+                                <li onClick={() => navigate(`/FrontendDMS/inductionView/${file._id}`)}>Complete Induction</li>
+                            </ul>
+                        </>
+                    )}
                 </div>
             )}
         </div>

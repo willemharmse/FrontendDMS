@@ -62,7 +62,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
     const downloadTemplate = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/Risk_Template.xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - RMS Site Information Document V0.22.xlsx');
+        link.setAttribute('download', 'RMS Site Information Document V0.22.xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

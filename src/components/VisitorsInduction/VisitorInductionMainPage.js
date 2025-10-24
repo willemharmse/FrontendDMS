@@ -67,7 +67,7 @@ const VisitorInductionMainPage = () => {
             <div className="main-box-user">
                 <div className="top-section-um">
                     <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+                        <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/trainingHomePage")} icon={faArrowLeft} title="Back" />
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -77,12 +77,28 @@ const VisitorInductionMainPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/inductionCreation")}>
+                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/inductionCreation/new")}>
+                        <>
+                            <div className="all-icon-fi-home">
+                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Develop Visitor Induction</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/inductionDrafts")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsSavedDrafts.svg`} icon={faFolderOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Visitor Induction</h3>
+                            <h3 className="document-title-fi-home">Saved Drafts</h3>
+                        </>
+                    </div>
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/generatedInductionInfo")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} icon={faFolderOpen} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Published Visitor Induction</h3>
                         </>
                     </div>
                     <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorView")}>

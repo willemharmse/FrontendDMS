@@ -23,7 +23,7 @@ const FCMSTemplates = ({ onClose }) => {
     const downloadTemplateCert = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Certificate List V0.7 (17.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Flameproof Certificate List V0.7 (17.09.2025).xlsx');
+        link.setAttribute('download', 'Flameproof Certificate List V0.7 (17.09.2025).xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -32,7 +32,7 @@ const FCMSTemplates = ({ onClose }) => {
     const downloadTemplateAsset = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/TAU5 - Flameproof Asset List V0.4 (15.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Flameproof Asset List V0.4 (15.09.2025).xlsx');
+        link.setAttribute('download', 'Flameproof Asset List V0.4 (15.09.2025).xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

@@ -6,7 +6,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../../Notifications/TopBarDD";
 import { v4 as uuidv4 } from "uuid";
 import { canIn, getCurrentUser } from "../../../utils/auth";
@@ -15,6 +15,8 @@ import InductionContent from "./InductionContent";
 import InductionSummary from "./InductionSummary";
 import InductionOutline from "./InductionOutline";
 import SaveAsInductionPopup from "./SaveAsInductionPopup";
+import LoadPublishedIndcutionPopup from "./LoadPublishedIndcutionPopup";
+import PublishedInductionPreviewPage from "./PublishedInductionPreviewPage";
 
 const InductionReviewPage = () => {
   const navigate = useNavigate();
@@ -34,7 +36,13 @@ const InductionReviewPage = () => {
   const [loadingIntro, setLoadingIntro] = useState(false);
   const [loadingObj, setLoadingObj] = useState(false);
   const [publishable, setPublishable] = useState(true);
+  const [showPublishLoader, setShowPublishLoader] = useState(false);
   const fileID = useParams().fileId;
+  const [preview, setPreview] = useState(false);
+
+  const closePreview = () => {
+    setPreview(false);
+  }
 
   useEffect(() => {
     if (fileID) {
@@ -125,47 +133,68 @@ const InductionReviewPage = () => {
     const apiBase = process.env.REACT_APP_URL;
     const token = localStorage.getItem("token") || "";
 
+    // helper: fetch blob once per fileId and cache an object URL
+    const fetchPreview = async (fileId, fallbackType = "") => {
+      const cached = objectUrlCacheRef.current.get(fileId);
+      if (cached) return { url: cached, mime: fallbackType || "" };
+
+      const url = `${apiBase}/api/visitorDrafts/mediaNew/${encodeURIComponent(fileId)}`;
+      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error(`media ${fileId} ${res.status}`);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      objectUrlCacheRef.current.set(fileId, objUrl);
+      return { url: objUrl, mime: blob.type || fallbackType || "" };
+    };
+
     const jobs = [];
+
     for (const mod of draft.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          const media = slide.media;
-          if (!media?.fileId) {
-            slide.mediaPreview = null;
-            slide.mediaFile = null;
-            slide.mediaType = "";     // <- add this
-            continue;
+          // --- MIGRATE legacy single-media -> array ---
+          if (!Array.isArray(slide.mediaItems)) {
+            if (slide.media?.fileId) {
+              slide.mediaItems = [{ media: { ...slide.media } }];
+            } else {
+              slide.mediaItems = [];
+            }
+            // keep the legacy field around only if you still read it elsewhere; otherwise clear:
+            slide.media = undefined;
           }
 
-          const cached = objectUrlCacheRef.current.get(media.fileId);
-          if (cached) {
-            slide.mediaPreview = cached;
-            slide.mediaFile = null;
-            slide.mediaType = media.contentType || "";  // <- keep MIME if known
-            continue;
-          }
+          // hydrate each media item slot
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            const m = it?.media;
+            // normalize structure so callers don't crash
+            const next = { media: m || null, mediaFile: null, mediaPreview: null, mediaType: "" };
 
-          const url = `${apiBase}/api/visitorDrafts/mediaPublished/${encodeURIComponent(media.fileId)}`;
-          jobs.push(
-            fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-              .then(async (res) => {
-                if (!res.ok) throw new Error(`media ${media.fileId} ${res.status}`);
-                const blob = await res.blob();
-                const objUrl = URL.createObjectURL(blob);
-                objectUrlCacheRef.current.set(media.fileId, objUrl);
-                slide.mediaPreview = objUrl;
-                slide.mediaFile = null;
-                slide.mediaType = blob.type || media.contentType || ""; // <- store MIME for rendering
-              })
-              .catch((err) => {
-                console.warn("Hydrate media failed:", media.fileId, err.message);
-                slide.mediaPreview = null;
-                slide.mediaType = "";
-              })
-          );
+            if (!m?.fileId) {
+              // empty slot
+              return next;
+            }
+
+            // schedule fetch/hydration
+            jobs.push(
+              (async () => {
+                try {
+                  const { url, mime } = await fetchPreview(m.fileId, m.contentType || "");
+                  next.mediaPreview = url;
+                  next.mediaType = mime;
+                } catch (err) {
+                  console.warn("Hydrate media failed:", m.fileId, err.message);
+                  next.mediaPreview = null;
+                  next.mediaType = "";
+                }
+              })()
+            );
+
+            return next;
+          });
         }
       }
     }
+
     await Promise.all(jobs);
     return draft;
   }
@@ -233,25 +262,21 @@ const InductionReviewPage = () => {
     for (const mod of wire.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          const f = slide.mediaFile;
-          if (f instanceof File) {
-            const fileId = slide.media?.fileId || crypto.randomUUID();
-            // replace transient fields with durable metadata
-            slide.media = {
-              fileId,
-              filename: f.name,
-              contentType: f.type,
-              size: f.size
-            };
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-            fd.append(`files[${fileId}]`, f, f.name);
-          } else {
-            // no change; keep existing media descriptor (if any), ensure no transient fields
-            slide.mediaFile = undefined;
-            // keep mediaPreview for UX in-memory, but don't send it
-            slide.mediaPreview = undefined;
-          }
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            if (!it) return { media: null };   // preserve empty slot safely
+            const f = it.mediaFile;
+            if (f instanceof File) {
+              const fileId = it.media?.fileId || crypto.randomUUID();
+              fd.append(`files[${fileId}]`, f, f.name);
+              return {
+                ...it,
+                media: { fileId, filename: f.name, contentType: f.type, size: f.size },
+                mediaFile: undefined,          // remove transient
+                mediaPreview: undefined,       // not sent
+              };
+            }
+            return { ...it, mediaFile: undefined, mediaPreview: undefined };
+          });
         }
       }
     }
@@ -331,17 +356,20 @@ const InductionReviewPage = () => {
     for (const mod of wire.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          if (slide.mediaFile instanceof File) {
-            const f = slide.mediaFile;
-            const fileId = slide.media?.fileId || crypto.randomUUID();
-            slide.media = { fileId, filename: f.name, contentType: f.type, size: f.size };
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-            fd.append(`files[${fileId}]`, f, f.name);
-          } else {
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-          }
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            const f = it.mediaFile;
+            if (f instanceof File) {
+              const fileId = it.media?.fileId || crypto.randomUUID();
+              fd.append(`files[${fileId}]`, f, f.name);
+              return {
+                ...it,
+                media: { fileId, filename: f.name, contentType: f.type, size: f.size },
+                mediaFile: undefined,          // remove transient
+                mediaPreview: undefined,       // not sent
+              };
+            }
+            return { ...it, mediaFile: undefined, mediaPreview: undefined };
+          });
         }
       }
     }
@@ -388,6 +416,8 @@ const InductionReviewPage = () => {
 
   const loadData = async (loadID) => {
     try {
+      setShowPublishLoader(true);
+
       const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/loadPublishedInduction/${loadID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` } // if your load route is protected
       });
@@ -411,8 +441,11 @@ const InductionReviewPage = () => {
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+
+      setShowPublishLoader(false);
     } catch (error) {
       console.error('Error loading data:', error);
+      setShowPublishLoader(false);
     }
   };
 
@@ -495,10 +528,10 @@ const InductionReviewPage = () => {
 
   const autoSaveDraft = () => {
     if (formData.courseTitle.trim() === "") return;
-
-
+    if (preview) return;
 
     if (loadedIDRef.current !== '') {
+
       updateData();
       console.log("📝 autoSaveDraft() triggered 2");
       toast.dismiss();
@@ -631,12 +664,7 @@ const InductionReviewPage = () => {
   };
 
   const handlePublish = async () => {
-    const dataToStore = {
-      usedAbbrCodes,       // your current state values
-      usedTermCodes,
-      formData,
-      userID
-    };
+    await updateData();
 
     setLoading(true);
 
@@ -647,7 +675,6 @@ const InductionReviewPage = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify(dataToStore),
       });
 
       if (!response.ok) throw new Error("Failed to generate document");
@@ -667,6 +694,11 @@ const InductionReviewPage = () => {
     }
   };
 
+  const openPreview = async () => {
+    await updateData();
+    setPreview(true);
+  }
+
   return (
     <div className="file-create-container">
       {isSidebarVisible && (
@@ -679,9 +711,18 @@ const InductionReviewPage = () => {
             <p className="logo-text-um" onClick={() => console.log(formData)}>Training Management</p>
           </div>
 
+          <div className="button-container-create">
+            {loadedIDRef.current && (<button className="but-um" style={{ marginTop: "10px" }} onClick={openPreview}>
+              <div className="button-content" >
+                <FontAwesomeIcon icon={faEye} className="button-logo-custom" />
+                <span className="button-text">Preview Visitor Induction</span>
+              </div>
+            </button>)}
+          </div>
+
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{"Visitor Induction"}</p>
+            <p className="logo-text-dm-fi">{"Review Visitor Induction"}</p>
           </div>
         </div>
       )}
@@ -735,112 +776,123 @@ const InductionReviewPage = () => {
         </div>
 
         <div className={`scrollable-box`}>
-          <div className="input-row">
-            <div className={`input-box-title ${errors.title ? "error-create" : ""}`} style={{ marginBottom: "0px" }}>
-              <h3 className="font-fam-labels" onClick={() => console.log(formData)}>Title <span className="required-field">*</span></h3>
-              <div className="input-group-cpt">
-                <input
-                  spellcheck="true"
-                  style={{ fontSize: "14px" }}
-                  type="text"
-                  name="courseTitle"
-                  className="font-fam title-input"
-                  value={formData.courseTitle}
-                  onChange={handleInputChange}
-                  placeholder="Insert Visitor Induction Title"
-                  readOnly
-                />
+          {showPublishLoader && (
+            <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
+              <div className="file-info-loading__spinner" />
+              <div className="file-info-loading__text">Loading Published Induction</div>
+            </div>
+          )}
+          {!showPublishLoader && (
+            <>
+              <div className="input-row">
+                <div className={`input-box-title ${errors.title ? "error-create" : ""}`} style={{ marginBottom: "0px" }}>
+                  <h3 className="font-fam-labels" onClick={() => console.log(formData)}>Title <span className="required-field">*</span></h3>
+                  <div className="input-group-cpt">
+                    <input
+                      spellcheck="true"
+                      style={{ fontSize: "14px" }}
+                      type="text"
+                      name="courseTitle"
+                      className="font-fam title-input"
+                      value={formData.courseTitle}
+                      onChange={handleInputChange}
+                      placeholder="Insert Visitor Induction Title"
+                      readOnly
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="input-row">
-            <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Introduction <span className="required-field">*</span></h3>
-              <textarea
-                style={{ fontSize: "14px" }}
-                spellcheck="true"
-                name="intorduction"
-                className="aim-textarea font-fam expanding-textarea"
-                value={formData.intorduction}
-                onChange={handleInputChange}
-                rows="5"
-                placeholder="Insert Visitor Induction Introduction"
-              />
+              <div className="input-row">
+                <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">Introduction <span className="required-field">*</span></h3>
+                  <textarea
+                    style={{ fontSize: "14px" }}
+                    spellcheck="true"
+                    name="intorduction"
+                    className="aim-textarea font-fam expanding-textarea"
+                    value={formData.intorduction}
+                    onChange={handleInputChange}
+                    rows="5"
+                    placeholder="Insert Visitor Induction Introduction"
+                  />
 
-              {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteIntro()}
-                />
-              )}
+                  {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteIntro()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('introduction')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.introduction.length ? 1 : 0.3,
-                  cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
-            </div>
-          </div>
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('introduction')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.introduction.length ? 1 : 0.3,
+                      cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </div>
+              </div>
 
-          <div className="input-row">
-            <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Objectives <span className="required-field">*</span></h3>
-              <textarea
-                style={{ fontSize: "14px" }}
-                spellcheck="true"
-                name="courseObjectives"
-                className="aim-textarea font-fam expanding-textarea"
-                value={formData.courseObjectives}
-                onChange={handleInputChange}
-                rows="5"
-                placeholder="The objective of the visitor induction is to: "
-              />
+              <div className="input-row">
+                <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">Objectives <span className="required-field">*</span></h3>
+                  <textarea
+                    style={{ fontSize: "14px" }}
+                    spellcheck="true"
+                    name="courseObjectives"
+                    className="aim-textarea font-fam expanding-textarea"
+                    value={formData.courseObjectives}
+                    onChange={handleInputChange}
+                    rows="5"
+                    placeholder="The objective of the visitor induction is to: "
+                  />
 
-              {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteObjectives()}
-                />
-              )}
+                  {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteObjectives()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('objectives')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.objectives.length ? 1 : 0.3,
-                  cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
-            </div>
-          </div>
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('objectives')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.objectives.length ? 1 : 0.3,
+                      cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </div>
+              </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-          <InductionContent formData={formData} setFormData={setFormData} />
-          <InductionOutline formData={formData} setFormData={setFormData} />
-          <InductionSummary formData={formData} setFormData={setFormData} />
-          <InductionAssessment formData={formData} setFormData={setFormData} />
+              <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+              <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
+              <InductionContent formData={formData} setFormData={setFormData} />
+              <InductionOutline formData={formData} setFormData={setFormData} />
+              <InductionSummary formData={formData} setFormData={setFormData} />
+              <InductionAssessment formData={formData} setFormData={setFormData} />
+            </>
+          )}
         </div>
         {isSaveAsModalOpen && (<SaveAsInductionPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.courseTitle} type={""} userID={userID} create={true} />)}
       </div>
+      {preview && (<PublishedInductionPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
       <ToastContainer />
     </div>
   );

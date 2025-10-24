@@ -61,8 +61,12 @@ const PreviewCertificateInduction = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Certificate Preview</p>
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/visitorHomePage')} title="Home" />
+                        <p className="logo-text-um">Training Management</p>
+                    </div>
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/tmsPreviewCertificate.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">Certificate Preview</p>
                     </div>
                 </div>
             )}
@@ -84,7 +88,7 @@ const PreviewCertificateInduction = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar />
+                    <TopBar visitor={true} />
                 </div>
 
                 <div className="file-preview-container">

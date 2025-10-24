@@ -7,7 +7,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import TopBarDD from "../../Notifications/TopBarDD";
 import SaveAsPopup from "../../Popups/SaveAsPopup";
@@ -24,8 +24,11 @@ import SharePage from "../../CreatePage/SharePage";
 import InductionOutline from "./InductionOutline";
 import LoadIndcutionDraftPopup from "./LoadIndcutionDraftPopup";
 import SaveAsInductionPopup from "./SaveAsInductionPopup";
+import LoadDraftIndcutionPopup from "./LoadDraftIndcutionPopup";
+import InductionPreviewPage from "./InductionPreviewPage";
 
 const InductionCreationPage = () => {
+  const id = useParams().id || '';
   const navigate = useNavigate();
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
@@ -48,6 +51,12 @@ const InductionCreationPage = () => {
   const [loadingIntro, setLoadingIntro] = useState(false);
   const [loadingObj, setLoadingObj] = useState(false);
   const [publishable, setPublishable] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(false);
+  const [preview, setPreview] = useState(false);
+
+  const closePreview = () => {
+    setPreview(false);
+  }
 
   const [rewriteHistory, setRewriteHistory] = useState({
     introduction: [],
@@ -132,47 +141,68 @@ const InductionCreationPage = () => {
     const apiBase = process.env.REACT_APP_URL;
     const token = localStorage.getItem("token") || "";
 
+    // helper: fetch blob once per fileId and cache an object URL
+    const fetchPreview = async (fileId, fallbackType = "") => {
+      const cached = objectUrlCacheRef.current.get(fileId);
+      if (cached) return { url: cached, mime: fallbackType || "" };
+
+      const url = `${apiBase}/api/visitorDrafts/mediaNew/${encodeURIComponent(fileId)}`;
+      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error(`media ${fileId} ${res.status}`);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      objectUrlCacheRef.current.set(fileId, objUrl);
+      return { url: objUrl, mime: blob.type || fallbackType || "" };
+    };
+
     const jobs = [];
+
     for (const mod of draft.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          const media = slide.media;
-          if (!media?.fileId) {
-            slide.mediaPreview = null;
-            slide.mediaFile = null;
-            slide.mediaType = "";     // <- add this
-            continue;
+          // --- MIGRATE legacy single-media -> array ---
+          if (!Array.isArray(slide.mediaItems)) {
+            if (slide.media?.fileId) {
+              slide.mediaItems = [{ media: { ...slide.media } }];
+            } else {
+              slide.mediaItems = [];
+            }
+            // keep the legacy field around only if you still read it elsewhere; otherwise clear:
+            slide.media = undefined;
           }
 
-          const cached = objectUrlCacheRef.current.get(media.fileId);
-          if (cached) {
-            slide.mediaPreview = cached;
-            slide.mediaFile = null;
-            slide.mediaType = media.contentType || "";  // <- keep MIME if known
-            continue;
-          }
+          // hydrate each media item slot
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            const m = it?.media;
+            // normalize structure so callers don't crash
+            const next = { media: m || null, mediaFile: null, mediaPreview: null, mediaType: "" };
 
-          const url = `${apiBase}/api/visitorDrafts/media/${encodeURIComponent(media.fileId)}`;
-          jobs.push(
-            fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-              .then(async (res) => {
-                if (!res.ok) throw new Error(`media ${media.fileId} ${res.status}`);
-                const blob = await res.blob();
-                const objUrl = URL.createObjectURL(blob);
-                objectUrlCacheRef.current.set(media.fileId, objUrl);
-                slide.mediaPreview = objUrl;
-                slide.mediaFile = null;
-                slide.mediaType = blob.type || media.contentType || ""; // <- store MIME for rendering
-              })
-              .catch((err) => {
-                console.warn("Hydrate media failed:", media.fileId, err.message);
-                slide.mediaPreview = null;
-                slide.mediaType = "";
-              })
-          );
+            if (!m?.fileId) {
+              // empty slot
+              return next;
+            }
+
+            // schedule fetch/hydration
+            jobs.push(
+              (async () => {
+                try {
+                  const { url, mime } = await fetchPreview(m.fileId, m.contentType || "");
+                  next.mediaPreview = url;
+                  next.mediaType = mime;
+                } catch (err) {
+                  console.warn("Hydrate media failed:", m.fileId, err.message);
+                  next.mediaPreview = null;
+                  next.mediaType = "";
+                }
+              })()
+            );
+
+            return next;
+          });
         }
       }
     }
+
     await Promise.all(jobs);
     return draft;
   }
@@ -260,25 +290,21 @@ const InductionCreationPage = () => {
     for (const mod of wire.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          const f = slide.mediaFile;
-          if (f instanceof File) {
-            const fileId = slide.media?.fileId || crypto.randomUUID();
-            // replace transient fields with durable metadata
-            slide.media = {
-              fileId,
-              filename: f.name,
-              contentType: f.type,
-              size: f.size
-            };
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-            fd.append(`files[${fileId}]`, f, f.name);
-          } else {
-            // no change; keep existing media descriptor (if any), ensure no transient fields
-            slide.mediaFile = undefined;
-            // keep mediaPreview for UX in-memory, but don't send it
-            slide.mediaPreview = undefined;
-          }
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            if (!it) return { media: null };   // preserve empty slot safely
+            const f = it.mediaFile;
+            if (f instanceof File) {
+              const fileId = it.media?.fileId || crypto.randomUUID();
+              fd.append(`files[${fileId}]`, f, f.name);
+              return {
+                ...it,
+                media: { fileId, filename: f.name, contentType: f.type, size: f.size },
+                mediaFile: undefined,          // remove transient
+                mediaPreview: undefined,       // not sent
+              };
+            }
+            return { ...it, mediaFile: undefined, mediaPreview: undefined };
+          });
         }
       }
     }
@@ -381,17 +407,20 @@ const InductionCreationPage = () => {
     for (const mod of wire.courseModules || []) {
       for (const topic of mod.topics || []) {
         for (const slide of topic.slides || []) {
-          if (slide.mediaFile instanceof File) {
-            const f = slide.mediaFile;
-            const fileId = slide.media?.fileId || crypto.randomUUID();
-            slide.media = { fileId, filename: f.name, contentType: f.type, size: f.size };
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-            fd.append(`files[${fileId}]`, f, f.name);
-          } else {
-            slide.mediaFile = undefined;
-            slide.mediaPreview = undefined;
-          }
+          slide.mediaItems = (slide.mediaItems || []).map((it) => {
+            const f = it.mediaFile;
+            if (f instanceof File) {
+              const fileId = it.media?.fileId || crypto.randomUUID();
+              fd.append(`files[${fileId}]`, f, f.name);
+              return {
+                ...it,
+                media: { fileId, filename: f.name, contentType: f.type, size: f.size },
+                mediaFile: undefined,          // remove transient
+                mediaPreview: undefined,       // not sent
+              };
+            }
+            return { ...it, mediaFile: undefined, mediaPreview: undefined };
+          });
         }
       }
     }
@@ -474,6 +503,20 @@ const InductionCreationPage = () => {
       return;
     }
 
+    if (!publishable) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("This draft cannot be published as it has not been shared with all users for approval.", {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      return;
+    }
+
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
@@ -489,6 +532,7 @@ const InductionCreationPage = () => {
 
   const loadData = async (loadID) => {
     try {
+      setLoadingDraft(true);
       const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/load/${loadID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` } // if your load route is protected
       });
@@ -514,8 +558,13 @@ const InductionCreationPage = () => {
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+
+      setTimeout(() => {
+        setLoadingDraft(false);
+      }, 2000);
     } catch (error) {
       console.error('Error loading data:', error);
+      setLoadingDraft(false);
     }
   };
 
@@ -615,6 +664,7 @@ const InductionCreationPage = () => {
 
   const autoSaveDraft = () => {
     if (formData.courseTitle.trim() === "") return;
+    if (preview) return;
 
     if (loadedIDRef.current === '') {
       saveData();
@@ -908,6 +958,19 @@ const InductionCreationPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (id === 'new') {
+      console.log("New draft, not loading existing data.");
+      return;
+    }
+    loadData(id);
+  }, [id]);
+
+  const openPreview = async () => {
+    await updateData(userIDsRef.current);
+    setPreview(true);
+  }
+
   return (
     <div className="file-create-container">
       {isSidebarVisible && (
@@ -921,7 +984,7 @@ const InductionCreationPage = () => {
           </div>
 
           <div className="button-container-create">
-            <button className="but-um" onClick={() => openLoadPopup()} style={{ height: "62px" }}>
+            <button className="but-um" onClick={() => navigate("/FrontendDMS/inductionDrafts")} style={{ height: "62px" }}>
               <div className="button-content">
                 <span className="button-logo-custom" aria-hidden="true">
                   <FontAwesomeIcon icon={faFolderOpenSolid} className="icon-base-draft" />
@@ -943,11 +1006,18 @@ const InductionCreationPage = () => {
               </div>
               <hr />
             </div>
+
+            {loadedIDRef.current && (<button className="but-um" style={{ marginTop: "10px", height: "62px" }} onClick={openPreview}>
+              <div className="button-content" >
+                <FontAwesomeIcon icon={faEye} className="button-logo-custom" />
+                <span className="button-text">Preview Visitor Induction</span>
+              </div>
+            </button>)}
           </div>
 
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{"Visitor Induction"}</p>
+            <p className="logo-text-dm-fi">{"Develop Visitor Induction"}</p>
           </div>
         </div>
       )}
@@ -967,7 +1037,7 @@ const InductionCreationPage = () => {
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate("/FrontendDMS/visitorInductionHome")} title="Back" />
             </div>
 
             <div className="burger-menu-icon-risk-create-page-1">
@@ -997,9 +1067,9 @@ const InductionCreationPage = () => {
               <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
             </div>
 
-            {publishable && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
-            </div>)}
+            <div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${(!loadedID || !publishable) ? "disabled-share" : ""}`} title="Publish" />
+            </div>
           </div>
 
           <div className="spacer"></div>
@@ -1008,113 +1078,125 @@ const InductionCreationPage = () => {
         </div>
 
         <div className={`scrollable-box`}>
-          <div className="input-row">
-            <div className={`input-box-title ${errors.title ? "error-create" : ""}`} style={{ marginBottom: "0px" }}>
-              <h3 className="font-fam-labels" onClick={() => console.log(formData)}>Title <span className="required-field">*</span></h3>
-              <div className="input-group-cpt">
-                <input
-                  spellcheck="true"
-                  style={{ fontSize: "14px" }}
-                  type="text"
-                  name="courseTitle"
-                  className="font-fam title-input"
-                  value={formData.courseTitle}
-                  onChange={handleInputChange}
-                  placeholder="Insert Visitor Induction Title"
-                />
+          {loadingDraft && (
+            <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
+              <div className="file-info-loading__spinner" />
+              <div className="file-info-loading__text">Loading Induction Draft</div>
+            </div>
+          )}
+
+          {!loadingDraft && (
+            <>
+              <div className="input-row">
+                <div className={`input-box-title ${errors.title ? "error-create" : ""}`} style={{ marginBottom: "0px" }}>
+                  <h3 className="font-fam-labels" onClick={() => console.log(formData)}>Title <span className="required-field">*</span></h3>
+                  <div className="input-group-cpt">
+                    <input
+                      spellcheck="true"
+                      style={{ fontSize: "14px" }}
+                      type="text"
+                      name="courseTitle"
+                      className="font-fam title-input"
+                      value={formData.courseTitle}
+                      onChange={handleInputChange}
+                      placeholder="Insert Visitor Induction Title"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="input-row">
-            <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Introduction <span className="required-field">*</span></h3>
-              <textarea
-                style={{ fontSize: "14px" }}
-                spellcheck="true"
-                name="intorduction"
-                className="aim-textarea font-fam expanding-textarea"
-                value={formData.intorduction}
-                onChange={handleInputChange}
-                rows="5"
-                placeholder="Insert Visitor Induction Introduction"
-              />
+              <div className="input-row">
+                <div className={`input-box-aim-cp ${errors.aim ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">Introduction <span className="required-field">*</span></h3>
+                  <textarea
+                    style={{ fontSize: "14px" }}
+                    spellcheck="true"
+                    name="intorduction"
+                    className="aim-textarea font-fam expanding-textarea"
+                    value={formData.intorduction}
+                    onChange={handleInputChange}
+                    rows="5"
+                    placeholder="Insert Visitor Induction Introduction"
+                  />
 
-              {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteIntro()}
-                />
-              )}
+                  {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteIntro()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('introduction')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.introduction.length ? 1 : 0.3,
-                  cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
-            </div>
-          </div>
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('introduction')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.introduction.length ? 1 : 0.3,
+                      cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </div>
+              </div>
 
-          <div className="input-row">
-            <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Objectives <span className="required-field">*</span></h3>
-              <textarea
-                style={{ fontSize: "14px" }}
-                spellcheck="true"
-                name="courseObjectives"
-                className="aim-textarea font-fam expanding-textarea"
-                value={formData.courseObjectives}
-                onChange={handleInputChange}
-                rows="5"
-                placeholder="The objective of the visitor induction is to: "
-              />
+              <div className="input-row">
+                <div className={`input-box-aim-cp ${errors.scope ? "error-create" : ""}`}>
+                  <h3 className="font-fam-labels">Objectives <span className="required-field">*</span></h3>
+                  <textarea
+                    style={{ fontSize: "14px" }}
+                    spellcheck="true"
+                    name="courseObjectives"
+                    className="aim-textarea font-fam expanding-textarea"
+                    value={formData.courseObjectives}
+                    onChange={handleInputChange}
+                    rows="5"
+                    placeholder="The objective of the visitor induction is to: "
+                  />
 
-              {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                <FontAwesomeIcon
-                  icon={faMagicWandSparkles}
-                  className="aim-textarea-icon-ibra"
-                  title="AI Rewrite"
-                  style={{ fontSize: "15px" }}
-                  onClick={() => AiRewriteObjectives()}
-                />
-              )}
+                  {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                    <FontAwesomeIcon
+                      icon={faMagicWandSparkles}
+                      className="aim-textarea-icon-ibra"
+                      title="AI Rewrite"
+                      style={{ fontSize: "15px" }}
+                      onClick={() => AiRewriteObjectives()}
+                    />
+                  )}
 
-              <FontAwesomeIcon
-                icon={faRotateLeft}
-                className="aim-textarea-icon-ibra-undo"
-                title="Undo AI Rewrite"
-                onClick={() => undoAiRewrite('objectives')}
-                style={{
-                  marginLeft: '8px',
-                  opacity: rewriteHistory.objectives.length ? 1 : 0.3,
-                  cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
-                  fontSize: "15px"
-                }}
-              />
-            </div>
-          </div>
+                  <FontAwesomeIcon
+                    icon={faRotateLeft}
+                    className="aim-textarea-icon-ibra-undo"
+                    title="Undo AI Rewrite"
+                    onClick={() => undoAiRewrite('objectives')}
+                    style={{
+                      marginLeft: '8px',
+                      opacity: rewriteHistory.objectives.length ? 1 : 0.3,
+                      cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
+                      fontSize: "15px"
+                    }}
+                  />
+                </div>
+              </div>
 
-          <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-          <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-          <InductionContent formData={formData} setFormData={setFormData} />
-          <InductionOutline formData={formData} setFormData={setFormData} />
-          <InductionSummary formData={formData} setFormData={setFormData} />
-          <InductionAssessment formData={formData} setFormData={setFormData} />
+              <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
+              <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
+              <InductionContent formData={formData} setFormData={setFormData} />
+              <InductionOutline formData={formData} setFormData={setFormData} />
+              <InductionSummary formData={formData} setFormData={setFormData} />
+              <InductionAssessment formData={formData} setFormData={setFormData} />
+            </>
+          )}
         </div>
         {isSaveAsModalOpen && (<SaveAsInductionPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.courseTitle} type={""} userID={userID} create={true} />)}
         {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
         {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
         {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
+        {preview && (<InductionPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
       </div>
       <ToastContainer />
     </div>

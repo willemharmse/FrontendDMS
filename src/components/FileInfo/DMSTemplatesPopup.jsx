@@ -23,7 +23,7 @@ const DMSTemplatesPopup = ({ onClose }) => {
     const downloadTemplateCert = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/TAU5 - Site Document List V0.2 (11.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'TAU5 - Site Document List V0.2 (11.09.2025).xlsx');
+        link.setAttribute('download', 'Site Document List V0.2 (11.09.2025).xlsx');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

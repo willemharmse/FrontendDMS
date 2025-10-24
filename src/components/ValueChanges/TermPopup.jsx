@@ -83,7 +83,7 @@ const TermPopup = ({ isOpen, onClose, userID, setTermData, onAdd }) => {
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 3000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding term:", error);

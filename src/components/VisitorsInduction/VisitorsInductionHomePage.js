@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faX, faFileCirclePlus, faSearch, faArrowLeft, faEdit, faTrash, faShare, faShareAlt, faCirclePlay, faCirclePlus, faBookOpen, faDownload, faBook, faUser, faUserGroup } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faX, faFileCirclePlus, faSearch, faArrowLeft, faEdit, faTrash, faShare, faShareAlt, faCirclePlay, faCirclePlus, faBookOpen, faDownload, faBook, faUser, faUserGroup, faColumns, faFilter, faSort } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,6 +16,7 @@ import BatchExcelUpload from "./Popups/BatchExcelUpload";
 import CreateProfileLink from "./Popups/CreateProfileLink";
 import DeleteVisitor from "./Popups/DeleteVisitor";
 import SortPopupVisitors from "./Popups/SortPopupVisitors";
+import TopBar from "../Notifications/TopBar";
 
 const VisitorsInductionHomePage = () => {
     const [expandedRow, setExpandedRow] = useState(null);
@@ -92,6 +93,15 @@ const VisitorsInductionHomePage = () => {
         return type
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());
+    };
+
+    const extractNumbers = (value) => {
+        if (!value) return '';
+        const cleaned = value.replace(/\s+/g, '').replace(/[^\d+]/g, '');
+        // keep only one leading +
+        return cleaned.startsWith('+')
+            ? '+' + cleaned.slice(1).replace(/\+/g, '')
+            : cleaned.replace(/\+/g, '');
     };
 
     const formatDate = (dateString) => {
@@ -206,7 +216,7 @@ const VisitorsInductionHomePage = () => {
                 throw new Error('Failed to fetch files');
             }
             const data = await response.json();
-
+            console.log(data);
             setFiles(data.visitors);
         } catch (error) {
         }
@@ -253,13 +263,111 @@ const VisitorsInductionHomePage = () => {
         setSearchQuery("");
     };
 
-    const filteredFiles = files.filter((file) => {
-        const matchesSearchQuery = (
-            file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            file.surname.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+    // Which columns exist and how to render them
+    const allColumns = [
+        { id: "nr", title: "Nr", thClass: "visitor-ind-num-filter", td: (f, i) => i + 1 },
+        { id: "name", title: "Name", thClass: "visitor-ind-name-filter", td: (f) => f.name },
+        { id: "surname", title: "Surname", thClass: "visitor-ind-surname-filter", td: (f) => f.surname },
+        { id: "email", title: "Email", thClass: "visitor-ind-email-filter", td: (f) => f.email ?? "-" },
+        { id: "phone", title: "Contact Number", thClass: "visitor-ind-company-filter", td: (f) => extractNumbers(f.contactNr) ?? "-" },
+        { id: "idnum", title: "ID/Passport", thClass: "visitor-ind-company-filter", td: (f) => f.idNumber ?? "-" },
+        { id: "company", title: "Company", thClass: "visitor-ind-company-filter", td: (f) => f.company ?? "-" },
+        { id: "createdBy", title: "Profile Created By", thClass: "visitor-ind-profileBy-filter", td: (f) => f.profileCreatedBy.username ?? "-" },
+        { id: "validity", title: "Induction Validity", thClass: "visitor-ind-valid-filter", td: (f) => formatStatus(f.validity) ?? "-" },
+        { id: "expiry", title: "Induction Expiry Date", thClass: "visitor-ind-exp-filter", td: (f) => formatDate(f.expiryDate) },
+        { id: "version", title: "Induction Version Nr", thClass: "visitor-ind-vers-filter", td: (f) => f.indicationVersion ?? "-" },
+        // "action" column is permission-based, we add it dynamically below
+    ];
 
-        return matchesSearchQuery;
+    const [showColumns, setShowColumns] = useState(() => {
+        // default starter set
+        const base = ["nr", "name", "surname", "company", "createdBy", "validity", "expiry", "version"];
+        // include action for contributors/admins
+        return canIn(access, "TMS", ["systemAdmin", "contributor"]) ? [...base, "action"] : base;
+    });
+    const [showColumnSelector, setShowColumnSelector] = useState(false);
+
+    const availableColumns = React.useMemo(() => {
+        let cols = [...allColumns];
+        if (canIn(access, "TMS", ["systemAdmin", "contributor"])) {
+            cols = [...cols, { id: "action", title: "Action", thClass: "visitor-ind-act-filter", td: null }];
+        }
+        return cols;
+    }, [access]);
+
+    const toggleColumn = (id) => {
+        setShowColumns(prev => {
+            // nr + action are pinned (like IBRA’s nr/action)
+            if (id === "nr" || id === "action") return prev;
+            return prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id];
+        });
+    };
+
+    const toggleAllColumns = (selectAll) => {
+        if (selectAll) {
+            const allIds = availableColumns.map(c => c.id);
+            setShowColumns(allIds);
+        } else {
+            // minimal: only Nr (and Action if allowed)
+            setShowColumns(
+                canIn(access, "TMS", ["systemAdmin", "contributor"]) ? ["nr", "action"] : ["nr"]
+            );
+        }
+    };
+
+    const areAllSelected = () => {
+        const selectable = availableColumns.map(c => c.id);
+        return selectable.every(id => showColumns.includes(id));
+    };
+
+    const visibleColumns = availableColumns.filter(c => showColumns.includes(c.id));
+    const visibleCount = visibleColumns.length;
+    // Wide-mode when more than 9 columns (as requested)
+    const isWide = visibleCount > 9;
+
+    // which header popup is open
+    const [openHeader, setOpenHeader] = useState(null);
+
+    // column filters (text + date)
+    const [colFilters, setColFilters] = useState({
+        name: '',
+        surname: '',
+        email: '',
+        phone: '',
+        idnum: '',
+        company: '',
+        createdBy: '',
+        validity: '',
+        version: '',
+        expiryFrom: '', // yyyy-mm-dd
+        expiryTo: ''    // yyyy-mm-dd
+    });
+
+    const setFilter = (field, val) => setColFilters(f => ({ ...f, [field]: val }));
+
+    const filteredFiles = files.filter((file) => {
+        const matchesSearchQuery =
+            file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            file.surname.toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Text filters (case-insensitive, guard nulls)
+        const matchesText =
+            (colFilters.name ? (file.name ?? "").toLowerCase().includes(colFilters.name.toLowerCase()) : true) &&
+            (colFilters.surname ? (file.surname ?? "").toLowerCase().includes(colFilters.surname.toLowerCase()) : true) &&
+            (colFilters.email ? (file.email ?? "").toLowerCase().includes(colFilters.email.toLowerCase()) : true) &&
+            (colFilters.phone ? (file.contactNr ?? "").toLowerCase().includes(colFilters.phone.toLowerCase()) : true) &&
+            (colFilters.idnum ? (file.idNumber ?? "").toLowerCase().includes(colFilters.idnum.toLowerCase()) : true) &&
+            (colFilters.company ? (file.company ?? "").toLowerCase().includes(colFilters.company.toLowerCase()) : true) &&
+            (colFilters.createdBy ? ((file.profileCreatedBy?.username) ?? "").toLowerCase().includes(colFilters.createdBy.toLowerCase()) : true) &&
+            (colFilters.validity ? (formatStatus(file.validity) ?? "").toLowerCase().includes(colFilters.validity.toLowerCase()) : true) &&
+            (colFilters.version ? (file.indicationVersion ?? "").toLowerCase().includes(colFilters.version.toLowerCase()) : true);
+
+        // Date range filter (expiry)
+        const fileExpiry = file.expiryDate ? new Date(file.expiryDate) : null;
+        const fromOK = colFilters.expiryFrom ? (fileExpiry && fileExpiry >= new Date(colFilters.expiryFrom)) : true;
+        const toOK = colFilters.expiryTo ? (fileExpiry && fileExpiry <= new Date(colFilters.expiryTo)) : true;
+
+        return matchesSearchQuery && matchesText && fromOK && toOK;
     });
 
     return (
@@ -327,17 +435,75 @@ const VisitorsInductionHomePage = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBarFP openSort={openSortModal} />
+                    <TopBar />
                 </div>
 
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper">
                         <label className="risk-control-label">Visitor Profiles</label>
-                        <FontAwesomeIcon icon={faDownload} title="Download" className="top-right-button-control-att-2" />
-                        <FontAwesomeIcon icon={faBookOpen} title="Visitor" className="top-right-button-control-att" />
+                        <FontAwesomeIcon
+                            icon={faColumns}
+                            title="Select Columns to Display"
+                            className="top-right-button-control-att"
+                            onClick={() => setShowColumnSelector(v => !v)}
+                        />
+                        <FontAwesomeIcon
+                            icon={faSort}
+                            title="Select Columns to Display"
+                            className="top-right-button-control-att-2"
+                            onClick={openSortModal}
+                        />
+                        {showColumnSelector && (
+                            <div className="column-selector-popup"
+                                onMouseDown={(e) => e.stopPropagation()}>
+                                <div className="column-selector-header">
+                                    <h4>Select Columns</h4>
+                                    <button className="close-popup-btn" onClick={() => setShowColumnSelector(false)}>×</button>
+                                </div>
+
+                                <div className="column-selector-content">
+                                    <p className="column-selector-note">Select columns to display</p>
+
+                                    <div className="select-all-container">
+                                        <label className="select-all-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={areAllSelected()}
+                                                onChange={(e) => toggleAllColumns(e.target.checked)}
+                                            />
+                                            <span className="select-all-text">Select All</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="column-checkbox-container">
+                                        {availableColumns.map(col => (
+                                            <div className="column-checkbox-item" key={col.id}>
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={showColumns.includes(col.id)}
+                                                        disabled={col.id === "nr" || col.id === "action"}
+                                                        onChange={() => toggleColumn(col.id)}
+                                                    />
+                                                    <span>{col.title}</span>
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="column-selector-footer">
+                                        <p>{visibleCount} columns selected</p>
+                                        <button className="apply-columns-btn" onClick={() => setShowColumnSelector(false)}>
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                     <div
-                        className={`limit-table-height-visitor-wrap ${isDraggingX ? 'dragging' : ''}`}
+                        className={`limit-table-height-visitor-wrap ${isDraggingX ? 'dragging' : ''} ${isWide ? 'wide' : ''}`}
                         ref={scrollerRef}
                         onPointerDown={onPointerDownX}
                         onPointerMove={onPointerMoveX}
@@ -345,86 +511,147 @@ const VisitorsInductionHomePage = () => {
                         onPointerLeave={endDragX}
                         onDragStart={(e) => e.preventDefault()}
                     >
-                        <table className="limit-table-height-visitor">
+                        <table className={`limit-table-height-visitor ${isWide ? 'wide' : ''}`}>
                             <thead>
                                 <tr>
-                                    <th className="visitor-ind-num-filter col">Nr</th>
-                                    <th className="visitor-ind-name-filter col">Name</th>
-                                    <th className="visitor-ind-surname-filter col">Surname</th>
-                                    <th className="visitor-ind-email-filter col">Email</th>
-                                    <th className="visitor-ind-company-filter col">Contact Number</th>
-                                    <th className="visitor-ind-company-filter col">ID/Passport</th>
-                                    <th className={`visitor-ind-company-filter col`}>Company</th>
-                                    <th className={`visitor-ind-profileBy-filter col`}>Profile Created By</th>
-                                    <th className={`visitor-ind-valid-filter col`}>Induction Validity</th>
-                                    <th className={`visitor-ind-exp-filter col`}>Induction Expiry Date</th>
-                                    <th className={`visitor-ind-vers-filter col`}>Induction Version Nr</th>
-                                    {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (<th className="visitor-ind-act-filter col">Action</th>)}
+                                    {visibleColumns.map(col => {
+                                        const isText = ["name", "surname", "email", "phone", "idnum", "company", "createdBy", "validity", "version"].includes(col.id);
+                                        const isDate = col.id === "expiry";
+                                        const isStatic = ["nr", "action"].includes(col.id);
+
+                                        const textActive = isText && !!colFilters[col.id];
+                                        const dateActive = isDate && (!!colFilters.expiryFrom || !!colFilters.expiryTo);
+                                        const thActive = textActive || dateActive;
+
+                                        return (
+                                            <th key={col.id} className={`${col.thClass} col ${thActive ? "th-filter-active" : ""}`}>
+                                                {isStatic && <span className="fileinfo-title-filter-1">{col.title}</span>}
+
+                                                {isText && (
+                                                    <div className="fileinfo-container-filter">
+                                                        <span
+                                                            className="fileinfo-title-filter"
+                                                            onClick={() => setOpenHeader(prev => prev === col.id ? null : col.id)}
+                                                            title={`Filter by ${col.title}`}
+                                                        >
+                                                            {col.title} {textActive && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
+                                                        </span>
+
+                                                        {openHeader === col.id && (
+                                                            <div className="fileinfo-menu-filter" onMouseLeave={() => setOpenHeader(null)}>
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder={`Filter by ${col.title.toLowerCase()}`}
+                                                                    className="filter-input-file"
+                                                                    value={colFilters[col.id] ?? ""}
+                                                                    onChange={(e) => setFilter(col.id, e.target.value)}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {isDate && (
+                                                    <div className="fileinfo-container-filter">
+                                                        <span
+                                                            className="fileinfo-title-filter"
+                                                            onClick={() => setOpenHeader(prev => prev === "expiry" ? null : "expiry")}
+                                                            title="Filter by expiry date"
+                                                        >
+                                                            {col.title} {dateActive && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
+                                                        </span>
+
+                                                        {openHeader === "expiry" && (
+                                                            <div className="date-menu-filter" onMouseLeave={() => setOpenHeader(null)}>
+                                                                <div className="date-filter-row">
+                                                                    <label className="date-label">From:</label>
+                                                                    <input
+                                                                        type="date"
+                                                                        className="filter-input-date"
+                                                                        value={colFilters.expiryFrom}
+                                                                        onChange={(e) => setFilter("expiryFrom", e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className="date-filter-row">
+                                                                    <label className="date-label">To:</label>
+                                                                    <input
+                                                                        type="date"
+                                                                        className="filter-input-date"
+                                                                        value={colFilters.expiryTo}
+                                                                        onChange={(e) => setFilter("expiryTo", e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </th>
+                                        );
+                                    })}
                                 </tr>
                             </thead>
+
                             <tbody>
-                                {filteredFiles.map((file, index) => {
-                                    const isExpanded = expandedRow === index;
+                                {filteredFiles.length === 0 ? (
+                                    <tr className="empty-row">
+                                        <td colSpan={visibleColumns.length} style={{ textAlign: "center" }}>
+                                            <div className="empty-state">
+                                                No visitor profiles found.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredFiles.map((file, index) => (
+                                        <tr key={file._id ?? index} className="file-info-row-height vihr-expandable-row" style={{ cursor: "default" }}>
+                                            {visibleColumns.map(col => {
+                                                if (col.id === "action") {
+                                                    return canIn(access, "TMS", ["systemAdmin", "contributor"]) ? (
+                                                        <td className="col-act" key={`${file._id ?? index}-action`}>
+                                                            <button
+                                                                className={"flame-delete-button-fi col-but-res"}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openShareLink(file.name, file.email, file._id);
+                                                                }}
+                                                            >
+                                                                <FontAwesomeIcon icon={faShareAlt} title="Share Link" />
+                                                            </button>
+                                                            <button
+                                                                className={"flame-delete-button-fi col-but"}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openDelete(file.name, file._id)
+                                                                }}
+                                                            >
+                                                                <FontAwesomeIcon icon={faTrash} title="Delete Account" />
+                                                            </button>
+                                                        </td>
+                                                    ) : null;
+                                                }
 
-                                    return (
-                                        <React.Fragment key={index}>
-                                            <tr
-                                                className={`file-info-row-height vihr-expandable-row ${isExpanded ? "vihr-expandable-row--open" : ""}`}
-                                                style={{ cursor: "pointer" }}
-                                                onClick={() => toggleRow(index)}
-                                                tabIndex={0}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter" || e.key === " ") {
-                                                        e.preventDefault();
-                                                        toggleRow(index);
-                                                    }
-                                                }}
-                                                aria-expanded={isExpanded}
-                                            >
-                                                {/* keep your existing cells + classes exactly as they are */}
-                                                <td className="col">{index + 1}</td>
-                                                <td className="file-name-cell" style={{ textAlign: "center" }}>{file.name}</td>
-                                                <td className="col">{file.surname}</td>
-                                                <td className="col">{file.email}</td>
-                                                <td className="col">{file.contactNr}</td>
-                                                <td className="col">{file.idNumber}</td>
-                                                <td className="col">{file.company}</td>
-                                                <td className="col">{file.profileCreatedBy?.username}</td>
-                                                <td className={`col ${getComplianceColor(file.validity)}`}>{formatStatus(file.validity)}</td>
-                                                <td className="col">{formatDate(file.expiryDate)}</td>
-                                                <td className="col">{file.indicationVersion}</td>
+                                                if (col.id === "validity") {
+                                                    return (
+                                                        <td key={`${file._id ?? index}-${col.id}`} className={`col ${getComplianceColor(file.validity)}`}>
+                                                            {file.validity ? formatStatus(file.validity) : "-"}
+                                                        </td>
+                                                    );
+                                                }
 
-                                                {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (
-                                                    <td className="col-act">
-                                                        <button
-                                                            className={"flame-delete-button-fi col-but-res"}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openShareLink(file.name, file.email, file._id);
-                                                            }}
-                                                        >
-                                                            <FontAwesomeIcon icon={faShareAlt} title="Share Link" />
-                                                        </button>
-                                                        <button
-                                                            className={"flame-delete-button-fi col-but"}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openDelete(file.name, file._id)
-                                                            }}
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} title="Delete Account" />
-                                                        </button>
+                                                const value = col.id === "nr" ? col.td(file, index) : (col.td ? col.td(file, index) : "-");
+                                                return (
+                                                    <td key={`${file._id ?? index}-${col.id}`} className="col" style={{ textAlign: "center" }}>
+                                                        {value ?? "-"}
                                                     </td>
-                                                )}
-                                            </tr>
-                                        </React.Fragment>
-                                    );
-                                })}
+                                                );
+                                            })}
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {upload && (<CreateProfilePopup onClose={closeUpload} refresh={fetchFiles} openUserLinkShare={openUserLinkShare} />)}
             {batchProg && <CreateBatchProfiles onClose={closeBatchProg} openExcel={openBatchExcel} refresh={fetchFiles} />}

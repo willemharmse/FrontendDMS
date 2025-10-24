@@ -9,12 +9,12 @@ const BurgerMenuFI = ({ isOpen, setIsOpen, admin, reset, setReset, isProfile, vi
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        sessionStorage.removeItem("token");
         if (visitor) {
+            sessionStorage.removeItem("visitorToken");
             navigate("/FrontendDMS/visitorLogin");
         }
         else {
+            localStorage.removeItem("token");
             navigate("/FrontendDMS/");
         }
     };
