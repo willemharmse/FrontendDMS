@@ -60,7 +60,7 @@ const ModifySuggestedAbbreviations = ({ closePopup, setAbbrData, onAdd, userID, 
 
                 <div className="manAbbr-popup-group">
                     <label className="manAbbr-popup-label">Abbreviation Meaning</label>
-                    <textarea rows={4} spellcheck="true" className="manAbbr-input" placeholder="Insert new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
+                    <textarea rows={4} style={{ resize: "vertical" }} spellcheck="true" className="manAbbr-input" placeholder="Insert new abbreviation meaning" type="text" value={meanInp} onChange={(e) => setMeanInp(e.target.value)} />
                 </div>
 
                 <div className="manAbbr-buttons">

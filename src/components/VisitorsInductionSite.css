@@ -472,18 +472,71 @@
 }
 
 /* Keep input aligned & full width */
-.visitors-induction-input-container .PhoneInputInput {
-    background: white;
+.visitors-induction-input-container .react-tel-input {
     /* ensures full input background is white */
     border: none;
     outline: none;
-    width: 100%;
-    padding: 10px 12px;
+    width: 100% !important;
+    border-radius: 0 4px 4px 0;
+}
+
+.visitors-induction-input-container .form-control {
+    height: 100% !important;
+    font-family: Arial;
+    width: 100% !important;
+    font-size: 1rem !important;
+}
+
+.visitors-induction-input-container .selected-flag {
     border-radius: 0 4px 4px 0;
 }
 
 /* Optional: adjust overall container to match look */
 .visitors-induction-input-container .PhoneInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    /* keeps corners clean */
+    width: 100%;
+}
+
+.visitors-induction-input-container-2 {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    background: white;
+    background: transparent;
+}
+
+.visitors-induction-input-container-2 .react-tel-input {
+    /* ensures full input background is white */
+    border: none;
+    outline: none;
+    width: 100% !important;
+    border-radius: 0 4px 4px 0;
+}
+
+.visitors-induction-input-container-2 .form-control {
+    height: 100% !important;
+    font-family: Arial;
+    width: 100% !important;
+    height: 15px !important;
+    padding-top: 18px;
+    padding-bottom: 17px;
+}
+
+.visitors-induction-input-container-2 .country-list {
+    max-height: 100px;
+}
+
+.visitors-induction-input-container-2 .selected-flag {
+    border-radius: 0 4px 4px 0;
+}
+
+.visitors-induction-input-container-2 .PhoneInput {
     display: flex;
     align-items: center;
     border: 1px solid #ccc;

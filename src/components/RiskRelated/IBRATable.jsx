@@ -83,15 +83,15 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                     if (!row.additional.toLowerCase().includes(text)) return false;
                 } else if (col === 'maxConsequence') {
                     if (!row.maxConsequence.toLowerCase().includes(text)) return false;
-                } else if (col === 'possibleActions') {
+                } else if (col === 'actions') {
                     if (!row.possible?.some(p =>
                         p.actions?.some(a => a.action?.toLowerCase().includes(text))
                     )) return false;
-                } else if (col === 'possibleResponsible') {
+                } else if (col === 'responsible') {
                     if (!row.possible?.some(p =>
                         p.responsible?.some(r => r.person?.toLowerCase().includes(text))
                     )) return false;
-                } else if (col === 'possibleDueDate') {
+                } else if (col === 'dueDate') {
                     if (!row.possible?.some(p =>
                         p.dueDate?.some(d => d.date?.toLowerCase().includes(text))
                     )) return false;
@@ -628,6 +628,31 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
     const displayColumns = getDisplayColumns();
 
+    const handleInnerScrollWheel = (e) => {
+        const el = e.currentTarget;
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const delta = e.deltaY;
+        const goingDown = delta > 0;
+
+        const atTop = scrollTop <= 0;
+        const atBottom = scrollTop + clientHeight >= scrollHeight - 1; // -1 for float rounding
+
+        // block scroll chaining
+        if ((goingDown && atBottom) || (!goingDown && atTop)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // tiny nudge to keep focus inside
+            if (goingDown && atBottom) {
+                el.scrollTop = scrollHeight - clientHeight;
+            } else if (!goingDown && atTop) {
+                el.scrollTop = 0;
+            }
+            return;
+        }
+        // else: let it scroll normally
+    };
+
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
@@ -674,7 +699,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                 </label>
                             </div>
 
-                            <div className="column-checkbox-container">
+                            <div className="column-checkbox-container"
+                                onWheel={handleInnerScrollWheel}>
                                 {availableColumns.map(column => (
                                     <div className="column-checkbox-item" key={column.id}>
                                         <label>

@@ -127,7 +127,17 @@ const ManageMobileMachines = ({ closePopup, onClose, onUpdate, setMachineData, o
 
                 <div className="manMac-popup-group">
                     <label className="manMac-popup-label">Machine Name</label>
-                    <input spellcheck="true" className="manMac-input" placeholder="Insert New Machine Name" type="text" value={macInp} onChange={(e) => setMacInp(e.target.value)} />
+                    <textarea
+                        rows="1"
+                        spellcheck="true"
+                        type="text"
+                        value={macInp}
+                        onChange={(e) => setMacInp(e.target.value)}
+                        className="abbr-popup-text-area"
+                        required
+                        placeholder="Insert New Mobile Machine Name"
+                        style={{ resize: "vertical" }}
+                    />
                 </div>
 
                 <div className="abbr-popup-group">

@@ -295,7 +295,7 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
     const hasNextOrRecap = !isLastContentSlide || viewMode !== 'material';
 
     // expects objectUrlCacheRef + mediaTypeCacheRef in scope
-    const renderMedia = (slide, index = 0) => {
+    const renderMedia = (slide, index = 0, aspectRatio = null) => {
         // pick the specific item by index
         const item = Array.isArray(slide?.mediaItems)
             ? slide.mediaItems[index]
@@ -318,8 +318,19 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
             else if (/\.(mp3|wav|m4a|ogg)$/.test(n)) type = "audio/*";
             else if (/\.(pdf)$/.test(n)) type = "pdf"
         }
+        const mediaTagStyle = {
+            objectFit: "contain",
+            display: "block",
+            borderRadius: "6px" // Redundant (belt-and-suspenders) with the CSS fix
+        };
 
-        if (type.startsWith("image/")) return <img src={src} alt={item.media?.filename || "image"} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />;
+        if (aspectRatio) {
+            mediaTagStyle.aspectRatio = aspectRatio;
+            // The parent flexbox (.inductionView-media-box) will vertically center this
+        } else {
+        }
+
+        if (type.startsWith("image/")) return <img src={src} alt={item.media?.filename || "image"} style={mediaTagStyle} />;
         if (type.startsWith("video/")) return <video src={src} controls style={{ width: "100%", height: "100%" }} />;
         if (type.startsWith("audio/")) return <audio src={src} controls style={{ width: "100%" }} />;
 
@@ -979,43 +990,34 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
                                                         <div style={{ height: 4, background: "#0b2f6b", borderRadius: 2, marginTop: 8, marginBottom: 10 }} />
                                                         <div className="inductionView-slide-content">
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT) && (
-                                                                <div style={{}}>
+                                                                <div style={{ height: "100%" }}>
                                                                     <div className="inductionView-text-box-text" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left" }}>
-                                                                        {currentSlide.content || ""}
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.content || ""}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             )}
 
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA) && (
-                                                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, height: "100%" }}>
                                                                     <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
-                                                                        {currentSlide.content || ""}
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.content || ""}
+                                                                        </div>
                                                                     </div>
-                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "4/3")}</div>
                                                                 </div>
                                                             )}
 
                                                             {(currentSlide.type === SLIDE_TYPES.MEDIA_GALLERY) && (
-                                                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
-                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
+                                                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, height: "100%" }}>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "4/3")}</div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1, "4/3")}</div>
                                                                 </div>
                                                             )}
                                                             {currentSlide.type === SLIDE_TYPES.MEDIA && (
-                                                                <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
-                                                            )}
-
-                                                            {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
-                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
-                                                                        {currentSlide.contentLeft || ""}
-                                                                    </div>
-                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
-                                                                        {currentSlide.contentRight || ""}
-                                                                    </div>
-                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
-                                                                </div>
+                                                                <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
                                                             )}
 
                                                             {currentSlide.type === SLIDE_TYPES.MEDIAX2_TEXT && (
@@ -1031,26 +1033,28 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
                                                                             paddingTop: "10px",
                                                                         }}
                                                                     >
-                                                                        {currentSlide.content || ""}
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.content || ""}
+                                                                        </div>
                                                                     </div>
 
                                                                     <div style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
                                                                         <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"} style={{ flex: 1, minHeight: 0 }}>
-                                                                            {renderMedia(currentSlide, 0)}
+                                                                            {renderMedia(currentSlide, 0, "16/9")}
                                                                         </div>
                                                                         <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"} style={{ flex: 1, minHeight: 0 }}>
-                                                                            {renderMedia(currentSlide, 1)}
+                                                                            {renderMedia(currentSlide, 1, "16/9")}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             )}
 
                                                             {(currentSlide.type === SLIDE_TYPES.MEDIA_2X2) && (
-                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }} onClick={() => console.log(currentSlide)}>
-                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0)}</div>
-                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1)}</div>
-                                                                    <div className={isAudioAt(currentSlide, 2) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 2)}</div>
-                                                                    <div className={isAudioAt(currentSlide, 3) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 3)}</div>
+                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1, "16/9")}</div>
+                                                                    <div className={isAudioAt(currentSlide, 2) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 2, "16/9")}</div>
+                                                                    <div className={isAudioAt(currentSlide, 3) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 3, "16/9")}</div>
                                                                 </div>
                                                             )}
 

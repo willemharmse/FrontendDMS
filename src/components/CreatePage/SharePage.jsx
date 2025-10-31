@@ -83,6 +83,17 @@ const SharePage = ({ userIDs, popupVisible, closePopup, setUserIDs, saveData, us
     const handleSaveSelection = async () => {
         setUserIDs(selectedUsers);
         saveData(selectedUsers);
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("The draft has been shared successfully.", {
+            closeButton: false,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+                textAlign: 'center'
+            }
+        });
+
         closePopup();
     };
 

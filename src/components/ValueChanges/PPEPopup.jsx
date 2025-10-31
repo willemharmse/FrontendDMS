@@ -109,14 +109,16 @@ const PPEPopup = ({ isOpen, onClose, userID, setPPEData, onAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="ppe-popup-group">
                         <label className="ppe-popup-label">PPE:</label>
-                        <input
+                        <textarea
+                            rows="1"
                             spellcheck="true"
                             type="text"
                             value={ppe}
                             onChange={(e) => setPPE(e.target.value)}
-                            className="ppe-popup-input"
+                            className="abbr-popup-text-area"
                             required
                             placeholder="Insert PPE"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
 

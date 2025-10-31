@@ -42,7 +42,7 @@
 
 .courseCont-pdfFrame-view {
     width: 100%;
-    height: var(--pdf-only-max-h);
+    height: 100%;
     /* ✅ Fix: Scales with the screen's height */
     border: none;
 }
@@ -121,21 +121,25 @@
     display: flex;
     flex-direction: column;
     padding-top: 5px;
-    max-height: var(--text-max-h);
+    min-height: 0;
     min-width: 0;
     overflow: auto;
     color: black;
     font-size: 12px;
+    /* justify-content: center; */
+    /* <--- REMOVE THIS LINE */
 }
 
 .inductionView-text-box-text {
     display: flex;
     flex-direction: column;
-    max-height: var(--text-only-max-h);
+    height: 100%;
     min-width: 0;
     overflow: auto;
     width: 100%;
     font-size: 12px;
+    /* justify-content: center; */
+    /* <--- REMOVE THIS LINE */
     color: black;
 }
 
@@ -260,28 +264,34 @@
 
 /* Constrain oversized media and allow scrolling if it's too tall */
 .inductionView-media-box {
-    max-height: var(--media-max-h);
-    /* fits most screens without overwhelming */
-    overflow: auto;
-    /* scroll if the media is taller */
+    /* max-height: var(--media-max-h); */
+    /* REMOVED */
+    height: 100%;
+    /* ADDED */
+    min-height: 0;
+    /* ADDED */
+    overflow: hidden;
     display: flex;
-    /* center the media nicely within the box */
     align-items: center;
     justify-content: center;
-    padding-top: 5px;
+    padding-top: 0px;
 }
 
 .inductionView-media-box-2 {
-    max-height: var(--media-max-h);
-    /* fits most screens without overwhelming */
-    overflow: auto;
-    /* scroll if the media is taller */
+    /* max-height: var(--media-max-h); */
+    /* REMOVED */
+    height: 100%;
+    /* ADDED */
+    min-height: 0;
+    /* ADDED */
+    overflow: hidden;
     display: flex;
-    /* center the media nicely within the box */
     align-items: center;
     justify-content: center;
-    padding-top: 5px;
-    background-color: lightgray;
+    padding-top: 0px;
+    width: 80% !important;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .inductionView-media-box-2 img,
@@ -296,12 +306,14 @@
 }
 
 .inductionView-media-box-pdf {
-    max-height: var(--pdf-only-max-h);
-    /* fits most screens without overwhelming */
+    /* max-height: var(--pdf-only-max-h); */
+    /* REMOVED */
+    height: 100%;
+    /* ADDED */
+    min-height: 0;
+    /* ADDED */
     overflow: auto;
-    /* scroll if the media is taller */
     display: flex;
-    /* center the media nicely within the box */
     align-items: center;
     justify-content: center;
     padding-top: 5px;
@@ -1001,7 +1013,7 @@
 }
 
 .limitHeightInductionView {
-    height: calc(100% - 2px);
+    height: 100%;
 }
 
 /* Footer container stays the same but thinner */

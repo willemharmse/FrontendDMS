@@ -220,6 +220,7 @@ const GeneratedFileInfo = () => {
                             type="text"
                             placeholder="Search"
                             value={searchQuery}
+                            autoComplete="off"
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}

@@ -122,7 +122,17 @@ const RiskManageEquipment = ({ closePopup, onClose, onUpdate, setEqpData, onAdd,
 
                 <div className="manEqp-popup-group">
                     <label className="manEqp-popup-label">Equipment Name</label>
-                    <input spellcheck="true" className="manEqp-input" placeholder="Insert New Equipment Name" type="text" value={eqpInp} onChange={(e) => setEqpInp(e.target.value)} />
+                    <textarea
+                        rows="1"
+                        spellcheck="true"
+                        type="text"
+                        value={eqpInp}
+                        onChange={(e) => setEqpInp(e.target.value)}
+                        className="abbr-popup-text-area"
+                        required
+                        placeholder="Insert New Equipment Name"
+                        style={{ resize: "vertical" }}
+                    />
                 </div>
 
                 <div className="abbr-popup-group">

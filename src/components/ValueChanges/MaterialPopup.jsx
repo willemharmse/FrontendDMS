@@ -108,14 +108,16 @@ const MaterialPopup = ({ isOpen, onClose, userID, setMatsData, onAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="mat-popup-group">
                         <label className="mat-popup-label">Material:</label>
-                        <input
+                        <textarea
+                            rows="1"
                             spellcheck="true"
                             type="text"
                             value={mat}
                             onChange={(e) => setMat(e.target.value)}
-                            className="mat-popup-input"
+                            className="abbr-popup-text-area"
                             required
                             placeholder="Insert material name"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
 

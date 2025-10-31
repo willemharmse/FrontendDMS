@@ -261,14 +261,16 @@ const InductionOutline = ({ formData, setFormData }) => {
                         <input
                             value={outline.duration || totalPretty}
                             readOnly
+                            disabled
                             className="course-outline-input"
                             placeholder="Auto Calculated"
+                            style={{ textAlign: "center", backgroundColor: "lightgray", fontWeight: "600" }}
                         />
                     </div>
                 </div>
 
                 <div className="course-outline-table-content table-borders">
-                    <table>
+                    <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                         <thead>
                             <tr>
                                 <th className="col-num-course-outline-data">Nr</th>
@@ -290,7 +292,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                                         autoComplete="off"
                                         value={outline.introDuration || ""}
                                         onChange={(e) => updateIntro("introDuration", e.target.value)}
-                                        className="course-outline-input"
+                                        className="course-outline-input-2"
                                         placeholder="Insert Duration"
                                     />
                                 </td>
@@ -360,13 +362,13 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                 autoComplete="off"
                                                                 value={meta.duration || ""}
                                                                 onChange={(e) => updateTopicMeta(topic.id, "duration", e.target.value)}
-                                                                className="course-outline-input"
+                                                                className="course-outline-input-2"
                                                                 placeholder="Insert Duration"
                                                             />
                                                         </td>
                                                         <td className="col-um">
                                                             <div className="input-with-icon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <input
+                                                                <textarea
                                                                     type="text"
                                                                     autoComplete="off"
                                                                     value={meta.description || ""}

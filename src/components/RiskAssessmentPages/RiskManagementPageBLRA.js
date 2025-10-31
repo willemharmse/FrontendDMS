@@ -652,11 +652,11 @@ const RiskManagementPageBLRA = () => {
         }));
     };
 
-    const updateCEARows = (nrToUpdate, newValues) => {
+    const updateCEARows = (idToUpdate, newValues) => {
         setFormData(prev => ({
             ...prev,
             cea: prev.cea.map(item =>
-                item.nr === nrToUpdate
+                item.id === idToUpdate
                     ? { ...item, ...newValues }
                     : item
             )

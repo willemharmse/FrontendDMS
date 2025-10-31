@@ -6,9 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faPhone, faIdCard, faBuilding } from "@fortawesome/free-solid-svg-icons";
 import "react-toastify/dist/ReactToastify.css";
 import VisitorOTPLink from "./VisitorsInduction/VisitorOTPLink";
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import PhoneInput from 'react-phone-input-2';
 import { parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
-import 'react-phone-number-input/style.css';
+import 'react-phone-input-2/lib/style.css'
+import SplashScreenValidateLink from "./Construction/SplashScreenValidateLink";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -52,47 +53,8 @@ const VisitorsInductionSite = ({
     const [isValidating, setIsValidating] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false); // when true, the page is disabled
     const [submitting, setSubmitting] = useState(false);
-    const [country, setCountry] = useState('ZA'); // default to ZA
-
-    const normalizeToE164 = (val, ctry) => {
-        if (!val) return '';
-        const parsed = ctry ? parsePhoneNumberFromString(val, ctry) : parsePhoneNumberFromString(val);
-        return parsed ? parsed.number : val;
-    };
-
-    const handleCountryChange = (newCountry) => {
-        // react-phone-number-input may pass undefined — keep a safe fallback.
-        const nextCountry = newCountry || 'ZA';
-        setCountry(nextCountry);
-
-        setForm(f => {
-            const v = f.contact || '';
-            if (!v) return f;
-
-            const currentParsed = parsePhoneNumberFromString(v);
-            // Guard getCountryCallingCode against undefined/bad input.
-            let newCcode = '';
-            try {
-                newCcode = getCountryCallingCode(nextCountry);
-            } catch {
-                // fallback to ZA if library throws
-                newCcode = getCountryCallingCode('ZA');
-            }
-
-            let next = v;
-
-            if (currentParsed && currentParsed.countryCallingCode) {
-                const oldCode = currentParsed.countryCallingCode;
-                next = v.replace(new RegExp(`^\\+${oldCode}`), `+${newCcode}`);
-            } else if (/^\+?\d+$/.test(v)) {
-                next = v.replace(/^\+?0+/, ''); // strip leading zeros if any
-                next = `+${newCcode}${next}`;
-            }
-
-            next = normalizeToE164(next, newCountry);
-            return { ...f, contact: next };
-        });
-    };
+    const [country, setCountry] = useState('za'); // default to ZA
+    const [loadingScreen, setLoadingScreen] = useState(true);
 
     useEffect(() => {
         if (!form.contact) return;
@@ -118,7 +80,11 @@ const VisitorsInductionSite = ({
                 );
 
                 if (res.status === 201) {
-                    navigate("/FrontendDMS/visitorLogin");
+                    setTimeout(() => {
+                        setLoadingScreen(false);
+                        navigate("/FrontendDMS/visitorLogin");
+                    }, 1000);
+
                     return;
                 }
 
@@ -134,6 +100,9 @@ const VisitorsInductionSite = ({
 
                 setIsBlocked(false);
                 setIsValidating(false);
+                setTimeout(() => {
+                    setLoadingScreen(false);
+                }, 1000);
             } catch (e) {
                 console.error("Validation error:", e);
                 toast.error("Network error while validating the link.");
@@ -210,11 +179,15 @@ const VisitorsInductionSite = ({
             return;
         }
 
+        const formattedContact = form.contact.startsWith('+')
+            ? form.contact
+            : `+${form.contact}`;
+
         const payload = {
             name: form.name.trim(),
             surname: form.surname.trim(),
             email: form.email.trim(),
-            contactNr: form.contact,
+            contactNr: formattedContact,
             idNumber: form.idNumber.replace(/\s+/g, ""),
             company: form.company.trim(),
         };
@@ -303,17 +276,13 @@ const VisitorsInductionSite = ({
                             <div className="visitors-induction-input-container">
                                 <PhoneInput
                                     international
-                                    country={country || 'ZA'}                 // controlled country
-                                    onCountryChange={handleCountryChange}
-                                    defaultCountry="ZA"
+                                    country={country || 'za'}
+                                    defaultCountry="za"
                                     placeholder="Contact Number"
-                                    countryCallingCodeEditable={false}
+                                    countryCodeEditable={false}
                                     value={form.contact || undefined} // controlled value
                                     onChange={(value) =>
-                                        setForm(f => ({ ...f, contact: normalizeToE164(value || '', country || 'ZA') }))
-                                    }
-                                    onBlur={() =>
-                                        setForm(f => ({ ...f, contact: normalizeToE164(f.contact, country || 'ZA') }))
+                                        setForm(f => ({ ...f, contact: value }))
                                     }
                                     name="contact"
                                     id="contact"
@@ -389,6 +358,7 @@ const VisitorsInductionSite = ({
                 </form>
             </div>
             {!otpCompleted && (<VisitorOTPLink otpCompleted={otpCompleted} setOtpCompleted={setOTPCompleted} userID={visitorId} setVisitor={setVisitor} resendOTP={handleResendOTP} />)}
+            {loadingScreen && (<SplashScreenValidateLink />)}
             <ToastContainer />
         </div>
     );

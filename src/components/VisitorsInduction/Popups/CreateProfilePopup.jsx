@@ -7,8 +7,8 @@ import axios from 'axios';
 import "./CreateProfilePopup.css"
 import { toast } from 'react-toastify';
 import { parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
-import 'react-phone-number-input/style.css';
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-input-2/lib/style.css'
+import PhoneInput from 'react-phone-input-2';
 
 const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
     const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
     const [number, setNumber] = useState("");
     const [id, setID] = useState("");
     const [company, setCompany] = useState("");
-    const [country, setCountry] = useState('ZA');
+    const [country, setCountry] = useState('za');
 
     const normalizeToE164 = (val, ctry) => {
         if (!val) return '';
@@ -51,6 +51,10 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
             }
         }
 
+        const formattedContact = number.startsWith('+')
+            ? number
+            : `+${number}`;
+
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -60,7 +64,7 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
                     name: name.trim(),
                     surname: surname.trim(),
                     email: email.trim() || undefined,
-                    number: number.trim(),
+                    number: formattedContact.trim(),
                     id: id.trim(),
                     company: company.trim()
                 },
@@ -155,25 +159,23 @@ const CreateProfilePopup = ({ onClose, refresh, openUserLinkShare }) => {
                                     <div className="create-visitor-profile-page-column-half">
                                         <div className="create-visitor-profile-page-component-wrapper">
                                             <div className="create-visitor-profile-page-form-group">
-                                                <label style={{ fontSize: "15px", marginBottom: "7px" }}>Contact Number <span className="required-field">*</span>
+                                                <label style={{ fontSize: "15px" }}>Contact Number <span className="required-field">*</span>
                                                 </label>
-                                                <div className="visitors-induction-input-container">
+                                                <div className="visitors-induction-input-container-2">
                                                     <PhoneInput
                                                         international
-                                                        country={country || 'ZA'}
-                                                        defaultCountry="ZA"
+                                                        country={country || 'za'}
+                                                        defaultCountry="za"
                                                         placeholder="Contact Number"
-                                                        countryCallingCodeEditable={false}
+                                                        countryCodeEditable={false}
                                                         value={number || undefined} // controlled value
                                                         onChange={(value) =>
-                                                            setNumber(normalizeToE164(value || '', country || 'ZA'))
-                                                        }
-                                                        onBlur={() =>
-                                                            setNumber(normalizeToE164(number, country || 'ZA'))
+                                                            setNumber(value)
                                                         }
                                                         name="contact"
                                                         id="contact"
                                                         required
+                                                        style={{ fontSize: "14px" }}
                                                     />
                                                 </div>
                                             </div>

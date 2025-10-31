@@ -134,6 +134,7 @@ const RiskAbbreviationPopup = ({ isOpen, onClose, userID, setAbbrData, onAdd }) 
                             className="abbr-popup-text-area"
                             required
                             placeholder="Insert description here"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
                     <div className="abbr-popup-group">

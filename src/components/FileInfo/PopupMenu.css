@@ -74,8 +74,11 @@
 .rhap_container {
     background: transparent;
     box-shadow: none;
-    padding: 0;
-    width: calc(100% - 20px) !important;
+    padding-top: 30px !important;
+    padding-bottom: 30px !important;
+    background-color: rgb(228, 228, 228) !important;
+    width: 100% !important;
+    border-radius: 6px !important;
 }
 
 .rhap_main-controls-button {

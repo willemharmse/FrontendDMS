@@ -523,8 +523,8 @@ const FileInfo = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trash.png` : `${process.env.PUBLIC_URL}/${iconMap[type]}`} alt="Logo" className="logo-img-dept-view" />
-            <p className="logo-text-dm-fi">{isTrashView ? `Trashed Files` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
+            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type]}`} alt="Logo" className="icon-risk-rm" />
+            <p className="logo-text-dm-fi">{isTrashView ? `Trash` : (type === "Policy" ? "Policies" : `${type}s`)}</p>
           </div>
         </div>
       )}
@@ -549,6 +549,7 @@ const FileInfo = () => {
               type="text"
               placeholder="Search"
               value={searchQuery}
+              autoComplete="off"
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}

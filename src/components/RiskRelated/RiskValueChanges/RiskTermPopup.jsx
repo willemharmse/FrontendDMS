@@ -140,6 +140,7 @@ const RiskTermPopup = ({ isOpen, onClose, userID, setTermData, onAdd }) => {
                                 className="term-popup-text-area"
                                 required
                                 placeholder="Insert description here"
+                                style={{ resize: "vertical" }}
                             />
                         </div>
                         <div className="abbr-popup-group">

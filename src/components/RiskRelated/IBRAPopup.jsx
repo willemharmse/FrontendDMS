@@ -904,7 +904,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                     <div className="ibra-popup-page-select-container">
                                                         <input
                                                             type="text"
-                                                            style={{ color: "black", cursor: "text" }}
+                                                            style={{ color: "black", cursor: "text", height: "23px" }}
                                                             ref={ownersInputRef}
                                                             className="ibra-popup-page-input-table ibra-popup-page-row-input"
                                                             placeholder="Select Functional Owner"
@@ -928,10 +928,11 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                         value={riskSource}
                                                         onChange={(e) => setRiskSource(e.target.value)}
                                                         disabled={readOnly}
+                                                        style={{ color: riskSource === "" ? "#838383ff" : "black" }}
                                                     >
-                                                        <option value="">Select Hazard Classification / Energy Release</option>
+                                                        <option className={"ibra-select-styling"} value="">Select Hazard Classification / Energy Release</option>
                                                         {riskSources.map((term, index) => (
-                                                            <option key={index} value={term.term}>
+                                                            <option className={"ibra-select-styling"} key={index} value={term.term}>
                                                                 {term.term}
                                                             </option>
                                                         ))}
@@ -954,10 +955,10 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                                     <tr key={row.id}>
                                                                         <td>
                                                                             <div className="ibra-popup-page-row-actions">
-                                                                                <input
-                                                                                    type="text"
+                                                                                <textarea
+                                                                                    style={{ color: "black", cursor: "text", resize: "vertical" }}
                                                                                     value={row.value}
-                                                                                    className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                                    className="ibra-popup-page-input-table-hazard-text-area ibra-popup-page-row-input"
                                                                                     onChange={(e) => handleHazardChange(row.id, e.target.value)}
                                                                                     placeholder="Insert Hazard"
                                                                                     readOnly={readOnly}
@@ -1087,7 +1088,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                             <div className="ibra-popup-page-form-group-main-container-2">
                                 <div className="ibra-popup-page-component-wrapper">
                                     <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
-                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px", cursor: "pointer" }} onClick={openHelpOdds} />Likelihood of the Event</label>
+                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px", cursor: "pointer", marginRight: "10px" }} onClick={openHelpOdds} />Likelihood of the Event</label>
                                         <div className="ibra-popup-page-select-container">
                                             <select
                                                 className="ibra-popup-page-select"
@@ -1095,9 +1096,9 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                 onChange={(e) => setSelectedLikelihood(e.target.value)}
                                                 disabled={readOnly}
                                             >
-                                                <option value="">Select Likelihood</option>
+                                                <option className={"ibra-select-styling"} value="">Select Likelihood</option>
                                                 {likelihoodOptions.map((option, index) => (
-                                                    <option key={index} value={option}>
+                                                    <option className={"ibra-select-styling"} key={index} value={option}>
                                                         {option}
                                                     </option>
                                                 ))}
@@ -1128,7 +1129,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                                         disabled={readOnly}
                                                                     >
                                                                         {riskRankOptions.map((option, index) => (
-                                                                            <option key={index} value={option}>
+                                                                            <option className={"ibra-select-styling"} key={index} value={option}>
                                                                                 {option}
                                                                             </option>
                                                                         ))}

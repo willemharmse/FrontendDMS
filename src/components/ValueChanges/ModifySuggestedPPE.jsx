@@ -50,7 +50,18 @@ const ModifySuggestedPPE = ({ closePopup, setPPEData, onAdd, userID, ppe }) => {
 
                 <div className="manPPE-popup-group">
                     <label className="manPPE-popup-label">PPE Name</label>
-                    <input spellcheck="true" className="manPPE-input" placeholder="Insert New PPE Name" type="text" value={ppeInp} onChange={(e) => setPpeInp(e.target.value)} />
+
+                    <textarea
+                        rows="1"
+                        spellcheck="true"
+                        type="text"
+                        value={ppeInp}
+                        onChange={(e) => setPpeInp(e.target.value)}
+                        className="abbr-popup-text-area"
+                        required
+                        placeholder="Insert New PPE Name"
+                        style={{ resize: "vertical" }}
+                    />
                 </div>
 
                 <div className="manPPE-buttons">

@@ -317,7 +317,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
         }
 
         // Call the onSave function with updated data
-        onSave(data.nr, updatedData);
+        onSave(data.id, updatedData);
         onClose();
     };
 

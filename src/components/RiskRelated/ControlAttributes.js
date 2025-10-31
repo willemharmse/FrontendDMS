@@ -176,6 +176,7 @@ const ControlAttributes = () => {
                                     type="text"
                                     value={searchInput}
                                     onChange={handleSearchChange}
+                                    autoComplete="off"
                                     placeholder="Search control name..."
                                     className="search-popup-input-rca"
                                 />

@@ -122,7 +122,17 @@ const ManageHandTools = ({ closePopup, onClose, onUpdate, setToolData, onAdd, us
 
                 <div className="manTool-popup-group">
                     <label className="manTool-popup-label">Tool Name</label>
-                    <input spellcheck="true" className="manTool-input" placeholder="Insert New Tool Name" type="text" value={toolInp} onChange={(e) => setToolInp(e.target.value)} />
+                    <textarea
+                        rows="1"
+                        spellcheck="true"
+                        type="text"
+                        value={toolInp}
+                        onChange={(e) => setToolInp(e.target.value)}
+                        className="abbr-popup-text-area"
+                        required
+                        placeholder="Insert New Tool Name"
+                        style={{ resize: "vertical" }}
+                    />
                 </div>
 
                 <div className="abbr-popup-group">

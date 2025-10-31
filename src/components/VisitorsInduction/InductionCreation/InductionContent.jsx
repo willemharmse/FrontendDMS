@@ -100,6 +100,7 @@ const InductionContent = ({ formData, setFormData }) => {
     const [topicIndex, setTopicIndex] = useState("");
     const [slideID, setSlideID] = useState("");
     const [audioFile, setAudioFile] = useState("");
+    const [ratio, setRatio] = useState([]);
 
     const openMediaPicker = (module, topic, slide) => {
         setModuleIndex(module);
@@ -647,7 +648,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                 key={slide.id}
                                                                 className={`courseCont-card-module${slide.collapsed ? " courseCont-card--collapsed" : ""
                                                                     }`}
-                                                                style={{ marginTop: 12 }}
+                                                                style={{ marginTop: 12, width: "calc(100% - 25px)" }}
                                                             >
                                                                 {/* Slide header */}
                                                                 <div className="courseCont-cardHeader">
@@ -925,7 +926,10 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         <input
                                                                                             type="file"
                                                                                             accept="image/*,video/*,audio/*"
-                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                            onChange={(e) => {
+                                                                                                setRatio(4 / 3);
+                                                                                                handleFileSelect(mIdx, tIdx, slide.id, 0)(e)
+                                                                                            }}
                                                                                         />
                                                                                         {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -971,7 +975,10 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         <input
                                                                                             type="file"
                                                                                             accept="image/*,video/*,audio/*"
-                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                            onChange={(e) => {
+                                                                                                setRatio(4 / 3);
+                                                                                                handleFileSelect(mIdx, tIdx, slide.id, 0)(e)
+                                                                                            }}
                                                                                         />
                                                                                         {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -992,7 +999,10 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         <input
                                                                                             type="file"
                                                                                             accept="image/*,video/*,audio/*"
-                                                                                            onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                            onChange={(e) => {
+                                                                                                setRatio(4 / 3);
+                                                                                                handleFileSelect(mIdx, tIdx, slide.id, 1)(e)
+                                                                                            }}
                                                                                         />
                                                                                         {slide.mediaItems?.[1]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -1311,67 +1321,69 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                 </div>
                                                                             </section>
                                                                         )}
+
+                                                                        {slide.type === SLIDE_TYPES.PDF_VIEW && (
+                                                                            <section className="courseCont-pdfWrap">
+                                                                                {/* 1. Use a div as a positioning container instead of a label */}
+                                                                                <div className="courseCont-mediaDrop courseCont-mediaOnly" style={{ position: 'relative' }}>
+
+                                                                                    {/* 2. The file input is now hidden and referenced by the label */}
+                                                                                    <input
+                                                                                        id={`pdf-upload-${slide.id}`}
+                                                                                        type="file"
+                                                                                        accept="application/pdf"
+                                                                                        style={{ display: 'none' }}
+                                                                                        onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                    />
+
+                                                                                    {/* 3. This label acts as a clickable background */}
+                                                                                    <label
+                                                                                        htmlFor={`pdf-upload-${slide.id}`}
+                                                                                        style={{
+                                                                                            position: 'absolute',
+                                                                                            top: 0,
+                                                                                            left: 0,
+                                                                                            width: '100%',
+                                                                                            height: '100%',
+                                                                                            zIndex: 1, // Place it behind the iframe
+                                                                                            cursor: 'pointer',
+                                                                                            display: 'flex',
+                                                                                            justifyContent: 'center',
+                                                                                            alignItems: 'center',
+                                                                                        }}
+                                                                                    >
+                                                                                        {/* Show hint text only when no PDF is selected */}
+                                                                                        {!slide.mediaItems?.[0]?.mediaPreview && (
+                                                                                            <span className="courseCont-mediaHint">Select PDF.</span>
+                                                                                        )}
+                                                                                    </label>
+
+                                                                                    {/* 4. The iframe is rendered in a container on top of the label */}
+                                                                                    {slide.mediaItems?.[0]?.mediaPreview && (
+                                                                                        <div
+                                                                                            className="courseCont-mediaPreview"
+                                                                                            style={{
+                                                                                                position: 'relative', // Ensure z-index applies correctly
+                                                                                                zIndex: 2, // Place it in front of the background label
+                                                                                                width: '100%',
+                                                                                                height: '100%',
+                                                                                            }}
+                                                                                        >
+                                                                                            <iframe
+                                                                                                src={slide.mediaItems[0].mediaPreview}
+                                                                                                title="PDF preview"
+                                                                                                className="courseCont-pdfFrame"
+                                                                                                style={{ width: '100%', height: '100%', border: 'none' }}
+                                                                                            />
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </section>
+                                                                        )}
                                                                     </div>
                                                                 )}
 
-                                                                {slide.type === SLIDE_TYPES.PDF_VIEW && (
-                                                                    <section className="courseCont-pdfWrap">
-                                                                        {/* 1. Use a div as a positioning container instead of a label */}
-                                                                        <div className="courseCont-mediaDrop courseCont-mediaOnly" style={{ position: 'relative' }}>
 
-                                                                            {/* 2. The file input is now hidden and referenced by the label */}
-                                                                            <input
-                                                                                id={`pdf-upload-${slide.id}`}
-                                                                                type="file"
-                                                                                accept="application/pdf"
-                                                                                style={{ display: 'none' }}
-                                                                                onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
-                                                                            />
-
-                                                                            {/* 3. This label acts as a clickable background */}
-                                                                            <label
-                                                                                htmlFor={`pdf-upload-${slide.id}`}
-                                                                                style={{
-                                                                                    position: 'absolute',
-                                                                                    top: 0,
-                                                                                    left: 0,
-                                                                                    width: '100%',
-                                                                                    height: '100%',
-                                                                                    zIndex: 1, // Place it behind the iframe
-                                                                                    cursor: 'pointer',
-                                                                                    display: 'flex',
-                                                                                    justifyContent: 'center',
-                                                                                    alignItems: 'center',
-                                                                                }}
-                                                                            >
-                                                                                {/* Show hint text only when no PDF is selected */}
-                                                                                {!slide.mediaItems?.[0]?.mediaPreview && (
-                                                                                    <span className="courseCont-mediaHint">Select PDF.</span>
-                                                                                )}
-                                                                            </label>
-
-                                                                            {/* 4. The iframe is rendered in a container on top of the label */}
-                                                                            {slide.mediaItems?.[0]?.mediaPreview && (
-                                                                                <div
-                                                                                    className="courseCont-mediaPreview"
-                                                                                    style={{
-                                                                                        position: 'relative', // Ensure z-index applies correctly
-                                                                                        zIndex: 2, // Place it in front of the background label
-                                                                                        width: '100%',
-                                                                                        height: '100%',
-                                                                                    }}
-                                                                                >
-                                                                                    <iframe
-                                                                                        src={slide.mediaItems[0].mediaPreview}
-                                                                                        title="PDF preview"
-                                                                                        className="courseCont-pdfFrame"
-                                                                                        style={{ width: '100%', height: '100%', border: 'none' }}
-                                                                                    />
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </section>
-                                                                )}
                                                             </div>
                                                         ))}
 
@@ -1470,6 +1482,7 @@ const InductionContent = ({ formData, setFormData }) => {
                     originalFile={croppingState.file}
                     onClose={onCropCancel}
                     onUpload={onCropComplete}
+                    DEFAULT_ASPECT={ratio}
                 />
             )}
         </div>

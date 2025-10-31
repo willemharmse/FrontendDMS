@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
+import 'react-phone-input-2/lib/style.css'
+import PhoneInput from 'react-phone-input-2';
 
 const emptyRow = () => ({
     name: '',
@@ -13,12 +16,19 @@ const emptyRow = () => ({
     company: ''
 });
 
-const GRID_COLS = '1fr 1fr 1.2fr 1fr 1.2fr 1fr 0.4fr'; // 7 columns incl. actions
+const GRID_COLS = '0.8fr 0.8fr 1.3fr 1.3fr 1.2fr 1fr 0.4fr'; // 7 columns incl. actions
 
 const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState([emptyRow()]); // start with 1 row
     const fileInputRef = useRef(null);
+    const [country, setCountry] = useState('za');
+
+    const normalizeToE164 = (val, ctry) => {
+        if (!val) return '';
+        const parsed = ctry ? parsePhoneNumberFromString(val, ctry) : parsePhoneNumberFromString(val);
+        return parsed ? parsed.number : val;
+    };
 
     const updateCell = (index, field, value) => {
         setRows(prev => {
@@ -46,13 +56,22 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
             return;
         }
 
+        const formattedRows = rows.map(row => {
+            return {
+                ...row,
+                contactNumber: row.contactNumber.startsWith('+')
+                    ? row.contactNumber
+                    : `+${row.contactNumber}`
+            };
+        });
+
         setLoading(true);
         try {
             const base = process.env.REACT_APP_URL?.replace(/\/+$/, '') || '';
             const url = `${base}/api/visitors/batchCreateVisitors`;
             const token = localStorage.getItem('token');
 
-            const res = await axios.post(url, { rows }, {
+            const res = await axios.post(url, { rows: formattedRows }, {
                 headers: {
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     'Content-Type': 'application/json'
@@ -164,12 +183,22 @@ const CreateBatchProfiles = ({ onClose, openExcel, refresh }) => {
                                             />
                                         </div>
                                         <div className="cbp-td">
-                                            <input
-                                                className="cbp-input"
-                                                placeholder="Insert Contact Number"
-                                                value={r.contactNumber}
-                                                onChange={e => updateCell(idx, 'contactNumber', e.target.value)}
-                                            />
+                                            <div className="visitors-induction-input-container-2">
+                                                <PhoneInput
+                                                    international
+                                                    country={country || 'za'}
+                                                    placeholder="Contact Number"
+                                                    countryCodeEditable={false}
+                                                    value={r.contactNumber || undefined} // controlled value
+                                                    onChange={(value) =>
+                                                        updateCell(idx, 'contactNumber', value)
+                                                    }
+                                                    name="contact"
+                                                    id="contact"
+                                                    required
+                                                    style={{ fontSize: "14px" }}
+                                                />
+                                            </div>
                                         </div>
                                         <div className="cbp-td">
                                             <input

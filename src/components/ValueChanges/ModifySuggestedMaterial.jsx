@@ -50,7 +50,17 @@ const ModifySuggestedMaterial = ({ closePopup, setMatData, onAdd, userID, mat })
 
                 <div className="manMat-popup-group">
                     <label className="manMat-popup-label">Material Name</label>
-                    <input spellcheck="true" className="manMat-input" placeholder="Insert New Material Name" type="text" value={matInp} onChange={(e) => setMatInp(e.target.value)} />
+                    <textarea
+                        rows="1"
+                        spellcheck="true"
+                        type="text"
+                        value={matInp}
+                        onChange={(e) => setMatInp(e.target.value)}
+                        className="abbr-popup-text-area"
+                        required
+                        placeholder="Insert New Material Name"
+                        style={{ resize: "vertical" }}
+                    />
                 </div>
 
                 <div className="manMat-buttons">

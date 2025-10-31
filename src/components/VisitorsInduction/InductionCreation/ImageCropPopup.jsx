@@ -5,9 +5,7 @@ import { toast } from 'react-toastify';
 import { Cropper } from 'react-cropper';
 import 'cropperjs/dist/cropper.min.css';
 
-const DEFAULT_ASPECT = 16 / 9;
-
-const ImageCropPopup = ({ previewUrl, originalFile, onClose, onUpload }) => {
+const ImageCropPopup = ({ previewUrl, originalFile, onClose, onUpload, DEFAULT_ASPECT = 16 / 9 }) => {
     const cropperRef = useRef(null);
 
     const [loading, setLoading] = useState(false);

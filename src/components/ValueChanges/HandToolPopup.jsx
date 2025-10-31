@@ -110,14 +110,16 @@ const ToolPopup = ({ isOpen, onClose, userID, setToolsData, onAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="tool-popup-group">
                         <label className="tool-popup-label">Tool:</label>
-                        <input
+                        <textarea
+                            rows="1"
                             spellcheck="true"
                             type="text"
                             value={tool}
                             onChange={(e) => setTool(e.target.value)}
-                            className="tool-popup-input"
+                            className="abbr-popup-text-area"
                             required
                             placeholder="Insert tool name"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
 

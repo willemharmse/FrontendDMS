@@ -291,6 +291,7 @@ const UserHomePageTMS = () => {
                                         className="course-home-info-search"
                                         placeholder="Search Course"
                                         value={searchTerm}
+                                        autoComplete="off"
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                     <span className="course-home-info-search-icon">

@@ -59,8 +59,8 @@ const InductionCreationPage = () => {
   }
 
   const [rewriteHistory, setRewriteHistory] = useState({
-    introduction: [],
-    objectives: []
+    intorduction: [],
+    courseObjectives: []
   });
 
   const pushAiRewriteHistory = (field) => {
@@ -85,7 +85,7 @@ const InductionCreationPage = () => {
     try {
       const prompt = formData.intorduction;
 
-      pushAiRewriteHistory('introduction');
+      pushAiRewriteHistory('intorduction');
       setLoadingIntro(true);
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatInduction/intro`, {
@@ -110,7 +110,7 @@ const InductionCreationPage = () => {
     try {
       const prompt = formData.courseObjectives;
 
-      pushAiRewriteHistory('objectives');
+      pushAiRewriteHistory('courseObjectives');
       setLoadingObj(true);
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatInduction/objectives`, {
@@ -361,6 +361,16 @@ const InductionCreationPage = () => {
       }
       else if (loadedIDRef.current !== '') {
         updateData(userIDsRef.current);
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("Draft has been successfully updated", {
+          closeButton: true,
+          autoClose: 1500, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
       }
     }
     else {
@@ -442,16 +452,6 @@ const InductionCreationPage = () => {
         style: { textAlign: "center" }
       });
     }
-
-    toast.dismiss();
-    toast.clearWaitingQueue();
-    toast.success("Draft has been successfully updated", {
-      closeButton: true,
-      autoClose: 800, // 1.5 seconds
-      style: {
-        textAlign: 'center'
-      }
-    });
   }
 
   const handleClick = () => {
@@ -1133,11 +1133,11 @@ const InductionCreationPage = () => {
                     icon={faRotateLeft}
                     className="aim-textarea-icon-ibra-undo"
                     title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('introduction')}
+                    onClick={() => undoAiRewrite('intorduction')}
                     style={{
                       marginLeft: '8px',
-                      opacity: rewriteHistory.introduction.length ? 1 : 0.3,
-                      cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
+                      opacity: rewriteHistory.intorduction.length ? 1 : 0.3,
+                      cursor: rewriteHistory.intorduction.length ? 'pointer' : 'not-allowed',
                       fontSize: "15px"
                     }}
                   />
@@ -1172,11 +1172,11 @@ const InductionCreationPage = () => {
                     icon={faRotateLeft}
                     className="aim-textarea-icon-ibra-undo"
                     title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('objectives')}
+                    onClick={() => undoAiRewrite('courseObjectives')}
                     style={{
                       marginLeft: '8px',
-                      opacity: rewriteHistory.objectives.length ? 1 : 0.3,
-                      cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
+                      opacity: rewriteHistory.courseObjectives.length ? 1 : 0.3,
+                      cursor: rewriteHistory.courseObjectives.length ? 'pointer' : 'not-allowed',
                       fontSize: "15px"
                     }}
                   />

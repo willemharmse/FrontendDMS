@@ -110,14 +110,16 @@ const EquipmentPopup = ({ isOpen, onClose, userID, setEqpData, onAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="eqp-popup-group">
                         <label className="eqp-popup-label">Equipment:</label>
-                        <input
+                        <textarea
+                            rows="1"
                             spellcheck="true"
                             type="text"
                             value={eqp}
                             onChange={(e) => setEqp(e.target.value)}
-                            className="eqp-popup-input"
+                            className="abbr-popup-text-area"
                             required
                             placeholder="Insert equipment name"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
 

@@ -51,8 +51,8 @@ const InductionReviewPage = () => {
   }, [fileID]);
 
   const [rewriteHistory, setRewriteHistory] = useState({
-    introduction: [],
-    objectives: []
+    intorduction: [],
+    courseObjectives: []
   });
 
   const pushAiRewriteHistory = (field) => {
@@ -77,7 +77,7 @@ const InductionReviewPage = () => {
     try {
       const prompt = formData.intorduction;
 
-      pushAiRewriteHistory('introduction');
+      pushAiRewriteHistory('intorduction');
       setLoadingIntro(true);
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatInduction/intro`, {
@@ -102,7 +102,7 @@ const InductionReviewPage = () => {
     try {
       const prompt = formData.courseObjectives;
 
-      pushAiRewriteHistory('objectives');
+      pushAiRewriteHistory('courseObjectives');
       setLoadingObj(true);
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatInduction/objectives`, {
@@ -831,11 +831,11 @@ const InductionReviewPage = () => {
                     icon={faRotateLeft}
                     className="aim-textarea-icon-ibra-undo"
                     title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('introduction')}
+                    onClick={() => undoAiRewrite('intorduction')}
                     style={{
                       marginLeft: '8px',
-                      opacity: rewriteHistory.introduction.length ? 1 : 0.3,
-                      cursor: rewriteHistory.introduction.length ? 'pointer' : 'not-allowed',
+                      opacity: rewriteHistory.intorduction.length ? 1 : 0.3,
+                      cursor: rewriteHistory.intorduction.length ? 'pointer' : 'not-allowed',
                       fontSize: "15px"
                     }}
                   />
@@ -870,11 +870,11 @@ const InductionReviewPage = () => {
                     icon={faRotateLeft}
                     className="aim-textarea-icon-ibra-undo"
                     title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('objectives')}
+                    onClick={() => undoAiRewrite('courseObjectives')}
                     style={{
                       marginLeft: '8px',
-                      opacity: rewriteHistory.objectives.length ? 1 : 0.3,
-                      cursor: rewriteHistory.objectives.length ? 'pointer' : 'not-allowed',
+                      opacity: rewriteHistory.courseObjectives.length ? 1 : 0.3,
+                      cursor: rewriteHistory.courseObjectives.length ? 'pointer' : 'not-allowed',
                       fontSize: "15px"
                     }}
                   />

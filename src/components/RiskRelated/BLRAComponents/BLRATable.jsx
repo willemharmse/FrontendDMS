@@ -82,15 +82,15 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                     if (!row.additional.toLowerCase().includes(text)) return false;
                 } else if (col === 'maxConsequence') {
                     if (!row.maxConsequence.toLowerCase().includes(text)) return false;
-                } else if (col === 'possibleActions') {
+                } else if (col === 'actions') {
                     if (!row.possible?.some(p =>
                         p.actions?.some(a => a.action?.toLowerCase().includes(text))
                     )) return false;
-                } else if (col === 'possibleResponsible') {
+                } else if (col === 'responsible') {
                     if (!row.possible?.some(p =>
                         p.responsible?.some(r => r.person?.toLowerCase().includes(text))
                     )) return false;
-                } else if (col === 'possibleDueDate') {
+                } else if (col === 'dueDate') {
                     if (!row.possible?.some(p =>
                         p.dueDate?.some(d => d.date?.toLowerCase().includes(text))
                     )) return false;

@@ -243,7 +243,7 @@ const LoadIndcutionDraftPopup = ({ isOpen, onClose, setLoadedID, loadData, userI
                         {isLoadingDraft ? (
                             <div className="draft-loading" aria-live="polite">
                                 <FontAwesomeIcon icon={faSpinner} className="spin" />
-                                <span style={{ marginLeft: 10 }}>Loading draft…</span>
+                                <span style={{ marginLeft: 10, fontWeight: "normal" }}>Loading draft…</span>
                             </div>
                         ) : (
                             <table className="popup-table font-fam">

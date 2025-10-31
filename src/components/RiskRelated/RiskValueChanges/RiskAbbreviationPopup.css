@@ -141,6 +141,7 @@
     font-size: 14px;
     font-family: Arial;
     transition: border-color 0.3s ease;
+    field-sizing: content;
 }
 
 .abbr-popup-actions {

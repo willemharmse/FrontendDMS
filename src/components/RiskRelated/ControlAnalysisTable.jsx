@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle, faDatabase, faDownload, faTableColumns, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsUpDown, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle, faDatabase, faDownload, faTableColumns, faTimes, faFilter } from "@fortawesome/free-solid-svg-icons";
 import "./ControlAnalysisTable.css";
 import { v4 as uuidv4 } from "uuid";
 import ControlEAPopup from "./ControlEAPopup";
@@ -18,6 +18,12 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
     const [dragOverRowIndex, setDragOverRowIndex] = useState(null);
     const [deletePopupVisible, setDeletePopupVisible] = useState(false);
     const [controlToDelete, setControlToDelete] = useState(null);
+    const [filters, setFilters] = useState({});
+    const [filterPopup, setFilterPopup] = useState({
+        visible: false,
+        column: null,
+        pos: { top: 0, left: 0, width: 0 }
+    });
 
     const availableColumns = [
         { id: "nr", title: "Nr", className: "control-analysis-nr", icon: null },
@@ -289,6 +295,142 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         }
     }
 
+    const filteredRows = useMemo(() => {
+        // Start with a copy of the base rows
+        let currentRows = [...rows];
+
+        // 1. Apply Filtering
+        currentRows = currentRows.filter(row => {
+            for (const [col, value] of Object.entries(filters)) {
+                const text = value.toLowerCase();
+                if (col === 'control' || col === 'critical' || col === 'act' ||
+                    col === 'activation' || col === 'hierarchy' || col === 'cons' ||
+                    col === 'notes' || col === 'dueDate' || col === 'responsible' || col === 'action') {
+                    if (!String(row[col] ?? '').toLowerCase().includes(text)) return false;
+                } else if (col === 'quality' || col === 'cer') {
+                    if (!String(row[col]).toLowerCase().includes(text)) return false;
+                }
+            }
+            return true;
+        });
+
+        // 2. Apply Sorting (from existing getSortedRows logic)
+        currentRows.sort((a, b) => {
+            const controlA = a.control.toUpperCase();
+            const controlB = b.control.toUpperCase();
+
+            if (controlA < controlB) return -1;
+            if (controlA > controlB) return 1;
+            return 0;
+        });
+
+        // 3. Renumber
+        currentRows.forEach((r, i) => (r.nr = i + 1));
+
+        return currentRows;
+    }, [rows, filters]);
+
+    const getSortedRows = () => {
+        // Create a copy of the rows array
+        const sortedRows = [...rows];
+
+        // Sort the array by the 'control' property (case-insensitive)
+        sortedRows.sort((a, b) => {
+            const controlA = a.control.toUpperCase();
+            const controlB = b.control.toUpperCase();
+
+            if (controlA < controlB) {
+                return -1;
+            }
+            if (controlA > controlB) {
+                return 1;
+            }
+            return 0; // names must be equal
+        });
+
+        // Re-number the 'nr' field after sorting
+        sortedRows.forEach((r, i) => (r.nr = i + 1));
+
+        return sortedRows;
+    };
+
+    // Calculate the rows to display: always the sorted version
+    const rowsToDisplay = filteredRows;
+
+    function openFilterPopup(colId, e) {
+        if (colId === "nr" || colId === "actions") return; // Don't filter Nr or Action columns
+        const rect = e.target.closest('th').getBoundingClientRect(); // Find the <th> to get correct position
+        setFilterPopup({
+            visible: true,
+            column: colId,
+            pos: {
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            }
+        });
+    }
+
+    // NEW: Apply the filter
+    function applyFilter(value) {
+        setFilters(prev => ({
+            ...prev,
+            [filterPopup.column]: value
+        }));
+        setFilterPopup({ visible: false, column: null, pos: {} });
+    }
+
+    // NEW: Clear the filter
+    function clearFilter() {
+        setFilters(prev => {
+            const next = { ...prev };
+            delete next[filterPopup.column];
+            return next;
+        });
+        setFilterPopup({ visible: false, column: null, pos: {} });
+    }
+
+    useEffect(() => {
+        const popupSelector = '.column-selector-popup';
+        const filterSelector = '.jra-filter-popup';
+
+        const handleClickOutside = (e) => {
+            const outside =
+                !e.target.closest(popupSelector) &&
+                !e.target.closest(filterSelector) &&
+                !e.target.closest('input');
+            if (outside) {
+                closeDropdowns();
+            }
+        };
+
+        const handleScroll = (e) => {
+            const isInsidePopup = e.target.closest(popupSelector) || e.target.closest(filterSelector);
+            if (!isInsidePopup) {
+                closeDropdowns();
+            }
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        const closeDropdowns = () => {
+            setShowColumnSelector(null);
+            setFilterPopup({ visible: false, column: null, pos: {} });
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // capture scroll events from nested elements
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [showColumnSelector, filterPopup.visible]);
+
     return (
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-create" : ""}`} ref={caeBoxRef}>
@@ -377,9 +519,19 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                 {displayColumns.map((columnId, idx) => {
                                     const col = availableColumns.find(c => c.id === columnId);
                                     if (col) {
+                                        const isFilterable = columnId !== "nr" && columnId !== "actions";
                                         return (
-                                            <th key={idx} className={col.className} rowSpan={1}>
+                                            <th
+                                                key={idx}
+                                                className={`${col.className} ${isFilterable && filters[columnId] ? 'jra-filter-active' : ''}`}
+                                                rowSpan={1}
+                                                onClick={isFilterable ? (e) => openFilterPopup(columnId, e) : undefined}
+                                                style={{ cursor: "pointer" }}
+                                            >
                                                 {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
+                                                {isFilterable && filters[columnId] && (
+                                                    <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
                                             </th>
                                         );
                                     }
@@ -391,7 +543,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                             </tr>
                         </thead>
                         <tbody>
-                            {rows.map((row, rowIndex) => (
+                            {rowsToDisplay.map((row, rowIndex) => (
                                 <tr
                                     key={row.id}
                                     className={`${row.nr % 2 === 0 ? 'evenTRColour' : ''} ${dragOverRowIndex === rowIndex ? 'drag-over' : ''}`}
@@ -418,7 +570,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                         if (columnId === 'nr') {
                                             return (
                                                 <td key={colIndex} className={colMeta.className} style={{ alignItems: 'center', gap: '0px' }}>
-                                                    <span style={{ fontSize: '14px', fontWeight: "normal" }}>{row.nr}</span>
+                                                    <span style={{ fontSize: '14px', fontWeight: "normal" }}>{rowIndex + 1}</span>
                                                     {!readOnly && (<FontAwesomeIcon
                                                         icon={faArrowsUpDown}
                                                         className="drag-handle"
@@ -467,7 +619,7 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                         }
 
                                         // Center‐align certain columns
-                                        const centerColumns = ['critical', 'act', 'quality', 'cer'];
+                                        const centerColumns = ['critical', 'act', 'quality', 'cer', "activation", "hierarchy", "cons", "responsible", "dueDate"];
                                         const textAlign = centerColumns.includes(columnId) ? 'center' : 'left';
 
                                         return (
@@ -485,6 +637,51 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                         </tbody>
                     </table>
                 </div>
+
+                {filterPopup.visible && (
+                    <div
+                        className="jra-filter-popup" // Reuse the IBRA class
+                        style={{
+                            position: 'fixed',
+                            top: filterPopup.pos.top,
+                            left: filterPopup.pos.left - 10,
+                            width: filterPopup.pos.width,
+                            zIndex: 10000
+                        }}
+                    >
+                        <input
+                            className="jra-filter-input"
+                            type="text"
+                            placeholder="Filter..."
+                            defaultValue={filters[filterPopup.column] || ''}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') applyFilter(e.target.value);
+                            }}
+                        />
+                        <div className="jra-filter-buttons">
+                            <button
+                                type="button"
+                                className="jra-filter-apply"
+                                onClick={() => {
+                                    // Note: This grabs the input value from the document, which is fine for a one-off popup.
+                                    const val = document
+                                        .querySelector('.jra-filter-input')
+                                        .value;
+                                    applyFilter(val);
+                                }}
+                            >
+                                Apply
+                            </button>
+                            <button
+                                type="button"
+                                className="jra-filter-clear"
+                                onClick={clearFilter}
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
             {deletePopupVisible && (<DeleteControlPopup controlName={controlToDelete.controlName} deleteControl={confirmDeleteControl} closeModal={closeDeletePopup} />)}
             {insertPopup && (<ControlEAPopup data={selectedRowData} onClose={closeInsertPopup} onSave={updateRows} onControlRename={onControlRename} readOnly={readOnly} />)}

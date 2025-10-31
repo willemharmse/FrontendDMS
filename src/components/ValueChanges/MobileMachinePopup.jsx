@@ -111,14 +111,16 @@ const MobileMachinePopup = ({ isOpen, onClose, userID, setMacData, onAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="mac-popup-group">
                         <label className="mac-popup-label">Machine:</label>
-                        <input
+                        <textarea
+                            rows="1"
                             spellcheck="true"
                             type="text"
                             value={machine}
                             onChange={(e) => setMachine(e.target.value)}
-                            className="mac-popup-input"
+                            className="abbr-popup-text-area"
                             required
                             placeholder="Insert machine name"
+                            style={{ resize: "vertical" }}
                         />
                     </div>
 

@@ -205,7 +205,6 @@ const VisitorLogin = () => {
                 </div>
             </div>
 
-            {loadingScreen && (<SplashScreen logoSrc={`${process.env.PUBLIC_URL}/CH_Logo.svg`} onDone={closeLoading} pingUrl={`${process.env.REACT_APP_URL}/ping`} />)}
             <ToastContainer />
         </div>
     );

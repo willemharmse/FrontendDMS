@@ -70,6 +70,37 @@
     flex-grow: 1;
 }
 
+.course-outline-input-2 {
+    width: calc(100% - 20px);
+    padding: 10px;
+    height: 19px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    flex-grow: 1;
+}
+
+.course-outline-textarea {
+    width: calc(100% - 45px);
+    padding: 10px;
+    resize: vertical;
+    padding-right: 35px;
+    min-height: 19px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    flex-grow: 1;
+    field-sizing: content;
+}
+
 .course-outline-table-content::-webkit-scrollbar {
     border-radius: 8px;
     width: 10px;
@@ -127,7 +158,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 20%;
+    width: 25%;
     font-size: 16px;
     text-align: center;
     background-color: #D9D9D9;
@@ -138,7 +169,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 45%;
+    width: 40%;
     font-size: 16px;
     text-align: center;
     background-color: #D9D9D9;
