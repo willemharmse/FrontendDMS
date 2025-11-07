@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
@@ -28,6 +28,7 @@ const FlameProofAllSites = () => {
     const [uploadAssetNr, setUploadAssetNr] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [showDelayedLoading, setShowDelayedLoading] = useState(false);
+    const [warehouseCount, setWarehouseCount] = useState([])
 
     useEffect(() => {
         let timer;
@@ -118,11 +119,39 @@ const FlameProofAllSites = () => {
         }
     };
 
+    const fetchWarehouse = async () => {
+        const route = `/api/flameWarehouse/getWarehouseDocs`;
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
+                headers: {
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch files (${response.status})`);
+            }
+
+            const data = await response.json();
+
+            setWarehouseCount(data.warehouseDocuments);
+        } catch (err) {
+            setError(err?.message || "Network error");
+        }
+    };
+
     useEffect(() => {
         if (loggedInUserId) {
             fetchCount();
+            fetchWarehouse();
         }
     }, [loggedInUserId]);
+
+    const { validCount, expiredCount, notUploadedCount, invalidCount } = useMemo(() => {
+        const v = warehouseCount.filter(f => f.status.toLowerCase() === "valid").length;
+        const e = warehouseCount.filter(f => f.status.toLowerCase() === "invalid").length;
+        const n = warehouseCount.filter(f => f.status.toLowerCase() === "Not Uploaded").length;
+        return { validCount: v, expiredCount: e, notUploadedCount: n, invalidCount: e + n };
+    }, [warehouseCount]);
 
     const iconMap = {
         "All Organisation Assets": "allDocumentsDMS.svg",
@@ -240,6 +269,14 @@ const FlameProofAllSites = () => {
                             )}
                         </div>
                     ))}
+                    {false && !isLoading && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameDigitalWarehouse")}>
+                        <div className={`flame-ph-icon`} >
+                            <img src={`${process.env.PUBLIC_URL}/flameWarehouse1.svg`} className={`icon-dept`} />
+                        </div>
+                        <h3 className="document-title-fi-home">Digital Warehouse</h3>
+                        <p className="document-info-fi-home">Certificates: {warehouseCount.length}</p>
+                        <p className="document-info-fi-home">Invalid Certificates: {invalidCount}</p>
+                    </div>)}
                 </div>
             </div>
             <ToastContainer />

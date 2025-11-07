@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendar } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
+import DatePicker from "react-multi-date-picker";
 
 const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors, readOnly = false }) => {
     const ibraBoxRef = useRef(null);
@@ -904,13 +905,24 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td key={idx} className={colClass}>
                                                             {p.dueDate.map((d, di) => (
                                                                 <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
-                                                                    <input
-                                                                        type="date"
-                                                                        style={{ fontFamily: "Arial", fontSize: "14px" }}
-                                                                        value={d.date}
-                                                                        onChange={e => handleDueDateChange(row.id, p.id, d.id, e.target.value)}
-                                                                        className="ibra-input-date"
-                                                                        readOnly={readOnly}
+                                                                    <DatePicker
+                                                                        value={d.date || null}
+                                                                        format="YYYY-MM-DD"
+                                                                        onChange={(val) => handleDueDateChange(row.id, p.id, d.id, val?.format("YYYY-MM-DD"))}
+                                                                        highlightToday={false}       // 👈 disables automatic highlight
+                                                                        editable={false}
+                                                                        disabled={readOnly}
+                                                                        inputClass="ibra-input-date"
+                                                                        containerStyle={{ width: "100%" }}
+                                                                        placeholder="YYYY-MM-DD"
+                                                                        hideIcon={false}
+                                                                        style={{
+                                                                            backgroundColor: "#fff",
+                                                                            borderColor: "#BFBFBF",
+                                                                            color: "#002060",         // text color
+                                                                            "--rmdp-primary-color": "#002060",  // ← highlight color (selected day, header accent)
+                                                                            "--rmdp-secondary-color": "#E6ECFF", // ← hover background color
+                                                                        }}
                                                                     />
                                                                 </div>
                                                             ))}

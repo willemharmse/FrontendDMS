@@ -431,13 +431,7 @@ const FlameProofSub = () => {
     const fs = files.filter((file) => {
       const q = searchQuery.toLowerCase();
       const matchesSearchQuery =
-        (file.asset.assetNr || "").toLowerCase().includes(q) ||
-        (file.asset.operationalArea || "").toLowerCase().includes(q) ||
-        (file.asset.assetOwner || "").toLowerCase().includes(q) ||
-        (file.certAuth || "").toLowerCase().includes(q) ||
-        (file.certNr || "").toLowerCase().includes(q) ||
-        (file.asset.departmentHead || "").toLowerCase().includes(q) ||
-        ((file.component || "").toLowerCase().includes(q));
+        (file.certNr || "").toLowerCase().includes(q)
 
       const fileStatusNorm = normStatus(file.status);
 
@@ -587,7 +581,7 @@ const FlameProofSub = () => {
             <input
               className="search-input-um"
               type="text"
-              placeholder="Search"
+              placeholder="Search Certificate Number"
               autoComplete="off"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -610,11 +604,11 @@ const FlameProofSub = () => {
             <thead>
               <tr className={isTrashView ? 'trashed' : ""}>
                 <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
+                <th className="flame-sub-cert-filter col">Certificate Nr</th>
                 {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
                 <th className="flame-sub-area-filter col">Area</th>
                 <th className="flame-sub-owner-filter col">Asset Owner</th>
-                <th className="flame-sub-auth-filter col">Certification Authority</th>
-                <th className="flame-sub-cert-filter col">Certificate Nr</th>
+                <th className="flame-sub-auth-filter col">Certification Body</th>
                 <th className="flame-sub-comp-filter col">Component</th>
                 <th className={`flame-sub-head-filter`}>Department Head</th>
                 <th className={`flame-sub-status-filter col`}>Status</th>
@@ -647,6 +641,7 @@ const FlameProofSub = () => {
               {filteredFiles.map((file, index) => (
                 <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
+                  <td className="col">{file.certNr}</td>
                   {isTrashView && (<th className="col" style={{ fontWeight: "normal" }}>{file.asset.assetType}</th>)}
                   <td
 
@@ -660,7 +655,6 @@ const FlameProofSub = () => {
                   </td>
                   <td className="col">{file.asset.assetOwner}</td>
                   <td className={`col`}>{(file.certAuth)}</td>
-                  <td className="col">{file.certNr}</td>
                   <td className="col">{formatStatus(file.component)}</td>
                   <td className="col">{file.asset.departmentHead}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
@@ -695,7 +689,7 @@ const FlameProofSub = () => {
         </div>
       </div>
 
-      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFileFromTrash={deleteFileFromTrash} deleteFile={deleteFile} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
+      {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} deleteFileFromTrash={deleteFileFromTrash} />)}
       {isSortModalOpen && (<SortPopupCertificates closeSortModal={closeSortModal} handleSort={handleSort} setSortField={setSortField} setSortOrder={setSortOrder} sortField={sortField} sortOrder={sortOrder} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}

@@ -7,6 +7,7 @@ import IbraNote from "../RiskInfo/IbraNote";
 import UnwantedEvent from "../RiskInfo/UnwantedEvent";
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
+import DatePicker from "react-multi-date-picker";
 
 const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors, readOnly = false }) => {
     const ibraBoxRef = useRef(null);
@@ -871,13 +872,17 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td key={idx} className={colClass}>
                                                             {p.dueDate.map((d, di) => (
                                                                 <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
-                                                                    <input
-                                                                        type="date"
-                                                                        style={{ fontFamily: "Arial", fontSize: "14px" }}
-                                                                        value={d.date}
-                                                                        onChange={e => handleDueDateChange(row.id, p.id, d.id, e.target.value)}
-                                                                        className="ibra-input-date"
-                                                                        readOnly={readOnly}
+                                                                    <DatePicker
+                                                                        value={d.date || null}
+                                                                        format="YYYY-MM-DD"
+                                                                        onChange={(val) => handleDueDateChange(row.id, p.id, d.id, val?.format("YYYY-MM-DD"))}
+                                                                        highlightToday={false}       // 👈 disables automatic highlight
+                                                                        editable={false}
+                                                                        disabled={readOnly}
+                                                                        inputClass="ibra-input-date"
+                                                                        containerStyle={{ width: "100%" }}
+                                                                        placeholder="YYYY-MM-DD"
+                                                                        hideIcon={false}
                                                                     />
                                                                 </div>
                                                             ))}

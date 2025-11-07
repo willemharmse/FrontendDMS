@@ -17,6 +17,7 @@ import CreateProfileLink from "./Popups/CreateProfileLink";
 import DeleteVisitor from "./Popups/DeleteVisitor";
 import SortPopupVisitors from "./Popups/SortPopupVisitors";
 import TopBar from "../Notifications/TopBar";
+import DatePicker from "react-multi-date-picker";
 
 const VisitorsInductionHomePage = () => {
     const [expandedRow, setExpandedRow] = useState(null);
@@ -565,22 +566,76 @@ const VisitorsInductionHomePage = () => {
                                                         {openHeader === "expiry" && (
                                                             <div className="date-menu-filter" onMouseLeave={() => setOpenHeader(null)}>
                                                                 <div className="date-filter-row">
-                                                                    <label className="date-label">From:</label>
-                                                                    <input
-                                                                        type="date"
-                                                                        className="filter-input-date"
-                                                                        value={colFilters.expiryFrom}
-                                                                        onChange={(e) => setFilter("expiryFrom", e.target.value)}
+                                                                    <label className="date-label">From</label>
+
+                                                                    <DatePicker
+                                                                        value={colFilters.expiryFrom || ""}
+                                                                        format="YYYY-MM-DD"
+                                                                        onChange={(val) =>
+                                                                            setFilter("expiryFrom", val?.format("YYYY-MM-DD"))
+                                                                        }
+                                                                        rangeHover={false}
+                                                                        highlightToday={false}
+                                                                        editable={false}
+                                                                        inputClass="filter-input-date"
+                                                                        placeholder="YYYY-MM-DD"
+                                                                        hideIcon={false}
                                                                     />
+
+                                                                    {/* 👇 Clear button resets the filter */}
+                                                                    {colFilters.expiryFrom && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setFilter("expiryFrom", "")}
+                                                                            style={{
+                                                                                background: "none",
+                                                                                border: "none",
+                                                                                color: "#666",
+                                                                                cursor: "pointer",
+                                                                                fontSize: "14px",
+                                                                                padding: "2px 6px",
+                                                                            }}
+                                                                            title="Clear date"
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                                 <div className="date-filter-row">
                                                                     <label className="date-label">To:</label>
-                                                                    <input
-                                                                        type="date"
-                                                                        className="filter-input-date"
-                                                                        value={colFilters.expiryTo}
-                                                                        onChange={(e) => setFilter("expiryTo", e.target.value)}
+
+                                                                    <DatePicker
+                                                                        value={colFilters.expiryTo || ""}
+                                                                        format="YYYY-MM-DD"
+                                                                        onChange={(val) =>
+                                                                            setFilter("expiryTo", val?.format("YYYY-MM-DD"))
+                                                                        }
+                                                                        rangeHover={false}
+                                                                        highlightToday={false}
+                                                                        editable={false}
+                                                                        inputClass="filter-input-date"
+                                                                        placeholder="YYYY-MM-DD"
+                                                                        hideIcon={false}
                                                                     />
+
+                                                                    {/* 👇 Clear button resets the filter */}
+                                                                    {colFilters.expiryTo && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setFilter("expiryTo", "")}
+                                                                            style={{
+                                                                                background: "none",
+                                                                                border: "none",
+                                                                                color: "#666",
+                                                                                cursor: "pointer",
+                                                                                fontSize: "14px",
+                                                                                padding: "2px 6px",
+                                                                            }}
+                                                                            title="Clear date"
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         )}

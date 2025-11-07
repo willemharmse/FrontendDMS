@@ -6,6 +6,8 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import ComponentDateUpdates from './ComponentDateUpdates';
+import DatePicker from 'react-multi-date-picker';
 
 const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", assetType = "" }) => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -33,7 +35,25 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
     const [allAssetOptions, setAllAssetOptions] = useState([]);
     const [filteredSites, setFilteredSites] = useState([]);
     const [assetOptions, setAssetOptions] = useState([]);
+    const [confirmNavigation, setConfirmNavigation] = useState(false);
+    const [assetID, setAssetID] = useState("");
+    const [assetNumberR, setAssetNumberR] = useState("");
     const navigate = useNavigate();
+    const [certifiers, setCertifiers] = useState([]);
+
+    const fetchCertifiers = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/getCertifiers`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch users");
+            }
+            const data = await response.json();
+
+            setCertifiers(data.certifiers);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
 
     const todayString = () => {
         const d = new Date();
@@ -254,8 +274,8 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
             if (!response.ok) throw new Error(response.error || 'Failed to upload file');
             const data = await response.json();
 
-            const id = data.id;
-            const assetNr = data.assetNr;
+            setAssetID(data.id);
+            setAssetNumberR(data.assetNr);
 
             setShowPopup(true);
             setSelectedFile(null);
@@ -273,12 +293,22 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
 
-            setTimeout(() => { onClose(assetNr, id, true); }, 1500);
+            setConfirmNavigation(true);
         } catch (error) {
             setError(error.message);
             setLoading(false);
         }
     };
+
+    const handleNavigateUpdate = () => {
+        setConfirmNavigation(false);
+        navigate(`/FrontendDMS/flameComponents/${assetID}`);
+    }
+
+    const handleNavigateNormal = () => {
+        setConfirmNavigation(false);
+        onClose(assetNumberR, assetID, true);
+    }
 
     const handleFileSelect = (file) => {
         if (file) setSelectedFile(file);
@@ -352,6 +382,10 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
             setComponent("");
         }
     }, [assetNr, component, selectedAssetHasMaster]);
+
+    useEffect(() => {
+        fetchCertifiers();
+    }, [])
 
     return (
         <div className="ump-container">
@@ -439,16 +473,22 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                             </div>
                             <div className="ump-form-row">
                                 <div className={`ump-form-group ${errors.certificateAuth ? "ump-error" : ""}`}>
-                                    <label>Certification Authority <span className="ump-required">*</span></label>
-                                    <input
-                                        type="text"
-                                        name="assetNr"
-                                        value={certificateAuth}
-                                        onChange={(e) => setCertificateAuth(e.target.value)}
-                                        autoComplete="off"
-                                        className="ump-input-select font-fam"
-                                        placeholder="Insert Certification Authority"
-                                    />
+                                    <label>Certification Body <span className="ump-required">*</span></label>
+                                    <div className="ump-select-container">
+                                        <select
+                                            value={certificateAuth}
+                                            onChange={(e) => setCertificateAuth(e.target.value)}
+                                            className="upm-comp-input-select font-fam"
+                                            style={{ color: certificateAuth === "" ? "GrayText" : "black" }}
+                                        >
+                                            <option value="" className="def-colour">Select Certification Body</option>
+                                            {certifiers.map(s => (
+                                                <option key={s._id} value={s.authority} className="norm-colour">
+                                                    {s.authority}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div className={`ump-form-group ${errors.certificateNum ? "ump-error" : ""}`}>
@@ -466,20 +506,25 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
 
                                 <div className={`ump-form-group ${errors.issueDate ? "ump-error" : ""}`}>
                                     <label>Issue Date <span className="ump-required">*</span></label>
-                                    <input
-                                        type="date"
-                                        name="assetNr"
-                                        value={issueDate}
-                                        max={todayString()}
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            const max = todayString();
-                                            setIssueDate(v && v > max ? max : v); // clamp to today if future picked/typed
-                                        }}
-                                        autoComplete="off"
-                                        className="ump-input-select font-fam"
-                                        placeholder="Select Asset Number"
-                                    />
+
+                                    <div className='date-container-license'>
+                                        <DatePicker
+                                            value={issueDate || ""}
+                                            format="YYYY-MM-DD"
+                                            onChange={(val) => {
+                                                const v = val?.format("YYYY-MM-DD");
+                                                const max = todayString();
+                                                setIssueDate(v && v > max ? max : v); // clamp to today if future picked/typed
+                                            }}
+                                            rangeHover={false}
+                                            highlightToday={false}
+                                            editable={false}
+                                            placeholder="YYYY-MM-DD"
+                                            hideIcon={false}
+                                            inputClass='ump-input-select-new-3'
+                                            maxDate={todayString()}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -516,6 +561,8 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                         ))}
                 </ul>
             )}
+
+            {confirmNavigation && (<ComponentDateUpdates closeModal={handleNavigateNormal} navigateToPage={handleNavigateUpdate} />)}
         </div>
     );
 };

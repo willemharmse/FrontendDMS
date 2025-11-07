@@ -443,3 +443,153 @@
     font-size: 14px;
     text-align: center;
 }
+
+.flame-certification-num-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-certification-auth-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 25%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-certification-license-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-certification-license-date-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-certification-status-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 15%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-certification-act-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-delete-button-fi-new {
+    margin-left: auto;
+    margin-right: auto;
+    width: 33%;
+}
+
+.flame-warehouse-num-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-site-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 7%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-asset-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 7%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-component-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-serial-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-cert-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-cert-nr-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-status-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-issue-date-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 10%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flame-warehouse-act-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 12%;
+    font-size: 16px;
+    text-align: center;
+}

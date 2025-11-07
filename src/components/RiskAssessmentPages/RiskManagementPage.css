@@ -651,6 +651,21 @@
     box-sizing: border-box;
 }
 
+.date-input-risk-create-container {
+    height: 41px;
+    width: 100%;
+    font-size: 14px;
+    line-height: 1.42857143;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.date-input-risk-create-container .rmdp-container {
+    width: 100%;
+}
+
 .input-box-title-risk-create {
     background-color: white;
     padding: 15px;

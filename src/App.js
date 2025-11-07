@@ -112,6 +112,8 @@ import PreviewCertificateInduction from './components/VisitorsInduction/PreviewC
 import VisitorPasswordSetup from './components/VisitorsInduction/VisitorPasswordSetup';
 import ResetVisitorPassword from './components/VisitorsInduction/ResetVisitorPassword';
 import InductionDrafts from './components/VisitorsInduction/InductionCreation/InductionDrafts';
+import FlameProofCertifiers from './components/FlameproofDMS/FlameProofCertifiers';
+import FlameProofDigitalWarehouse from './components/FlameproofDMS/FlameProofDigitalWarehouse';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -290,6 +292,8 @@ function App() {
         <Route path='FrontendDMS/visitorInductionHome' element={<VisitorInductionMainPage />} />
         <Route path='FrontendDMS/generatedInductionInfo' element={<GeneratedInductionInfo />} />
         <Route path='FrontendDMS/flameproofComponents/:type/:id' element={<ManageComponentAssets />} />
+        <Route path='/flameCertifiers' element={<FlameProofCertifiers />} />
+        <Route path='/flameDigitalWarehouse' element={<FlameProofDigitalWarehouse />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

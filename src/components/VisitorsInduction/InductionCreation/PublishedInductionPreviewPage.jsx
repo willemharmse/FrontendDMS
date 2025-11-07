@@ -13,6 +13,8 @@ import { saveAs } from "file-saver";
 import StartAssessmentPopup from "../Popups/StartAssessmentPopup";
 import IncompleteAssessmentPopup from "../Popups/IncompleteAssessmentPopup";
 import ReviewAssessmentPopup from "../Popups/ReviewAssessmentPopup";
+import AudioPlayer, { RHAP_UI } from "react-h5-audio-player";
+import "react-h5-audio-player/lib/styles.css";
 
 /** Keep slide type names aligned with the editor */
 const SLIDE_TYPES = {
@@ -318,6 +320,7 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
             else if (/\.(mp3|wav|m4a|ogg)$/.test(n)) type = "audio/*";
             else if (/\.(pdf)$/.test(n)) type = "pdf"
         }
+
         const mediaTagStyle = {
             objectFit: "contain",
             display: "block",
@@ -330,9 +333,24 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
         } else {
         }
 
-        if (type.startsWith("image/")) return <img src={src} alt={item.media?.filename || "image"} style={mediaTagStyle} />;
-        if (type.startsWith("video/")) return <video src={src} controls style={{ width: "100%", height: "100%" }} />;
-        if (type.startsWith("audio/")) return <audio src={src} controls style={{ width: "100%" }} />;
+        if (type.startsWith("image/")) return <img src={src} alt={item.media?.filename || "image"} style={mediaTagStyle} />; if (type.startsWith("video/")) return <video src={src} controls style={{ width: "100%", height: "100%" }} />;
+        if (type.startsWith("audio/")) return (<AudioPlayer
+            className="popup-audio"
+            src={src}
+            layout="horizontal"
+            showJumpControls={false}
+            customAdditionalControls={[]}
+            customVolumeControls={[]}
+            customControlsSection={[]} // <- intentionally empty
+            autoPlayAfterSrcChange={false}
+            preload="metadata"
+            customProgressBarSection={[
+                RHAP_UI.MAIN_CONTROLS,
+                RHAP_UI.CURRENT_TIME,
+                RHAP_UI.PROGRESS_BAR,
+                RHAP_UI.DURATION,
+            ]}
+        />);
 
         if (type.includes("pdf")) {
             return (
@@ -638,7 +656,7 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" title="Home" />
+                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" title="Home" />
                         <p className="logo-text-um">Training Management</p>
                     </div>
 
@@ -676,7 +694,7 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <img src={"/visitorInductionMainIcon2.svg"} alt="Control Attributes" className="icon-risk-rm" />
                         <p className="logo-text-dm-fi">Visitor Induction</p>
                     </div>
                 </div>
@@ -1046,6 +1064,23 @@ const PublishedInductionPreviewPage = ({ draftID, closeModal }) => {
                                                                             {renderMedia(currentSlide, 1, "16/9")}
                                                                         </div>
                                                                     </div>
+                                                                </div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
+                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.contentLeft || ""}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.contentRight || ""}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1, "16/9")}</div>
                                                                 </div>
                                                             )}
 

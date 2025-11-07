@@ -1,5 +1,30 @@
 /* ===== Upload Master Popup (UMP) — unique, component-scoped classes ===== */
 
+
+.rmdp-day.rmdp-selected span:not(.highlight) {
+    background-color: #002060;
+}
+
+.rmdp-week-day {
+    color: #002060;
+}
+
+.rmdp-arrow {
+    border: #002060 solid;
+    border-width: 0px 2px 2px 0px;
+}
+
+.rmdp-arrow-container:hover {
+    background-color: #002060;
+}
+
+.rmdp-day:not(.rmdp-disabled):not(.rmdp-selected):hover span {
+    background-color: #D6E1FF;
+    /* light blue hover color */
+    color: #002060;
+    /* optional: make text the same navy tone */
+}
+
 .ump-container {
     position: fixed;
     top: 0;
@@ -55,6 +80,44 @@
     padding: 6px 12px;
     font-size: 14px;
     border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+.ump-input-select-new-2 {
+    width: 450px !important;
+    margin-bottom: 0px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+    z-index: 100000;
+}
+
+.ump-input-select-new-3 {
+    width: 100% !important;
+    margin-bottom: 0px;
+    height: 41px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+    z-index: 100000;
+}
+
+.ump-input-select-container-new {
+    width: calc(100% - 50px);
+    margin-bottom: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 41px;
+    font-size: 14px;
     border-radius: 4px;
     box-sizing: border-box;
     appearance: none;
@@ -313,4 +376,8 @@
     .ump-form-row {
         flex-direction: column;
     }
+}
+
+.date-container-license .rmdp-container {
+    width: 100% !important;
 }

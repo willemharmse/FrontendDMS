@@ -1,9 +1,9 @@
-const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort }) => {
+const SortPopupCertifiers = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort }) => {
     return (
         <div className="sort-popup-overlay">
             <div className="sort-popup-content">
                 <div className="sort-file-header">
-                    <h2 className="sort-file-title">Sort Certificates</h2>
+                    <h2 className="sort-file-title">Sort Certifiers</h2>
                     <button className="sort-file-close" onClick={closeSortModal} title="Close Popup">×</button>
                 </div>
 
@@ -18,14 +18,10 @@ const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sor
                             style={{ color: sortField === "" ? "gray" : "black" }}
                         >
                             <option value="" style={{ color: "gray" }}>Select Field</option>
-                            <option value="operationalArea" style={{ color: "black" }}>Area</option>
-                            <option value="assetOwner" style={{ color: "black" }}>Asset Owner</option>
-                            <option value="certAuth" style={{ color: "black" }}>Certification Body</option>
-                            <option value="certNr" style={{ color: "black" }}>Certificate Nr</option>
-                            <option value="component" style={{ color: "black" }}>Component</option>
-                            <option value="departmentHead" style={{ color: "black" }}>Department Head</option>
-                            <option value="expiryDate" style={{ color: "black" }}>Expiry Date</option>
-                            <option value="issueDate" style={{ color: "black" }}>Issue Date</option>
+                            <option value="licenseNumber" style={{ color: "black" }}>Accreditation Number</option>
+                            <option value="authority" style={{ color: "black" }}>Certification Body</option>
+                            <option value="licenseExpiryDate" style={{ color: "black" }}>Expiry Date</option>
+                            <option value="licenseIssueDate" style={{ color: "black" }}>Initial Accreditation Date</option>
                             <option value="status" style={{ color: "black" }}>Status</option>
                         </select>
                     </div>
@@ -56,4 +52,4 @@ const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sor
     );
 };
 
-export default SortPopupCertificates;
+export default SortPopupCertifiers;

@@ -417,6 +417,23 @@
     font-family: Arial !important;
 }
 
+.ibra-popup-page-input-table-controls-text-areas {
+    width: calc(100% - 40px);
+    padding: 10px;
+    padding-right: 25px;
+    min-height: 19px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    font-family: Arial !important;
+    resize: vertical;
+    field-sizing: content;
+    word-break: break-word;
+}
+
 .ibra-popup-page-input-table-hazard-text-area {
     width: calc(100% - 25px);
     padding: 10px;
@@ -451,7 +468,7 @@
     color: #555;
     font-size: 14px;
     font-family: Arial !important;
-    max-height: 78px;
+    max-height: 82px;
     min-height: 20px;
     resize: vertical;
     field-sizing: content;

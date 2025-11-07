@@ -1236,3 +1236,17 @@ body {
   /* light grey by default */
   transition: color 0.2s;
 }
+
+.date-container-special .rmdp-container {
+  width: 100%;
+}
+
+.date-container-special {
+  width: calc(100% - 20px);
+  margin-bottom: 2px;
+  height: 41px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  box-sizing: border-box;
+}

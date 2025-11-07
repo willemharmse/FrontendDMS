@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DatePicker from 'react-multi-date-picker';
 
 const UploadPopup = ({ onClose }) => {
     const [approver, setApprover] = useState('');
@@ -335,7 +336,20 @@ const UploadPopup = ({ onClose }) => {
                                 </div>
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                     <label>Review Date <span className="required-field">*</span></label>
-                                    <input type="date" value={reviewDate} className="upload-file-page-date" onChange={(e) => setReviewDate(e.target.value)}></input>
+                                    <DatePicker
+                                        value={reviewDate || ""}
+                                        format="YYYY-MM-DD"
+                                        onChange={(val) =>
+                                            setReviewDate(val?.format("YYYY-MM-DD"))
+                                        }
+                                        rangeHover={false}
+                                        highlightToday={false}
+                                        editable={false}
+                                        inputClass="upload-file-page-date"
+                                        placeholder="YYYY-MM-DD"
+                                        hideIcon={false}
+                                        style={{ paddingBottom: "12px", paddingTop: "12px", "--rmdp-primary-color": "#002060" }}
+                                    />
                                 </div>
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                 </div>

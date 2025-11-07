@@ -139,6 +139,30 @@
     font-size: 14px;
 }
 
+.update-file-input-file-new {
+    width: calc(100% - 26px);
+    padding: 12px;
+    font-family: Arial;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.update-file-input-file-container {
+    width: calc(100% - 22px);
+    font-family: Arial;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 40px;
+    margin-top: 14px;
+}
+
+.update-file-input-file-container .rmdp-container {
+    width: 100%;
+}
+
 .update-file-issue-date {
     width: calc(100% - 48px);
     margin-left: 12px;

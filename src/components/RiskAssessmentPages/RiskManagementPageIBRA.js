@@ -30,6 +30,7 @@ import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
 import DocumentWorkflow from "../Popups/DocumentWorkflow";
 import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
+import DatePicker from "react-multi-date-picker";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -1134,6 +1135,10 @@ const RiskManagementPageIBRA = () => {
         }
     };
 
+    const handleDateInput = (value) => {
+        setFormData({ ...formData, dateConducted: value });
+    };
+
     // Handle input changes for the table rows
     const handleRowChange = (e, index, field) => {
         const newRows = [...formData.rows];
@@ -1879,20 +1884,31 @@ const RiskManagementPageIBRA = () => {
                         </div>
                         <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
-                            <input
-                                value={formData.dateConducted}
-                                className="table-control font-fam date-input-risk-create"
-                                type="date"
-                                name="dateConducted"
-                                onChange={handleInputChange}
-                                onFocus={() => {
-                                    setErrors(prev => ({
-                                        ...prev,
-                                        dateConducted: false
-                                    }))
-                                }}
-                                readOnly={readOnly}
-                            />
+
+
+                            <div className="date-input-risk-create-container">
+                                <DatePicker
+                                    value={formData.dateConducted || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        handleDateInput(val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
+                                    inputClass='date-input-risk-create'
+                                    readOnly={readOnly}
+                                    onFocus={() => {
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            dateConducted: false
+                                        }))
+                                    }}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
                         </div>
                     </div>
 

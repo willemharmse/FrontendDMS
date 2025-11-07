@@ -59,7 +59,6 @@ const RiskHomePage = () => {
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    {/* Container for right-aligned icons */}
                     <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
                 </div>
 

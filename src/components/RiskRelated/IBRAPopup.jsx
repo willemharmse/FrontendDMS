@@ -1008,7 +1008,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                             type="text"
                                                             style={{ color: "black", cursor: "text", fontFamily: "Arial" }}
                                                             ref={ueInputRef}
-
+                                                            key={"unwanted-event-textarea"}
                                                             className="ibra-popup-dropdown ibra-popup-page-input-table-2"
                                                             placeholder="Select Unwanted Event"
                                                             value={selectedUE}
@@ -1043,10 +1043,10 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                             <td>
                                                                 <div className="ibra-popup-page-row-actions">
                                                                     <div className="ibra-popup-page-select-container">
-                                                                        <input
+                                                                        <textarea
                                                                             type="text"
                                                                             value={row.value}
-                                                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                            className="ibra-popup-page-input-table-controls-text-areas ibra-popup-page-row-input"
                                                                             onFocus={() => handleControlFocus(row.id)}
                                                                             onChange={e => handleControlInput(row.id, e.target.value)}
                                                                             ref={el => inputRefs.current[`control-${row.id}`] = el}

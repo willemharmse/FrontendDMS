@@ -401,22 +401,6 @@
     font-family: Arial !important;
 }
 
-.ibra-popup-page-input-table-2 {
-    width: calc(100% - 25px);
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    appearance: none;
-    background-color: white;
-    color: #555;
-    font-size: 14px;
-    font-family: Arial !important;
-    max-height: 78px;
-    min-height: 20px;
-    resize: vertical;
-    field-sizing: content;
-}
-
 .ibra-popup-page-select-container::after {
     content: '';
     position: absolute;

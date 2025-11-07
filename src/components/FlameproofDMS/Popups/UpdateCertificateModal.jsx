@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import ComponentDateUpdates from './ComponentDateUpdates';
+import DatePicker from 'react-multi-date-picker';
 
 const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refresh }) => {
     const [newFile, setNewFile] = useState(null);
@@ -12,6 +15,9 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
     const fileInputRef = useRef(null);
     const [chosenFileName, setChosenFileName] = useState("");
     const [modalHeight, setModalHeight] = useState(400); // Initial modal height, adjust if needed
+    const [assetID, setAssetID] = useState("");
+    const navigate = useNavigate();
+    const [confirmNavigation, setConfirmNavigation] = useState(false);
 
     const removeFileExtension = (fileName) => {
         return fileName.replace(/\.[^/.]+$/, "");
@@ -99,7 +105,10 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
             if (!response.ok) {
                 throw new Error("Upload failed");
             }
-            await response.json();
+            const data = await response.json();
+
+            setAssetID(data.assetID);
+
             setNewFile(null);
             setIssueDate("");
             setError(null);
@@ -112,13 +121,23 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
                 }
             });
 
-            closeModalAdd();
-            refresh();
+            setConfirmNavigation(true);
         } catch (err) {
             setError(err.message);
             setSuccessMsg("");
         }
     };
+
+    const handleNavigateUpdate = () => {
+        setConfirmNavigation(false);
+        navigate(`/FrontendDMS/flameComponents/${assetID}`);
+    }
+
+    const handleNavigateNormal = () => {
+        setConfirmNavigation(false);
+        closeModalAdd();
+        refresh();
+    }
 
     const handleChooseFile = () => {
         fileInputRef.current.click();
@@ -136,13 +155,20 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
         closeModal();
     };
 
+    const todayString = () => {
+        const d = new Date();
+        // shift for timezone so the ISO date matches local date
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    };
+
     if (!isModalOpen) return null;
 
     return (
         <div className="update-file-overlay">
             <div className="update-file-modal" style={{ height: `${modalHeight}px`, maxHeight: `${modalHeight}px` }}>
                 <div className="update-file-header">
-                    <h2 className="update-file-title">Update Document</h2>
+                    <h2 className="update-file-title">Update Certificate</h2>
                     <button className="update-file-close" onClick={closeModalAdd} title="Close Popup">×</button>
                 </div>
 
@@ -181,12 +207,24 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
                         <div className="update-file-group-side">
                             <label className="update-file-label">Issue Date</label>
 
-                            <input
-                                type="date"
-                                className={issueDate ? "update-file-issue-date norm-colour" : "update-file-issue-date def-colour"}
-                                value={issueDate}
-                                onChange={(e) => setIssueDate(e.target.value)}
-                            />
+                            <div className='update-file-input-file-container'>
+                                <DatePicker
+                                    value={issueDate || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) => {
+                                        const v = val?.format("YYYY-MM-DD");
+                                        const max = todayString();
+                                        setIssueDate(v && v > max ? max : v); // clamp to today if future picked/typed
+                                    }}
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
+                                    inputClass='update-file-input-file-new'
+                                    maxDate={todayString()}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -195,6 +233,8 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
                     </div>
                 </form>
             </div>
+
+            {confirmNavigation && (<ComponentDateUpdates closeModal={handleNavigateNormal} navigateToPage={handleNavigateUpdate} />)}
         </div>
     );
 };

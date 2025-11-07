@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faTrash, faX } from '@fortawesome/free-solid-svg-icons';
+import DatePicker from 'react-multi-date-picker';
 
 const AdminApprovalHeader = ({ filters, onFilterChange }) => {
     const [openMenu, setOpenMenu] = useState(null);
@@ -106,23 +107,74 @@ const AdminApprovalHeader = ({ filters, onFilterChange }) => {
                     </span>
                     {openMenu === 'SuggestedDate' && (
                         <div className="date-menu-filter">
-                            <div className="date-filter-row">
-                                <label className="date-label">From:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.suggestedFrom || ''}
-                                    onChange={(e) => onFilterChange('suggestedFrom', e.target.value)}
+                            <div className="date-filter-row" style={{ gap: "0px" }}>
+                                <label className="date-label">From</label>
+
+                                <DatePicker
+                                    value={filters.suggestedFrom || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        onFilterChange("suggestedFrom", val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {/* 👇 Clear button resets the filter */}
+                                {filters.suggestedFrom && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("suggestedFrom", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
-                            <div className="date-filter-row">
+
+                            <div className="date-filter-row" style={{ gap: "0px" }}>
                                 <label className="date-label">To:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.suggestedTo || ''}
-                                    onChange={(e) => onFilterChange('suggestedTo', e.target.value)}
+                                <DatePicker
+                                    value={filters.suggestedTo || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) => onFilterChange('suggestedTo', val?.format("YYYY-MM-DD"))}
+                                    highlightToday={false}       // 👈 disables automatic highlight
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
+                                    rangeHover={false}
                                 />
+
+                                {filters.suggestedTo && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("suggestedTo", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -156,24 +208,67 @@ const AdminApprovalHeader = ({ filters, onFilterChange }) => {
                         {isActiveDate('reviewFrom', 'reviewTo') ? <>Review Date <FontAwesomeIcon icon={faFilter} style={{ marginLeft: 0 }} /></> : 'Review Date'}
                     </span>
                     {openMenu === 'ReviewDate' && (
-                        <div className="date-menu-filter">
-                            <div className="date-filter-row">
-                                <label className="date-label">From:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.reviewFrom || ''}
-                                    onChange={(e) => onFilterChange('reviewFrom', e.target.value)}
+                        <div className="date-menu-filter" style={{ left: "-150px" }}>
+                            <div className="date-filter-row" style={{ gap: "0px" }}>
+                                <label className="date-label">From</label>
+                                <DatePicker
+                                    value={filters.reviewFrom || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) => onFilterChange('reviewFrom', val?.format("YYYY-MM-DD"))}
+                                    highlightToday={false}       // 👈 disables automatic highlight
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {filters.reviewFrom && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("reviewFrom", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
-                            <div className="date-filter-row">
+                            <div className="date-filter-row" style={{ gap: "0px" }}>
                                 <label className="date-label">To:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.reviewTo || ''}
-                                    onChange={(e) => onFilterChange('reviewTo', e.target.value)}
+                                <DatePicker
+                                    value={filters.reviewTo || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) => onFilterChange('reviewTo', val?.format("YYYY-MM-DD"))}
+                                    highlightToday={false}       // 👈 disables automatic highlight
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+                                {filters.reviewTo && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("reviewTo", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}

@@ -57,7 +57,7 @@ const VisitorPasswordSetup = () => {
         <div className='type-selector-overlay'>
             <div className="nl-login-container-otp">
                 <div className="nl-login-card">
-                    <img src='/CH_Logo.svg' className='nl-logo-img' />
+                    <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} className='nl-logo-img' />
                     <div className="nl-login-title" style={{ marginBottom: "20px" }}>ComplianceHub{"\u2122"}</div>
                     <label
                         className="forgot-password-label"
@@ -106,7 +106,7 @@ const VisitorPasswordSetup = () => {
                     </form>
 
                     <div className="nl-logo-bottom-container">
-                        <img className="nl-logo-bottom" src="/logo.webp" alt="Bottom Logo" />
+                        <img className="nl-logo-bottom" src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Bottom Logo" />
                         <p className="nl-logo-bottom-text">A TAU5 PRODUCT</p>
                     </div>
 

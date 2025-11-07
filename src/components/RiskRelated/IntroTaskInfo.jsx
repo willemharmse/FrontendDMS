@@ -5,6 +5,7 @@ import { faTrash, faPlusCircle, faInfoCircle, faL } from '@fortawesome/free-soli
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import axios from "axios";
+import DatePicker from "react-multi-date-picker";
 
 const IntroTaskInfo = ({ formData, setFormData, error, setErrors, readOnly = false }) => {
     const [groupedAreas, setGroupedAreas] = useState({});
@@ -901,27 +902,34 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors, readOnly = fal
                                                 />
                                             </td>
                                             <td>
-                                                <input
-                                                    type="date"
-                                                    name="issueDate"
-                                                    autoComplete="off"
-                                                    style={{ fontFamily: "Arial" }}
-                                                    value={formData.introInfo.procedures.issueDate}
-                                                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                                                    placeholder="Insert Issue Date"
-                                                    onChange={e =>
+                                                <DatePicker
+                                                    value={formData.introInfo.procedures.issueDate || ""}
+                                                    format="YYYY-MM-DD"
+                                                    onChange={(val) =>
                                                         setFormData(prev => ({
                                                             ...prev,
                                                             introInfo: {
                                                                 ...prev.introInfo,
                                                                 procedures: {
                                                                     ...prev.introInfo.procedures,
-                                                                    issueDate: e.target.value
+                                                                    issueDate: val?.format("YYYY-MM-DD")
                                                                 }
                                                             }
                                                         }))
                                                     }
+                                                    rangeHover={false}
+                                                    highlightToday={false}
+                                                    editable={false}
+                                                    placeholder="YYYY-MM-DD"
+                                                    hideIcon={false}
+                                                    inputClass='jra-info-popup-page-input-table jra-info-popup-page-row-input'
                                                     readOnly={readOnly}
+                                                    onFocus={() => {
+                                                        setErrors(prev => ({
+                                                            ...prev,
+                                                            dateConducted: false
+                                                        }))
+                                                    }}
                                                 />
                                             </td>
                                         </tr>

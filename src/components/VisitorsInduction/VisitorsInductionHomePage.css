@@ -346,3 +346,42 @@
     opacity: 0.8;
     vertical-align: middle;
 }
+
+.limit-table-height-warehouse.wide {
+    min-width: 1920px;
+    width: max-content;
+    /* let table grow */
+    table-layout: auto;
+    /* allow natural width */
+}
+
+/* Empty table fallback */
+.limit-table-height-warehouse .empty-row td {
+    padding: 0;
+    border-bottom: none;
+}
+
+.limit-table-height-warehouse::-webkit-scrollbar {
+    width: 6px;
+    /* vertical scrollbar */
+    height: 6px;
+    /* horizontal scrollbar */
+}
+
+.limit-table-height-warehouse::-webkit-scrollbar-thumb {
+    background: #888;
+    /* scrollbar handle color */
+    border-radius: 4px;
+    /* rounded edges */
+}
+
+.limit-table-height-warehouse::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* darker on hover */
+}
+
+.limit-table-height-warehouse::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* track color */
+    border-radius: 4px;
+}

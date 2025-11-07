@@ -185,6 +185,15 @@ const FCMSAdminPage = () => {
                             <h3 className="document-title-fi-home">Manage Assets</h3>
                         </>
                     </div>
+
+                    {false && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameCertifiers")} >
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/certifier1.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Manage Certification Bodies</h3>
+                        </>
+                    </div>)}
                 </div>
             </div>
             <ToastContainer />

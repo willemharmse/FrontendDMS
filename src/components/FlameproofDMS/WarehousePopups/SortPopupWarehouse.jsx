@@ -1,9 +1,9 @@
-const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort }) => {
+const SortPopupWarehouse = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort }) => {
     return (
         <div className="sort-popup-overlay">
             <div className="sort-popup-content">
                 <div className="sort-file-header">
-                    <h2 className="sort-file-title">Sort Certificates</h2>
+                    <h2 className="sort-file-title">Sort Digital Warehouse</h2>
                     <button className="sort-file-close" onClick={closeSortModal} title="Close Popup">×</button>
                 </div>
 
@@ -18,15 +18,14 @@ const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sor
                             style={{ color: sortField === "" ? "gray" : "black" }}
                         >
                             <option value="" style={{ color: "gray" }}>Select Field</option>
-                            <option value="operationalArea" style={{ color: "black" }}>Area</option>
-                            <option value="assetOwner" style={{ color: "black" }}>Asset Owner</option>
-                            <option value="certAuth" style={{ color: "black" }}>Certification Body</option>
-                            <option value="certNr" style={{ color: "black" }}>Certificate Nr</option>
+                            <option value="assetType" style={{ color: "black" }}>Asset Type</option>
                             <option value="component" style={{ color: "black" }}>Component</option>
-                            <option value="departmentHead" style={{ color: "black" }}>Department Head</option>
-                            <option value="expiryDate" style={{ color: "black" }}>Expiry Date</option>
-                            <option value="issueDate" style={{ color: "black" }}>Issue Date</option>
-                            <option value="status" style={{ color: "black" }}>Status</option>
+                            <option value="serialNumber" style={{ color: "black" }}>Component Serial Number</option>
+                            <option value="issueDate" style={{ color: "black" }}>Certificate Issue Date</option>
+                            <option value="certAuth" style={{ color: "black" }}>Certification Body</option>
+                            <option value="certNr" style={{ color: "black" }}>Certificate Number</option>
+                            <option value="status" style={{ color: "black" }}>Certification Status</option>
+                            <option value="site.site" style={{ color: "black" }}>Site</option>
                         </select>
                     </div>
                 </div>
@@ -56,4 +55,4 @@ const SortPopupCertificates = ({ setSortField, setSortOrder, closeSortModal, sor
     );
 };
 
-export default SortPopupCertificates;
+export default SortPopupWarehouse;

@@ -8,6 +8,7 @@ export const ROLE_ORDER = {
     guest: 3,
     contributor: 4,
     systemAdmin: 5,
+    profileManager: 6
 };
 
 // Decode JWT payload (no signature check, backend must validate!)

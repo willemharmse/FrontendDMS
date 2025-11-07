@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./UpdateFileModal.css";
+import DatePicker from 'react-multi-date-picker';
 
 const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     // State for the form fields
@@ -210,12 +211,21 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
 
                         <div className="update-file-group-side">
                             <label className="update-file-label">Review Date</label>
-                            <input
-                                type="date"
-                                className={reviewDate ? "update-file-input-file norm-colour" : "update-file-input-file def-colour"}
-                                value={reviewDate}
-                                onChange={(e) => setReviewDate(e.target.value)}
-                            />
+                            <div className='update-file-input-file-container'>
+                                <DatePicker
+                                    value={reviewDate || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        setReviewDate(val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
+                                    inputClass='update-file-input-file-new'
+                                />
+                            </div>
                         </div>
                     </div>
 

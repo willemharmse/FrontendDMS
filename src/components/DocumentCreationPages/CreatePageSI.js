@@ -23,6 +23,7 @@ import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
 import DocumentWorkflow from "../Popups/DocumentWorkflow";
 import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
+import DatePicker from "react-multi-date-picker";
 
 const CreatePageSI = () => {
   const navigate = useNavigate();
@@ -891,6 +892,14 @@ const CreatePageSI = () => {
     }
   };
 
+  const handleDateChange = (value) => {
+    setFormData({ ...formData, dateConducted: value });
+  };
+
+  const handleExipryDateChange = (value) => {
+    setFormData({ ...formData, expiryDate: value });
+  };
+
   // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
     const newRows = [...formData.rows];
@@ -1241,32 +1250,48 @@ const CreatePageSI = () => {
                   <h3 className="font-fam-labels">
                     Implementation Date <span className="required-field">*</span>
                   </h3>
-                  <input
-                    type="date"
-                    name="dateConducted"
-                    value={formData.dateConducted || ""}
-                    onChange={handleInputChange}
-                    onFocus={() => setErrors(prev => ({
-                      ...prev,
-                      dateConducted: false
-                    }))}
-                    className="special-intruction-input-date-half font-fam"
-                    readOnly={readOnly}
-                  />
+                  <div className="date-container-special">
+                    <DatePicker
+                      value={formData.dateConducted || ""}
+                      format="YYYY-MM-DD"
+                      onChange={(val) => handleDateChange(val?.format("YYYY-MM-DD"))}
+                      highlightToday={false}
+                      editable={false}
+                      inputClass="special-intruction-input-date-half"
+                      placeholder="YYYY-MM-DD"
+                      hideIcon={false}
+                      readOnly={readOnly}
+                      onFocus={() => setErrors(prev => ({
+                        ...prev,
+                        dateConducted: false
+                      }))}
+                      style={{ width: "100%" }}
+                    />
+                  </div>
                 </div>
                 <div className={`input-box-type-special-intruction-date-half`}>
                   <h3 className="font-fam-labels">
                     Expiry Date
                   </h3>
-                  <input
-                    type="date"
-                    name="expiryDate"
-                    min={formData.dateConducted}
-                    value={formData.expiryDate || ""}
-                    onChange={handleInputChange}
-                    className="special-intruction-input-date-half font-fam"
-                    readOnly={readOnly}
-                  />
+                  <div className="date-container-special">
+                    <DatePicker
+                      value={formData.expiryDate || ""}
+                      format="YYYY-MM-DD"
+                      onChange={(val) => handleExipryDateChange(val?.format("YYYY-MM-DD"))}
+                      highlightToday={false}
+                      editable={false}
+                      inputClass="special-intruction-input-date-half"
+                      placeholder="YYYY-MM-DD"
+                      hideIcon={false}
+                      readOnly={readOnly}
+                      onFocus={() => setErrors(prev => ({
+                        ...prev,
+                        expiryDate: false
+                      }))}
+                      style={{ width: "100%" }}
+                      minDate={formData.dateConducted}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

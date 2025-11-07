@@ -296,3 +296,10 @@
     font-weight: bold;
     margin-bottom: 15px;
 }
+
+.ask-navigate-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 0px;
+}

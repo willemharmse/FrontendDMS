@@ -9,6 +9,7 @@ import PopupMenuPubFiles from "../../PublishedDocuments/PopupMenuPubFiles";
 import TopBar from "../../Notifications/TopBar";
 import DeletePopup from "../../FileInfo/DeletePopup";
 import PopupMenuPubInduction from "./PopupMenuPubInduction";
+import PublishedInductionPreviewPage from "./PublishedInductionPreviewPage";
 
 const GeneratedInductionInfo = () => {
     const [files, setFiles] = useState([]); // State to hold the file data
@@ -23,6 +24,18 @@ const GeneratedInductionInfo = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const [isPreview, setIsPreview] = useState(false);
+    const [previewID, setPreviewID] = useState(false);
+
+    const openPreview = (id) => {
+        setPreviewID(id);
+        setIsPreview(true);
+    }
+
+    const closePreview = () => {
+        setPreviewID("");
+        setIsPreview(false);
+    }
 
     const fileDelete = (id, fileName) => {
         setFileToDelete(id);
@@ -224,6 +237,7 @@ const GeneratedInductionInfo = () => {
                                                     isOpen={hoveredFileId === file._id}
                                                     setHoveredFileId={setHoveredFileId}
                                                     id={file._id}
+                                                    openPreview={openPreview}
                                                 />
                                             )}
                                         </div>
@@ -249,6 +263,7 @@ const GeneratedInductionInfo = () => {
             </div>
 
             {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} isTrashView={false} loading={loading} selectedFileName={selectedFileName} />)}
+            {isPreview && (<PublishedInductionPreviewPage draftID={previewID} closeModal={closePreview} />)}
         </div >
     );
 };

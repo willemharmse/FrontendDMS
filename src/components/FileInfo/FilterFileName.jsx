@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './FilterName.css';
+import DatePicker from 'react-multi-date-picker';
 
 const FilterFileName = ({ access, canIn, filters, onFilterChange, trashed }) => {
     const [openMenu, setOpenMenu] = useState(null); // Track the currently open menu
@@ -131,21 +132,73 @@ const FilterFileName = ({ access, canIn, filters, onFilterChange, trashed }) => 
                         <div className="date-menu-filter">
                             <div className="date-filter-row">
                                 <label className="date-label">From:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.startDate}
-                                    onChange={(e) => onFilterChange('startDate', e.target.value)}
+                                <DatePicker
+                                    value={filters.startDate || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        onFilterChange("startDate", val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {/* 👇 Clear button resets the filter */}
+                                {filters.startDate && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("startDate", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                             <div className="date-filter-row">
                                 <label className="date-label">To:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.endDate}
-                                    onChange={(e) => onFilterChange('endDate', e.target.value)}
+                                <DatePicker
+                                    value={filters.endDate || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        onFilterChange("endDate", val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {/* 👇 Clear button resets the filter */}
+                                {filters.endDate && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("endDate", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -178,10 +231,10 @@ const FilterFileName = ({ access, canIn, filters, onFilterChange, trashed }) => 
                     )}
                 </div>
             </th>
-            <th className={`col-date-filter ${filters.startDate || filters.endDate ? " active-filter-review" : ""} col`}>
+            <th className={`col-date-filter ${filters.startDateUpload || filters.endDateUpload ? " active-filter-review" : ""} col`}>
                 <div className="fileinfo-container-filter">
                     <span className="fileinfo-title-filter" onClick={() => toggleMenu('UploadDate')}>
-                        {filters.startDate || filters.endDate ? (
+                        {filters.startDateUpload || filters.endDateUpload ? (
                             <>
                                 <span>Upload Date</span> <FontAwesomeIcon icon={faFilter} style={{ marginLeft: "0px" }} />
                             </>
@@ -192,22 +245,74 @@ const FilterFileName = ({ access, canIn, filters, onFilterChange, trashed }) => 
                     {openMenu === 'UploadDate' && (
                         <div className="date-menu-filter">
                             <div className="date-filter-row">
-                                <label className="date-label">From:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.UploadDate}
-                                    onChange={(e) => onFilterChange('UploadDate', e.target.value)}
+                                <label className="date-label">From</label>
+                                <DatePicker
+                                    value={filters.startDateUpload || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        onFilterChange("startDateUpload", val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {/* 👇 Clear button resets the filter */}
+                                {filters.startDateUpload && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("startDateUpload", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                             <div className="date-filter-row">
                                 <label className="date-label">To:</label>
-                                <input
-                                    type="date"
-                                    className="filter-input-date"
-                                    value={filters.UploadDate}
-                                    onChange={(e) => onFilterChange('UploadDate', e.target.value)}
+                                <DatePicker
+                                    value={filters.endDateUpload || ""}
+                                    format="YYYY-MM-DD"
+                                    onChange={(val) =>
+                                        onFilterChange("endDateUpload", val?.format("YYYY-MM-DD"))
+                                    }
+                                    rangeHover={false}
+                                    highlightToday={false}
+                                    editable={false}
+                                    inputClass="filter-input-date"
+                                    placeholder="YYYY-MM-DD"
+                                    hideIcon={false}
                                 />
+
+                                {/* 👇 Clear button resets the filter */}
+                                {filters.endDateUpload && (
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange("endDateUpload", "")}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "#666",
+                                            cursor: "pointer",
+                                            fontSize: "14px",
+                                            padding: "2px 6px",
+                                        }}
+                                        title="Clear date"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} title='Clear Filter' />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}

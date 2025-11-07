@@ -11,6 +11,7 @@ import CriticalControl from './RiskInfo/CriticalControl';
 import ControlQuality from './RiskInfo/ControlQuality';
 import ControlEffectiveness from './RiskInfo/ControlEffectiveness';
 import axios from 'axios';
+import DatePicker from 'react-multi-date-picker';
 
 const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) => {
     const [initialControlName] = useState(data.control);
@@ -335,8 +336,8 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                             <div className="cea-popup-page-component-wrapper">
                                 <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
                                     <label style={{ marginRight: '40px', textAlign: "left" }}>Control</label>
-                                    <input
-                                        className="cea-popup-page-input"
+                                    <textarea
+                                        className="cea-popup-page-text-area-input"
                                         value={controlName}
                                         onChange={(e) => setControlName(e.target.value)}
                                         readOnly={readOnly}
@@ -590,12 +591,25 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                                         <div className="ibra-popup-page-form-group">
                                                             <label style={{ fontSize: "15px" }}>Due Date
                                                             </label>
-                                                            <input
-                                                                type='date'
-                                                                className="cea-popup-page-input"
-                                                                value={dueDate}
-                                                                onChange={(e) => setDueDate(e.target.value)}
+                                                            <DatePicker
+                                                                value={dueDate || ""}
+                                                                format="YYYY-MM-DD"
+                                                                onChange={(val) =>
+                                                                    setDueDate(val?.format("YYYY-MM-DD"))
+                                                                }
+                                                                rangeHover={false}
+                                                                highlightToday={false}
+                                                                editable={false}
+                                                                placeholder="YYYY-MM-DD"
+                                                                hideIcon={false}
+                                                                inputClass='cea-popup-page-input'
                                                                 readOnly={readOnly}
+                                                                onFocus={() => {
+                                                                    setErrors(prev => ({
+                                                                        ...prev,
+                                                                        dateConducted: false
+                                                                    }))
+                                                                }}
                                                             />
                                                         </div>
                                                     </div>

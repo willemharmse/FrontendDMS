@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DatePicker from "react-multi-date-picker";
 
 const getTodayLocalISO = () => {
     const d = new Date();
@@ -73,13 +74,13 @@ const ModifySerialDate = ({
 
     // --- Date handlers (keep clamping if you want immediate correction) ---
     const handleDateRaw = (raw) => clampToToday(normalizeLooseDate(raw) || raw);
-    const onDateChange = (e) => {
-        const clamped = handleDateRaw(e.target.value);
+    const onDateChange = (value) => {
+        const clamped = handleDateRaw(value);
         setDateVal(clamped);
         updateDraftRow(index, { dateUpdatedStr: clamped });
     };
-    const onDateBlur = (e) => {
-        const clamped = handleDateRaw(e.target.value);
+    const onDateBlur = (value) => {
+        const clamped = handleDateRaw(value);
         setDateVal(clamped);
         updateDraftRow(index, { dateUpdatedStr: clamped });
     };
@@ -108,21 +109,6 @@ const ModifySerialDate = ({
                 </div>
 
                 <div className="review-date-group">
-                    <label className="review-date-label" htmlFor="component-date">Update / Installation Date</label>
-                    <input
-                        id="component-date"
-                        type="date"
-                        required
-                        max={todayStr}
-                        value={dateVal ?? ""}
-                        onChange={onDateChange}
-                        onBlur={onDateBlur}
-                        style={{ width: "90%" }}
-                        className="ump-input-select font-fam"
-                    />
-                </div>
-
-                <div className="review-date-group">
                     <label className="review-date-label" htmlFor="serial-number">Serial Number</label>
                     <input
                         id="serial-number"
@@ -132,6 +118,32 @@ const ModifySerialDate = ({
                         onChange={onSerialChange}
                         className="review-popup-input"
                     />
+                </div>
+
+                <div className="review-date-group">
+                    <label className="review-date-label" htmlFor="component-date">Update / Installation Date</label>
+                    <div className="ump-input-select-container-new">
+                        <DatePicker
+                            id="component-date"
+                            required
+                            value={dateVal || ""}
+                            format="YYYY-MM-DD"
+                            onChange={(val) =>
+                                onDateChange(val?.format("YYYY-MM-DD"))
+                            }
+                            onBlur={(val) =>
+                                onDateBlur(val?.format("YYYY-MM-DD"))
+                            }
+                            rangeHover={false}
+                            highlightToday={false}
+                            editable={false}
+                            inputClass="ump-input-select-new-2"
+                            placeholder="YYYY-MM-DD"
+                            hideIcon={false}
+                            maxDate={todayStr}
+                            style={{ width: "100%" }}
+                        />
+                    </div>
                 </div>
 
                 <div className="review-date-buttons">

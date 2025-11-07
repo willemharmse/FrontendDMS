@@ -723,7 +723,7 @@ const InductionPreviewPage = ({ draftID, closeModal }) => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" title="Home" />
+                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" title="Home" />
                         <p className="logo-text-um">Training Management</p>
                     </div>
 
@@ -761,7 +761,7 @@ const InductionPreviewPage = ({ draftID, closeModal }) => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <img src={"/visitorInductionMainIcon2.svg"} alt="Control Attributes" className="icon-risk-rm" />
                         <p className="logo-text-dm-fi">Visitor Induction</p>
                     </div>
                 </div>
@@ -1081,6 +1081,23 @@ const InductionPreviewPage = ({ draftID, closeModal }) => {
                                                                             {currentSlide.content || ""}
                                                                         </div>
                                                                     </div>
+                                                                </div>
+                                                            )}
+
+                                                            {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
+                                                                <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.contentLeft || ""}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                        <div style={{ margin: "auto 0" }}>
+                                                                            {currentSlide.contentRight || ""}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={isAudioAt(currentSlide, 1) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 1, "16/9")}</div>
                                                                 </div>
                                                             )}
 

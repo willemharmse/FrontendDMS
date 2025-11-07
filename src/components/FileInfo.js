@@ -444,7 +444,9 @@ const FileInfo = () => {
       file.departmentHead.toLowerCase().includes(filters.deptHead.toLowerCase()) &&
       file.docID.toLowerCase().includes(filters.docID.toLowerCase()) &&
       (!filters.startDate || file.reviewDate >= filters.startDate) &&
-      (!filters.endDate || file.reviewDate <= filters.endDate)
+      (!filters.endDate || file.reviewDate <= filters.endDate) &&
+      (!filters.startDateUpload || file.uploadDate >= filters.startDateUpload) &&
+      (!filters.endDateUpload || file.uploadDate <= filters.endDateUpload)
     );
 
     const matchesFilters =

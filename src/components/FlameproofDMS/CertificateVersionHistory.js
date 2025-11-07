@@ -191,7 +191,7 @@ const CertificateVersionHistory = () => {
                                 <th className="certificate-version-history-file-nr">Nr</th>
                                 <th className="certificate-version-history-file-name">Name</th>
                                 <th className="certificate-version-history-file-version">Version</th>
-                                <th className="certificate-version-history-file-certAuth">Certification Authority</th>
+                                <th className="certificate-version-history-file-certAuth">Certification Body</th>
                                 <th className="certificate-version-history-file-certNr">Certificate Number</th>
                                 <th className="certificate-version-history-file-issueDate">Issue Date</th>
                                 <th className="certificate-version-history-file-dateReplaced">Date Replaced</th>
