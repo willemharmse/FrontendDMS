@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft, faSpinner, faDownload, faSort } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
 import { toast, ToastContainer } from 'react-toastify';
@@ -19,6 +19,8 @@ import UpdateCertificateModal from "./Popups/UpdateCertificateModal";
 import SortPopupCertificates from "./Popups/SortPopupCertificates";
 import TopBarFPC from "./Popups/TopBarFPC";
 import DeleteCertificate from "./Popups/DeleteCertificate";
+import ReplaceComponentPopup from "./WarehousePopups/ReplaceComponentPopup";
+import { saveAs } from "file-saver";
 
 const FlameProofSub = () => {
   const { type, assetId } = useParams();
@@ -61,6 +63,21 @@ const FlameProofSub = () => {
   const [types, setTypes] = useState([]);
   const [siteTitle, setSiteTitle] = useState("");
   const [selectedType, setSelectedType] = useState([]);
+  const [replace, setReplace] = useState(false);
+  const [replaceType, setReplaceType] = useState("");
+  const [replaceComp, setReplaceComp] = useState("");
+  const [replaceID, setReplaceID] = useState("");
+
+  const openReplace = (assetType, component, id) => {
+    setReplaceID(id);
+    setReplaceType(assetType);
+    setReplaceComp(component);
+    setReplace(true);
+  };
+
+  const closeReplace = () => {
+    setReplace(false);
+  };
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -80,6 +97,58 @@ const FlameProofSub = () => {
 
     fetchSite();
   }, []);
+
+
+  const getReason = (status, file) => {
+    switch ((status || "").toLowerCase()) {
+      case "invalid":
+        if (file.authInvalid) {
+          return "Certifier Credentials Invalid";
+        }
+        if (file.authRemoved) {
+          return "Certifier Credentials Removed";
+        }
+        return "Certificate Invalid";
+      case "not uploaded":
+        return "—";
+      default:
+        return "—";
+    }
+  };
+
+  const exportSID = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}/api/flameproofExport/export-certificates/${assetId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      let filename = response.headers.get("X-Export-Filename");
+
+      if (!filename) {
+        const cd = response.headers.get("Content-Disposition") || "";
+        const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i);
+        if (match) filename = decodeURIComponent(match[1] || match[2]);
+      }
+
+      const documentName = "SID Document VN/A";
+
+      if (!filename) filename = `${documentName}.xlsx`;
+
+      const blob = await response.blob();
+      saveAs(blob, filename);
+    } catch (error) {
+      console.error("Error generating document:", error);
+    }
+  };
 
   const closePopup = () => {
     setPopup(null);
@@ -163,6 +232,39 @@ const FlameProofSub = () => {
       console.error('Error deleting file from trash:', error);
     } finally {
       setLoading(false); // Reset loading state after response
+    }
+  };
+
+  const replaceComponent = async (replacementID) => {
+    if (!replaceType && !replaceComp) return;
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/certificates/${replaceID}/${replacementID}/replace`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to delete file from trash');
+      setReplace(false);
+      setReplaceID(null);
+      setReplaceType("");
+      setReplaceComp("");
+
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Component Successfully moved from Digital Warehouse", {
+        closeButton: true,
+        autoClose: 2000,
+        style: { textAlign: "center" },
+      });
+
+
+      fetchFiles();
+    } catch (error) {
+      console.error('Error deleting file from trash:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -599,93 +701,104 @@ const FlameProofSub = () => {
           <TopBarFPC isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} toggleTrashView={toggleTrashView} isTrashView={isTrashView} canIn={canIn} access={access} openSort={openSortModal} />
         </div>
 
-        <div className="table-container-file">
-          <table>
-            <thead>
-              <tr className={isTrashView ? 'trashed' : ""}>
-                <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
-                <th className="flame-sub-cert-filter col">Certificate Nr</th>
-                {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
-                <th className="flame-sub-area-filter col">Area</th>
-                <th className="flame-sub-owner-filter col">Asset Owner</th>
-                <th className="flame-sub-auth-filter col">Certification Body</th>
-                <th className="flame-sub-comp-filter col">Component</th>
-                <th className={`flame-sub-head-filter`}>Department Head</th>
-                <th className={`flame-sub-status-filter col`}>Status</th>
-                <th className="flame-sub-date-filter col">Issue Date</th>
-                {!isTrashView && (<th className="flame-sub-date-filter col">Expiry Date</th>)}
-                {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {isLoadingTable && (
-                <tr>
-                  <td colSpan={
-                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
-                  } style={{ textAlign: "center", padding: 20 }}>
-                    <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading certificates.
-                  </td>
+        <div className="table-flameproof-card">
+          <div className="flameproof-table-header-label-wrapper">
+            <label className="risk-control-label">{isTrashView ? `Trashed Certificates` : (type)}</label>
+            {!isTrashView && (<FontAwesomeIcon
+              icon={faDownload}
+              title="Export to Excel"
+              className="top-right-button-control-att"
+              onClick={exportSID}
+            />)}
+            <FontAwesomeIcon
+              icon={faSort}
+              title="Select Columns to Display"
+              className={isTrashView ? "top-right-button-control-att" : `top-right-button-control-att-2`}
+              onClick={openSortModal}
+            />
+          </div>
+          <div className="table-container-file-flameproof-all-assets">
+            <table>
+              <thead>
+                <tr className={isTrashView ? 'trashed' : ""}>
+                  <th className="flame-num-filter col" style={{ fontSize: "14px" }}>Nr</th>
+                  <th className="flame-sub-cert-filter col" style={{ width: "10%" }}>Certificate Nr</th>
+                  {isTrashView && (<th className="flame-sub-ass-nr-2-filter col" style={{ fontSize: "14px" }}>Asset Type</th>)}
+                  <th className="flame-sub-owner-filter col">Asset Owner</th>
+                  <th className="flame-sub-auth-filter col">Certification Body</th>
+                  <th className="flame-sub-comp-filter col">Component</th>
+                  <th className={`flame-sub-head-filter`}>Department Head</th>
+                  <th className={`flame-sub-status-filter col`}>Status</th>
+                  <th className={`flame-sub-status-filter col`} style={{ width: "9%" }}>Invalidity Reason</th>
+                  <th className="flame-sub-date-filter col">Issue Date</th>
+                  {!isTrashView && (<th className="flame-sub-date-filter col">Expiry Date</th>)}
+                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-sub-act-filter col" style={{ fontSize: "14px" }}>Action</th>)}
                 </tr>
-              )}
-
-              {!isLoadingTable && showNoAssets && (
-                <tr>
-                  <td colSpan={
-                    10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
-                  } style={{ textAlign: "center", padding: 20 }}>
-                    No Certificates Uploaded.
-                  </td>
-                </tr>
-              )}
-
-              {filteredFiles.map((file, index) => (
-                <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                  <td className="col">{index + 1}</td>
-                  <td className="col">{file.certNr}</td>
-                  {isTrashView && (<th className="col" style={{ fontWeight: "normal" }}>{file.asset.assetType}</th>)}
-                  <td
-
-                    style={{ textAlign: "center", position: "relative" }}
-                    className="col"
-                  >
-                    {(file.asset.operationalArea)}
-                    {(hoveredFileId === file._id && !file.isPlaceholder) && (
-                      <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} />
-                    )}
-                  </td>
-                  <td className="col">{file.asset.assetOwner}</td>
-                  <td className={`col`}>{(file.certAuth)}</td>
-                  <td className="col">{formatStatus(file.component)}</td>
-                  <td className="col">{file.asset.departmentHead}</td>
-                  <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
-                  <td className={`col`}>{formatDate(file.issueDate)}</td>
-                  {!isTrashView && (<td className={`col`}>{formatDate(file.certificateExipryDate)}</td>)}
-                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
-                    <td className={`col-act ${isTrashView ? "trashed" : ""}`}>
-
-                      {isTrashView && (
-                        <button
-                          className={"delete-button-fi col-but-res trashed-color"}
-                          onClick={() => restoreFile(file._id)}
-                        >
-                          <FontAwesomeIcon icon={faRotate} title="Restore Document" />
-                        </button>
-                      )}
-                      {!file.isPlaceholder && (<button
-                        className={`delete-button-fi col-but ${isTrashView ? "trashed-color" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();         // ⛔ prevent row click
-                          openModal(file._id, file.fileName);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                      </button>)}
+              </thead>
+              <tbody>
+                {isLoadingTable && (
+                  <tr>
+                    <td colSpan={
+                      10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    } style={{ textAlign: "center", padding: 20 }}>
+                      <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading certificates.
                     </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                )}
+
+                {!isLoadingTable && showNoAssets && (
+                  <tr>
+                    <td colSpan={
+                      10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    } style={{ textAlign: "center", padding: 20 }}>
+                      No Certificates Uploaded.
+                    </td>
+                  </tr>
+                )}
+
+                {filteredFiles.map((file, index) => (
+                  <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                    <td className="col">{index + 1}</td>
+                    <td className="col" style={{ textAlign: "center", position: "relative" }}>{file.certNr}
+                      {(hoveredFileId === file._id && !file.isPlaceholder) && (
+                        <PopupMenuOptions file={file} openUpdate={openUpdate} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} img={versionIcon} txt={type} openReplace={openReplace} />
+                      )}</td>
+                    {isTrashView && (<th className="col" style={{ fontWeight: "normal" }}>{file.asset.assetType}</th>)}
+                    <td className="col">{file.asset.assetOwner}</td>
+                    <td className={`col`}>{(file.certAuth)}</td>
+                    <td className="col">{formatStatus(file.component)}</td>
+                    <td className="col">{file.asset.departmentHead}</td>
+                    <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
+                    <td className={`col`}>{getReason(file.status, file)}</td>
+                    <td className={`col`}>{formatDate(file.issueDate)}</td>
+                    {!isTrashView && (<td className={`col`}>{formatDate(file.certificateExipryDate)}</td>)}
+                    {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+                      <td className={`col-act ${isTrashView ? "trashed" : ""}`}>
+
+                        {isTrashView && (
+                          <button
+                            className={"delete-button-fi col-but-res trashed-color"}
+                            onClick={() => restoreFile(file._id)}
+                          >
+                            <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                          </button>
+                        )}
+                        {!file.isPlaceholder && (<button
+                          className={`delete-button-fi col-but ${isTrashView ? "trashed-color" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();         // ⛔ prevent row click
+                            openModal(file._id, file.fileName);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                        </button>)}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -694,6 +807,7 @@ const FlameProofSub = () => {
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}
       {update && (<UpdateCertificateModal certificateID={updateID} closeModal={closeUpdate} isModalOpen={update} refresh={fetchFiles} />)}
+      {replace && (<ReplaceComponentPopup onClose={closeReplace} isOpen={replace} assetType={replaceType} component={replaceComp} replaceComponent={replaceComponent} />)}
       <ToastContainer />
     </div >
   );

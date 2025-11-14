@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor, faBuilding, faBars, faCirclePlus, faTableList } from '@fortawesome/free-solid-svg-icons';
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faTruck, faIndustry, faHammer, faDrumSteelpan, faCogs, faTruckMonster, faTractor, faCirclePlus, faTableList } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 import ChangePassword from "../UserManagement/ChangePassword";
 import { getCurrentUser, can, isAdmin, canIn } from "../../utils/auth";
@@ -11,9 +11,8 @@ import UploadChoiceFPM from "./Popups/UploadChoiceFPM";
 import UploadMasterPopup from "./Popups/UploadMasterPopup";
 import UploadComponentPopup from "./Popups/UploadComponentPopup";
 import RegisterAssetPopup from "./Popups/RegisterAssetPopup";
-import UpdateCertificateModal from "./Popups/UpdateCertificateModal";
 
-const FlameProofAllSites = () => {
+const FlameProofHomeAllSites = () => {
     const [error, setError] = useState(null);
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
@@ -21,14 +20,13 @@ const FlameProofAllSites = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [upload, setUpload] = useState(false);
-    const [register, setRegister] = useState(false);
     const navigate = useNavigate();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [popup, setPopup] = useState(null);
     const [uploadAssetNr, setUploadAssetNr] = useState("");
+    const [register, setRegister] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showDelayedLoading, setShowDelayedLoading] = useState(false);
-    const [warehouseCount, setWarehouseCount] = useState([])
 
     useEffect(() => {
         let timer;
@@ -41,14 +39,24 @@ const FlameProofAllSites = () => {
         return () => clearTimeout(timer);
     }, [isLoading]);
 
-    const goToNextPage = (name, id) => {
-        if (id === "all-sites") {
-            navigate(`/FrontendDMS/flameAllMineHome/${id}`);
-        }
-        else {
-            navigate(`/FrontendDMS/flameManageHome/${id}`);
-        }
-    }
+    const getInitials = (str = "") =>
+        str
+            .trim()
+            .split(/[\s\/\-_.()]+/)           // split on spaces & common separators
+            .filter(Boolean)
+            .map(w => w[0].toUpperCase())
+            .join("");
+
+    const formatAssetTypeLabel = (assetType = "", isAll = false) => {
+        if (isAll) return assetType;        // no initials for the "All {sitename} Assets" row
+        const initials = getInitials(assetType);
+        return initials ? `${assetType} (${initials})` : assetType;
+    };
+
+    const isAllRow = (doc) =>
+        doc?._id === "all-org-assets" ||
+        doc?._id === "digital-warehouse" ||
+        /^All\s/i.test(doc?.assetType || "");
 
     const closePopup = () => {
         setPopup(null);
@@ -57,6 +65,16 @@ const FlameProofAllSites = () => {
     const clearSearch = () => {
         setSearchQuery("");
     };
+
+    const goToNextPage = (id, assetType) => {
+        if (id === "all-org-assets") {
+            navigate("/FrontendDMS/flameAllMineAsset");
+        } else if (id === "digital-warehouse") {   // NEW
+            navigate(`/FrontendDMS/flameDigitalWarehouse/${id}`);
+        } else {
+            navigate(`/FrontendDMS/flameManageAllMine/${assetType}`);
+        }
+    }
 
     const openUpload = () => {
         setUpload(true);
@@ -99,74 +117,82 @@ const FlameProofAllSites = () => {
         paddedDocs.push(null);
     }
 
-    const filteredDocs = paddedDocs.filter(file => file && file.site && file.site.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredDocs = paddedDocs.filter(file => file && file.assetType && file.assetType.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const fetchWarehouseStats = async () => {
+        const res = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/getWarehouseDocs`);
+        if (!res.ok) throw new Error('Failed to fetch digital warehouse docs');
+        const { warehouseDocuments = [] } = await res.json();
+
+        const valid = warehouseDocuments.reduce((acc, d) => {
+            const status = String(d?.status || '').toLowerCase();
+            const authInvalid = !!d?.authInvalid;
+            // valid means status === 'valid' AND not authInvalid
+            return acc + (status === 'valid' && !authInvalid ? 1 : 0);
+        }, 0);
+
+        const invalid = warehouseDocuments.length - valid;
+        return { valid, invalid, total: warehouseDocuments.length };
+    };
 
     const fetchCount = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getSites`, {
-                headers: {
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch count');
-            }
-            const data = await response.json();
+            setIsLoading(true);
 
-            setCount(data.sites);
+            const [assetsRes, whStats] = await Promise.all([
+                fetch(`${process.env.REACT_APP_URL}/api/flameproof/getOrgAssetCount`),
+                fetchWarehouseStats()
+            ]);
+
+            if (!assetsRes.ok) throw new Error('Failed to fetch asset counts');
+            const assetsData = await assetsRes.json();
+
+            const warehouseDoc = {
+                _id: 'digital-warehouse',
+                assetType: 'Digital Warehouse',
+                // special fields for this row:
+                validCertificates: whStats.valid,
+                invalidCertificates: whStats.invalid,
+                // optional total if you still want it available for filters/sorting
+                totalCertificates: whStats.total
+            };
+
+            setCount([warehouseDoc, ...(assetsData.assets || [])]);
             setIsLoading(false);
         } catch (error) {
             setError(error.message);
-        }
-    };
-
-    const fetchWarehouse = async () => {
-        const route = `/api/flameWarehouse/getWarehouseDocs`;
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
-                headers: {
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch files (${response.status})`);
-            }
-
-            const data = await response.json();
-
-            setWarehouseCount(data.warehouseDocuments);
-        } catch (err) {
-            setError(err?.message || "Network error");
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         if (loggedInUserId) {
             fetchCount();
-            fetchWarehouse();
         }
     }, [loggedInUserId]);
 
-    const { validCount, expiredCount, notUploadedCount, invalidCount } = useMemo(() => {
-        const v = warehouseCount.filter(f => f.status.toLowerCase() === "valid").length;
-        const e = warehouseCount.filter(f => f.status.toLowerCase() === "invalid").length;
-        const n = warehouseCount.filter(f => f.status.toLowerCase() === "Not Uploaded").length;
-        return { validCount: v, expiredCount: e, notUploadedCount: n, invalidCount: e + n };
-    }, [warehouseCount]);
-
     const iconMap = {
-        "All Sites": "allDocumentsDMS.svg",
-        default: "fmsSiteIcon.svg"
+        "all-org-assets": "/allDocumentsDMS.svg",
+        "digital-warehouse": "/flameWarehouse2.svg",
+        "Continuous Miner": "/FCMS_CM.png",
+        "Shuttle Car": "/FCMS_SC.png",
+        "Roof Bolter": "/FCMS_RB.png",
+        "Feeder Breaker": "/FCMS_FB.png",
+        "Load Haul Dumper": "/FCMS_LHD.png",
+        "Tractor": "/FCMS_T.png",
     }
 
-    const getIcon = (site) => `/${iconMap[site] ?? iconMap.default}`;
+    const assetTypeCount = React.useMemo(
+        () => filteredDocs.filter(doc => !isAllRow(doc)).length,
+        [filteredDocs]
+    );
 
-    const ALL_SITE_LABEL = "All Organisation Assets";
-
-    // use the raw data (not padded) to avoid null placeholders affecting the count
-    const siteCount = count
-        .filter(d => d && d.site && d.site.toLowerCase().includes(searchQuery.toLowerCase()))
-        .filter(d => d.site !== ALL_SITE_LABEL)
-        .length;
+    const getIcon = (doc) => {
+        if (!doc) return "";
+        if (doc._id === "digital-warehouse") return iconMap["digital-warehouse"]; // NEW
+        if (isAllRow(doc)) return iconMap[doc._id];
+        return iconMap[doc.assetType] || "/genericAssetType.svg";
+    };
 
     return (
         <div className="user-info-container">
@@ -198,29 +224,23 @@ const FlameProofAllSites = () => {
                             </div>
                         </>
                     )}
-                    {canIn(access, "FCMS", ["systemAdmin"]) && (<>
-                        <div className="sidebar-logo-dm-fi">
-                            <div className="risk-button-container-create-bot">
-                                <button className="but-um" onClick={() => navigate("/FrontendDMS/fcmsAdmin")}>
-                                    <div className="button-content">
-                                        <FontAwesomeIcon icon={faBars} src={`${process.env.PUBLIC_URL}/dmsAdmin.svg`} size="xs" className={"button-logo-custom"} />
-                                        <span className="button-text">Manage FMM</span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                    )}
-                </div>
-            )}
-
-            {!isSidebarVisible && (
-                <div className="sidebar-hidden">
-                    <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
-                        <FontAwesomeIcon icon={faCaretRight} />
+                    <div className="sidebar-logo-dm-fi">
+                        <img src={`${process.env.PUBLIC_URL}/fmsSiteIcon2.svg`} alt="Logo" className="icon-risk-rm" />
+                        <p className="logo-text-dm-fi">{"All Sites"}</p>
                     </div>
                 </div>
-            )}
+            )
+            }
+
+            {
+                !isSidebarVisible && (
+                    <div className="sidebar-hidden">
+                        <div className="sidebar-toggle-icon" title="Show Sidebar" onClick={() => setIsSidebarVisible(true)}>
+                            <FontAwesomeIcon icon={faCaretRight} />
+                        </div>
+                    </div>
+                )
+            }
 
             <div className="main-box-user">
                 <div className="top-section-um">
@@ -232,39 +252,49 @@ const FlameProofAllSites = () => {
                             className="search-input-um"
                             type="text"
                             placeholder="Search"
-                            value={searchQuery}
                             autoComplete="off"
+                            value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery !== "" && (<i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" title="Clear Search" /></i>)}
                         {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
                     </div>
 
-                    <div className="info-box-fih">Number of Sites: {siteCount}</div>
+                    <div className="info-box-fih">Number of Asset Types: {assetTypeCount}</div>
 
                     <div className="spacer"></div>
 
                     <TopBar />
                 </div>
 
+
                 <div className="scrollable-box-fi-home">
                     {showDelayedLoading && (
                         <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
                             <div className="file-info-loading__spinner" />
-                            <div className="file-info-loading__text">Loading Sites</div>
+                            <div className="file-info-loading__text">Loading Assets</div>
                         </div>
                     )}
 
                     {filteredDocs.map((doc, index) => (
-                        <div key={index} className={`${doc._id === "all-sites" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => goToNextPage(doc.site, doc._id)}>
+                        <div key={index} className={`${isAllRow(doc) ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => goToNextPage(doc._id, doc.assetType)}>
                             {doc && (
                                 <>
-                                    <div className={`${doc._id === "all-sites" ? "all-icon-fi-home" : "flame-ph-icon"}`}>
-                                        <img src={`${process.env.PUBLIC_URL}${getIcon(doc.site)}`} className={`${doc._id === "all-sites" ? "all-icon-fi-home" : "icon-dept"}`} />
+                                    <div className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`}>
+                                        <img src={getIcon(doc)} className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
-                                    <h3 className="document-title-fi-home">{doc.site}</h3>
-                                    <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>
-                                    <p className="document-info-fi-home">Outstanding Certificates: {doc.invalidCertificates}</p>
+                                    <h3 className="document-title-fi-home">{formatAssetTypeLabel(isAllRow(doc) ? doc.assetType : doc.assetType + "s", isAllRow(doc))}</h3>
+                                    {doc._id === 'digital-warehouse' ? (
+                                        <>
+                                            <p className="document-info-fi-home">Valid Components: {doc.validCertificates ?? 0}</p>
+                                            <p className="document-info-fi-home">Invalid Components: {doc.invalidCertificates ?? 0}</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>
+                                            <p className="document-info-fi-home">Outstanding Certificates: {doc.invalidCertificates}</p>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -274,8 +304,8 @@ const FlameProofAllSites = () => {
             <ToastContainer />
             {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchCount} />)}
             {register && (<RegisterAssetPopup onClose={closeRegister} refresh={fetchCount} exit={exitRegister} />)}
-        </div>
+        </div >
     );
 };
 
-export default FlameProofAllSites;
+export default FlameProofHomeAllSites;

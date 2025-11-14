@@ -21,6 +21,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
     const [errors, setErrors] = useState({});
     const [licenseNumber, setLicenseNumber] = useState(certifierData?.licenseNumber || "");
     const [expiryDate, setExpiryDate] = useState(certifierData?.licenseExpiryDate || "");
+    const [fileAttached, setFileAttached] = useState(!!certifierData?.fileName);
     const navigate = useNavigate();
 
     const todayString = () => {
@@ -52,6 +53,8 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
             setErrors(newErrors);
         }
     }, [licenseNumber, certificateAuth, issueDate, expiryDate]);
+
+    const hasFile = selectedFile || fileAttached;
 
     const isFormValid = () => {
         const newErrors = validateForm();
@@ -88,7 +91,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
             const data = await response.json();
 
             if (!response.ok) {
-                toast.error(data.message, { autoClose: 800, closeButton: "true" })
+                toast.error(data.message, { autoClose: 2000, closeButton: "true" })
                 setLoading(false);
                 return;
             };
@@ -135,7 +138,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
                     </div>
 
                     <div className="ump-form-group-container">
-                        <div className="ump-file-name">{selectedFile ? selectedFile.name : "No Accreditation Certification Selected"}</div>
+                        <div className="ump-file-name">{selectedFile ? selectedFile.name : certifierData?.fileName}</div>
                         <div className="ump-actions">
                             <label className="ump-choose-button" style={{ width: "40%" }}>
                                 {'Choose Accreditation Certification'}
@@ -220,6 +223,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
                                             placeholder="Select Expiry Date"
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
+                                            minDate={issueDate}
                                         />
                                     </div>
                                 </div>
@@ -229,7 +233,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
 
                     <div className="ump-form-footer">
                         <div className="ump-actions">
-                            <button className="ump-upload-button" onClick={handleSubmit}>
+                            <button className="ump-upload-button" disabled={!hasFile} onClick={handleSubmit}>
                                 {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Submit'}
                             </button>
                         </div>

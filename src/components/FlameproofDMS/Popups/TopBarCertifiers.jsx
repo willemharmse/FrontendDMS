@@ -5,8 +5,9 @@ import { faArrowLeft, faBell, faCircleUser, faHome, faSort } from "@fortawesome/
 import BurgerMenuFI from "../../FileInfo/BurgerMenuFI";
 import Notifications from "../../Notifications/Notifications";
 import BurgerMenuFP from "./BurgerMenuFP";
+import BurgerMenuCertifiers from "./BurgerMenuCertifiers";
 
-const TopBarFPC = ({ openSort, canIn, access, isTrashView, toggleTrashView }) => {
+const TopBarCertifiers = ({ openSort, canIn, access, isTrashView, toggleTrashView, message1, message2 }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,6 +44,9 @@ const TopBarFPC = ({ openSort, canIn, access, isTrashView, toggleTrashView }) =>
 
     return (
         <div className="icons-container">
+            <div className="sort-menu-icon-um">
+                <FontAwesomeIcon onClick={openSort} icon={faSort} title="Sort" />
+            </div>
             <div className="burger-menu-icon-um-home">
                 <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faHome} title="Home" />
             </div>
@@ -68,9 +72,9 @@ const TopBarFPC = ({ openSort, canIn, access, isTrashView, toggleTrashView }) =>
                 )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen) && (<BurgerMenuFP isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} canIn={canIn} access={access} isTrashView={isTrashView} toggleTrashView={toggleTrashView} />)}
+            {(isMenuOpen) && (<BurgerMenuCertifiers isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} canIn={canIn} access={access} isTrashView={isTrashView} toggleTrashView={toggleTrashView} />)}
         </div>
     );
 };
 
-export default TopBarFPC;
+export default TopBarCertifiers;

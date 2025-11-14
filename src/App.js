@@ -114,6 +114,11 @@ import ResetVisitorPassword from './components/VisitorsInduction/ResetVisitorPas
 import InductionDrafts from './components/VisitorsInduction/InductionCreation/InductionDrafts';
 import FlameProofCertifiers from './components/FlameproofDMS/FlameProofCertifiers';
 import FlameProofDigitalWarehouse from './components/FlameproofDMS/FlameProofDigitalWarehouse';
+import FlameProofHomeAllSites from './components/FlameproofDMS/FlameProofHomeAllSites';
+import FlameProofMainAllSites from './components/FlameproofDMS/FlameProofMainAllSites';
+import DigitalWarehouseRemoved from './components/FlameproofDMS/WarehousePages/DigitalWarehouseRemoved';
+import PreviewCertifier from './components/FlameproofDMS/CertifiersPages/PreviewCertifier';
+import InvalidPageMobile from './components/Mobile/InvalidPageMobile';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -188,7 +193,7 @@ function App() {
       <Routes>
         {/* Desktop Routes */}
         <Route path="FrontendDMS/" element={isMobile ? <Navigate to="/FrontendDMS/mobileLogin" /> : <NewLogin />} />
-        <Route path="FrontendDMS/visitorLogin" element={<VisitorLogin />} />
+        <Route path="FrontendDMS/visitorLogin" element={isMobile ? <Navigate to="/FrontendDMS/invalidDevice" /> : <VisitorLogin />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
         <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
@@ -281,7 +286,7 @@ function App() {
         <Route path='FrontendDMS/courseHomeViewPage' element={<UserHomePageTMS />} />
         <Route path='FrontendDMS/visitorView' element={<VisitorsInductionHomePage />} />
         <Route path='FrontendDMS/visitorHomePage' element={<VisitorInductionHomePage />} />
-        <Route path='FrontendDMS/visitor-profile' element={<VisitorsInductionSite />} />
+        <Route path='FrontendDMS/visitor-profile' element={isMobile ? <Navigate to="/FrontendDMS/invalidDevice" /> : <VisitorsInductionSite />} />
         <Route path='FrontendDMS/visitorPasswordSetup/:id' element={<VisitorPasswordSetup />} />
         <Route path='FrontendDMS/resetVisitorPassword' element={<ResetVisitorPassword />} />
         <Route path='FrontendDMS/inductionCreation/:id' element={<InductionCreationPage />} />
@@ -292,8 +297,13 @@ function App() {
         <Route path='FrontendDMS/visitorInductionHome' element={<VisitorInductionMainPage />} />
         <Route path='FrontendDMS/generatedInductionInfo' element={<GeneratedInductionInfo />} />
         <Route path='FrontendDMS/flameproofComponents/:type/:id' element={<ManageComponentAssets />} />
-        <Route path='/flameCertifiers' element={<FlameProofCertifiers />} />
-        <Route path='/flameDigitalWarehouse' element={<FlameProofDigitalWarehouse />} />
+        <Route path='FrontendDMS/flameCertifiers' element={<FlameProofCertifiers />} />
+        <Route path='FrontendDMS/flameDigitalWarehouse/:site' element={<FlameProofDigitalWarehouse />} />
+        <Route path='FrontendDMS/flameAllMineHome/:site' element={<FlameProofHomeAllSites />} />
+        <Route path='FrontendDMS/flameManageAllMine/:type' element={<FlameProofMainAllSites />} />
+        <Route path='FrontendDMS/flameReplacedComponents' element={<DigitalWarehouseRemoved />} />
+        <Route path='FrontendDMS/previewCertifier/:fileId' element={<PreviewCertifier />} />
+        <Route path='FrontendDMS/invalidDevice' element={<InvalidPageMobile />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

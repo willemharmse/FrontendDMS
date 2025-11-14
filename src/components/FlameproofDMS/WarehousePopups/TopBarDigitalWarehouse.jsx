@@ -4,9 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faCircleUser, faHome, faSort } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../../FileInfo/BurgerMenuFI";
 import Notifications from "../../Notifications/Notifications";
-import BurgerMenuFP from "./BurgerMenuFP";
+import BurgerMenuWarehouse from "./BurgerMenuWarehouse";
 
-const TopBarFPC = ({ openSort, canIn, access, isTrashView, toggleTrashView }) => {
+const TopBarDigitalWarehouse = ({ menu, setReset, isProfile = true, openSort }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,9 +68,9 @@ const TopBarFPC = ({ openSort, canIn, access, isTrashView, toggleTrashView }) =>
                 )}
             </div>
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
-            {(isMenuOpen) && (<BurgerMenuFP isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} canIn={canIn} access={access} isTrashView={isTrashView} toggleTrashView={toggleTrashView} />)}
+            {isMenuOpen && (<BurgerMenuWarehouse isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
         </div>
     );
 };
 
-export default TopBarFPC;
+export default TopBarDigitalWarehouse;

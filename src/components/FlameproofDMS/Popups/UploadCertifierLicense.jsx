@@ -87,7 +87,7 @@ const UploadCertifierLicense = ({ onClose }) => {
             const data = await response.json();
 
             if (!response.ok) {
-                toast.error(data.message, { autoClose: 800, closeButton: "true" })
+                toast.error(data.message, { autoClose: 2000, closeButton: "true" })
                 setLoading(false);
                 return;
             };
@@ -101,13 +101,13 @@ const UploadCertifierLicense = ({ onClose }) => {
             setError(null);
             setLoading(false);
 
-            toast.success("License Uploaded Successfully", {
+            toast.success("Accreditation Certificate Uploaded Successfully", {
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
 
             setTimeout(() => {
                 onClose();
-            }, 2000);
+            }, 3000);
         } catch (error) {
             setError(error.message);
             setLoading(false);
@@ -216,8 +216,7 @@ const UploadCertifierLicense = ({ onClose }) => {
                                             format="YYYY-MM-DD"
                                             onChange={(val) => {
                                                 const v = val?.format("YYYY-MM-DD");
-                                                const max = todayString();
-                                                setExpiryDate(v && v > max ? max : v); // clamp to today if future picked/typed
+                                                setExpiryDate(v); // clamp to today if future picked/typed
                                             }}
                                             style={{
                                                 width: "100%",
@@ -229,6 +228,7 @@ const UploadCertifierLicense = ({ onClose }) => {
                                             placeholder="Select Expiry Date"
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
+                                            minDate={issueDate}
                                         />
                                     </div>
                                 </div>

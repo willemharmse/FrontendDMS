@@ -517,7 +517,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 7%;
+    width: 5%;
     font-size: 16px;
     text-align: center;
 }
@@ -526,7 +526,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 7%;
+    width: 5%;
     font-size: 16px;
     text-align: center;
 }
@@ -535,7 +535,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 12%;
+    width: 10%;
     font-size: 16px;
     text-align: center;
 }
@@ -544,7 +544,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 12%;
+    width: 10%;
     font-size: 16px;
     text-align: center;
 }
@@ -553,7 +553,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 12%;
+    width: 10%;
     font-size: 16px;
     text-align: center;
 }
@@ -589,7 +589,134 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    width: 12%;
+    width: 10%;
     font-size: 16px;
     text-align: center;
+}
+
+.assetType-select .sb__dropdown-indicator {
+    display: none;
+}
+
+.assetType-select .sb__indicator-separator {
+    display: none;
+}
+
+.assetType-select .sb__indicators {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 28px;
+}
+
+.assetType-select .sb__clear-indicator {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    line-height: 0;
+    padding: 0;
+    padding-top: 4px;
+    transform: translateY(-10%);
+}
+
+.assetType-select .sb__control,
+.assetType-select .sb__control--is-focused {
+    min-height: 41px;
+    max-height: 41px;
+    overflow: hidden;
+}
+
+.assetType-select .sb__value-container {
+    padding: 2px 6px;
+    max-height: 41px;
+    min-height: 41px;
+    overflow-y: auto;
+    align-items: center;
+    font-size: 14px;
+    transform: translateY(-5%);
+}
+
+/* Tighter chips to fit more before scrolling */
+.assetType-select .sb__multi-value {
+    min-height: 18px;
+    margin: 2px 2px 0 0;
+    /* small gap between chips */
+}
+
+.assetType-select .sb__multi-value__label {
+    line-height: 16px;
+    padding: 0 4px;
+    font-size: 12px;
+}
+
+.assetType-select .sb__multi-value__remove {
+    padding: 0 4px;
+}
+
+/* Keep indicators compact too */
+.assetType-select .sb__indicators {
+    min-height: 41px;
+    max-height: 41px;
+}
+
+.assetType-select .sb__value-container::-webkit-scrollbar-thumb,
+.assetType-select .sb__menu-list::-webkit-scrollbar-thumb {
+    background: #b3b3b3;
+    border-radius: 8px;
+}
+
+.assetType-select .sb__value-container::-webkit-scrollbar-track,
+.assetType-select .sb__menu-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* 4) Remove top/bottom scrollbar arrow buttons (WebKit) */
+.assetType-select .sb__value-container::-webkit-scrollbar-button,
+.assetType-select .sb__menu-list::-webkit-scrollbar-button {
+    width: 12px !important;
+    height: 0;
+    display: block !important;
+}
+
+.flameproof-table-header-label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 5px);
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+
+.table-container-file-flameproof-all-assets {
+    height: calc(100%);
+    /* Full height minus padding */
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.table-flameproof-card {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    /* light grey border */
+    border-radius: 10px;
+    /* rounded corners */
+    background: #ffffff;
+    /* white card */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 15px 5px;
+    padding-bottom: 0px;
+    /* space between border and inner scroller */
+    height: calc(100% - 50px);
+    /* let the inner scroller control height */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* important so child can scroll in flex layouts */
+}
+
+/* Optional: make the table fill the card neatly */
+.table-flameproof-card table {
+    width: 100%;
 }

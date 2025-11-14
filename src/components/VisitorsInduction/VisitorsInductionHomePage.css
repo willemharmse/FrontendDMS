@@ -348,7 +348,7 @@
 }
 
 .limit-table-height-warehouse.wide {
-    min-width: 1920px;
+    min-width: 2120px;
     width: max-content;
     /* let table grow */
     table-layout: auto;
@@ -384,4 +384,14 @@
     background: #f1f1f1;
     /* track color */
     border-radius: 4px;
+}
+
+@media (min-width: 1921px) {
+    .limit-table-height-warehouse.wide {
+        min-width: 2205px;
+        width: max-content;
+        /* let table grow */
+        table-layout: auto;
+        /* allow natural width */
+    }
 }

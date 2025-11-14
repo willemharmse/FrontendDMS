@@ -142,6 +142,46 @@
     padding: 0px;
 }
 
+.top-right-button-control-att-3 {
+    position: absolute;
+    top: 20px;
+    right: 110px;
+    z-index: 1;
+    background: transparent;
+    color: gray;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
+.top-right-button-control-att-4 {
+    position: absolute;
+    top: 20px;
+    right: 150px;
+    z-index: 1;
+    background: transparent;
+    color: gray;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
 .search-popup-rca {
     position: absolute;
     top: 55px;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -9,24 +9,32 @@ import DatePicker from 'react-multi-date-picker';
 import UploadWithoutFileWarehouse from './UploadWithoutFileWarehouse';
 import UploadWithoutFileValuesWarehouse from './UploadWithoutFileValuesWarehouse';
 import Select from "react-select";
+import UpdateWarehouseWithoutFileWarehouse from './UpdateWarehouseWithoutFileWarehouse';
+import UpdateWithoutFileValuesWarehouse from './UpdateWithoutFileValuesWarehouse';
 
-const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
+const UpdateWarehouseComponentPopup = ({ onClose, data }) => {
+    useEffect(() => {
+        console.log("UpdateWarehouseComponentPopup opened with data:", data);
+    }, []);
+    const [dataId, setDataId] = useState(data?._id || '');
     const [selectedFile, setSelectedFile] = useState(null);
-    const [certificateAuth, setCertificateAuth] = useState('');
-    const [certificateNum, setCertificateNum] = useState('');
-    const [serialNumber, setSerialNumber] = useState("");
-    const [issueDate, setIssueDate] = useState('');
+    const [certificateAuth, setCertificateAuth] = useState(data?.certAuth || '');
+    const [certificateNum, setCertificateNum] = useState(data?.certNr || '');
+    const [serialNumber, setSerialNumber] = useState(data?.serialNumber || '');
+    const [issueDate, setIssueDate] = useState(data?.issueDate ? data.issueDate.slice(0, 10) : '');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [userID, setUserID] = useState('');
     const [errors, setErrors] = useState({});
-    const [expiryDate, setExpiryDate] = useState("");
+    const [expiryDate, setExpiryDate] = useState(data?.expiryDate ? data.expiryDate.slice(0, 10) : '');
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const [siteError, setSiteError] = useState(false);
     const [assetError, setAssetError] = useState(false);
     const [componentError, setComponentError] = useState(false);
     const [withoutValues, setWithoutValues] = useState(false);
     const [withoutFile, setWithoutFile] = useState(false);
+    const [assetTypesLoaded, setAssetTypesLoaded] = useState(false);
+    const [computedOnce, setComputedOnce] = useState(false);
 
     const isMaster = (s) => String(s || "").trim().toLowerCase() === "master";
 
@@ -47,8 +55,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
     }
 
     const [sites, setSites] = useState([]);
-    const [siteId, setSiteId] = useState(uploadSite || "");
-    const siteLocked = uploadSite && uploadSite !== "";
+    const [siteId, setSiteId] = useState(data?.site?._id || "");
 
     const [certifiers, setCertifiers] = useState([]);
     const [showCertifiersDropdown, setShowCertifiersDropdown] = useState(false);
@@ -56,10 +63,30 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
     const certifiersRef = useRef(null);
 
     const [assetTypes, setAssetTypes] = useState([]);
-    const [assetTypesSelected, setAssetTypesSelected] = useState([]);
+    const [assetTypesSelected, setAssetTypesSelected] = useState(data?.assetTypes || []);
 
     const [components, setComponents] = useState([]);
-    const [component, setComponent] = useState("");
+    const [component, setComponent] = useState(data?.component || '');
+
+    const norm = (s) => String(s || '').trim();
+
+    // Build the options from API assetTypes
+    const assetTypeOptions = useMemo(
+        () =>
+            (assetTypes || [])
+                .map(d => norm(d?.type))
+                .filter(Boolean)
+                .map(v => ({ value: v, label: v })),
+        [assetTypes]
+    );
+
+    // Map your selected string array -> React-Select's {value,label}
+    const selectedAssetTypeOptions = useMemo(
+        () => assetTypeOptions.filter(opt =>
+            (assetTypesSelected || []).some(sel => norm(sel) === opt.value)
+        ),
+        [assetTypeOptions, assetTypesSelected]
+    );
 
     const fetchCertifiers = async () => {
         try {
@@ -84,6 +111,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
             const data = await response.json();
 
             setAssetTypes(data.types);
+            setAssetTypesLoaded(true);
         } catch (error) {
             setError(error.message);
         }
@@ -140,7 +168,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
     useEffect(() => {
         if (!assetTypesSelected.length) {
             setComponents([]);
-            setComponent('');
+            if (computedOnce) setComponent('');
             return;
         }
 
@@ -155,14 +183,37 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
         // If any selected type wasn't found or had no components, intersection is empty
         if (!arrays.length) {
             setComponents([]);
-            setComponent('');
+            // Same: only clear after we've actually had data at least once
+            if (computedOnce && component && !isMaster(component)) setComponent('');
             return;
         }
 
         const names = intersectComponents(arrays).filter(n => !isMaster(n));
         setComponents(names);
-        setComponent(prev => (!prev || isMaster(prev) ? '' : (names.includes(prev) ? prev : '')));
+
+        // First time we get a real list, *preserve* the incoming component from props.
+        if (!computedOnce) {
+            setComputedOnce(true);
+            // Do not force-clear here; keep whatever was in `component`
+            return;
+        }
+
+        // After first compute, keep selection only if it's valid; otherwise clear
+        setComponent(prev => {
+            if (!prev) return '';
+            if (isMaster(prev)) return '';       // you still don't want Master selectable
+            return names.includes(prev) ? prev : '';
+        });
     }, [assetTypesSelected, assetTypes]);
+
+    const componentOptions = useMemo(() => {
+        const list = [...components];
+        if (component && !list.includes(component)) {
+            // Include the current value so it shows up selected
+            list.unshift(component);
+        }
+        return list;
+    }, [components, component]);
 
     // Build a map {lowerName -> originalName} to preserve display casing
     const buildNameMap = (names) => {
@@ -226,7 +277,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
     }, [certificateAuth, certificateNum, issueDate, component, siteId, serialNumber, assetTypesSelected]);
 
     const isFormValid = () => {
-        if (!selectedFile) {
+        if (!selectedFile && !data?.fileName === "") {
             openFilePopup();
             return false;
         }
@@ -281,7 +332,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/uploadComponent`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/updateComponent/${dataId}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: formData,
@@ -289,41 +340,33 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
             if (!response.ok) throw new Error(response.error || 'Failed to upload file');
             const data = await response.json();
 
-            setSelectedFile(null);
-            setCertificateAuth('');
-            setAssetTypesSelected([]);
-            setSerialNumber("");
-            setCertificateNum('');
-            setComponent("");
-            setIssueDate('');
-            setSiteId("");
-
             setError(null);
             setLoading(false);
 
-            toast.success("Component Uploaded Successfully", {
+            toast.success("Component Updated Successfully", {
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
         } catch (error) {
+            console.log(error);
             setError(error.message);
             setLoading(false);
         }
     };
 
     const handleNoFileUpload = async () => {
-        const formData = new FormData();
-        formData.append('site', siteId);
-        formData.append('assetTypes', JSON.stringify(assetTypesSelected));
-        formData.append('component', component);
-        formData.append('serialNumber', serialNumber);
-        formData.append('certificationAuthority', certificateAuth);
-        formData.append('certificateNumber', certificateNum);
-        formData.append('issueDate', issueDate);
-        formData.append('expiryDate', expiryDate);
-
         try {
+            const formData = new FormData();
+            formData.append('site', siteId);
+            formData.append('assetTypes', JSON.stringify(assetTypesSelected));
+            formData.append('component', component);
+            formData.append('serialNumber', serialNumber);
+            formData.append('certificationAuthority', certificateAuth);
+            formData.append('certificateNumber', certificateNum);
+            formData.append('issueDate', issueDate);
+            formData.append('expiryDate', expiryDate);
+
             setLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/uploadNoFileComponent`, {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/updateNoFileComponent/${dataId}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: formData,
@@ -331,21 +374,14 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
             if (!response.ok) throw new Error(response.error || 'Failed to upload file');
             const data = await response.json();
 
-            setSelectedFile(null);
-            setCertificateAuth('');
-            setSerialNumber("");
-            setCertificateNum('');
-            setComponent("");
-            setIssueDate('');
-            setSiteId("");
-
             setError(null);
             setLoading(false);
 
-            toast.success("Component Uploaded Successfully", {
+            toast.success("Component Updated Successfully", {
                 closeButton: false, autoClose: 2000, style: { textAlign: 'center' }
             });
         } catch (error) {
+            console.log(error);
             setError(error.message);
             setLoading(false);
         }
@@ -363,7 +399,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!selectedFile) {
+        if (!selectedFile && !data?.fileName === "") {
             if (!siteId || !assetTypesSelected || !component) {
                 toast.error("Please ensure a value has been entered for site, asset type and component.", { autoClose: 2000, closeButton: true });
                 if (!siteId) {
@@ -380,6 +416,16 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
                 return;
             }
         }
+
+        if (!siteId || !assetTypesSelected.length > 0 || !component || !serialNumber || !certificateAuth || !certificateNum || !issueDate || !expiryDate) {
+            openUploadValues();
+            return;
+        }
+
+        if (!selectedFile) {
+            handleNoFileUpload();
+        }
+
         if (isFormValid()) handleFileUpload();
     };
 
@@ -463,12 +509,12 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
             <div className="ump-overlay">
                 <div className="ump-content">
                     <div className="review-date-header">
-                        <h2 className="review-date-title">Register Component</h2>
+                        <h2 className="review-date-title">Update Component</h2>
                         <button className="review-date-close" onClick={() => onClose(null, null, false)} title="Close Popup">×</button>
                     </div>
 
                     <div className="ump-form-group-container">
-                        <div className="ump-file-name">{selectedFile ? selectedFile.name : "No Certificate Selected"}</div>
+                        <div className="ump-file-name">{data?.fileName ? data?.fileName : (selectedFile ? selectedFile.name : "No Certificate Selected")}</div>
                         <div className="ump-actions">
                             <label className="ump-choose-button">
                                 {'Choose Certificate'}
@@ -492,7 +538,6 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
                                             onChange={(e) => setSiteId(e.target.value)}
                                             className="upm-comp-input-select font-fam"
                                             style={{ color: siteId === "" ? "GrayText" : "black" }}
-                                            disabled={siteLocked}
                                         >
                                             <option value="" className="def-colour">Select Site</option>
                                             {sites.map(s => (
@@ -506,8 +551,15 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
                                 <div className={`ump-form-group ${errors.assetType || assetError ? "ump-error" : ""}`}>
                                     <label>Asset Type <span className="ump-required">*</span></label>
                                     <div className="fi-info-popup-page-select-container">
-                                        <Select options={assetTypes.map(d => ({ value: d.type, label: d.type }))} isMulti onChange={(selected) => setAssetTypesSelected(selected.map(s => s.value))} className="assetType-select remove-default-styling" placeholder="Select Asset Type(s)" value={assetTypesSelected.map(d => ({ value: d, label: d }))}
-                                            classNamePrefix="sb" />
+                                        <Select
+                                            options={assetTypeOptions}
+                                            value={selectedAssetTypeOptions}
+                                            isMulti
+                                            onChange={(selected) => setAssetTypesSelected((selected || []).map(s => s.value))}
+                                            className="assetType-select remove-default-styling"
+                                            placeholder={assetTypeOptions.length ? "Select Asset Type(s)" : "Loading asset types..."}
+                                            classNamePrefix="sb"
+                                        />
                                     </div>
                                 </div>
                                 <div className={`ump-form-group ${errors.component || componentError ? "ump-error" : ""}`}>
@@ -520,7 +572,7 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
                                             style={{ color: component === "" ? "GrayText" : "black" }}
                                         >
                                             <option value="" className="def-colour">Select Component Name</option>
-                                            {components.map(s => (
+                                            {componentOptions.map(s => (
                                                 <option key={s} value={s} className="norm-colour">
                                                     {s}
                                                 </option>
@@ -659,10 +711,10 @@ const UploadWarehouseComponentPopup = ({ onClose, uploadSite }) => {
                         ))}
                 </ul>
             )}
-            {withoutFile && (<UploadWithoutFileWarehouse closeModal={closeFilePopup} submit={determineRoute} />)}
-            {withoutValues && (<UploadWithoutFileValuesWarehouse closeModal={closeUploadValues} submit={determineValueRoute} />)}
+            {withoutFile && (<UpdateWarehouseWithoutFileWarehouse closeModal={closeFilePopup} submit={determineRoute} />)}
+            {withoutValues && (<UpdateWithoutFileValuesWarehouse closeModal={closeUploadValues} submit={determineValueRoute} />)}
         </div>
     );
 };
 
-export default UploadWarehouseComponentPopup;
+export default UpdateWarehouseComponentPopup;

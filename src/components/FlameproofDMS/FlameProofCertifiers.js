@@ -15,6 +15,9 @@ import UpdateCertifierLicense from "./Popups/UpdateCertifierLicense";
 import DownloadPopup from "../FileInfo/DownloadPopup";
 import DeleteCertifiers from "./Popups/DeleteCertifiers";
 import SortPopupCertifiers from "./Popups/SortPopupCertifiers";
+import TopBarFPC from "./Popups/TopBarFPC";
+import TopBarCertifiers from "./Popups/TopBarCertifiers";
+import PopupMenuOptionsCertifier from "./CertifiersPages/PopupMenuOptionsCertifier";
 
 const FlameProofCertifiers = () => {
   const [files, setFiles] = useState([]);
@@ -43,6 +46,8 @@ const FlameProofCertifiers = () => {
   const [downloadFileId, setDownloadFileId] = useState(null);
   const [downloadFileName, setDownloadFileName] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState(null);
+  const [isTrashView, setIsTrashView] = useState(false);
+  const [hoveredFileId, setHoveredFileId] = useState(null);
 
   const getComplianceColor = (status) => {
     if (status.toLowerCase() === "valid" || status.toLowerCase() === "accredited") return "status-good";
@@ -160,7 +165,7 @@ const FlameProofCertifiers = () => {
 
   const fetchFiles = async () => {
     setIsLoadingTable(true);
-    const route = `/api/flameProofCertifiers/getCerts`;
+    const route = isTrashView ? `/api/flameProofCertifiers/getDeletedCerts` : `/api/flameProofCertifiers/getCerts`;
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}${route}`, {
         headers: {
@@ -194,7 +199,11 @@ const FlameProofCertifiers = () => {
 
   useEffect(() => {
     fetchFiles();
-  }, [token]);
+  }, [token, isTrashView]);
+
+  const toggleTrashView = () => {
+    setIsTrashView(!isTrashView);
+  };
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -287,6 +296,74 @@ const FlameProofCertifiers = () => {
     }
   };
 
+  const deleteFileFromTrash = async () => {
+    if (!selectedFileId) return;
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/flameProofCertifiers/trashDelete/${selectedFileId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete file from trash');
+      setIsModalOpen(false);
+      setSelectedFileId(null);
+      fetchFiles();
+    } catch (error) {
+      console.error('Error deleting file from trash:', error);
+    } finally {
+      setLoading(false); // Reset loading state after response
+    }
+  };
+
+  const restoreFile = async (fileId) => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_URL}/api/flameProofCertifiers/restore/${fileId}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, },
+        }
+      );
+
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const data = isJson ? await res.json() : null;
+      console.log(data)
+
+      if (!res.ok) {
+        const msg = data?.error || data?.message || `Restore failed`;
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.error(msg, {
+          closeButton: true,
+          autoClose: 1500,
+          style: { textAlign: "center" },
+        });
+        return;
+      }
+
+      const msg = data?.message || "Certifier restored successfully";
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success(msg, {
+        closeButton: true,
+        autoClose: 1200,
+        style: { textAlign: "center" },
+      });
+
+      fetchFiles();
+    } catch (error) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error(error.message || "Error restoring the certifier. Please try again.", {
+        closeButton: true,
+        autoClose: 1500,
+        style: { textAlign: "center" },
+      });
+    }
+  };
+
   const openDownloadModal = (fileId, fileName) => {
     setDownloadFileId(fileId);
     setDownloadFileName(fileName);
@@ -338,7 +415,7 @@ const FlameProofCertifiers = () => {
               </div>
             </div>
           </div>
-          {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+          {!isTrashView && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
             <div className="filter-dm-fi-2">
               <div className="button-container-dm-fi">
                 <button className="but-dm-fi" onClick={openUpload}>
@@ -384,18 +461,28 @@ const FlameProofCertifiers = () => {
             {searchQuery === "" && (<i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>)}
           </div>
 
-          <div className={`info-box-fih`}>{`Valid Certificates: ${validCount}`}</div>
-          <div className={`info-box-fih trashed`}>{`Invalid Certificates: ${invalidCount}`}</div>
+          {!isTrashView && (
+            <>
+              <div className={`info-box-fih`}>{`Valid Certificates: ${validCount}`}</div>
+              <div className={`info-box-fih trashed`}>{`Invalid Certificates: ${invalidCount}`}</div>
+            </>
+          )}
+
+          {isTrashView && (
+            <>
+              <div className={`info-box-fih trashed`}>{`Deleted Certificates: ${filteredFiles.length}`}</div>
+            </>
+          )}
 
           <div className="spacer"></div>
 
-          <TopBarFP openSort={openSortModal} />
+          <TopBarCertifiers toggleTrashView={toggleTrashView} isTrashView={isTrashView} openSort={openSortModal} canIn={canIn} access={access} />
         </div>
 
         <div className="table-container-file">
           <table>
             <thead>
-              <tr>
+              <tr className={isTrashView ? 'trashed' : ""}>
                 <th className="flame-certification-num-filter col">Nr</th>
                 <th className="flame-certification-auth-filter col">Certification Body</th>
                 <th className="flame-certification-license-nr-filter col">Accreditation Number</th>
@@ -427,41 +514,72 @@ const FlameProofCertifiers = () => {
               )}
 
               {filteredFiles.map((file, index) => (
-                <tr key={index} className={`file-info-row-height`}>
+                <tr key={index} style={{ cursor: "pointer" }} className={`file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                   <td className="col">{index + 1}</td>
-                  <td className="col" style={{ textAlign: "center" }}>{file.authority}</td>
+                  <td className="col" style={{ textAlign: "center", position: "relative" }}>
+                    {file.authority}
+                    {(hoveredFileId === file._id && !file.isPlaceholder) && (
+                      <PopupMenuOptionsCertifier file={file} isOpen={hoveredFileId === file._id} setHoveredFileId={setHoveredFileId} />
+                    )}
+                  </td>
                   <td className="file-name-cell" style={{ textAlign: "center" }}>{(file.licenseNumber)}</td>
                   <td className="col">{formatDate(file.licenseIssueDate)}</td>
                   <td className={`col`}>{formatDate(file.licenseExpiryDate)}</td>
                   <td className={`col ${getComplianceColor(file.status)}`}>{file.status}</td>
                   {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<td className={"col-act"}>
-                    <button
-                      className={"flame-delete-button-fi-new col-but-res"}
-                      onClick={(e) => {
-                        e.stopPropagation();         // ⛔ prevent row click
-                        openModify(file);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faEdit} title="Modify Certifier" />
-                    </button>
-                    {file.status.toLowerCase() !== "not uploaded" && (<button
-                      className={"flame-delete-button-fi-new col-but-res"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDownloadModal(file._id, file.fileName)
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faDownload} title="Download License" />
-                    </button>)}
-                    <button
-                      className={"flame-delete-button-fi-new col-but"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModal(file._id, file.authority);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Delete Certifier" />
-                    </button>
+                    {!isTrashView && (
+                      <>
+                        <button
+                          className={"flame-delete-button-fi-new col-but-res"}
+                          onClick={(e) => {
+                            e.stopPropagation();         // ⛔ prevent row click
+                            openModify(file);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} title="Modify Certifier" />
+                        </button>
+                        {file.status.toLowerCase() !== "not uploaded" && (<button
+                          className={"flame-delete-button-fi-new col-but-res"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDownloadModal(file._id, file.fileName)
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faDownload} title="Download License" />
+                        </button>)}
+                        <button
+                          className={"flame-delete-button-fi-new col-but"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal(file._id, file.authority);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Delete Certifier" />
+                        </button>
+                      </>
+                    )}
+                    {isTrashView && (
+                      <>
+                        <button
+                          className={"flame-delete-button-fi-new col-but-res"}
+                          onClick={(e) => {
+                            e.stopPropagation();         // ⛔ prevent row click
+                            restoreFile(file._id);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faArrowsRotate} title="Restore Certifier" />
+                        </button>
+                        <button
+                          className={"flame-delete-button-fi-new col-but"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal(file._id, file.authority);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Delete Certifier From Trash" />
+                        </button>
+                      </>
+                    )}
                   </td>)}
                 </tr>
               ))}
@@ -474,7 +592,7 @@ const FlameProofCertifiers = () => {
       {upload && (<UploadCertifierLicense onClose={closeUpload} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {modify && (<UpdateCertifierLicense onClose={closeModify} certifierData={certifierEdit} />)}
-      {isModalOpen && (<DeleteCertifiers closeModal={closeModal} deleteFile={deleteFile} loading={loading} selectedFileName={selectedFileName} />)}
+      {isModalOpen && (<DeleteCertifiers closeModal={closeModal} deleteFile={deleteFile} loading={loading} selectedFileName={selectedFileName} deleteFromTrash={deleteFileFromTrash} isTrashView={isTrashView} />)}
       <ToastContainer />
     </div >
   );

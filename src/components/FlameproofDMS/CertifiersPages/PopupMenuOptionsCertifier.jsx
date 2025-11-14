@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, canIn, access, openUpdate, img, txt, openReplace }) => {
+const PopupMenuOptionsCertifier = ({ isOpen, setHoveredFileId, file }) => {
     const navigate = useNavigate();
     const popupRef = useRef(null);
     const [position, setPosition] = useState("below");
@@ -31,17 +31,7 @@ const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, c
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
                     <ul>
-                        <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
-                    </ul>
-                    <ul>
-                        <li onClick={() => openReplace(file.asset.assetType, file.component, file._id)}>Fetch from Digital Warehouse</li>
-                    </ul>
-                    <ul>
-                        <li onClick={() => navigate(`/FrontendDMS/previewCertificate/${file._id}`)}>Preview</li>
-                    </ul>
-                    {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<li onClick={() => openUpdate(file._id)}>Update</li>)}
-                    <ul>
-                        <li onClick={() => navigate(`/FrontendDMS/flameVersionHistory/${file._id}/${img}/${txt}`)}>Version History</li>
+                        <li onClick={() => navigate(`/FrontendDMS/previewCertifier/${file._id}`)}>Preview</li>
                     </ul>
                 </div>
             )}
@@ -49,4 +39,4 @@ const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, c
     );
 };
 
-export default PopupMenuOptions;
+export default PopupMenuOptionsCertifier;

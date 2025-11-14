@@ -73,7 +73,17 @@ const FlameProofHome = () => {
     };
 
     const isAllRow = (doc) =>
-        doc?._id === "all-assets" || /^All\s/i.test(doc?.assetType || "");
+        doc?._id === "all-assets" ||
+        doc?._id === "digital-warehouse" ||
+        /^All\s/i.test(doc?.assetType || "");
+
+    const goToNextPage = (id, assetType, site) => {
+        if (id === "digital-warehouse") {   // NEW
+            navigate(`/FrontendDMS/flameDigitalWarehouse/${site}`);
+        } else {
+            navigate(`/FrontendDMS/flameManage/${assetType}/${site}`);
+        }
+    }
 
     const closePopup = () => {
         setPopup(null);
@@ -126,18 +136,43 @@ const FlameProofHome = () => {
 
     const filteredDocs = paddedDocs.filter(file => file && file.assetType && file.assetType.toLowerCase().includes(searchQuery.toLowerCase()));
 
+    const fetchWarehouseStats = async () => {
+        const res = await fetch(`${process.env.REACT_APP_URL}/api/flameWarehouse/getWarehouseDocsSite/${site}`);
+        if (!res.ok) throw new Error('Failed to fetch digital warehouse docs');
+        const { warehouseDocuments = [] } = await res.json();
+
+        const valid = warehouseDocuments.reduce((acc, d) => {
+            const status = String(d?.status || '').toLowerCase();
+            const authInvalid = !!d?.authInvalid;
+            // valid means status === 'valid' AND not authInvalid
+            return acc + (status === 'valid' && !authInvalid ? 1 : 0);
+        }, 0);
+
+        const invalid = warehouseDocuments.length - valid;
+        return { valid, invalid, total: warehouseDocuments.length };
+    };
+
     const fetchCount = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/flameproof/getAssetCount/${site}`, {
-                headers: {
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch count');
-            }
-            const data = await response.json();
+            const [assetsRes, whStats] = await Promise.all([
+                fetch(`${process.env.REACT_APP_URL}/api/flameproof/getAssetCount/${site}`),
+                fetchWarehouseStats()
+            ]);
 
-            setCount(data.assets);
+            if (!assetsRes.ok) throw new Error('Failed to fetch asset counts');
+            const assetsData = await assetsRes.json();
+
+            const warehouseDoc = {
+                _id: 'digital-warehouse',
+                assetType: 'Digital Warehouse',
+                // special fields for this row:
+                validCertificates: whStats.valid,
+                invalidCertificates: whStats.invalid,
+                // optional total if you still want it available for filters/sorting
+                totalCertificates: whStats.total
+            };
+
+            setCount([warehouseDoc, ...(assetsData.assets || [])]);
             setIsLoading(false);
         } catch (error) {
             setError(error.message);
@@ -153,6 +188,7 @@ const FlameProofHome = () => {
 
     const iconMap = {
         "all-assets": "/allDocumentsDMS.svg",
+        "digital-warehouse": "/flameWarehouse2.svg",
         "Continuous Miner": "/FCMS_CM.png",
         "Shuttle Car": "/FCMS_SC.png",
         "Roof Bolter": "/FCMS_RB.png",
@@ -166,16 +202,12 @@ const FlameProofHome = () => {
         [filteredDocs]
     );
 
-    const getIcon = (type) => {
-        if (isAllRow(type)) {
-            return iconMap[type._id];
-        }
-        else {
-            return iconMap[type.assetType] || "/genericAssetType.svg";
-        }
-
-        return "";
-    }
+    const getIcon = (doc) => {
+        if (!doc) return "";
+        if (doc._id === "digital-warehouse") return iconMap["digital-warehouse"]; // NEW
+        if (isAllRow(doc)) return iconMap[doc._id];
+        return iconMap[doc.assetType] || "/genericAssetType.svg";
+    };
 
     return (
         <div className="user-info-container">
@@ -259,15 +291,24 @@ const FlameProofHome = () => {
                     )}
 
                     {filteredDocs.map((doc, index) => (
-                        <div key={index} className={`${isAllRow(doc) ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/flameManage/${doc.assetType}/${site}`)}>
+                        <div key={index} className={`${isAllRow(doc) ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => goToNextPage(doc._id, doc.assetType, site)}>
                             {doc && (
                                 <>
                                     <div className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`}>
                                         <img src={`${process.env.PUBLIC_URL}${getIcon(doc)}`} className={`${isAllRow(doc) ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
                                     <h3 className="document-title-fi-home">{formatAssetTypeLabel(isAllRow(doc) ? doc.assetType : doc.assetType + "s", isAllRow(doc))}</h3>
-                                    <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>
-                                    <p className="document-info-fi-home">Invalid Certificates: {doc.invalidCertificates}</p>
+                                    {doc._id === 'digital-warehouse' ? (
+                                        <>
+                                            <p className="document-info-fi-home">Valid Components: {doc.validCertificates ?? 0}</p>
+                                            <p className="document-info-fi-home">Invalid Components: {doc.invalidCertificates ?? 0}</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="document-info-fi-home">Certificates: {doc.totalCertificates}</p>
+                                            <p className="document-info-fi-home">Outstanding Certificates: {doc.invalidCertificates}</p>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </div>

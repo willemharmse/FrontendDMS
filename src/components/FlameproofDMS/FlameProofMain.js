@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faCirclePlus, faClipboardCheck, faEdit, faFileAlt, faFileSignature, faHardHat, faHome, faIndustry, faListOl, faMagnifyingGlass, faScaleBalanced, faTableList, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faCirclePlus, faClipboardCheck, faDownload, faEdit, faFileAlt, faFileSignature, faHardHat, faHome, faIndustry, faListOl, faMagnifyingGlass, faScaleBalanced, faTableList, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
@@ -22,6 +22,7 @@ import ModifyAssetPopup from "./Popups/ModifyAssetPopup";
 import ModifyComponentsPopup from "./Popups/ModifyComponentsPopup";
 import PopupMenuOptions from "./Popups/PopupMenuOptions";
 import PopupMenuOptionsAssets from "./Popups/PopupMenuOptionsAssets";
+import { saveAs } from "file-saver";
 
 const FlameProofMain = () => {
   const { type, site } = useParams();
@@ -63,6 +64,48 @@ const FlameProofMain = () => {
   const openModify = (asset) => {
     setModifyingAsset(asset)
     setModifyAsset(true);
+  };
+
+  const exportSID = async () => {
+    try {
+      let route = "";
+
+      if (type.includes("All")) {
+        route = `/api/flameproofExport/export-site/${site}`;
+      }
+      else {
+        route = `/api/flameproofExport/export-site-asset/${site}/${type}`;
+      }
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}${route}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      let filename = response.headers.get("X-Export-Filename");
+
+      if (!filename) {
+        const cd = response.headers.get("Content-Disposition") || "";
+        const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i);
+        if (match) filename = decodeURIComponent(match[1] || match[2]);
+      }
+
+      const documentName = "SID Document VN/A";
+
+      if (!filename) filename = `${documentName}.xlsx`;
+
+      const blob = await response.blob();
+      saveAs(blob, filename);
+    } catch (error) {
+      console.error("Error generating document:", error);
+    }
   };
 
   const closeModify = () => {
@@ -437,97 +480,114 @@ const FlameProofMain = () => {
 
           <div className="spacer"></div>
 
-          <TopBarFP openSort={openSortModal} />
+          <TopBar />
         </div>
 
-        <div className="table-container-file">
-          <table>
-            <thead>
-              <tr>
-                <th className="flame-num-filter col">Nr</th>
-                {type.includes("All") && (<th className="flame-type-filter col">Asset Type</th>)}
-                <th className="flame-ass-nr-filter col">Asset Nr</th>
-                <th className="flame-area-filter col">Area</th>
-                <th className="flame-owner-filter col">Asset Owner</th>
-                <th className={`flame-head-filter`}>Department Head</th>
-                <th className={`flame-status-filter col`}>Compliance Status</th>
-                {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-act-filter col">Action</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {isLoadingTable && (
+        <div className="table-flameproof-card">
+          <div className="flameproof-table-header-label-wrapper">
+            <label className="risk-control-label">{type.includes("All") ? type : type + "s"}</label>
+            <FontAwesomeIcon
+              icon={faDownload}
+              title="Export to Excel"
+              className="top-right-button-control-att"
+              onClick={exportSID}
+            />
+            <FontAwesomeIcon
+              icon={faSort}
+              title="Select Columns to Display"
+              className="top-right-button-control-att-2"
+              onClick={openSortModal}
+            />
+          </div>
+          <div className="table-container-file-flameproof-all-assets">
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={
-                    6 + (type.includes("All") ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
-                  } style={{ textAlign: "center", padding: 20 }}>
-                    <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading assets.
-                  </td>
+                  <th className="flame-num-filter col">Nr</th>
+                  {type.includes("All") && (<th className="flame-type-filter col">Asset Type</th>)}
+                  <th className="flame-ass-nr-filter col">Asset Nr</th>
+                  <th className="flame-area-filter col">Area</th>
+                  <th className="flame-owner-filter col">Asset Owner</th>
+                  <th className={`flame-head-filter`}>Department Head</th>
+                  <th className={`flame-status-filter col`}>Compliance Status</th>
+                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<th className="flame-act-filter col">Action</th>)}
                 </tr>
-              )}
+              </thead>
+              <tbody>
+                {isLoadingTable && (
+                  <tr>
+                    <td colSpan={
+                      6 + (type.includes("All") ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    } style={{ textAlign: "center", padding: 20 }}>
+                      <FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading assets.
+                    </td>
+                  </tr>
+                )}
 
-              {!isLoadingTable && showNoAssets && (
-                <tr>
-                  <td colSpan={
-                    6 + (type.includes("All") ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
-                  } style={{ textAlign: "center", padding: 20 }}>
-                    No Assets Registered.
-                  </td>
-                </tr>
-              )}
+                {!isLoadingTable && showNoAssets && (
+                  <tr>
+                    <td colSpan={
+                      6 + (type.includes("All") ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)
+                    } style={{ textAlign: "center", padding: 20 }}>
+                      No Assets Registered.
+                    </td>
+                  </tr>
+                )}
 
-              {filteredFiles.map((file, index) => (
-                <tr key={index} className={`file-info-row-height`} style={{ cursor: "pointer" }}
-                  onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                  <td className="col">{index + 1}</td>
-                  {type.includes("All") && (<td className="col" style={{ textAlign: "center" }}>{file.assetType}</td>)}
-                  <td
-                    className="file-name-cell"
-                    style={{ textAlign: "center" }}
-                  >
-                    {(file.assetNr)}
-
-                    {(hoveredFileId === file._id) && (
-                      <PopupMenuOptionsAssets file={file} isOpen={hoveredFileId === file._id} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} openModifyModal={openComponentModify} />
-                    )}
-                  </td>
-                  <td className="col">{file.operationalArea}</td>
-                  <td className={`col`}>{(file.assetOwner)}</td>
-                  <td className="col">{file.departmentHead}</td>
-
-                  <td className={`col ${getComplianceColor(file.complianceStatus)}`}>{(file.complianceStatus)}</td>
-                  {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<td className={"col-act"}>
-                    <button
-                      className={"flame-delete-button-fi col-but-res"}
-                      onClick={(e) => {
-                        e.stopPropagation();         // ⛔ prevent row click
-                        openModify(file);
-                      }}
+                {filteredFiles.map((file, index) => (
+                  <tr key={index} className={`file-info-row-height`} style={{ cursor: "pointer" }}
+                    onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                    <td className="col">{index + 1}</td>
+                    {type.includes("All") && (<td className="col" style={{ textAlign: "center" }}>{file.assetType}</td>)}
+                    <td
+                      className="file-name-cell"
+                      style={{ textAlign: "center" }}
                     >
-                      <FontAwesomeIcon icon={faEdit} title="Modify Asset" />
-                    </button>
-                    {false && (<button
-                      className={"flame-delete-button-fi col-but-res"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModifyDate(file);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faMagnifyingGlass} title="Modify Components" />
-                    </button>)}
-                    <button
-                      className={"flame-delete-button-fi col-but"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModal(file._id, file);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} title="Delete Asset" />
-                    </button>
-                  </td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {(file.assetNr)}
+
+                      {(hoveredFileId === file._id) && (
+                        <PopupMenuOptionsAssets file={file} isOpen={hoveredFileId === file._id} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} openModifyModal={openComponentModify} />
+                      )}
+                    </td>
+                    <td className="col">{file.operationalArea}</td>
+                    <td className={`col`}>{(file.assetOwner)}</td>
+                    <td className="col">{file.departmentHead}</td>
+
+                    <td className={`col ${getComplianceColor(file.complianceStatus)}`}>{(file.complianceStatus)}</td>
+                    {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<td className={"col-act"}>
+                      <button
+                        className={"flame-delete-button-fi col-but-res"}
+                        onClick={(e) => {
+                          e.stopPropagation();         // ⛔ prevent row click
+                          openModify(file);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEdit} title="Modify Asset" />
+                      </button>
+                      {false && (<button
+                        className={"flame-delete-button-fi col-but-res"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModifyDate(file);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faMagnifyingGlass} title="Modify Components" />
+                      </button>)}
+                      <button
+                        className={"flame-delete-button-fi col-but"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal(file._id, file);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} title="Delete Asset" />
+                      </button>
+                    </td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
