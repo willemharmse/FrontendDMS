@@ -254,78 +254,83 @@ const InductionDrafts = () => {
 
                     <TopBar />
                 </div>
-                <div className="table-container-gen">
-                    {isLoadingDraft ? (
-                        <div className="draft-loading" aria-live="polite">
-                            <FontAwesomeIcon icon={faSpinner} className="spin" />
-                            <span style={{ marginLeft: 10, fontWeight: "normal" }}>Loading draft…</span>
-                        </div>
-                    ) : (
-                        <table className="gen-table">
-                            <thead className="gen-head">
-                                <tr>
-                                    <th className="gen-th ibraGenNr" style={{ width: "5%" }}>Nr</th>
-                                    <th className="gen-th ibraGenFN" style={{ width: "30%" }}>Draft Visitor Induction</th>
-                                    <th className="gen-th ibraGenVer" style={{ width: "15%" }}>Created By</th>
-                                    <th className="gen-th ibraGenStatus" style={{ width: "15%" }}>Creation Date</th>
-                                    <th className="gen-th ibraGenPB" style={{ width: "15%" }}>Last Modified By</th>
-                                    <th className="gen-th ibraGenPD" style={{ width: "15%" }}>Last Modification Date</th>
-                                    <th className="gen-th ibraGenType" style={{ width: "5%" }}>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
-                                    displayDrafts
-                                        .map((item, index) => (
-                                            <tr key={item._id} style={{ backgroundColor: item.publishable ? "#7EAC89" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/FrontendDMS/inductionCreation/${item._id}`)}>
-                                                <td style={{ color: item.publishable ? "white" : "black", fontFamily: "Arial", textAlign: "center" }}>
-                                                    {index + 1}
-                                                </td>
-                                                <td style={{ color: item.publishable ? "white" : "black", fontFamily: "Arial" }}>{`${item.formData.courseTitle}`}</td>
-                                                <td className="cent-draft-class" style={{ color: item.publishable ? "white" : "black", fontFamily: "Arial" }}>
-                                                    {item.creator?.username || "Unknown"}
-                                                </td>
-                                                <td style={{ textAlign: "center", fontFamily: "Arial" }}>
-                                                    {formatDateTime(item.dateCreated)}
-                                                </td>
-
-                                                <td className="cent-draft-class" style={{ color: item.publishable ? "white" : "black", fontFamily: "Arial" }}>
-                                                    {item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}
-                                                </td>
-                                                <td style={{ textAlign: "center", fontFamily: "Arial" }}>
-                                                    {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
-                                                </td>
-                                                <td className="load-draft-delete" >
-                                                    <button
-                                                        className={"action-button-load-draft delete-button-load-draft"}
-                                                        style={{ width: "100%" }}
-                                                        onClick={() => confirmDelete(item._id, item.formData.courseTitle, item?.creator?._id)}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} title="Remove Draft" style={{ color: item.publishable ? "white" : "black" }} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                )}
-
-                                {isLoading && (
+                <div className="table-flameproof-card">
+                    <div className="flameproof-table-header-label-wrapper">
+                        <label className="risk-control-label">{"Saved Drafts"}</label>
+                    </div>
+                    <div className="table-container-file-flameproof-all-assets">
+                        {isLoadingDraft ? (
+                            <div className="draft-loading" aria-live="polite">
+                                <FontAwesomeIcon icon={faSpinner} className="spin" />
+                                <span style={{ marginLeft: 10, fontWeight: "normal" }}>Loading draft…</span>
+                            </div>
+                        ) : (
+                            <table className="gen-table">
+                                <thead className="gen-head">
                                     <tr>
-                                        <td colSpan="7" className="cent">
-                                            Loading drafts…
-                                        </td>
+                                        <th className="gen-th ibraGenNr" style={{ width: "5%" }}>Nr</th>
+                                        <th className="gen-th ibraGenFN" style={{ width: "30%" }}>Draft Visitor Induction</th>
+                                        <th className="gen-th ibraGenVer" style={{ width: "15%" }}>Created By</th>
+                                        <th className="gen-th ibraGenStatus" style={{ width: "15%" }}>Creation Date</th>
+                                        <th className="gen-th ibraGenPB" style={{ width: "15%" }}>Last Modified By</th>
+                                        <th className="gen-th ibraGenPD" style={{ width: "15%" }}>Last Modification Date</th>
+                                        <th className="gen-th ibraGenType" style={{ width: "5%" }}>Action</th>
                                     </tr>
-                                )}
+                                </thead>
+                                <tbody>
+                                    {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
+                                        displayDrafts
+                                            .map((item, index) => (
+                                                <tr key={item._id} style={{ backgroundColor: item.approvalState ? "#7EAC89" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/FrontendDMS/inductionCreation/${item._id}`)}>
+                                                    <td style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial", textAlign: "center" }}>
+                                                        {index + 1}
+                                                    </td>
+                                                    <td style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>{`${item.formData.courseTitle}`}</td>
+                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>
+                                                        {item.creator?.username || "Unknown"}
+                                                    </td>
+                                                    <td style={{ color: item.approvalState ? "white" : "black", textAlign: "center", fontFamily: "Arial" }}>
+                                                        {formatDateTime(item.dateCreated)}
+                                                    </td>
 
-                                {!isLoading && drafts.length === 0 && showNoDrafts && (
-                                    <tr>
-                                        <td colSpan="7" className="cent">
-                                            No Drafts Available
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
+                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>
+                                                        {item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}
+                                                    </td>
+                                                    <td style={{ color: item.approvalState ? "white" : "black", textAlign: "center", fontFamily: "Arial" }}>
+                                                        {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
+                                                    </td>
+                                                    <td className="load-draft-delete" >
+                                                        <button
+                                                            className={"action-button-load-draft delete-button-load-draft"}
+                                                            style={{ width: "100%" }}
+                                                            onClick={() => confirmDelete(item._id, item.formData.courseTitle, item?.creator?._id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} title="Remove Draft" style={{ color: item.approvalState ? "white" : "black" }} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                    )}
+
+                                    {isLoading && (
+                                        <tr>
+                                            <td colSpan="7" className="cent">
+                                                Loading drafts…
+                                            </td>
+                                        </tr>
+                                    )}
+
+                                    {!isLoading && drafts.length === 0 && showNoDrafts && (
+                                        <tr>
+                                            <td colSpan="7" className="cent">
+                                                No Drafts Available
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
             </div>
             {deletePopup && (<DeleteDraftPopup closeModal={closeDelete} deleteDraft={handleDelete} draftName={title} author={author} />)}

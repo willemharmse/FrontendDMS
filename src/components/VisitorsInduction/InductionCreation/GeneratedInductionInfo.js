@@ -93,6 +93,7 @@ const GeneratedInductionInfo = () => {
         switch (status.toLowerCase()) {
             case 'published': return 'status-approved';
             case 'in review': return 'status-pending';
+            case 'in approval': return 'status-rejected'
             default: return 'status-default';
         }
     };
@@ -204,61 +205,66 @@ const GeneratedInductionInfo = () => {
                     {/* Container for right-aligned icons */}
                     <TopBar />
                 </div>
-                <div className="table-container-gen">
-                    <table className="gen-table">
-                        <thead className="gen-head">
-                            <tr>
-                                <th className="gen-th ibraGenNr">Nr</th>
-                                <th className="gen-th ibraGenFN">Visitor Induction Name</th>
-                                <th className="gen-th ibraGenVer">Version</th>
-                                <th className="gen-th ibraGenStatus">Induction Status</th>
-                                <th className="gen-th ibraGenPB">First Published By</th>
-                                <th className="gen-th ibraGenPD">First Published Date</th>
-                                <th className="gen-th ibraGenRB">Last Reviewed By</th>
-                                <th className="gen-th ibraGenRD">Last Review Date</th>
-                                <th className="gen-th ibraGenType">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map((file, index) => (
-                                <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="cent-values-gen">{index + 1}</td>
-                                    <td className="gen-point" onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                                        <div className="popup-anchor">
-                                            <span >
-                                                {removeFileExtension(file.formData.courseTitle)}
-                                            </span>
-
-                                            {(hoveredFileId === file._id) && (
-                                                <PopupMenuPubInduction
-                                                    file={file}
-                                                    typeDoc={"standard"}
-                                                    risk={false}
-                                                    isOpen={hoveredFileId === file._id}
-                                                    setHoveredFileId={setHoveredFileId}
-                                                    id={file._id}
-                                                    openPreview={openPreview}
-                                                />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="cent-values-gen">{file.version}</td>
-                                    <td className={`${getStatusClass(file.documentStatus)} cent-values-gen`}>{file.documentStatus}</td>
-                                    <td className="cent-values-gen">{file.publisher.username}</td>
-                                    <td className="cent-values-gen">{formatDate(file.datePublished)}</td>
-                                    <td className="cent-values-gen">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
-                                    <td className="cent-values-gen">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
-                                    <td className="cent-values-gen">
-                                        <button
-                                            className={"delete-button-fi col-but"}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Delete Document" onClick={() => fileDelete(file._id, file.formData.courseTitle)} />
-                                        </button>
-                                    </td>
+                <div className="table-flameproof-card">
+                    <div className="flameproof-table-header-label-wrapper">
+                        <label className="risk-control-label">{"Published Visitor Induction"}</label>
+                    </div>
+                    <div className="table-container-file-flameproof-all-assets">
+                        <table className="gen-table">
+                            <thead className="gen-head">
+                                <tr>
+                                    <th className="gen-th ibraGenNr">Nr</th>
+                                    <th className="gen-th ibraGenFN">Visitor Induction Name</th>
+                                    <th className="gen-th ibraGenVer">Version</th>
+                                    <th className="gen-th ibraGenStatus">Induction Status</th>
+                                    <th className="gen-th ibraGenPB">First Published By</th>
+                                    <th className="gen-th ibraGenPD">First Published Date</th>
+                                    <th className="gen-th ibraGenRB">Last Reviewed By</th>
+                                    <th className="gen-th ibraGenRD">Last Review Date</th>
+                                    <th className="gen-th ibraGenType">Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredFiles.map((file, index) => (
+                                    <tr key={file._id} className={`file-info-row-height gen-tr`}>
+                                        <td className="cent-values-gen">{index + 1}</td>
+                                        <td className="gen-point" onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                                            <div className="popup-anchor">
+                                                <span >
+                                                    {removeFileExtension(file.formData.courseTitle)}
+                                                </span>
+
+                                                {(hoveredFileId === file._id) && (
+                                                    <PopupMenuPubInduction
+                                                        file={file}
+                                                        typeDoc={"standard"}
+                                                        risk={false}
+                                                        isOpen={hoveredFileId === file._id}
+                                                        setHoveredFileId={setHoveredFileId}
+                                                        id={file._id}
+                                                        openPreview={openPreview}
+                                                    />
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="cent-values-gen">{file.version}</td>
+                                        <td className={`${getStatusClass(file.approvalState ? "In Approval" : file.documentStatus)} cent-values-gen`}>{file.approvalState ? "In Approval" : file.documentStatus}</td>
+                                        <td className="cent-values-gen">{file.publisher.username}</td>
+                                        <td className="cent-values-gen">{formatDate(file.datePublished)}</td>
+                                        <td className="cent-values-gen">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
+                                        <td className="cent-values-gen">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
+                                        <td className="cent-values-gen">
+                                            <button
+                                                className={"delete-button-fi col-but"}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Delete Document" onClick={() => fileDelete(file._id, file.formData.courseTitle)} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

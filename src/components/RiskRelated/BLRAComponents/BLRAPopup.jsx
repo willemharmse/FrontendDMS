@@ -988,33 +988,28 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                         </div>
 
                                         <div className="ibra-popup-page-column-half">
-                                            <div className="ibra-popup-page-component-wrapper-circle">
-                                                <div className="ibra-popup-hazard-circle-container">
-                                                    <div className="ibra-popup-hazard-circle">
-                                                        {/* 1) The heading */}
-                                                        <FontAwesomeIcon
-                                                            icon={faInfoCircle}
-                                                            className="ibra-popup-hazard-info-icon"
-                                                            onClick={openHelpUE}
-                                                            style={{ cursor: 'pointer' }}
-                                                            title="What is an Unwanted Event?"
-                                                        />
-
-                                                        <h3 className="ibra-popup-hazard-title">Unwanted Event</h3>
-
-                                                        {/* 2) The dropdown immediately after */}
+                                            <div className="ibra-popup-page-component-wrapper-unwanted-square">
+                                                <div className={`ibra-popup-page-form-group-square-ue`}>
+                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpUE} style={{ cursor: 'pointer', color: "white" }} title="What is an Unwanted Event?" />Unwanted Event</label>
+                                                    <div className="ue-textarea-wrapper">
                                                         <textarea
                                                             type="text"
                                                             style={{ color: "black", cursor: "text", fontFamily: "Arial" }}
                                                             ref={ueInputRef}
-
-                                                            className="ibra-popup-dropdown ibra-popup-page-input-table-2"
-                                                            placeholder="Select Unwanted Event"
+                                                            key={"unwanted-event-textarea"}
+                                                            className="ibra-popup-page-input-table-2-square"
+                                                            placeholder="Enter Unwanted Event"
                                                             value={selectedUE}
                                                             onChange={e => handleUEInput(e.target.value)}
                                                             onFocus={handleUEFocus}
                                                             readOnly={readOnly}
+                                                            maxLength={160}
                                                         />
+
+                                                        {/* Character counter */}
+                                                        <div className="ue-char-counter">
+                                                            {selectedUE.length} / 160
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

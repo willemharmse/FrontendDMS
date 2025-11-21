@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle, faDatabase, faDownload, faTableColumns, faTimes, faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsUpDown, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faSearch, faTrash, faArrowUpRightFromSquare, faPlusCircle, faDatabase, faDownload, faTableColumns, faTimes, faFilter, faArrowsLeftRight, faArrowRotateBack, faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import "./ControlAnalysisTable.css";
 import { v4 as uuidv4 } from "uuid";
 import ControlEAPopup from "./ControlEAPopup";
@@ -42,6 +42,51 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         ...(!readOnly
             ? [{ id: "actions", title: "Action", className: "control-analysis-nr", icon: null }] : []),
     ];
+
+    const initialColumnWidths = {
+        nr: 55,
+        control: 500,
+        critical: 75,
+        act: 75,
+        activation: 120,
+        hierarchy: 120,
+        cons: 100,
+        quality: 75,
+        cer: 120,
+        action: 350,
+        responsible: 150,
+        dueDate: 100,
+        notes: 400,
+        actions: 80
+    };
+
+    const [columnWidths, setColumnWidths] = useState(initialColumnWidths);
+    const columnSizeLimits = {
+        nr: { min: 40, max: 120 },
+        control: { min: 200, max: 900 },
+        critical: { min: 60, max: 150 },
+        act: { min: 60, max: 250 },
+        activation: { min: 100, max: 300 },
+        hierarchy: { min: 100, max: 300 },
+        cons: { min: 80, max: 250 },
+        quality: { min: 60, max: 160 },
+        cer: { min: 80, max: 200 },
+        action: { min: 200, max: 600 },
+        responsible: { min: 100, max: 250 },
+        dueDate: { min: 80, max: 200 },
+        notes: { min: 250, max: 700 },
+        actions: { min: 60, max: 150 }
+    };
+
+    const resizingColRef = useRef(null);
+    const resizeStartXRef = useRef(0);
+    const resizeStartWidthRef = useRef(0);
+    const isResizingRef = useRef(false);
+
+    const [tableWidth, setTableWidth] = useState(null);
+    const [wrapperWidth, setWrapperWidth] = useState(0);
+    const [hasFittedOnce, setHasFittedOnce] = useState(false);
+    const widthsInitializedRef = useRef(false);
 
     const openDeletePopup = (id, controlName) => {
         setControlToDelete({ id, controlName });
@@ -109,7 +154,11 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         let scrollLeft;
 
         const mouseDownHandler = (e) => {
-            if (e.target.closest('input, textarea, select, button') || e.target.closest('.drag-handle')) {
+            if (
+                e.target.closest('input, textarea, select, button') ||
+                e.target.closest('.drag-handle') ||
+                e.target.closest('.ibra-col-resizer') // ← NEW
+            ) {
                 return;
             }
             isDown = true;
@@ -153,7 +202,9 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         const adjust = () => {
             if (!caeBoxRef.current || !ceaTableWrapperRef.current) return;
             const boxW = caeBoxRef.current.offsetWidth;
-            ceaTableWrapperRef.current.style.width = `${boxW - 60}px`;
+            const w = boxW - 60;
+            ceaTableWrapperRef.current.style.width = `${w}px`;
+            setWrapperWidth(ceaTableWrapperRef.current.getBoundingClientRect().width);
         };
         window.addEventListener('resize', adjust);
         adjust();
@@ -168,10 +219,12 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
             ceaSavedWidthRef.current = wrapper.offsetWidth;
         } else if (ceaSavedWidthRef.current != null) {
             wrapper.style.width = `${ceaSavedWidthRef.current}px`;
+            setWrapperWidth(wrapper.getBoundingClientRect().width); // ← NEW
             return;
         }
         const boxW = caeBoxRef.current.offsetWidth;
         wrapper.style.width = `${boxW - 30}px`;
+        setWrapperWidth(wrapper.getBoundingClientRect().width); // ← NEW
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
@@ -237,6 +290,42 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
     };
 
     const displayColumns = getDisplayColumns();
+
+    // One-time initial fit so the table starts at wrapper width
+    useEffect(() => {
+        if (widthsInitializedRef.current) return;
+        if (!ceaTableWrapperRef.current) return;
+
+        const wrapperEl = ceaTableWrapperRef.current;
+        const wWidth = wrapperEl.clientWidth;
+        if (!wWidth) return;
+
+        const totalWidth = displayColumns.reduce((sum, colId) => {
+            const w = columnWidths[colId];
+            return sum + (typeof w === "number" ? w : 0);
+        }, 0);
+
+        if (!totalWidth) return;
+
+        const factor = wWidth / totalWidth;
+
+        setColumnWidths(prev => {
+            const updated = { ...prev };
+            displayColumns.forEach(colId => {
+                const w = prev[colId];
+                if (typeof w === "number") {
+                    updated[colId] = Math.round(w * factor);
+                }
+            });
+            return updated;
+        });
+
+        setWrapperWidth(wrapperEl.getBoundingClientRect().width);
+        setTableWidth(wWidth);
+        setHasFittedOnce(true);
+
+        widthsInitializedRef.current = true;
+    }, [displayColumns, columnWidths]);
 
     const insertRowAt = (insertIndex) => {
         const newRows = [...rows];
@@ -431,6 +520,204 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
         };
     }, [showColumnSelector, filterPopup.visible]);
 
+    const startColumnResize = (e, columnId) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        isResizingRef.current = true;
+
+        resizingColRef.current = columnId;
+        resizeStartXRef.current = e.clientX;
+
+        const th = e.target.closest('th');
+        const currentWidth =
+            columnWidths[columnId] ??
+            (th ? th.getBoundingClientRect().width : 150);
+
+        resizeStartWidthRef.current = currentWidth;
+
+        document.addEventListener('mousemove', handleColumnResizeMove);
+        document.addEventListener('mouseup', stopColumnResize);
+    };
+
+    const handleColumnResizeMove = (e) => {
+        const colId = resizingColRef.current;
+        if (!colId) return;
+
+        const deltaX = e.clientX - resizeStartXRef.current;
+        let newWidth = resizeStartWidthRef.current + deltaX;
+
+        const limits = columnSizeLimits[colId];
+        if (limits) {
+            if (limits.min != null) newWidth = Math.max(limits.min, newWidth);
+            if (limits.max != null) newWidth = Math.min(limits.max, newWidth);
+        }
+
+        setColumnWidths(prev => {
+            const oldWidth = prev[colId] ?? newWidth;
+            const updated = { ...prev, [colId]: newWidth };
+
+            // Table width grows/shrinks only by the change of this column
+            setTableWidth(current => {
+                if (current == null && ceaTableWrapperRef.current) {
+                    return ceaTableWrapperRef.current.clientWidth + (newWidth - oldWidth);
+                }
+                return (current ?? 0) + (newWidth - oldWidth);
+            });
+
+            return updated;
+        });
+    };
+
+    const stopColumnResize = () => {
+        document.removeEventListener('mousemove', handleColumnResizeMove);
+        document.removeEventListener('mouseup', stopColumnResize);
+
+        setTimeout(() => {
+            isResizingRef.current = false;
+        }, 0);
+
+        resizingColRef.current = null;
+    };
+
+    const fitTableToWidth = () => {
+        const wrapper = ceaTableWrapperRef.current;
+        if (!wrapper) return;
+
+        const wWidth = wrapper.getBoundingClientRect().width;
+        if (!wWidth) return;
+
+        const visibleCols = getDisplayColumns().filter(
+            id => typeof columnWidths[id] === "number"
+        );
+        if (!visibleCols.length) return;
+
+        const prevWidths = visibleCols.map(id => columnWidths[id]);
+        const totalWidth = prevWidths.reduce((a, b) => a + b, 0);
+        if (!totalWidth) return;
+
+        // Only grow when table is narrower than the wrapper
+        if (totalWidth >= wWidth) {
+            setTableWidth(totalWidth);
+            setWrapperWidth(wWidth);
+            setHasFittedOnce(true);
+            return;
+        }
+
+        const scale = wWidth / totalWidth;
+        let newWidths = prevWidths.map(w => w * scale);
+
+        newWidths = newWidths.map(w => Math.round(w));
+
+        let diff = wWidth - newWidths.reduce((s, w) => s + w, 0);
+        let i = 0;
+        while (diff !== 0 && i < newWidths.length * 2) {
+            newWidths[i % newWidths.length] += diff > 0 ? 1 : -1;
+            diff = wWidth - newWidths.reduce((s, w) => s + w, 0);
+            i++;
+        }
+
+        setColumnWidths(prev => {
+            const updated = { ...prev };
+            visibleCols.forEach((id, index) => {
+                updated[id] = newWidths[index];
+            });
+            return updated;
+        });
+
+        setWrapperWidth(wWidth);
+        setTableWidth(wWidth);
+        setHasFittedOnce(true);
+    };
+
+    const getDefaultShowColumns = () => [
+        "nr",
+        "control",
+        "critical",
+        "act",
+        "activation",
+        "hierarchy",
+        "cons",
+        "quality",
+        "cer",
+        "notes",
+        ...(readOnly ? [] : ["actions"]),
+    ];
+
+    const resetTable = (visibleColumnIds) => {
+        const wrapper = ceaTableWrapperRef.current;
+        if (!wrapper) return;
+
+        const wWidth = wrapper.getBoundingClientRect().width;
+        if (!wWidth) return;
+
+        const visibleCols = (visibleColumnIds || getDisplayColumns()).filter(
+            id => typeof initialColumnWidths[id] === "number"
+        );
+        if (!visibleCols.length) return;
+
+        const prevWidths = visibleCols.map(id => initialColumnWidths[id]);
+        const totalWidth = prevWidths.reduce((a, b) => a + b, 0);
+        if (!totalWidth) return;
+
+        const scale = wWidth / totalWidth;
+        let newWidths = prevWidths.map(w => w * scale);
+        newWidths = newWidths.map(w => Math.round(w));
+
+        let diff = wWidth - newWidths.reduce((s, w) => s + w, 0);
+        let i = 0;
+        while (diff !== 0 && i < newWidths.length * 2) {
+            newWidths[i % newWidths.length] += diff > 0 ? 1 : -1;
+            diff = wWidth - newWidths.reduce((s, w) => s + w, 0);
+            i++;
+        }
+
+        setColumnWidths(prev => {
+            const updated = { ...prev };
+            visibleCols.forEach((id, index) => {
+                updated[id] = newWidths[index];
+            });
+            return updated;
+        });
+
+        setWrapperWidth(wWidth);
+        setTableWidth(wWidth);
+        setHasFittedOnce(true);
+    };
+
+    const resetToDefaultColumnsAndFit = () => {
+        const defaults = getDefaultShowColumns();
+        setShowColumns(defaults);
+        setShowColumnSelector(false);
+        resetTable(defaults);
+    };
+
+    const isUsingDefaultColumns = useMemo(() => {
+        const defaults = getDefaultShowColumns();
+        if (showColumns.length !== defaults.length) return false;
+        return defaults.every((id, idx) => showColumns[idx] === id);
+    }, [showColumns, readOnly]);
+
+    const isTableFitted =
+        hasFittedOnce &&
+        wrapperWidth > 0 &&
+        tableWidth != null &&
+        Math.abs(tableWidth - wrapperWidth) <= 1;
+
+    // Show "Fit" when table is narrower than the wrapper
+    const showFitButton =
+        hasFittedOnce &&
+        wrapperWidth > 0 &&
+        tableWidth != null &&
+        tableWidth < wrapperWidth - 1;
+
+    // Show "Reset" when:
+    //  - columns != default OR
+    //  - width no longer matches wrapper (e.g. user dragged a column)
+    const showResetButton =
+        hasFittedOnce &&
+        (!isUsingDefaultColumns || !isTableFitted);
+
     return (
         <div className="input-row-risk-create">
             <div className={`input-box-attendance ${error ? "error-create" : ""}`} ref={caeBoxRef}>
@@ -512,30 +799,79 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                 >
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" onClick={handleDownload} />
                 </button>
+
+                {showFitButton && (
+                    <button
+                        className="top-right-button-ibra3"
+                        title="Fit To Width"
+                        onClick={fitTableToWidth}
+                    >
+                        <FontAwesomeIcon icon={faArrowsLeftRight} className="icon-um-search" />
+                    </button>
+                )}
+
+                {showResetButton && (
+                    <button
+                        className={showFitButton ? "top-right-button-ibra4" : "top-right-button-ibra3"}
+                        title="Reset to Default"
+                        onClick={resetToDefaultColumnsAndFit}
+                    >
+                        <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
+                    </button>
+                )}
                 <div className="table-wrapper-cea" ref={ceaTableWrapperRef}>
-                    <table className="table-borders-cea" >
+                    <table className="table-borders-ibra-table" >
                         <thead className="control-analysis-head">
                             <tr>
                                 {displayColumns.map((columnId, idx) => {
                                     const col = availableColumns.find(c => c.id === columnId);
                                     if (col) {
                                         const isFilterable = columnId !== "nr" && columnId !== "actions";
+                                        const width = columnWidths[columnId];
+
                                         return (
                                             <th
                                                 key={idx}
                                                 className={`${col.className} ${isFilterable && filters[columnId] ? 'jra-filter-active' : ''}`}
                                                 rowSpan={1}
-                                                onClick={isFilterable ? (e) => openFilterPopup(columnId, e) : undefined}
-                                                style={{ cursor: "pointer" }}
+                                                onClick={
+                                                    isFilterable && !isResizingRef.current
+                                                        ? (e) => openFilterPopup(columnId, e)
+                                                        : undefined
+                                                }
+                                                style={{
+                                                    cursor: isFilterable ? "pointer" : "default",
+                                                    width: width ? `${width}px` : undefined,
+                                                    position: "relative"
+                                                }}
                                             >
-                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
-                                                {isFilterable && filters[columnId] && (
-                                                    <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        gap: "10px"
+                                                    }}
+                                                >
+                                                    {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
+                                                    {isFilterable && filters[columnId] && (
+                                                        <FontAwesomeIcon
+                                                            icon={faFilter}
+                                                            className="active-filter-icon"
+                                                        />
+                                                    )}
+                                                </div>
+
+                                                {/* resize handle – skip for blanks */}
+                                                {columnId !== "nr" && columnId !== "actions" && (
+                                                    <div
+                                                        className="ibra-col-resizer"
+                                                        onMouseDown={(e) => startColumnResize(e, columnId)}
+                                                    />
                                                 )}
                                             </th>
                                         );
                                     }
-                                    // — blanks —
                                     return (
                                         <th key={idx} className="ibraCent ibraBlank" rowSpan={2} />
                                     );
@@ -596,7 +932,11 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                         // Special‐case the "action" column (remove button)
                                         if (columnId === 'actions') {
                                             return (
-                                                <td key={colIndex} className={`${colMeta.className} action-cell`}>
+                                                <td key={colIndex} className={`${colMeta.className} action-cell`} style={{
+                                                    width: columnWidths[columnId]
+                                                        ? `${columnWidths[columnId]}px`
+                                                        : undefined
+                                                }}>
                                                     <button
                                                         className="remove-row-button font-fam"
                                                         title="Remove Row"
@@ -626,7 +966,12 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
                                             <td
                                                 key={colIndex}
                                                 className={cellClass}
-                                                style={{ textAlign, fontSize: '14px' }}
+                                                style={{
+                                                    textAlign, fontSize: '14px',
+                                                    width: columnWidths[columnId]
+                                                        ? `${columnWidths[columnId]}px`
+                                                        : undefined
+                                                }}
                                             >
                                                 {value}
                                             </td>

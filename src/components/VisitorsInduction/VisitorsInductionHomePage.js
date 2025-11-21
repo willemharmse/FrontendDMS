@@ -383,7 +383,7 @@ const VisitorsInductionHomePage = () => {
                         <p className="logo-text-um">Training Management</p>
                     </div>
 
-                    {canIn(access, "TMS", ["systemAdmin", "contributor"]) && (
+                    {canIn(access, "TMS", ["systemAdmin", "profileManager"]) && (
                         <div className="filter-dm-fi-2">
                             <div className="button-container-dm-fi">
                                 <button className="but-dm-fi" onClick={openUpload}>

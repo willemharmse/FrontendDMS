@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faHelicopter, faInfo } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faHelicopter, faInfo, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -1240,7 +1240,7 @@ const RiskManagementPageJRA = () => {
                             <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                                    <span className="button-text">Published Documents</span>
+                                    <span className="button-text">Ready for Approval</span>
                                 </div>
                             </button>
                         )}
@@ -1377,7 +1377,7 @@ const RiskManagementPageJRA = () => {
                         </div>
                         <div className={`input-box-type-risk-create-date ${errors.dateConducted ? "error-create" : ""}`}>
                             <h3 className="font-fam-labels">Date Conducted <span className="required-field">*</span></h3>
-                            <div className="date-input-risk-create-container">
+                            <div className="date-input-risk-create-container" style={{ position: "relative" }}>
                                 <DatePicker
                                     value={formData.dateConducted || ""}
                                     format="YYYY-MM-DD"
@@ -1398,6 +1398,10 @@ const RiskManagementPageJRA = () => {
                                         }))
                                     }}
                                     style={{ width: "100%" }}
+                                />
+                                <FontAwesomeIcon
+                                    icon={faCalendarDays}
+                                    className="date-input-calendar-icon"
                                 />
                             </div>
                         </div>

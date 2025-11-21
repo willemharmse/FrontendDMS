@@ -5,6 +5,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import ComponentDateUpdates from './ComponentDateUpdates';
 import DatePicker from 'react-multi-date-picker';
+import { faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refresh }) => {
     const [newFile, setNewFile] = useState(null);
@@ -207,7 +209,7 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
                         <div className="update-file-group-side">
                             <label className="update-file-label">Issue Date</label>
 
-                            <div className='update-file-input-file-container'>
+                            <div className='update-file-input-file-container' style={{ position: "relative" }}>
                                 <DatePicker
                                     value={issueDate || ""}
                                     format="YYYY-MM-DD"
@@ -223,6 +225,10 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
                                     hideIcon={false}
                                     inputClass='update-file-input-file-new'
                                     maxDate={todayString()}
+                                />
+                                <FontAwesomeIcon
+                                    icon={faCalendarDays}
+                                    className="date-input-calendar-icon"
                                 />
                             </div>
                         </div>

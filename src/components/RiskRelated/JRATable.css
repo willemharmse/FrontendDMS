@@ -289,25 +289,6 @@ td.ibraEXEJRA {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-.ibraCon {
-    width: 100px;
-    background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
-}
-
-td.ibraCon {
-    min-width: 100px;
-    background-color: white !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-}
-
-.ibraOther {
-    width: 100px;
-}
-
 .ibraAR {
     min-width: 150px;
 }
@@ -340,8 +321,8 @@ td.ibraCon {
 }
 
 .jraStatus {
-    min-width: 200px !important;
-    max-width: 200px !important;
+    min-width: 200px;
+    max-width: 200px;
 }
 
 th.jraStatus {
@@ -365,10 +346,6 @@ td.jraStatus {
 
 .ibraDate {
     min-width: 350px;
-}
-
-.ibraRisk {
-    min-width: 200px;
 }
 
 .ibraOwner {

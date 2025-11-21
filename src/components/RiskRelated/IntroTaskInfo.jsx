@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, version } from "react";
 import "./IntroTaskInfo.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faInfoCircle, faL } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faInfoCircle, faL, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -901,7 +901,7 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors, readOnly = fal
                                                     readOnly={readOnly}
                                                 />
                                             </td>
-                                            <td>
+                                            <td style={{ position: "relative" }}>
                                                 <DatePicker
                                                     value={formData.introInfo.procedures.issueDate || ""}
                                                     format="YYYY-MM-DD"
@@ -930,6 +930,11 @@ const IntroTaskInfo = ({ formData, setFormData, error, setErrors, readOnly = fal
                                                             dateConducted: false
                                                         }))
                                                     }}
+                                                />
+                                                <FontAwesomeIcon
+                                                    icon={faCalendarDays}
+                                                    className="date-input-calendar-icon"
+                                                    style={{ right: "15px" }}
                                                 />
                                             </td>
                                         </tr>

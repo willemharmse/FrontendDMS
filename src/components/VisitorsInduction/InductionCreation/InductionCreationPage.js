@@ -7,7 +7,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import TopBarDD from "../../Notifications/TopBarDD";
 import SaveAsPopup from "../../Popups/SaveAsPopup";
@@ -26,6 +26,7 @@ import LoadIndcutionDraftPopup from "./LoadIndcutionDraftPopup";
 import SaveAsInductionPopup from "./SaveAsInductionPopup";
 import LoadDraftIndcutionPopup from "./LoadDraftIndcutionPopup";
 import InductionPreviewPage from "./InductionPreviewPage";
+import ApproversPopup from "./ApproversPopup";
 
 const InductionCreationPage = () => {
   const id = useParams().id || '';
@@ -53,6 +54,17 @@ const InductionCreationPage = () => {
   const [publishable, setPublishable] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+  const [approval, setApproval] = useState(false);
+  const [inApproval, setInApproval] = useState(false);
+
+  const openApproval = () => {
+    setApproval(true);
+  }
+
+  const closeApproval = () => {
+    setApproval(false);
+  }
 
   const closePreview = () => {
     setPreview(false);
@@ -387,6 +399,7 @@ const InductionCreationPage = () => {
   };
 
   async function saveData() {
+    if (readOnly) return;
     const fd = buildDraftFormData(formDataRef.current);
 
     const res = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/safe`, {
@@ -401,6 +414,7 @@ const InductionCreationPage = () => {
 
 
   async function updateData(selectedUserIDs) {
+    if (readOnly) return;
     const wire = structuredClone(formDataRef.current);
     const fd = new FormData();
 
@@ -503,19 +517,22 @@ const InductionCreationPage = () => {
       return;
     }
 
-    if (!publishable) {
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.warn("This draft cannot be published as it has not been shared with all users for approval.", {
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
       });
-
-      return;
+    } else {
+      openApproval();  // Call your function when the form is valid
     }
+  };
+
+  const handleApproveClick = () => {
+    const newErrors = validateForm();
+    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
@@ -526,7 +543,48 @@ const InductionCreationPage = () => {
         }
       });
     } else {
-      handlePublish();  // Call your function when the form is valid
+      approveDraft();  // Call your function when the form is valid
+    }
+  };
+
+  const approveDraft = async () => {
+    const dataToStore = {
+      draftID: loadedIDRef.current
+    };
+
+    setLoading(true);
+    updateData(userIDsRef.current);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/approve-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+      const data = await response.json();
+
+      toast.success(`Induction Successfully Approved.`, {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setReadOnly(true);
+      setLoading(false);
+
+      if (data.fullyApproved) {
+        handlePublish()
+      }
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
     }
   };
 
@@ -537,6 +595,11 @@ const InductionCreationPage = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` } // if your load route is protected
       });
       const storedData = await response.json();
+
+      if (!response.ok) {
+        setLoadingDraft(false);
+        return;
+      }
 
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
@@ -558,6 +621,8 @@ const InductionCreationPage = () => {
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+      setReadOnly(storedData.readOnly);
+      setInApproval(storedData.statusApproval);
 
       setTimeout(() => {
         setLoadingDraft(false);
@@ -663,6 +728,7 @@ const InductionCreationPage = () => {
   }, [formData.courseTitle]);
 
   const autoSaveDraft = () => {
+    if (readOnly) return;
     if (formData.courseTitle.trim() === "") return;
     if (preview) return;
 
@@ -958,6 +1024,49 @@ const InductionCreationPage = () => {
     }
   };
 
+  const handlePublishApprovalFlow = async (approversValue) => {
+    const dataToStore = {
+      draftID: loadedIDRef.current,
+      approvers: approversValue
+    };
+
+    setLoading(true);
+    updateData(userIDsRef.current);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/start-approval-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+      const data = await response.json();
+
+      toast.success(`Induction Publishing Approval Started.`, {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      if (!data.currentApprover) {
+        setReadOnly(true)
+      }
+
+      setInApproval(data.approvalStatus);
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (id === 'new') {
       console.log("New draft, not loading existing data.");
@@ -1040,36 +1149,44 @@ const InductionCreationPage = () => {
               <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate("/FrontendDMS/visitorInductionHome")} title="Back" />
             </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
-            </div>
+            {!readOnly && (
+              <>
+                <div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faFloppyDisk} onClick={handleSave} title="Save" />
+                </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
-                <FontAwesomeIcon icon={faSave} />
-                <FontAwesomeIcon
-                  icon={faPen}
-                  transform="shrink-6 down-5 right-7"
-                  color="gray"
-                />
-              </span>
-            </div>
+                <div className="burger-menu-icon-risk-create-page-1">
+                  <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
+                    <FontAwesomeIcon icon={faSave} />
+                    <FontAwesomeIcon
+                      icon={faPen}
+                      transform="shrink-6 down-5 right-7"
+                      color="gray"
+                    />
+                  </span>
+                </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-            </div>
+                <div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
+                </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-            </div>
+                <div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
+                </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
-            </div>
+                <div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faShareNodes} onClick={openShare} className={`${!loadedID ? "disabled-share" : ""}`} title="Share" />
+                </div>
 
-            <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${(!loadedID || !publishable) ? "disabled-share" : ""}`} title="Publish" />
-            </div>
+                {!inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faUpload} onClick={handlePubClick} className={`${(!loadedID) ? "disabled-share" : ""}`} title="Publish" />
+                </div>)}
+
+                {inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faCheckCircle} onClick={handleApproveClick} className={`${(!loadedID) ? "disabled-share" : ""}`} title="Approve Draft" />
+                </div>)}
+              </>
+            )}
           </div>
 
           <div className="spacer"></div>
@@ -1087,6 +1204,12 @@ const InductionCreationPage = () => {
 
           {!loadingDraft && (
             <>
+              {!readOnly && (<div className="input-row">
+                <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white" }}>
+                  <strong>Read-only mode:</strong> This document is currently in its publishing phase and cannot be edited at this time.
+                </div>
+              </div>)}
+
               <div className="input-row">
                 <div className={`input-box-title ${errors.title ? "error-create" : ""}`} style={{ marginBottom: "0px" }}>
                   <h3 className="font-fam-labels" onClick={() => console.log(formData)}>Title <span className="required-field">*</span></h3>
@@ -1098,6 +1221,7 @@ const InductionCreationPage = () => {
                       name="courseTitle"
                       className="font-fam title-input"
                       value={formData.courseTitle}
+                      readOnly={readOnly}
                       onChange={handleInputChange}
                       placeholder="Insert Visitor Induction Title"
                     />
@@ -1115,32 +1239,37 @@ const InductionCreationPage = () => {
                     className="aim-textarea font-fam expanding-textarea"
                     value={formData.intorduction}
                     onChange={handleInputChange}
+                    readOnly={readOnly}
                     rows="5"
                     placeholder="Insert Visitor Induction Introduction"
                   />
 
-                  {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                    <FontAwesomeIcon
-                      icon={faMagicWandSparkles}
-                      className="aim-textarea-icon-ibra"
-                      title="AI Rewrite"
-                      style={{ fontSize: "15px" }}
-                      onClick={() => AiRewriteIntro()}
-                    />
-                  )}
+                  {!readOnly && (
+                    <>
+                      {loadingIntro ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                        <FontAwesomeIcon
+                          icon={faMagicWandSparkles}
+                          className="aim-textarea-icon-ibra"
+                          title="AI Rewrite"
+                          style={{ fontSize: "15px" }}
+                          onClick={() => AiRewriteIntro()}
+                        />
+                      )}
 
-                  <FontAwesomeIcon
-                    icon={faRotateLeft}
-                    className="aim-textarea-icon-ibra-undo"
-                    title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('intorduction')}
-                    style={{
-                      marginLeft: '8px',
-                      opacity: rewriteHistory.intorduction.length ? 1 : 0.3,
-                      cursor: rewriteHistory.intorduction.length ? 'pointer' : 'not-allowed',
-                      fontSize: "15px"
-                    }}
-                  />
+                      <FontAwesomeIcon
+                        icon={faRotateLeft}
+                        className="aim-textarea-icon-ibra-undo"
+                        title="Undo AI Rewrite"
+                        onClick={() => undoAiRewrite('intorduction')}
+                        style={{
+                          marginLeft: '8px',
+                          opacity: rewriteHistory.intorduction.length ? 1 : 0.3,
+                          cursor: rewriteHistory.intorduction.length ? 'pointer' : 'not-allowed',
+                          fontSize: "15px"
+                        }}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -1153,42 +1282,47 @@ const InductionCreationPage = () => {
                     name="courseObjectives"
                     className="aim-textarea font-fam expanding-textarea"
                     value={formData.courseObjectives}
+                    readOnly={readOnly}
                     onChange={handleInputChange}
                     rows="5"
                     placeholder="The objective of the visitor induction is to: "
                   />
 
-                  {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                    <FontAwesomeIcon
-                      icon={faMagicWandSparkles}
-                      className="aim-textarea-icon-ibra"
-                      title="AI Rewrite"
-                      style={{ fontSize: "15px" }}
-                      onClick={() => AiRewriteObjectives()}
-                    />
-                  )}
+                  {!readOnly && (
+                    <>
+                      {loadingObj ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                        <FontAwesomeIcon
+                          icon={faMagicWandSparkles}
+                          className="aim-textarea-icon-ibra"
+                          title="AI Rewrite"
+                          style={{ fontSize: "15px" }}
+                          onClick={() => AiRewriteObjectives()}
+                        />
+                      )}
 
-                  <FontAwesomeIcon
-                    icon={faRotateLeft}
-                    className="aim-textarea-icon-ibra-undo"
-                    title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('courseObjectives')}
-                    style={{
-                      marginLeft: '8px',
-                      opacity: rewriteHistory.courseObjectives.length ? 1 : 0.3,
-                      cursor: rewriteHistory.courseObjectives.length ? 'pointer' : 'not-allowed',
-                      fontSize: "15px"
-                    }}
-                  />
+                      <FontAwesomeIcon
+                        icon={faRotateLeft}
+                        className="aim-textarea-icon-ibra-undo"
+                        title="Undo AI Rewrite"
+                        onClick={() => undoAiRewrite('courseObjectives')}
+                        style={{
+                          marginLeft: '8px',
+                          opacity: rewriteHistory.courseObjectives.length ? 1 : 0.3,
+                          cursor: rewriteHistory.courseObjectives.length ? 'pointer' : 'not-allowed',
+                          fontSize: "15px"
+                        }}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
-              <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-              <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-              <InductionContent formData={formData} setFormData={setFormData} />
-              <InductionOutline formData={formData} setFormData={setFormData} />
-              <InductionSummary formData={formData} setFormData={setFormData} />
-              <InductionAssessment formData={formData} setFormData={setFormData} />
+              <AbbreviationTable formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+              <TermTable formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} readOnly={readOnly} />
+              <InductionContent formData={formData} setFormData={setFormData} readOnly={readOnly} />
+              <InductionOutline formData={formData} setFormData={setFormData} readOnly={readOnly} />
+              <InductionSummary formData={formData} setFormData={setFormData} readOnly={readOnly} />
+              <InductionAssessment formData={formData} setFormData={setFormData} readOnly={readOnly} />
             </>
           )}
         </div>
@@ -1197,6 +1331,7 @@ const InductionCreationPage = () => {
         {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
         {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
         {preview && (<InductionPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
+        {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       </div>
       <ToastContainer />
     </div>

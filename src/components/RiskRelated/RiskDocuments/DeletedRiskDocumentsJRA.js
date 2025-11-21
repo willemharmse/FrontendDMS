@@ -201,53 +201,58 @@ const DeletedRiskDocumentsJRA = () => {
                     {/* Container for right-aligned icons */}
                     <TopBar />
                 </div>
-                <div className="table-container-gen">
-                    <table className="gen-table">
-                        <thead className="gen-head-del">
-                            <tr>
-                                <th className="gen-th ibraGenDelNr">Nr</th>
-                                <th className="gen-th ibraGenDelFN">Document Name</th>
-                                <th className="gen-th ibraGenDelVer">Version</th>
-                                <th className="gen-th ibraGenDelDB">Deleted By</th>
-                                <th className="gen-th ibraGenDelDD">Date Deleted</th>
-                                <th className="gen-th ibraGenDelED">Expiry Date</th>
-                                <th className="gen-th ibraGenDelAct">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map((file, index) => (
-                                <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="cent-values-gen gen-point">{index + 1}</td>
-                                    <td className=" gen-point">
-                                        <div className="popup-anchor">
-                                            <span>
-                                                {(file.formData.title)}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="cent-values-gen gen-point">{file.formData.version}</td>
-                                    <td className="cent-values-gen  gen-point">{file.deleter.username}</td>
-                                    <td className="cent-values-gen  gen-point">{formatDate(file.dateDeleted)}</td>
-                                    <td className="cent-values-gen  gen-point">{formatDate(file.expiryDate)}</td>
-                                    <td className={"cent-values-gen trashed"}>
-                                        <button
-                                            className={"delete-button-fi col-but trashed-color"}
-                                            onClick={() => fileDelete(file._id, file.formData.title)}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                                        </button>
-
-                                        <button
-                                            className={"delete-button-fi col-but-res trashed-color"}
-                                            onClick={() => restoreFile(file._id)}
-                                        >
-                                            <FontAwesomeIcon icon={faRotate} title="Restore Document" />
-                                        </button>
-                                    </td>
+                <div className="table-flameproof-card">
+                    <div className="flameproof-table-header-label-wrapper">
+                        <label className="risk-control-label">{"Deleted JRA Documents"}</label>
+                    </div>
+                    <div className="table-container-file-flameproof-all-assets">
+                        <table className="gen-table">
+                            <thead className="gen-head-del">
+                                <tr>
+                                    <th className="gen-th ibraGenDelNr">Nr</th>
+                                    <th className="gen-th ibraGenDelFN">Document Name</th>
+                                    <th className="gen-th ibraGenDelVer">Version</th>
+                                    <th className="gen-th ibraGenDelDB">Deleted By</th>
+                                    <th className="gen-th ibraGenDelDD">Date Deleted</th>
+                                    <th className="gen-th ibraGenDelED">Expiry Date</th>
+                                    <th className="gen-th ibraGenDelAct">Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredFiles.map((file, index) => (
+                                    <tr key={file._id} className={`file-info-row-height gen-tr`}>
+                                        <td className="cent-values-gen gen-point">{index + 1}</td>
+                                        <td className=" gen-point">
+                                            <div className="popup-anchor">
+                                                <span>
+                                                    {(file.formData.title)}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="cent-values-gen gen-point">{file.formData.version}</td>
+                                        <td className="cent-values-gen  gen-point">{file.deleter.username}</td>
+                                        <td className="cent-values-gen  gen-point">{formatDate(file.dateDeleted)}</td>
+                                        <td className="cent-values-gen  gen-point">{formatDate(file.expiryDate)}</td>
+                                        <td className={"cent-values-gen trashed"}>
+                                            <button
+                                                className={"delete-button-fi col-but trashed-color"}
+                                                onClick={() => fileDelete(file._id, file.formData.title)}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                                            </button>
+
+                                            <button
+                                                className={"delete-button-fi col-but-res trashed-color"}
+                                                onClick={() => restoreFile(file._id)}
+                                            >
+                                                <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

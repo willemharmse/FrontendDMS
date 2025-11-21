@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faCopy, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
-const InductionAssessment = ({ formData, setFormData }) => {
+const InductionAssessment = ({ formData, setFormData, readOnly = false }) => {
     const addQuestion = () => {
         setFormData(prev => ({
             ...prev,
@@ -113,52 +113,54 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                 <div className="course-ass-file-qtitle">Question {index + 1}</div>
                             </div>
 
-                            <div className="course-ass-file-qactions">
-                                <button
-                                    className="course-ass-file-icon-btn"
-                                    aria-label="Duplicate question"
-                                    type="button"
-                                    title="Duplicate Question"
-                                    onClick={() =>
-                                        setFormData(prev => {
-                                            const list = [...prev.assessment];
-                                            const idx = list.findIndex(q => q.id === question.id);
-                                            const copy = {
-                                                id: crypto.randomUUID(),
-                                                question: question.question,
-                                                answer: question.answer,
-                                                options: [...(question.options || [])],
-                                                collapsed: false
-                                            };
-                                            list.splice(idx + 1, 0, copy);
-                                            return { ...prev, assessment: list };
-                                        })
-                                    }
-                                >
-                                    <FontAwesomeIcon icon={faCopy} />
-                                </button>
+                            {!readOnly && (
+                                <div className="course-ass-file-qactions">
+                                    <button
+                                        className="course-ass-file-icon-btn"
+                                        aria-label="Duplicate question"
+                                        type="button"
+                                        title="Duplicate Question"
+                                        onClick={() =>
+                                            setFormData(prev => {
+                                                const list = [...prev.assessment];
+                                                const idx = list.findIndex(q => q.id === question.id);
+                                                const copy = {
+                                                    id: crypto.randomUUID(),
+                                                    question: question.question,
+                                                    answer: question.answer,
+                                                    options: [...(question.options || [])],
+                                                    collapsed: false
+                                                };
+                                                list.splice(idx + 1, 0, copy);
+                                                return { ...prev, assessment: list };
+                                            })
+                                        }
+                                    >
+                                        <FontAwesomeIcon icon={faCopy} />
+                                    </button>
 
-                                <button
-                                    className="course-ass-file-icon-btn"
-                                    aria-label="Remove question"
-                                    title={onlyOneQuestionLeft ? "At least one question is required" : "Remove question"}
-                                    onClick={() => removeQuestion(question.id)}
-                                    type="button"
-                                    disabled={onlyOneQuestionLeft}
-                                >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                </button>
+                                    <button
+                                        className="course-ass-file-icon-btn"
+                                        aria-label="Remove question"
+                                        title={onlyOneQuestionLeft ? "At least one question is required" : "Remove question"}
+                                        onClick={() => removeQuestion(question.id)}
+                                        type="button"
+                                        disabled={onlyOneQuestionLeft}
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} />
+                                    </button>
 
-                                <button
-                                    className="course-ass-file-icon-btn"
-                                    aria-label="Add question"
-                                    onClick={addQuestion}
-                                    title="Add Question"
-                                    type="button"
-                                >
-                                    <FontAwesomeIcon icon={faPlusCircle} />
-                                </button>
-                            </div>
+                                    <button
+                                        className="course-ass-file-icon-btn"
+                                        aria-label="Add question"
+                                        onClick={addQuestion}
+                                        title="Add Question"
+                                        type="button"
+                                    >
+                                        <FontAwesomeIcon icon={faPlusCircle} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="course-ass-file-qbody">
@@ -166,6 +168,7 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                 className="course-ass-file-question-input"
                                 placeholder="Insert Question"
                                 value={question.question}
+                                readOnly={readOnly}
                                 onChange={(e) => updateQuestionText(question.id, e.target.value)}
                             />
 
@@ -176,6 +179,7 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                             <input
                                                 type="radio"
                                                 name={`q-${question.id}`}
+                                                disabled={readOnly}
                                                 checked={String(optIndex) === String(question.answer)}
                                                 onChange={() => setCorrectAnswer(question.id, optIndex)}
                                             />
@@ -186,29 +190,32 @@ const InductionAssessment = ({ formData, setFormData }) => {
                                             className="course-ass-file-option-input"
                                             placeholder={`Insert Option ${optIndex + 1}`}
                                             value={opt}
+                                            readOnly={readOnly}
                                             onChange={(e) => updateOptionText(question.id, optIndex, e.target.value)}
                                         />
 
-                                        <div className="course-ass-file-option-actions">
-                                            <button
-                                                className="course-ass-file-icon-btn"
-                                                aria-label="Remove option"
-                                                title="Remove option"
-                                                onClick={() => removeOption(question.id, optIndex)}
-                                                type="button"
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
-                                            <button
-                                                className="course-ass-file-icon-btn"
-                                                aria-label="Add option"
-                                                title="Add option"
-                                                onClick={() => addOption(question.id, optIndex)}
-                                                type="button"
-                                            >
-                                                <FontAwesomeIcon icon={faPlusCircle} />
-                                            </button>
-                                        </div>
+                                        {!readOnly && (
+                                            <div className="course-ass-file-option-actions">
+                                                <button
+                                                    className="course-ass-file-icon-btn"
+                                                    aria-label="Remove option"
+                                                    title="Remove option"
+                                                    onClick={() => removeOption(question.id, optIndex)}
+                                                    type="button"
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                                <button
+                                                    className="course-ass-file-icon-btn"
+                                                    aria-label="Add option"
+                                                    title="Add option"
+                                                    onClick={() => addOption(question.id, optIndex)}
+                                                    type="button"
+                                                >
+                                                    <FontAwesomeIcon icon={faPlusCircle} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

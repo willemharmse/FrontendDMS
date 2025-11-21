@@ -149,8 +149,15 @@ const VisitorInductionHomePage = () => {
     };
 
     const formatStatus = (type) => {
-        if (type === "Invalid" || type === "invalid") return "-"
-        return type
+        if (!type.expiryDate) {
+            if (type.validity === "Invalid" || type.validity === "invalid") return "-"
+        }
+
+        if (type.validity === "requiresRetake") {
+            return "Requires Retake"
+        }
+
+        return type.validity
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());
     };
@@ -264,9 +271,16 @@ const VisitorInductionHomePage = () => {
     };
 
     const getComplianceColor = (status) => {
-        if (status === "valid") return "status-good";
-        if (status === "invalid") return "status-missing";
-        if (status === "-") return "status-missing"
+        if (!status.expiryDate) {
+            if (status.validity === "Invalid" || status.validity === "invalid") return "status-missing"
+        }
+
+        if (status.validity === "requiresRetake") {
+            return "status-bad"
+        }
+
+        if (status.validity === "valid") return "status-good";
+        if (status.validity === "invalid") return "status-worst";
     };
 
     const filtered = courses;
@@ -367,7 +381,7 @@ const VisitorInductionHomePage = () => {
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>
                                                         {renderProgress(course.trainee.progress)}
                                                     </td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }} className={`${getComplianceColor(course.trainee.validity)}`}>{formatStatus(course.trainee.validity)}</td>
+                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }} className={`${getComplianceColor(course.trainee)}`}>{formatStatus(course.trainee)}</td>
                                                     <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.expiryDate) || "N/A"}</td>
                                                 </tr>
                                             ))}

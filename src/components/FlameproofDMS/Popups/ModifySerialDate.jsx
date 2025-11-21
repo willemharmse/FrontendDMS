@@ -1,3 +1,5 @@
+import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useMemo, useState } from "react";
 import DatePicker from "react-multi-date-picker";
 
@@ -122,7 +124,7 @@ const ModifySerialDate = ({
 
                 <div className="review-date-group">
                     <label className="review-date-label" htmlFor="component-date">Update / Installation Date</label>
-                    <div className="ump-input-select-container-new">
+                    <div className="ump-input-select-container-new" style={{ position: "relative" }}>
                         <DatePicker
                             id="component-date"
                             required
@@ -142,6 +144,10 @@ const ModifySerialDate = ({
                             hideIcon={false}
                             maxDate={todayStr}
                             style={{ width: "100%" }}
+                        />
+                        <FontAwesomeIcon
+                            icon={faCalendarDays}
+                            className="date-input-calendar-icon"
                         />
                     </div>
                 </div>

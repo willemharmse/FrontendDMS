@@ -85,6 +85,11 @@ const GeneratedFileInfo = () => {
         }
     };
 
+    const getStatus = (status) => {
+        if (status.toLowerCase() === 'published') return 'Ready for Approval';
+        return status
+    };
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -195,7 +200,7 @@ const GeneratedFileInfo = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/proceduresDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Procedure"}</p>
+                        <p className="logo-text-dm-fi">{"Ready for Approval Procedures"}</p>
                     </div>
                 </div>
             )}
@@ -235,62 +240,68 @@ const GeneratedFileInfo = () => {
                     {/* Container for right-aligned icons */}
                     <TopBar />
                 </div>
-                <div className="table-container-gen">
-                    <table className="gen-table">
-                        <thead className="gen-head">
-                            <tr>
-                                <th className="gen-th ibraGenNr">Nr</th>
-                                <th className="gen-th ibraGenFN">Document Name</th>
-                                <th className="gen-th ibraGenVer">Version</th>
-                                <th className="gen-th ibraGenStatus">Document Status</th>
-                                <th className="gen-th ibraGenPB">First Published By</th>
-                                <th className="gen-th ibraGenPD">First Published Date</th>
-                                <th className="gen-th ibraGenRB">Last Reviewed By</th>
-                                <th className="gen-th ibraGenRD">Last Review Date</th>
-                                <th className="gen-th ibraGenType">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map((file, index) => (
-                                <tr key={file._id} className={`file-info-row-height gen-tr`}>
-                                    <td className="cent-values-gen gen-point">{index + 1}</td>
-                                    <td className="gen-point">
-                                        <div className="popup-anchor">
-                                            <span onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
-                                                {(file.formData.title)}
-                                            </span>
-
-                                            {(hoveredFileId === file._id) && (
-                                                <PopupMenuPubFiles
-                                                    file={file}
-                                                    typeDoc={"procedure"}
-                                                    risk={false}
-                                                    isOpen={hoveredFileId === file._id}
-                                                    openDownloadModal={downloadFile}
-                                                    setHoveredFileId={setHoveredFileId}
-                                                    id={file._id}
-                                                />
-                                            )}
-                                        </div>
-                                    </td>
-
-                                    <td className="cent-values-gen gen-point">{file.formData.version}</td>
-                                    <td className={`${getStatusClass(file.documentStatus)} cent-values-gen  gen-point`}>{file.documentStatus}</td>
-                                    <td className="cent-values-gen  gen-point">{file.publisher.username}</td>
-                                    <td className="cent-values-gen  gen-point">{formatDate(file.datePublished)}</td>
-                                    <td className="cent-values-gen  gen-point">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
-                                    <td className="cent-values-gen  gen-point">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
-                                    <td className="cent-values-gen gen-point">
-                                        <button
-                                            className={"delete-button-fi col-but"}
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} title="Delete Document" onClick={() => fileDelete(file._id, file.formData.title)} />
-                                        </button>
-                                    </td>
+                <div className="table-flameproof-card">
+                    <div className="flameproof-table-header-label-wrapper">
+                        <label className="risk-control-label">{"Ready for Approval Procedures"}</label>
+                    </div>
+                    <div className="table-container-file-flameproof-all-assets">
+                        <table className="gen-table">
+                            <thead className="gen-head">
+                                <tr>
+                                    <th className="gen-th ibraGenNr">Nr</th>
+                                    <th className="gen-th ibraGenFN">Document Name</th>
+                                    <th className="gen-th ibraGenVer">Version</th>
+                                    <th className="gen-th ibraGenStatus">Document Status</th>
+                                    <th className="gen-th ibraGenPB">First Published By</th>
+                                    <th className="gen-th ibraGenPD">First Published Date</th>
+                                    <th className="gen-th ibraGenRB">Last Reviewed By</th>
+                                    <th className="gen-th ibraGenRD">Last Review Date</th>
+                                    <th className="gen-th ibraGenType">Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredFiles.map((file, index) => (
+                                    <tr key={file._id} className={`file-info-row-height gen-tr`}>
+                                        <td className="cent-values-gen gen-point">{index + 1}</td>
+                                        <td className="gen-point">
+                                            <div className="popup-anchor">
+                                                <span onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                                                    {(file.formData.title)}
+                                                </span>
+
+                                                {(hoveredFileId === file._id) && (
+                                                    <PopupMenuPubFiles
+                                                        file={file}
+                                                        typeDoc={"procedure"}
+                                                        risk={false}
+                                                        isOpen={hoveredFileId === file._id}
+                                                        openDownloadModal={downloadFile}
+                                                        setHoveredFileId={setHoveredFileId}
+                                                        id={file._id}
+                                                    />
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        <td className="cent-values-gen gen-point">{file.formData.version}</td>
+                                        <td className={`${getStatusClass(file.documentStatus)} cent-values-gen  gen-point`}>{getStatus(file.documentStatus)}</td>
+                                        <td className="cent-values-gen  gen-point">{file.publisher.username}</td>
+                                        <td className="cent-values-gen  gen-point">{formatDate(file.datePublished)}</td>
+                                        <td className="cent-values-gen  gen-point">{file.reviewer?.username ? file.reviewer.username : "N/A"}</td>
+                                        <td className="cent-values-gen  gen-point">{file.dateReviewed ? formatDate(file.dateReviewed) : "N/A"}</td>
+                                        <td className="cent-values-gen gen-point">
+                                            <button
+                                                className={"delete-button-fi col-but"}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} title="Delete Document" onClick={() => fileDelete(file._id, file.formData.title)} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
             </div>
 

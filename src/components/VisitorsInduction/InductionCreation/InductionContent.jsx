@@ -91,7 +91,7 @@ const emptyModule = (title = "") => ({
     topics: [],
 });
 
-const InductionContent = ({ formData, setFormData }) => {
+const InductionContent = ({ formData, setFormData, readOnly = false }) => {
     const modules = formData?.courseModules ?? [];
     const flatSlides = formData?.courseContent ?? []; // legacy
     const [mediaPicker, setMediaPicker] = useState(false);
@@ -540,32 +540,35 @@ const InductionContent = ({ formData, setFormData }) => {
                                         rows={1}
                                         placeholder="Insert Module Title"
                                         value={mod.title}
+                                        readOnly={readOnly}
                                         onChange={(e) =>
                                             changeModuleField(mod.id, "title", e.target.value)
                                         }
                                     />
                                 </div>
 
-                                <div className="courseCont-actions">
-                                    <button
-                                        type="button"
-                                        className="courseCont-iconBtn"
-                                        title="Remove module"
-                                        onClick={() => removeModule(mod.id)}
-                                        aria-label={`Remove module ${mIdx + 1}`}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="courseCont-iconBtn"
-                                        title="Add module after"
-                                        onClick={() => addModuleAfter(mIdx)}
-                                        aria-label={`Add module after ${mIdx + 1}`}
-                                    >
-                                        <FontAwesomeIcon icon={faCirclePlus} />
-                                    </button>
-                                </div>
+                                {!readOnly && (
+                                    <div className="courseCont-actions">
+                                        <button
+                                            type="button"
+                                            className="courseCont-iconBtn"
+                                            title="Remove module"
+                                            onClick={() => removeModule(mod.id)}
+                                            aria-label={`Remove module ${mIdx + 1}`}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="courseCont-iconBtn"
+                                            title="Add module after"
+                                            onClick={() => addModuleAfter(mIdx)}
+                                            aria-label={`Add module after ${mIdx + 1}`}
+                                        >
+                                            <FontAwesomeIcon icon={faCirclePlus} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Module body */}
@@ -606,6 +609,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                             rows={1}
                                                             placeholder="Insert Topic Title"
                                                             value={topic.title}
+                                                            readOnly={readOnly}
                                                             onChange={(e) =>
                                                                 changeTopicField(
                                                                     mIdx,
@@ -617,7 +621,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                         />
                                                     </div>
 
-                                                    <div className="courseCont-actions">
+                                                    {!readOnly && (<div className="courseCont-actions">
                                                         <button
                                                             type="button"
                                                             className="courseCont-iconBtn"
@@ -636,7 +640,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                         >
                                                             <FontAwesomeIcon icon={faCirclePlus} />
                                                         </button>
-                                                    </div>
+                                                    </div>)}
                                                 </div>
 
                                                 {/* Topic body */}
@@ -678,6 +682,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                             className="courseCont-titleInput"
                                                                             rows={1}
                                                                             placeholder="Insert Slide Title"
+                                                                            readOnly={readOnly}
                                                                             value={slide.title}
                                                                             onChange={(e) =>
                                                                                 changeSlideField(
@@ -691,94 +696,95 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                         />
                                                                     </div>
 
-                                                                    {/* Slide actions: delete + inline type picker (insert after) */}
-                                                                    <div className="courseCont-actions">
+                                                                    {!readOnly && (
+                                                                        <div className="courseCont-actions">
 
-                                                                        <button
-                                                                            type="button"
-                                                                            className="courseCont-iconBtn"
-                                                                            title="Remove slide"
-                                                                            onClick={() =>
-                                                                                removeSlide(mIdx, tIdx, slide.id)
-                                                                            }
-                                                                            aria-label={`Remove slide ${mIdx + 1}.${tIdx + 1
-                                                                                }.${sIdx + 1}`}
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faTrash} />
-                                                                        </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="courseCont-iconBtn"
+                                                                                title="Remove slide"
+                                                                                onClick={() =>
+                                                                                    removeSlide(mIdx, tIdx, slide.id)
+                                                                                }
+                                                                                aria-label={`Remove slide ${mIdx + 1}.${tIdx + 1
+                                                                                    }.${sIdx + 1}`}
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faTrash} />
+                                                                            </button>
 
-                                                                        {false && (<button
-                                                                            type="button"
-                                                                            className="courseCont-iconBtn"
-                                                                            title="Add Audio File"
-                                                                            aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
-                                                                            onClick={() => {
-                                                                                if (slide.mediaItems?.[10]?.mediaPreview) {
-                                                                                    openAudioPlayer(
-                                                                                        mIdx,
-                                                                                        tIdx,
-                                                                                        slide.id,
-                                                                                        slide.mediaItems?.[10]?.mediaPreview
+                                                                            {false && (<button
+                                                                                type="button"
+                                                                                className="courseCont-iconBtn"
+                                                                                title="Add Audio File"
+                                                                                aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
+                                                                                onClick={() => {
+                                                                                    if (slide.mediaItems?.[10]?.mediaPreview) {
+                                                                                        openAudioPlayer(
+                                                                                            mIdx,
+                                                                                            tIdx,
+                                                                                            slide.id,
+                                                                                            slide.mediaItems?.[10]?.mediaPreview
+                                                                                        )
+                                                                                    }
+                                                                                    else {
+                                                                                        openMediaPicker(
+                                                                                            mIdx,
+                                                                                            tIdx,
+                                                                                            slide.id,
+                                                                                        )
+                                                                                    }
+                                                                                }
+                                                                                }
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faMusic} />
+                                                                            </button>)}
+
+                                                                            {audioPlayer && (
+                                                                                <PopupAudioPlayer
+                                                                                    audioFile={slide.mediaItems?.[10]?.mediaPreview}
+                                                                                    closePopup={closeAudioPlayer}
+                                                                                    module={moduleIndex}
+                                                                                    slide={slideID}
+                                                                                    topic={topicIndex}
+                                                                                    isOpen={true}
+                                                                                    onDelete={(m, t, s, slot) => {
+                                                                                        // ✅ Use the existing onMediaChange to clear it
+                                                                                        onMediaChange(m, t, s, slot, null);
+                                                                                    }}
+                                                                                />
+                                                                            )}
+
+                                                                            <button
+                                                                                type="button"
+                                                                                className="courseCont-iconBtn"
+                                                                                title="Add slide after"
+                                                                                aria-haspopup="menu"
+                                                                                aria-expanded={
+                                                                                    !!(
+                                                                                        inlineSlidePicker &&
+                                                                                        inlineSlidePicker.moduleIndex === mIdx &&
+                                                                                        inlineSlidePicker.topicIndex === tIdx &&
+                                                                                        inlineSlidePicker.slideIndex === sIdx
                                                                                     )
                                                                                 }
-                                                                                else {
-                                                                                    openMediaPicker(
-                                                                                        mIdx,
-                                                                                        tIdx,
-                                                                                        slide.id,
-                                                                                    )
-                                                                                }
-                                                                            }
-                                                                            }
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faMusic} />
-                                                                        </button>)}
-
-                                                                        {audioPlayer && (
-                                                                            <PopupAudioPlayer
-                                                                                audioFile={slide.mediaItems?.[10]?.mediaPreview}
-                                                                                closePopup={closeAudioPlayer}
-                                                                                module={moduleIndex}
-                                                                                slide={slideID}
-                                                                                topic={topicIndex}
-                                                                                isOpen={true}
-                                                                                onDelete={(m, t, s, slot) => {
-                                                                                    // ✅ Use the existing onMediaChange to clear it
-                                                                                    onMediaChange(m, t, s, slot, null);
+                                                                                aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
+                                                                                onClick={() => {
+                                                                                    if (
+                                                                                        inlineSlidePicker &&
+                                                                                        inlineSlidePicker.moduleIndex === mIdx &&
+                                                                                        inlineSlidePicker.topicIndex === tIdx &&
+                                                                                        inlineSlidePicker.slideIndex === sIdx
+                                                                                    ) {
+                                                                                        setInlineSlidePicker(null);
+                                                                                    } else {
+                                                                                        setInlineSlidePicker({ moduleIndex: mIdx, topicIndex: tIdx, slideIndex: sIdx });
+                                                                                    }
                                                                                 }}
-                                                                            />
-                                                                        )}
-
-                                                                        <button
-                                                                            type="button"
-                                                                            className="courseCont-iconBtn"
-                                                                            title="Add slide after"
-                                                                            aria-haspopup="menu"
-                                                                            aria-expanded={
-                                                                                !!(
-                                                                                    inlineSlidePicker &&
-                                                                                    inlineSlidePicker.moduleIndex === mIdx &&
-                                                                                    inlineSlidePicker.topicIndex === tIdx &&
-                                                                                    inlineSlidePicker.slideIndex === sIdx
-                                                                                )
-                                                                            }
-                                                                            aria-controls={`courseCont-typePicker-${mIdx}-${tIdx}-${sIdx}`}
-                                                                            onClick={() => {
-                                                                                if (
-                                                                                    inlineSlidePicker &&
-                                                                                    inlineSlidePicker.moduleIndex === mIdx &&
-                                                                                    inlineSlidePicker.topicIndex === tIdx &&
-                                                                                    inlineSlidePicker.slideIndex === sIdx
-                                                                                ) {
-                                                                                    setInlineSlidePicker(null);
-                                                                                } else {
-                                                                                    setInlineSlidePicker({ moduleIndex: mIdx, topicIndex: tIdx, slideIndex: sIdx });
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            <FontAwesomeIcon icon={faCirclePlus} />
-                                                                        </button>
-                                                                    </div>
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faCirclePlus} />
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
 
                                                                 {/* Slide body */}
@@ -791,6 +797,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                     placeholder="Insert content."
                                                                                     rows={8}
                                                                                     value={slide.content}
+                                                                                    readOnly={!readOnly}
                                                                                     onChange={(e) =>
                                                                                         changeSlideField(
                                                                                             mIdx,
@@ -804,81 +811,17 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                 />
 
                                                                                 {/* AI icons (TEXT) */}
-                                                                                {loadingMap[slide.id] ? (
-                                                                                    <FontAwesomeIcon
-                                                                                        icon={faSpinner}
-                                                                                        className="induction-textarea-icon-ai-rewrite spin-animation"
-                                                                                        title="Rewriting…"
-                                                                                        style={{
-                                                                                            fontSize: "15px",
-                                                                                            bottom: 23
-                                                                                        }}
-                                                                                    />
-                                                                                ) : (
-                                                                                    <FontAwesomeIcon
-                                                                                        icon={faMagicWandSparkles}
-                                                                                        className="induction-textarea-icon-ai-rewrite"
-                                                                                        title="AI Rewrite"
-                                                                                        style={{
-                                                                                            fontSize: "15px", cursor: "pointer",
-                                                                                            bottom: 23
-                                                                                        }}
-                                                                                        onClick={() =>
-                                                                                            rewriteSlideContent(mIdx, tIdx, slide)
-                                                                                        }
-                                                                                    />
-                                                                                )}
-
-                                                                                {hasHistory(slide.id) && (
-                                                                                    <FontAwesomeIcon
-                                                                                        icon={faRotateLeft}
-                                                                                        title="Undo AI Rewrite"
-                                                                                        style={{
-                                                                                            position: "absolute",
-                                                                                            right: 34,
-                                                                                            bottom: 23,
-                                                                                            fontSize: "15px",
-                                                                                            cursor: "pointer",
-                                                                                        }}
-                                                                                        onClick={() =>
-                                                                                            undoSlideContent(mIdx, tIdx, slide.id)
-                                                                                        }
-                                                                                    />
-                                                                                )}
-                                                                            </section>
-                                                                        )}
-
-                                                                        {slide.type === SLIDE_TYPES.TEXT_MEDIA && (
-                                                                            <section className="courseCont-twoCol">
-                                                                                <div
-                                                                                    className="courseCont-col"
-                                                                                    style={{ position: "relative" }}
-                                                                                >
-                                                                                    <div style={{ position: "relative" }}>
-                                                                                        <textarea
-                                                                                            className="courseCont-textarea"
-                                                                                            placeholder="Insert content."
-                                                                                            rows={10}
-                                                                                            value={slide.content}
-                                                                                            onChange={(e) =>
-                                                                                                changeSlideField(
-                                                                                                    mIdx,
-                                                                                                    tIdx,
-                                                                                                    slide.id,
-                                                                                                    "content",
-                                                                                                    e.target.value
-                                                                                                )
-                                                                                            }
-                                                                                            style={{ paddingBottom: "35px" }}
-                                                                                        />
-
-                                                                                        {/* AI icons (TEXT_MEDIA) */}
+                                                                                {!readOnly && (
+                                                                                    <>
                                                                                         {loadingMap[slide.id] ? (
                                                                                             <FontAwesomeIcon
                                                                                                 icon={faSpinner}
                                                                                                 className="induction-textarea-icon-ai-rewrite spin-animation"
                                                                                                 title="Rewriting…"
-                                                                                                style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                style={{
+                                                                                                    fontSize: "15px",
+                                                                                                    bottom: 23
+                                                                                                }}
                                                                                             />
                                                                                         ) : (
                                                                                             <FontAwesomeIcon
@@ -886,8 +829,7 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 className="induction-textarea-icon-ai-rewrite"
                                                                                                 title="AI Rewrite"
                                                                                                 style={{
-                                                                                                    fontSize: "15px",
-                                                                                                    cursor: "pointer",
+                                                                                                    fontSize: "15px", cursor: "pointer",
                                                                                                     bottom: 23
                                                                                                 }}
                                                                                                 onClick={() =>
@@ -908,13 +850,87 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                     cursor: "pointer",
                                                                                                 }}
                                                                                                 onClick={() =>
-                                                                                                    undoSlideContent(
-                                                                                                        mIdx,
-                                                                                                        tIdx,
-                                                                                                        slide.id
-                                                                                                    )
+                                                                                                    undoSlideContent(mIdx, tIdx, slide.id)
                                                                                                 }
                                                                                             />
+                                                                                        )}
+                                                                                    </>
+                                                                                )}
+                                                                            </section>
+                                                                        )}
+
+                                                                        {slide.type === SLIDE_TYPES.TEXT_MEDIA && (
+                                                                            <section className="courseCont-twoCol">
+                                                                                <div
+                                                                                    className="courseCont-col"
+                                                                                    style={{ position: "relative" }}
+                                                                                >
+                                                                                    <div style={{ position: "relative" }}>
+                                                                                        <textarea
+                                                                                            className="courseCont-textarea"
+                                                                                            placeholder="Insert content."
+                                                                                            rows={10}
+                                                                                            value={slide.content}
+                                                                                            readOnly={readOnly}
+                                                                                            onChange={(e) =>
+                                                                                                changeSlideField(
+                                                                                                    mIdx,
+                                                                                                    tIdx,
+                                                                                                    slide.id,
+                                                                                                    "content",
+                                                                                                    e.target.value
+                                                                                                )
+                                                                                            }
+                                                                                            style={{ paddingBottom: "35px" }}
+                                                                                        />
+
+                                                                                        {/* AI icons (TEXT_MEDIA) */}
+                                                                                        {!readOnly && (
+                                                                                            <>
+                                                                                                {loadingMap[slide.id] ? (
+                                                                                                    <FontAwesomeIcon
+                                                                                                        icon={faSpinner}
+                                                                                                        className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                        title="Rewriting…"
+                                                                                                        style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                    />
+                                                                                                ) : (
+                                                                                                    <FontAwesomeIcon
+                                                                                                        icon={faMagicWandSparkles}
+                                                                                                        className="induction-textarea-icon-ai-rewrite"
+                                                                                                        title="AI Rewrite"
+                                                                                                        style={{
+                                                                                                            fontSize: "15px",
+                                                                                                            cursor: "pointer",
+                                                                                                            bottom: 23
+                                                                                                        }}
+                                                                                                        onClick={() =>
+                                                                                                            rewriteSlideContent(mIdx, tIdx, slide)
+                                                                                                        }
+                                                                                                    />
+                                                                                                )}
+
+                                                                                                {hasHistory(slide.id) && (
+                                                                                                    <FontAwesomeIcon
+                                                                                                        icon={faRotateLeft}
+                                                                                                        title="Undo AI Rewrite"
+                                                                                                        style={{
+                                                                                                            position: "absolute",
+                                                                                                            right: 34,
+                                                                                                            bottom: 23,
+                                                                                                            fontSize: "15px",
+                                                                                                            cursor: "pointer",
+                                                                                                        }}
+                                                                                                        onClick={() =>
+                                                                                                            undoSlideContent(
+                                                                                                                mIdx,
+                                                                                                                tIdx,
+                                                                                                                slide.id
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                )}
+                                                                                            </>
                                                                                         )}
                                                                                     </div>
                                                                                 </div>
@@ -930,6 +946,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 setRatio(4 / 3);
                                                                                                 handleFileSelect(mIdx, tIdx, slide.id, 0)(e)
                                                                                             }}
+                                                                                            disabled={readOnly}
+                                                                                            style={{ cursor: readOnly ? "default" : "" }}
                                                                                         />
                                                                                         {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -952,6 +970,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         type="file"
                                                                                         accept="image/*,video/*,audio/*"
                                                                                         onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                        disabled={readOnly}
+                                                                                        style={{ cursor: readOnly ? "default" : "" }}
                                                                                     />
                                                                                     {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                         <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
@@ -979,6 +999,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 setRatio(4 / 3);
                                                                                                 handleFileSelect(mIdx, tIdx, slide.id, 0)(e)
                                                                                             }}
+                                                                                            disabled={readOnly}
+                                                                                            style={{ cursor: readOnly ? "default" : "" }}
                                                                                         />
                                                                                         {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -1003,6 +1025,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 setRatio(4 / 3);
                                                                                                 handleFileSelect(mIdx, tIdx, slide.id, 1)(e)
                                                                                             }}
+                                                                                            disabled={readOnly}
+                                                                                            style={{ cursor: readOnly ? "default" : "" }}
                                                                                         />
                                                                                         {slide.mediaItems?.[1]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">
@@ -1034,40 +1058,44 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 onChange={(e) =>
                                                                                                     changeSlideField(mIdx, tIdx, slide.id, "contentLeft", e.target.value)
                                                                                                 }
+                                                                                                readOnly={readOnly}
                                                                                                 style={{ paddingBottom: "20px" }}
                                                                                             />
 
-                                                                                            {/* AI icons for LEFT field */}
-                                                                                            {isLoadingField(slide.id, "contentLeft") ? (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faSpinner}
-                                                                                                    className="induction-textarea-icon-ai-rewrite spin-animation"
-                                                                                                    title="Rewriting…"
-                                                                                                    style={{ fontSize: "15px", bottom: 23 }}
-                                                                                                />
-                                                                                            ) : (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faMagicWandSparkles}
-                                                                                                    className="induction-textarea-icon-ai-rewrite"
-                                                                                                    title="AI Rewrite"
-                                                                                                    style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
-                                                                                                    onClick={() => rewriteLeft(mIdx, tIdx, slide)}
-                                                                                                />
-                                                                                            )}
+                                                                                            {!readOnly && (
+                                                                                                <>
+                                                                                                    {isLoadingField(slide.id, "contentLeft") ? (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faSpinner}
+                                                                                                            className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                            title="Rewriting…"
+                                                                                                            style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                        />
+                                                                                                    ) : (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faMagicWandSparkles}
+                                                                                                            className="induction-textarea-icon-ai-rewrite"
+                                                                                                            title="AI Rewrite"
+                                                                                                            style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
+                                                                                                            onClick={() => rewriteLeft(mIdx, tIdx, slide)}
+                                                                                                        />
+                                                                                                    )}
 
-                                                                                            {hasHistoryField(slide.id, "contentLeft") && (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faRotateLeft}
-                                                                                                    title="Undo AI Rewrite"
-                                                                                                    style={{
-                                                                                                        position: "absolute",
-                                                                                                        right: 34,
-                                                                                                        bottom: 23,
-                                                                                                        fontSize: "15px",
-                                                                                                        cursor: "pointer",
-                                                                                                    }}
-                                                                                                    onClick={() => undoLeft(mIdx, tIdx, slide.id)}
-                                                                                                />
+                                                                                                    {hasHistoryField(slide.id, "contentLeft") && (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faRotateLeft}
+                                                                                                            title="Undo AI Rewrite"
+                                                                                                            style={{
+                                                                                                                position: "absolute",
+                                                                                                                right: 34,
+                                                                                                                bottom: 23,
+                                                                                                                fontSize: "15px",
+                                                                                                                cursor: "pointer",
+                                                                                                            }}
+                                                                                                            onClick={() => undoLeft(mIdx, tIdx, slide.id)}
+                                                                                                        />
+                                                                                                    )}
+                                                                                                </>
                                                                                             )}
                                                                                         </div>
                                                                                     </div>
@@ -1077,6 +1105,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
@@ -1099,40 +1129,43 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 onChange={(e) =>
                                                                                                     changeSlideField(mIdx, tIdx, slide.id, "contentRight", e.target.value)
                                                                                                 }
+                                                                                                readOnly={readOnly}
                                                                                                 style={{ paddingBottom: "20px" }}
                                                                                             />
+                                                                                            {!readOnly && (
+                                                                                                <>
+                                                                                                    {isLoadingField(slide.id, "contentRight") ? (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faSpinner}
+                                                                                                            className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                            title="Rewriting…"
+                                                                                                            style={{ fontSize: "15px", bottom: 23 }}
+                                                                                                        />
+                                                                                                    ) : (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faMagicWandSparkles}
+                                                                                                            className="induction-textarea-icon-ai-rewrite"
+                                                                                                            title="AI Rewrite"
+                                                                                                            style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
+                                                                                                            onClick={() => rewriteRight(mIdx, tIdx, slide)}
+                                                                                                        />
+                                                                                                    )}
 
-                                                                                            {/* AI icons for RIGHT field */}
-                                                                                            {isLoadingField(slide.id, "contentRight") ? (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faSpinner}
-                                                                                                    className="induction-textarea-icon-ai-rewrite spin-animation"
-                                                                                                    title="Rewriting…"
-                                                                                                    style={{ fontSize: "15px", bottom: 23 }}
-                                                                                                />
-                                                                                            ) : (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faMagicWandSparkles}
-                                                                                                    className="induction-textarea-icon-ai-rewrite"
-                                                                                                    title="AI Rewrite"
-                                                                                                    style={{ fontSize: "15px", cursor: "pointer", bottom: 23 }}
-                                                                                                    onClick={() => rewriteRight(mIdx, tIdx, slide)}
-                                                                                                />
-                                                                                            )}
-
-                                                                                            {hasHistoryField(slide.id, "contentRight") && (
-                                                                                                <FontAwesomeIcon
-                                                                                                    icon={faRotateLeft}
-                                                                                                    title="Undo AI Rewrite"
-                                                                                                    style={{
-                                                                                                        position: "absolute",
-                                                                                                        right: 34,
-                                                                                                        bottom: 23,
-                                                                                                        fontSize: "15px",
-                                                                                                        cursor: "pointer",
-                                                                                                    }}
-                                                                                                    onClick={() => undoRight(mIdx, tIdx, slide.id)}
-                                                                                                />
+                                                                                                    {hasHistoryField(slide.id, "contentRight") && (
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={faRotateLeft}
+                                                                                                            title="Undo AI Rewrite"
+                                                                                                            style={{
+                                                                                                                position: "absolute",
+                                                                                                                right: 34,
+                                                                                                                bottom: 23,
+                                                                                                                fontSize: "15px",
+                                                                                                                cursor: "pointer",
+                                                                                                            }}
+                                                                                                            onClick={() => undoRight(mIdx, tIdx, slide.id)}
+                                                                                                        />
+                                                                                                    )}
+                                                                                                </>
                                                                                             )}
                                                                                         </div>
                                                                                     </div>
@@ -1142,6 +1175,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[1]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
@@ -1163,54 +1198,59 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         placeholder="Insert content."
                                                                                         rows={8}
                                                                                         value={slide.content || ""}
+                                                                                        readOnly={readOnly}
                                                                                         onChange={(e) =>
                                                                                             changeSlideField(mIdx, tIdx, slide.id, "content", e.target.value)
                                                                                         }
                                                                                         style={{ paddingBottom: "35px", position: "relative" }}
                                                                                     />
 
-                                                                                    {loadingMap[slide.id] ? (
-                                                                                        <FontAwesomeIcon
-                                                                                            icon={faSpinner}
-                                                                                            className="induction-textarea-icon-ai-rewrite spin-animation"
-                                                                                            title="Rewriting…"
-                                                                                            style={{ fontSize: "15px", bottom: 13 }}
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <FontAwesomeIcon
-                                                                                            icon={faMagicWandSparkles}
-                                                                                            className="induction-textarea-icon-ai-rewrite"
-                                                                                            title="AI Rewrite"
-                                                                                            style={{
-                                                                                                fontSize: "15px",
-                                                                                                cursor: "pointer",
-                                                                                                bottom: 13
-                                                                                            }}
-                                                                                            onClick={() =>
-                                                                                                rewriteSlideContent(mIdx, tIdx, slide)
-                                                                                            }
-                                                                                        />
-                                                                                    )}
+                                                                                    {!readOnly && (
+                                                                                        <>
+                                                                                            {loadingMap[slide.id] ? (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faSpinner}
+                                                                                                    className="induction-textarea-icon-ai-rewrite spin-animation"
+                                                                                                    title="Rewriting…"
+                                                                                                    style={{ fontSize: "15px", bottom: 13 }}
+                                                                                                />
+                                                                                            ) : (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faMagicWandSparkles}
+                                                                                                    className="induction-textarea-icon-ai-rewrite"
+                                                                                                    title="AI Rewrite"
+                                                                                                    style={{
+                                                                                                        fontSize: "15px",
+                                                                                                        cursor: "pointer",
+                                                                                                        bottom: 13
+                                                                                                    }}
+                                                                                                    onClick={() =>
+                                                                                                        rewriteSlideContent(mIdx, tIdx, slide)
+                                                                                                    }
+                                                                                                />
+                                                                                            )}
 
-                                                                                    {hasHistory(slide.id) && (
-                                                                                        <FontAwesomeIcon
-                                                                                            icon={faRotateLeft}
-                                                                                            title="Undo AI Rewrite"
-                                                                                            style={{
-                                                                                                position: "absolute",
-                                                                                                right: 30,
-                                                                                                bottom: 13,
-                                                                                                fontSize: "15px",
-                                                                                                cursor: "pointer",
-                                                                                            }}
-                                                                                            onClick={() =>
-                                                                                                undoSlideContent(
-                                                                                                    mIdx,
-                                                                                                    tIdx,
-                                                                                                    slide.id
-                                                                                                )
-                                                                                            }
-                                                                                        />
+                                                                                            {hasHistory(slide.id) && (
+                                                                                                <FontAwesomeIcon
+                                                                                                    icon={faRotateLeft}
+                                                                                                    title="Undo AI Rewrite"
+                                                                                                    style={{
+                                                                                                        position: "absolute",
+                                                                                                        right: 30,
+                                                                                                        bottom: 13,
+                                                                                                        fontSize: "15px",
+                                                                                                        cursor: "pointer",
+                                                                                                    }}
+                                                                                                    onClick={() =>
+                                                                                                        undoSlideContent(
+                                                                                                            mIdx,
+                                                                                                            tIdx,
+                                                                                                            slide.id
+                                                                                                        )
+                                                                                                    }
+                                                                                                />
+                                                                                            )}
+                                                                                        </>
                                                                                     )}
                                                                                 </div>
 
@@ -1223,6 +1263,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                             onChange={(e) =>
                                                                                                 onMediaChange(mIdx, tIdx, slide.id, 0, e.target.files?.[0] || null)
                                                                                             }
+                                                                                            disabled={readOnly}
+                                                                                            style={{ cursor: readOnly ? "default" : "" }}
                                                                                         />
                                                                                         {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
@@ -1237,6 +1279,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                             onChange={(e) =>
                                                                                                 onMediaChange(mIdx, tIdx, slide.id, 1, e.target.files?.[0] || null)
                                                                                             }
+                                                                                            disabled={readOnly}
+                                                                                            style={{ cursor: readOnly ? "default" : "" }}
                                                                                         />
                                                                                         {slide.mediaItems?.[1]?.mediaPreview ? (
                                                                                             <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
@@ -1261,6 +1305,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[0]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[0])}</div>
@@ -1276,6 +1322,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 1)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[1]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[1])}</div>
@@ -1295,6 +1343,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 2)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[2]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[2])}</div>
@@ -1310,6 +1360,8 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                                 type="file"
                                                                                                 accept="image/*,video/*,audio/*"
                                                                                                 onChange={handleFileSelect(mIdx, tIdx, slide.id, 3)}
+                                                                                                disabled={readOnly}
+                                                                                                style={{ cursor: readOnly ? "default" : "" }}
                                                                                             />
                                                                                             {slide.mediaItems?.[3]?.mediaPreview ? (
                                                                                                 <div className="courseCont-mediaPreview">{renderPreview(slide.mediaItems[3])}</div>
@@ -1332,8 +1384,9 @@ const InductionContent = ({ formData, setFormData }) => {
                                                                                         id={`pdf-upload-${slide.id}`}
                                                                                         type="file"
                                                                                         accept="application/pdf"
-                                                                                        style={{ display: 'none' }}
+                                                                                        style={{ display: 'none', cursor: readOnly ? "default" : "" }}
                                                                                         onChange={handleFileSelect(mIdx, tIdx, slide.id, 0)}
+                                                                                        disabled={readOnly}
                                                                                     />
 
                                                                                     {/* 3. This label acts as a clickable background */}
@@ -1388,31 +1441,35 @@ const InductionContent = ({ formData, setFormData }) => {
                                                         ))}
 
                                                         {/* Add slide (footer picker per topic) */}
-                                                        <div className="courseCont-addWrap" style={{ marginTop: 10 }}>
+                                                        {!readOnly && (
+                                                            <div className="courseCont-addWrap" style={{ marginTop: 10 }}>
 
-                                                            <button
-                                                                type="button"
-                                                                className="add-row-button"
-                                                                onClick={() => setSlidePickerFor({ moduleIndex: mIdx, topicIndex: tIdx })}
-                                                            >
-                                                                Add Slide
-                                                            </button>
-                                                        </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="add-row-button"
+                                                                    onClick={() => setSlidePickerFor({ moduleIndex: mIdx, topicIndex: tIdx })}
+                                                                >
+                                                                    Add Slide
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                         );
                                     })}
 
-                                    <div className="courseCont-addWrap" style={{ marginTop: 10 }}>
-                                        <button
-                                            type="button"
-                                            className="add-row-button"
-                                            onClick={() => addTopicToModule(mIdx)}
-                                        >
-                                            Add Topic
-                                        </button>
-                                    </div>
+                                    {!readOnly && (
+                                        <div className="courseCont-addWrap" style={{ marginTop: 10 }}>
+                                            <button
+                                                type="button"
+                                                className="add-row-button"
+                                                onClick={() => addTopicToModule(mIdx)}
+                                            >
+                                                Add Topic
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -1420,11 +1477,13 @@ const InductionContent = ({ formData, setFormData }) => {
                 })}
 
                 {/* Add Module */}
-                <div className="courseCont-addWrap">
-                    <button type="button" className="add-row-button" onClick={addModule}>
-                        Add Module
-                    </button>
-                </div>
+                {!readOnly && (
+                    <div className="courseCont-addWrap">
+                        <button type="button" className="add-row-button" onClick={addModule}>
+                            Add Module
+                        </button>
+                    </div>
+                )}
             </div>
 
             <TypeSelectorPopup

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendar } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendar, faCalendarDays, faArrowsLeftRight, faWindowRestore, faBorderNone, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
@@ -27,6 +27,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const [posLists, setPosLists] = useState([]);
     const [activeSubCell, setActiveSubCell] = useState(null);
     const responsibleInputRefs = useRef({});
+    const isResizingRef = useRef(false);
+    const [wrapperWidth, setWrapperWidth] = useState(0);
+    const [hasFittedOnce, setHasFittedOnce] = useState(false);
 
     const excludedColumns = ["UE", "S", "H", "E", "C", "LR", "M", "R", "actions", "responsible", "dueDate"];
 
@@ -43,6 +46,90 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         column: null,
         pos: { top: 0, left: 0, width: 0 }
     });
+
+    const [columnWidths, setColumnWidths] = useState({
+        nr: 50,
+        main: 60,
+        sub: 115,
+        source: 90,
+        hazards: 110,
+        UE: 120,
+        maxConsequence: 300,
+        owner: 200,
+        controls: 170,
+        odds: 95,
+        riskRank: 90,
+        priority: 70,
+        material: 70,
+        actions: 500,
+        responsible: 370,
+        dueDate: 130,
+        additional: 150,
+        S: 60,
+        H: 60,
+        E: 60,
+        C: 60,
+        LR: 60,
+        M: 60,
+        R: 60,
+        action: 50
+    });
+
+    const [initialColumnWidths, setInitialColumnWidths] = useState({
+        nr: 50,
+        main: 60,
+        sub: 115,
+        source: 90,
+        hazards: 110,
+        UE: 120,
+        maxConsequence: 300,
+        owner: 200,
+        controls: 170,
+        odds: 95,
+        riskRank: 90,
+        priority: 70,
+        material: 70,
+        actions: 500,
+        responsible: 370,
+        dueDate: 130,
+        additional: 150,
+        S: 60,
+        H: 60,
+        E: 60,
+        C: 60,
+        LR: 60,
+        M: 60,
+        R: 60,
+        action: 50
+    });
+
+    const columnSizeLimits = {
+        nr: { min: 50, max: 50 },
+        main: { min: 80, max: 300 },
+        sub: { min: 80, max: 300 },
+        source: { min: 120, max: 400 },
+        hazards: { min: 150, max: 500 },
+        UE: { min: 150, max: 400 },
+        maxConsequence: { min: 200, max: 600 },
+        owner: { min: 150, max: 400 },
+        controls: { min: 200, max: 600 },
+        odds: { min: 80, max: 150 },
+        riskRank: { min: 80, max: 150 },
+        priority: { min: 70, max: 150 },
+        material: { min: 70, max: 150 },
+        actions: { min: 300, max: 1000 },
+        responsible: { min: 200, max: 600 },
+        dueDate: { min: 120, max: 300 },
+        additional: { min: 150, max: 400 },
+        S: { min: 50, max: 100 },
+        H: { min: 50, max: 100 },
+        E: { min: 50, max: 100 },
+        C: { min: 50, max: 100 },
+        LR: { min: 50, max: 100 },
+        M: { min: 50, max: 100 },
+        R: { min: 50, max: 100 },
+        action: { min: 50, max: 50 },
+    };
 
     const filteredRows = useMemo(() => {
         return rows.filter(row => {
@@ -104,7 +191,10 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
     function openFilterPopup(colId, e) {
         if (colId === "nr" || colId === "action") return;
-        const rect = e.target.getBoundingClientRect();
+
+        const target = e.currentTarget || e.target;
+        const rect = target.getBoundingClientRect();
+
         setFilterPopup({
             visible: true,
             column: colId,
@@ -254,7 +344,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         { id: "hazards", title: "Hazard", className: "ibraCent ibraPrev", icon: null },
         { id: "UE", title: "Unwanted Event", className: "ibraCent ibraStatus", icon: null },
         { id: "maxConsequence", title: "Max Reasonable Consequence Description", className: "ibraCent ibraDeadline", icon: null },
-        { id: "owner", title: "Functional Ownership", className: "ibraCent ibraNotes", icon: null },
+        { id: "owner", title: "Functional Ownership", className: "ibraCent ibraNotes-IBRA", icon: null },
         { id: "controls", title: "Current Controls", className: "ibraCent ibraDate", icon: null },
         { id: "odds", title: "Likelihood of the Event", className: "ibraCent ibraRisk", icon: null },
         { id: "S", title: "(S)", className: "ibraCent ibraCon", icon: null },
@@ -429,7 +519,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         let scrollLeft;
 
         const mouseDownHandler = (e) => {
-            if (e.target.closest('input, textarea, select, button') || e.target.closest('.drag-handle')) {
+            if (e.target.closest('input, textarea, select, button') || e.target.closest('.drag-handle') ||
+                e.target.closest('.ibra-col-resizer')) {
                 return;
             }
             isDown = true;
@@ -473,7 +564,11 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         const adjust = () => {
             if (!ibraBoxRef.current || !tableWrapperRef.current) return;
             const boxW = ibraBoxRef.current.offsetWidth;
-            tableWrapperRef.current.style.width = `${boxW - 30}px`;
+            const wrapperEl = tableWrapperRef.current;
+
+            wrapperEl.style.width = `${boxW - 30}px`;
+            // capture actual rendered width
+            setWrapperWidth(wrapperEl.getBoundingClientRect().width);
         };
         window.addEventListener('resize', adjust);
         adjust();
@@ -488,10 +583,12 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             savedWidthRef.current = wrapper.offsetWidth;
         } else if (savedWidthRef.current != null) {
             wrapper.style.width = `${savedWidthRef.current}px`;
+            setWrapperWidth(wrapper.getBoundingClientRect().width);
             return;
         }
         const boxW = ibraBoxRef.current.offsetWidth;
         wrapper.style.width = `${boxW - 30}px`;
+        setWrapperWidth(wrapper.getBoundingClientRect().width);
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
@@ -563,6 +660,42 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
             window.removeEventListener('scroll', handleScroll, true);
         };
     }, [showColumnSelector, showExeDropdown]);
+
+    useEffect(() => {
+        if (!filterPopup.visible) return;
+
+        const handleClickOutside = (e) => {
+            // If click is inside the filter popup, do nothing
+            if (e.target.closest('.jra-filter-popup')) return;
+
+            // Otherwise close it
+            setFilterPopup({ visible: false, column: null, pos: {} });
+        };
+
+        const handleAnyScroll = () => {
+            setFilterPopup(prev =>
+                prev.visible ? { visible: false, column: null, pos: {} } : prev
+            );
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        window.addEventListener('scroll', handleAnyScroll, true);
+
+        const wrapper = tableWrapperRef.current;
+        if (wrapper) {
+            wrapper.addEventListener('scroll', handleAnyScroll);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            window.removeEventListener('scroll', handleAnyScroll, true);
+            if (wrapper) {
+                wrapper.removeEventListener('scroll', handleAnyScroll);
+            }
+        };
+    }, [filterPopup.visible]);
 
     const insertRowAt = (afterRowId) => {
         const insertIndex = rows.findIndex(r => r.id === afterRowId);
@@ -654,6 +787,273 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         // else: let it scroll normally
     };
 
+    const resizingColRef = useRef(null);
+    const resizeStartXRef = useRef(0);
+    const resizeStartWidthRef = useRef(0);
+
+    const startColumnResize = (e, columnId) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        isResizingRef.current = true;   // ← NEW
+
+        resizingColRef.current = columnId;
+        resizeStartXRef.current = e.clientX;
+
+        const th = e.target.closest('th');
+        const currentWidth =
+            columnWidths[columnId] ??
+            (th ? th.getBoundingClientRect().width : 150);
+
+        resizeStartWidthRef.current = currentWidth;
+
+        document.addEventListener('mousemove', handleColumnResizeMove);
+        document.addEventListener('mouseup', stopColumnResize);
+    };
+
+    const handleColumnResizeMove = (e) => {
+        const colId = resizingColRef.current;
+        if (!colId) return;
+
+        const deltaX = e.clientX - resizeStartXRef.current;
+        let newWidth = resizeStartWidthRef.current + deltaX;
+
+        const limits = columnSizeLimits[colId];
+        if (limits) {
+            if (limits.min != null) newWidth = Math.max(limits.min, newWidth);
+            if (limits.max != null) newWidth = Math.min(limits.max, newWidth);
+        }
+
+        setColumnWidths(prev => {
+            // 1️⃣ update ONLY the dragged column
+            const updated = { ...prev, [colId]: newWidth };
+
+            // 2️⃣ recompute the overall table width as the sum of visible columns
+            const visibleCols = getDisplayColumns().filter(
+                id => typeof updated[id] === "number"
+            );
+
+            const totalWidth = visibleCols.reduce(
+                (sum, id) => sum + (updated[id] || 0),
+                0
+            );
+
+            setTableWidth(totalWidth);
+
+            return updated;
+        });
+    };
+
+    const stopColumnResize = () => {
+        document.removeEventListener('mousemove', handleColumnResizeMove);
+        document.removeEventListener('mouseup', stopColumnResize);
+
+        // Delay resetting so click event from same cycle is ignored
+        setTimeout(() => {
+            isResizingRef.current = false;
+        }, 0);
+
+        resizingColRef.current = null;
+    };
+
+    const [tableWidth, setTableWidth] = useState(null);
+    const widthsInitializedRef = useRef(false);
+
+    useEffect(() => {
+        if (widthsInitializedRef.current) return;
+        if (!tableWrapperRef.current) return;
+
+        const wrapperEl = tableWrapperRef.current;
+        const wWidth = wrapperEl.clientWidth;
+        if (!wWidth) return;
+
+        const totalWidth = displayColumns.reduce((sum, colId) => {
+            const w = columnWidths[colId];
+            return sum + (typeof w === "number" ? w : 0);
+        }, 0);
+
+        if (!totalWidth) return;
+
+        const factor = wWidth / totalWidth;
+
+        setColumnWidths(prev => {
+            const updated = { ...prev };
+            displayColumns.forEach(colId => {
+                const w = prev[colId];
+                if (typeof w === "number") {
+                    updated[colId] = Math.round(w * factor);
+                }
+            });
+            return updated;
+        });
+
+        setWrapperWidth(wrapperEl.getBoundingClientRect().width);
+        setTableWidth(wWidth);
+        setHasFittedOnce(true);
+
+        widthsInitializedRef.current = true;
+    }, [displayColumns, columnWidths]);
+
+    const fitTableToWidth = () => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
+
+        // Get actual usable width (inside padding)
+        const wrapperWidth = wrapper.getBoundingClientRect().width;
+        if (!wrapperWidth) return;
+
+        const visibleCols = getDisplayColumns().filter(
+            id => typeof columnWidths[id] === "number"
+        );
+        if (!visibleCols.length) return;
+
+        const prevWidths = visibleCols.map(id => columnWidths[id]);
+        const totalWidth = prevWidths.reduce((a, b) => a + b, 0);
+
+        // Only grow when too small
+        if (totalWidth >= wrapperWidth) {
+            setTableWidth(totalWidth);
+            return;
+        }
+
+        const scale = wrapperWidth / totalWidth;
+
+        // First pass: proportional scaling (floats)
+        let newWidths = prevWidths.map(w => w * scale);
+
+        // Convert to integers
+        newWidths = newWidths.map(w => Math.round(w));
+
+        // Fix rounding drift (sum might be off by a few px)
+        let diff = wrapperWidth - newWidths.reduce((s, w) => s + w, 0);
+
+        // Distribute leftover pixels
+        let i = 0;
+        while (diff !== 0 && i < newWidths.length * 2) {
+            newWidths[i % newWidths.length] += diff > 0 ? 1 : -1;
+            diff = wrapperWidth - newWidths.reduce((s, w) => s + w, 0);
+            i++;
+        }
+
+        // Now sum is EXACTLY wrapperWidth
+
+        setColumnWidths(prev => {
+            const updated = { ...prev };
+            visibleCols.forEach((id, index) => {
+                updated[id] = newWidths[index];
+            });
+            return updated;
+        });
+
+        setTableWidth(wrapperWidth);
+    };
+
+    const getDefaultShowColumns = () => [
+        "nr",
+        "main",
+        "hazards",
+        "source",
+        "UE",
+        "controls",
+        "riskRank",
+        ...(readOnly ? [] : ["action"]),
+    ];
+
+    const resetTable = (visibleColumnIds) => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
+
+        const wrapperWidth = wrapper.getBoundingClientRect().width;
+        if (!wrapperWidth) return;
+
+        const visibleCols = (visibleColumnIds || getDisplayColumns()).filter(
+            (id) => typeof initialColumnWidths[id] === "number"
+        );
+        if (!visibleCols.length) return;
+
+        const prevWidths = visibleCols.map((id) => initialColumnWidths[id]);
+        const totalWidth = prevWidths.reduce((a, b) => a + b, 0);
+        if (!totalWidth) return;
+
+        // Always scale to wrapper width (can grow OR shrink)
+        const scale = wrapperWidth / totalWidth;
+
+        // First pass: proportional scaling
+        let newWidths = prevWidths.map((w) => w * scale);
+
+        // Round to integers
+        newWidths = newWidths.map((w) => Math.round(w));
+
+        // Fix rounding drift so sum === wrapperWidth exactly
+        let diff =
+            wrapperWidth -
+            newWidths.reduce((sum, w) => sum + w, 0);
+
+        let i = 0;
+        while (diff !== 0 && i < newWidths.length * 2) {
+            const idx = i % newWidths.length;
+            newWidths[idx] += diff > 0 ? 1 : -1;
+            diff =
+                wrapperWidth -
+                newWidths.reduce((sum, w) => sum + w, 0);
+            i++;
+        }
+
+        setColumnWidths((prev) => {
+            const updated = { ...prev };
+            visibleCols.forEach((id, index) => {
+                updated[id] = newWidths[index];
+            });
+            return updated;
+        });
+
+        setTableWidth(wrapperWidth);
+    };
+
+    const resetToDefaultColumnsAndFit = () => {
+        const defaults = getDefaultShowColumns();
+
+        // Reset which columns are shown
+        setShowColumns(defaults);
+
+        // Optionally close the column selector popup
+        setShowColumnSelector(false);
+
+        // Re-fit based on default columns
+        resetTable(defaults);
+    };
+
+    const isUsingDefaultColumns = useMemo(() => {
+        const defaults = getDefaultShowColumns();
+        if (showColumns.length !== defaults.length) return false;
+        return defaults.every((id, idx) => showColumns[idx] === id);
+    }, [showColumns, readOnly]);
+
+    const isTableFitted =
+        hasFittedOnce &&
+        wrapperWidth > 0 &&
+        tableWidth != null &&
+        Math.abs(tableWidth - wrapperWidth) <= 1;
+
+    // 1) Show fit button only when table is narrower
+    const showFitButton =
+        hasFittedOnce &&
+        wrapperWidth > 0 &&
+        tableWidth != null &&
+        tableWidth < wrapperWidth - 1; // small tolerance
+
+    // 2) Show reset when:
+    //    - columns differ from default OR
+    //    - widths no longer match wrapper
+    const showResetButton =
+        hasFittedOnce &&
+        (!isUsingDefaultColumns || !isTableFitted);
+
+    useEffect(() => {
+        if (!hasFittedOnce) return;
+        fitTableToWidth(getDisplayColumns(), true);
+    }, [isSidebarVisible]);
+
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
@@ -673,6 +1073,22 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 >
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
                 </button>
+
+                {showFitButton && (<button
+                    className="top-right-button-ibra3"
+                    title="Fit To Width"
+                    onClick={fitTableToWidth}
+                >
+                    <FontAwesomeIcon icon={faArrowsLeftRight} className="icon-um-search" />
+                </button>)}
+
+                {showResetButton && (<button
+                    className={showFitButton ? "top-right-button-ibra4" : "top-right-button-ibra3"}
+                    title="Reset to Default"
+                    onClick={resetToDefaultColumnsAndFit}
+                >
+                    <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
+                </button>)}
 
                 {showColumnSelector && (
                     <div className="column-selector-popup"
@@ -730,7 +1146,12 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 )}
 
                 <div className="table-wrapper-ibra" ref={tableWrapperRef}>
-                    <table className="table-borders-ibra-table">
+                    <table className="table-borders-ibra-table"
+                        style={{
+                            width: tableWidth ? `${tableWidth}px` : '100%', // first paint fallback
+                            tableLayout: 'fixed',
+                        }}
+                    >
                         <thead className="ibra-table-header">
                             <tr>
                                 {displayColumns.map((columnId, idx) => {
@@ -749,19 +1170,48 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                     // — everything else spans both rows —
                                     const col = availableColumns.find(c => c.id === columnId);
                                     if (col) {
+                                        const limits = columnSizeLimits[columnId] || {};
+                                        const width = columnWidths[columnId];
+
                                         return (
-                                            <th key={idx} className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`} rowSpan={2}
-                                                onClick={e => openFilterPopup(columnId, e)}>
-                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}{filters[columnId] && (
+                                            <th
+                                                key={idx}
+                                                className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`}
+                                                rowSpan={2}
+                                                onClick={e => {
+                                                    // If resizing just happened → ignore this click
+                                                    if (isResizingRef.current) return;
+
+                                                    // Only open when clicking the TH itself
+                                                    if (e.target !== e.currentTarget) return;
+
+                                                    openFilterPopup(columnId, e);
+                                                }}
+                                                style={{
+                                                    position: 'relative',
+                                                    width: width ? `${width}px` : undefined,
+                                                    minWidth: limits.min ? `${limits.min}px` : undefined,
+                                                    maxWidth: limits.max ? `${limits.max}px` : undefined,
+                                                }}
+                                            >
+                                                <span style={{ width: "100%" }}>{col.title}</span>
+                                                {filters[columnId] && (
                                                     <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
+
+                                                {/* Resize handle */}
+                                                {!readOnly && (
+                                                    <div
+                                                        className="ibra-col-resizer"
+                                                        onMouseDown={e => startColumnResize(e, columnId)}
+                                                    />
                                                 )}
                                             </th>
                                         );
                                     }
                                     // — blanks —
                                     return (
-                                        <th key={idx} className="ibraCent ibraBlank" rowSpan={2}
-                                            onClick={e => openFilterPopup(columnId, e)} />
+                                        <th key={idx} className="ibraCent ibraBlank" rowSpan={2} />
                                     );
                                 })}
                             </tr>
@@ -769,11 +1219,39 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                 {displayColumns.map((columnId, idx) => {
                                     if (['actions', "responsible", 'dueDate'].includes(columnId)) {
                                         const col = availableColumns.find(c => c.id === columnId);
+                                        const limits = columnSizeLimits[columnId] || {};
+                                        const width = columnWidths[columnId];
+
                                         return (
-                                            <th key={idx} className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`}
-                                                onClick={e => openFilterPopup(columnId, e)}>
-                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}{filters[columnId] && (
+                                            <th
+                                                key={idx}
+                                                className={`${col.className} ${!excludedColumns.includes(columnId) && filters[columnId] ? 'jra-filter-active' : ''}`}
+                                                onClick={e => {
+                                                    // If resizing just happened → ignore this click
+                                                    if (isResizingRef.current) return;
+
+                                                    // Only open when clicking the TH itself
+                                                    if (e.target !== e.currentTarget) return;
+
+                                                    openFilterPopup(columnId, e);
+                                                }}
+                                                style={{
+                                                    position: 'relative',
+                                                    width: width ? `${width}px` : undefined,
+                                                    minWidth: limits.min ? `${limits.min}px` : undefined,
+                                                    maxWidth: limits.max ? `${limits.max}px` : undefined,
+                                                }}
+                                            >
+                                                {col.icon ? <FontAwesomeIcon icon={col.icon} /> : col.title}
+                                                {filters[columnId] && (
                                                     <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
+
+                                                {!readOnly && (
+                                                    <div
+                                                        className="ibra-col-resizer"
+                                                        onMouseDown={e => startColumnResize(e, columnId)}
+                                                    />
                                                 )}
                                             </th>
                                         );
@@ -809,6 +1287,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                             {displayColumns.map((colId, idx) => {
                                                 const columnMeta = availableColumns.find(c => c.id === colId)
                                                 const colClass = columnMeta?.className || ""
+                                                const limits = columnSizeLimits[colId] || {};
+                                                const width = columnWidths[colId];
+                                                const commonCellStyle = {
+                                                    width: width ? `${width}px` : undefined,
+                                                    minWidth: limits.min ? `${limits.min}px` : undefined,
+                                                    maxWidth: limits.max ? `${limits.max}px` : undefined,
+                                                };
 
                                                 if (colId === "additional") {
                                                     // only on the first “possible” row
@@ -816,7 +1301,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                     const additionalText = row.additional;
                                                     return (
-                                                        <td key={idx} className={colClass} rowSpan={possibilities.length}>
+                                                        <td key={idx} className={colClass} rowSpan={possibilities.length} style={commonCellStyle}>
                                                             {additionalText
                                                                 ? <button
                                                                     className="ibra-view-additional-button"
@@ -832,7 +1317,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                 if (colId === "actions") {
                                                     return (
-                                                        <td key={idx} className={colClass}>
+                                                        <td key={idx} className={colClass} style={commonCellStyle}>
                                                             {p.actions.map((a, ai) => (
                                                                 <div key={ai} style={{ marginBottom: '4px' }}>
                                                                     <div className="control-with-icons" key={ai}>
@@ -873,7 +1358,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 // ─── Risk-Treatment children ───
                                                 if (colId === "responsible") {
                                                     return (
-                                                        <td key={idx} className={colClass}>
+                                                        <td key={idx} className={colClass} style={commonCellStyle}>
                                                             {p.responsible.map((d, di) => (
                                                                 <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
                                                                     <input
@@ -902,9 +1387,9 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 }
                                                 if (colId === "dueDate") {
                                                     return (
-                                                        <td key={idx} className={colClass}>
+                                                        <td key={idx} className={colClass} style={commonCellStyle}>
                                                             {p.dueDate.map((d, di) => (
-                                                                <div key={di} style={{ marginBottom: '3px', marginTop: "1px" }}>
+                                                                <div key={di} style={{ marginBottom: '3px', marginTop: "1px", position: "relative" }}>
                                                                     <DatePicker
                                                                         value={d.date || null}
                                                                         format="YYYY-MM-DD"
@@ -923,6 +1408,10 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                                             "--rmdp-primary-color": "#002060",  // ← highlight color (selected day, header accent)
                                                                             "--rmdp-secondary-color": "#E6ECFF", // ← hover background color
                                                                         }}
+                                                                    />
+                                                                    <FontAwesomeIcon
+                                                                        icon={faCalendarDays}
+                                                                        className="date-input-calendar-icon"
                                                                     />
                                                                 </div>
                                                             ))}
@@ -957,7 +1446,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
-                                                            style={{ whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.riskRank}
                                                         </td>
@@ -973,7 +1462,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
-                                                            style={{ whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.priority}
                                                         </td>
@@ -989,7 +1478,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             className={`${colClass} ${colourClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
-                                                            style={{ whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
                                                         >
                                                             {row.material}
                                                         </td>
@@ -1002,7 +1491,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
                                                             className="correct-wrap-ibra"
                                                         >
                                                             {row.maxConsequence}
@@ -1016,7 +1505,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
                                                             className={`${colId === "UE" ? "unwanted-event-borders" : ""} correct-wrap-ibra`}
                                                         >
                                                             {row.UE}
@@ -1030,7 +1519,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            style={{ textAlign: "left", whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
                                                             className="correct-wrap-ibra"
                                                         >
                                                             {row.source}
@@ -1045,7 +1534,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             key={idx}
                                                             className={`${colClass} correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
-                                                            style={{ alignItems: 'center', gap: '0px', whiteSpace: "pre-wrap" }}
+                                                            style={{ ...commonCellStyle, alignItems: 'center', gap: '0px', whiteSpace: "pre-wrap" }}
                                                         >
                                                             <span>{cellData}</span>
                                                             {!readOnly && (<FontAwesomeIcon
@@ -1076,7 +1565,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 // Action buttons
                                                 if (colId === "action") {
                                                     return (
-                                                        <td key={idx} className={colClass} rowSpan={possibilities.length}>
+                                                        <td key={idx} className={colClass} rowSpan={possibilities.length} style={commonCellStyle}>
                                                             <div className="ibra-action-buttons">
                                                                 <button
                                                                     className="ibra-remove-row-button"

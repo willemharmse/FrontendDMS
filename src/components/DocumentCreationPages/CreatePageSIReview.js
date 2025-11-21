@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faCalendarDays, faX } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
@@ -1071,6 +1071,10 @@ const CreatePageSIReview = () => {
                       hideIcon={false}
                       style={{ width: "100%" }}
                     />
+                    <FontAwesomeIcon
+                      icon={faCalendarDays}
+                      className="date-input-calendar-icon"
+                    />
                   </div>
                 </div>
                 <div className={`input-box-type-special-intruction-date-half`}>
@@ -1090,6 +1094,21 @@ const CreatePageSIReview = () => {
                       style={{ width: "100%" }}
                       minDate={formData.dateConducted}
                     />
+
+                    {!formData.expiryDate && (
+                      <FontAwesomeIcon
+                        icon={faCalendarDays}
+                        className="date-input-calendar-icon"
+                      />
+                    )}
+                    {formData.expiryDate && (
+                      <FontAwesomeIcon
+                        icon={faX}
+                        className="date-input-calendar-icon-2"
+                        title="Clear Date"
+                        onClick={() => handleExipryDateChange("")}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

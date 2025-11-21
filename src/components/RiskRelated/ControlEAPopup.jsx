@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './ControlEAPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import 'react-toastify/dist/ReactToastify.css';
 import ControlType from './RiskInfo/ControlType';
 import ControlActivation from './RiskInfo/ControlActivation';
@@ -591,26 +591,35 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                                         <div className="ibra-popup-page-form-group">
                                                             <label style={{ fontSize: "15px" }}>Due Date
                                                             </label>
-                                                            <DatePicker
-                                                                value={dueDate || ""}
-                                                                format="YYYY-MM-DD"
-                                                                onChange={(val) =>
-                                                                    setDueDate(val?.format("YYYY-MM-DD"))
-                                                                }
-                                                                rangeHover={false}
-                                                                highlightToday={false}
-                                                                editable={false}
-                                                                placeholder="YYYY-MM-DD"
-                                                                hideIcon={false}
-                                                                inputClass='cea-popup-page-input'
-                                                                readOnly={readOnly}
-                                                                onFocus={() => {
-                                                                    setErrors(prev => ({
-                                                                        ...prev,
-                                                                        dateConducted: false
-                                                                    }))
-                                                                }}
-                                                            />
+                                                            <div style={{ position: "relative" }}>
+                                                                <DatePicker
+                                                                    value={dueDate || ""}
+                                                                    format="YYYY-MM-DD"
+                                                                    onChange={(val) =>
+                                                                        setDueDate(val?.format("YYYY-MM-DD"))
+                                                                    }
+                                                                    rangeHover={false}
+                                                                    highlightToday={false}
+                                                                    editable={false}
+                                                                    placeholder="YYYY-MM-DD"
+                                                                    hideIcon={false}
+                                                                    inputClass='cea-popup-page-input'
+                                                                    readOnly={readOnly}
+                                                                    onFocus={() => {
+                                                                        setErrors(prev => ({
+                                                                            ...prev,
+                                                                            dateConducted: false
+                                                                        }))
+                                                                    }}
+                                                                    style={{
+                                                                        width: "calc(100% - 6px)"
+                                                                    }}
+                                                                />
+                                                                <FontAwesomeIcon
+                                                                    icon={faCalendarDays}
+                                                                    className="date-input-calendar-icon"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -183,7 +183,7 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
                                 <div className={`ump-form-group ${errors.issueDate ? "ump-error" : ""}`}>
                                     <label>Initial Accreditation Date <span className="ump-required">*</span></label>
 
-                                    <div className='date-container-license'>
+                                    <div className='date-container-license' style={{ position: "relative" }}>
                                         <DatePicker
                                             value={issueDate || ""}
                                             format="YYYY-MM-DD"
@@ -201,12 +201,16 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
                                             maxDate={todayString()}
                                             style={{ cursor: "pointer" }}
                                         />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
+                                        />
                                     </div>
                                 </div>
                                 <div className={`ump-form-group ${errors.expiryDate ? "ump-error" : ""}`}>
                                     <label>Exipry Date <span className="ump-required">*</span></label>
 
-                                    <div className='date-container-license'>
+                                    <div className='date-container-license' style={{ position: "relative" }}>
                                         <DatePicker
                                             value={expiryDate || ""}
                                             format="YYYY-MM-DD"
@@ -224,6 +228,10 @@ const UpdateCertifierLicense = ({ onClose, certifierData }) => {
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
                                             minDate={issueDate}
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
                                         />
                                     </div>
                                 </div>

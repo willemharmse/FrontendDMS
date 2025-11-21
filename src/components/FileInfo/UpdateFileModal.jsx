@@ -4,6 +4,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./UpdateFileModal.css";
 import DatePicker from 'react-multi-date-picker';
+import { faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     // State for the form fields
@@ -211,7 +213,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
 
                         <div className="update-file-group-side">
                             <label className="update-file-label">Review Date</label>
-                            <div className='update-file-input-file-container'>
+                            <div className='update-file-input-file-container' style={{ position: "relative" }}>
                                 <DatePicker
                                     value={reviewDate || ""}
                                     format="YYYY-MM-DD"
@@ -224,6 +226,10 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                                     placeholder="YYYY-MM-DD"
                                     hideIcon={false}
                                     inputClass='update-file-input-file-new'
+                                />
+                                <FontAwesomeIcon
+                                    icon={faCalendarDays}
+                                    className="date-input-calendar-icon"
                                 />
                             </div>
                         </div>

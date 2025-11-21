@@ -153,7 +153,7 @@ td.ibraCon {
 }
 
 .ibraOther {
-    width: 70px !important;
+    width: 70px;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -161,9 +161,9 @@ td.ibraCon {
 }
 
 .ibraAR {
-    min-width: 120px !important;
-    width: 120px !important;
-    max-width: 120px !important;
+    min-width: 120px;
+    width: 120px;
+    max-width: 120px;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -186,30 +186,6 @@ td.ibraCon {
     /* Ensures long words break */
     white-space: normal !important;
     /* Allows wrapping */
-}
-
-.ibraStatus {
-    min-width: 200px !important;
-    max-width: 200px !important;
-    background-color: #CB6F6F !important;
-    border-left: solid 2px #CB6F6F !important;
-    border-right: solid 2px #CB6F6F !important;
-    border-top: solid 2px #CB6F6F !important;
-    word-wrap: break-word !important;
-    /* Ensures long words break */
-    white-space: normal !important;
-    /* Allows wrapping */
-}
-
-td.ibraStatus {
-    min-width: 200px !important;
-    max-width: 200px !important;
-    background-color: white !important;
-    border-left: solid 2px #CB6F6F !important;
-    border-right: solid 2px #CB6F6F !important;
-    word-wrap: break-word !important;
-    /* Ensures long words break */
-    white-space: normal !important;
 }
 
 .ibraNotes {
@@ -362,8 +338,8 @@ td.ibraDD {
 }
 
 .ibraRisk {
-    min-width: 95px !important;
-    max-width: 95px !important;
+    min-width: 95px;
+    max-width: 95px;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;

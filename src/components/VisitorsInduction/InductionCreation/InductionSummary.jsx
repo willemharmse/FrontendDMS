@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faMagicWandSparkles, faSpinner, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
-const InductionSummary = ({ formData, setFormData }) => {
+const InductionSummary = ({ formData, setFormData, readOnly = false }) => {
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [rewriteHistory, setRewriteHistory] = useState({
         summary: []
@@ -65,30 +65,35 @@ const InductionSummary = ({ formData, setFormData }) => {
                     value={formData.summary}
                     onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                     placeholder="Insert visitor induction summary."
+                    readOnly={readOnly}
                 />
 
-                {loadingSummary ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
-                    <FontAwesomeIcon
-                        icon={faMagicWandSparkles}
-                        className="aim-textarea-icon-ibra"
-                        title="AI Rewrite"
-                        style={{ fontSize: "15px" }}
-                        onClick={() => AiRewriteSummary()}
-                    />
+                {!readOnly && (
+                    <>
+                        {loadingSummary ? (<FontAwesomeIcon icon={faSpinner} className="aim-textarea-icon-ibra spin-animation" />) : (
+                            <FontAwesomeIcon
+                                icon={faMagicWandSparkles}
+                                className="aim-textarea-icon-ibra"
+                                title="AI Rewrite"
+                                style={{ fontSize: "15px" }}
+                                onClick={() => AiRewriteSummary()}
+                            />
+                        )}
+
+                        <FontAwesomeIcon
+                            icon={faRotateLeft}
+                            className="aim-textarea-icon-ibra-undo"
+                            title="Undo AI Rewrite"
+                            onClick={() => undoAiRewrite('summary')}
+                            style={{
+                                marginLeft: '8px',
+                                opacity: rewriteHistory.summary.length ? 1 : 0.3,
+                                cursor: rewriteHistory.summary.length ? 'pointer' : 'not-allowed',
+                                fontSize: "15px"
+                            }}
+                        />
+                    </>
                 )}
-
-                <FontAwesomeIcon
-                    icon={faRotateLeft}
-                    className="aim-textarea-icon-ibra-undo"
-                    title="Undo AI Rewrite"
-                    onClick={() => undoAiRewrite('summary')}
-                    style={{
-                        marginLeft: '8px',
-                        opacity: rewriteHistory.summary.length ? 1 : 0.3,
-                        cursor: rewriteHistory.summary.length ? 'pointer' : 'not-allowed',
-                        fontSize: "15px"
-                    }}
-                />
             </div>
         </div>
     );

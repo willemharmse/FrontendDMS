@@ -1162,7 +1162,7 @@ const CreatePageStandards = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedStandardFiles')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Published Documents</span>
+                  <span className="button-text">Ready for Approval</span>
                 </div>
               </button>
             )}

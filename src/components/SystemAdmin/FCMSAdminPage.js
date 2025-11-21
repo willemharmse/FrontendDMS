@@ -24,6 +24,7 @@ const FCMSAdminPage = () => {
     const [site, setSite] = useState(false);
     const [manageSite, setManageSite] = useState(false);
     const [template, setTemplate] = useState(false);
+    const [canAddSite, setCanAddSite] = useState(false);
     const navigate = useNavigate();
 
     const openBatch = () => {
@@ -79,6 +80,24 @@ const FCMSAdminPage = () => {
     const TOTAL_SLOTS = 12;
 
     const paddedDocs = [...count];
+
+    const fetchValues = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/setupInfo/flameproofInfo`, { headers: {} });
+            if (!response.ok) throw new Error('Failed to fetch sites');
+            const data = await response.json();
+
+            console.log(data);
+
+            setCanAddSite(data.addable);
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+
+    useEffect(() => {
+        fetchValues();
+    }, []);
 
     // Add placeholders if fewer than 12
     while (paddedDocs.length < TOTAL_SLOTS) {
@@ -141,14 +160,14 @@ const FCMSAdminPage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={openSite} >
+                    {canAddSite && (<div className={`document-card-fi-home`} onClick={openSite} >
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/fmsNewSite.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Register New Site</h3>
                         </>
-                    </div>
+                    </div>)}
 
                     <div className={`document-card-fi-home`} onClick={openAssets} >
                         <>
@@ -186,14 +205,14 @@ const FCMSAdminPage = () => {
                         </>
                     </div>
 
-                    {false && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameCertifiers")} >
+                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/flameCertifiers")} >
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/certifier1.svg`} className={"icon-dept"} />
                             </div>
                             <h3 className="document-title-fi-home">Manage Certification Bodies</h3>
                         </>
-                    </div>)}
+                    </div>
                 </div>
             </div>
             <ToastContainer />

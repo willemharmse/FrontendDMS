@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -507,7 +507,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                                 <div className={`ump-form-group ${errors.issueDate ? "ump-error" : ""}`}>
                                     <label>Issue Date <span className="ump-required">*</span></label>
 
-                                    <div className='date-container-license'>
+                                    <div className='date-container-license' style={{ position: "relative" }}>
                                         <DatePicker
                                             value={issueDate || ""}
                                             format="YYYY-MM-DD"
@@ -523,6 +523,10 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
                                             maxDate={todayString()}
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
                                         />
                                     </div>
                                 </div>

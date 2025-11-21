@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './UploadPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DatePicker from 'react-multi-date-picker';
@@ -336,20 +336,26 @@ const UploadPopup = ({ onClose }) => {
                                 </div>
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                     <label>Review Date <span className="required-field">*</span></label>
-                                    <DatePicker
-                                        value={reviewDate || ""}
-                                        format="YYYY-MM-DD"
-                                        onChange={(val) =>
-                                            setReviewDate(val?.format("YYYY-MM-DD"))
-                                        }
-                                        rangeHover={false}
-                                        highlightToday={false}
-                                        editable={false}
-                                        inputClass="upload-file-page-date"
-                                        placeholder="YYYY-MM-DD"
-                                        hideIcon={false}
-                                        style={{ paddingBottom: "12px", paddingTop: "12px", "--rmdp-primary-color": "#002060" }}
-                                    />
+                                    <div style={{ position: "relative", width: "calc(100% - 8.01px)" }}>
+                                        <DatePicker
+                                            value={reviewDate || ""}
+                                            format="YYYY-MM-DD"
+                                            onChange={(val) =>
+                                                setReviewDate(val?.format("YYYY-MM-DD"))
+                                            }
+                                            rangeHover={false}
+                                            highlightToday={false}
+                                            editable={false}
+                                            inputClass="upload-file-page-date"
+                                            placeholder="YYYY-MM-DD"
+                                            hideIcon={false}
+                                            style={{ paddingBottom: "12px", paddingTop: "12px", "--rmdp-primary-color": "#002060" }}
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
+                                        />
+                                    </div>
                                 </div>
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                 </div>

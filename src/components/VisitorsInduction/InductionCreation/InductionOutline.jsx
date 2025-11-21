@@ -94,7 +94,7 @@ const INTRO_KEY = "__INTRO_DESC__";
 const REWRITE_ENDPOINT = `${process.env.REACT_APP_URL}/api/openai/chatInduction/description`;
 const isBlank = (v) => !String(v ?? "").trim();
 
-const InductionOutline = ({ formData, setFormData }) => {
+const InductionOutline = ({ formData, setFormData, readOnly = false }) => {
     const modules = formData?.courseModules || [];
     const outline = formData?.courseOutline || {};
 
@@ -250,6 +250,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                             type="text"
                             autoComplete="off"
                             className="course-outline-input"
+                            readOnly={readOnly}
                             placeholder="Insert Department Name"
                         />
                     </div>
@@ -294,6 +295,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                                         onChange={(e) => updateIntro("introDuration", e.target.value)}
                                         className="course-outline-input-2"
                                         placeholder="Insert Duration"
+                                        readOnly={readOnly}
                                     />
                                 </td>
                                 <td className="col-um">
@@ -306,31 +308,36 @@ const InductionOutline = ({ formData, setFormData }) => {
                                             className="course-outline-textarea"
                                             placeholder="Insert Topic Description"
                                             style={{ paddingRight: hasHistory(INTRO_KEY) ? "55px" : "" }}
+                                            readOnly={readOnly}
                                         />
-                                        {loadingMap[INTRO_KEY] ? (
-                                            <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
-                                        ) : (
-                                            <FontAwesomeIcon
-                                                icon={faMagicWandSparkles}
-                                                className="input-with-icon__icon"
-                                                title="AI Rewrite"
-                                                onClick={rewriteIntroDescription}
-                                                style={{ cursor: "pointer" }}
+                                        {!readOnly && (
+                                            <>
+                                                {loadingMap[INTRO_KEY] ? (
+                                                    <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
+                                                ) : (
+                                                    <FontAwesomeIcon
+                                                        icon={faMagicWandSparkles}
+                                                        className="input-with-icon__icon"
+                                                        title="AI Rewrite"
+                                                        onClick={rewriteIntroDescription}
+                                                        style={{ cursor: "pointer" }}
 
-                                            />
-                                        )}
-                                        {hasHistory(INTRO_KEY) && (
-                                            <FontAwesomeIcon
-                                                icon={faRotateLeft}
-                                                className="input-with-icon__icon"
-                                                title="Undo AI Rewrite"
-                                                onClick={undoIntroDescription}
-                                                style={{
-                                                    cursor: (descHistory[INTRO_KEY]?.length ? "pointer" : "not-allowed"),
-                                                    opacity: (descHistory[INTRO_KEY]?.length ? 1 : 0.3),
-                                                    marginRight: "25px"
-                                                }}
-                                            />
+                                                    />
+                                                )}
+                                                {hasHistory(INTRO_KEY) && (
+                                                    <FontAwesomeIcon
+                                                        icon={faRotateLeft}
+                                                        className="input-with-icon__icon"
+                                                        title="Undo AI Rewrite"
+                                                        onClick={undoIntroDescription}
+                                                        style={{
+                                                            cursor: (descHistory[INTRO_KEY]?.length ? "pointer" : "not-allowed"),
+                                                            opacity: (descHistory[INTRO_KEY]?.length ? 1 : 0.3),
+                                                            marginRight: "25px"
+                                                        }}
+                                                    />
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </td>
@@ -363,6 +370,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                 value={meta.duration || ""}
                                                                 onChange={(e) => updateTopicMeta(topic.id, "duration", e.target.value)}
                                                                 className="course-outline-input-2"
+                                                                readOnly={readOnly}
                                                                 placeholder="Insert Duration"
                                                             />
                                                         </td>
@@ -376,30 +384,36 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                     className="course-outline-textarea"
                                                                     placeholder="Insert Topic Description"
                                                                     style={{ paddingRight: hasHistory(idKey) ? "55px" : "" }}
+                                                                    readOnly={readOnly}
                                                                 />
-                                                                {loadingMap[idKey] ? (
-                                                                    <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
-                                                                ) : (
-                                                                    <FontAwesomeIcon
-                                                                        icon={faMagicWandSparkles}
-                                                                        className="input-with-icon__icon"
-                                                                        title="AI Rewrite"
-                                                                        onClick={() => rewriteTopicDescription(topic.id, meta.description)}
-                                                                        style={{ cursor: "pointer" }}
-                                                                    />
-                                                                )}
-                                                                {hasHistory(idKey) && (
-                                                                    <FontAwesomeIcon
-                                                                        icon={faRotateLeft}
-                                                                        className="input-with-icon__icon"
-                                                                        title="Undo AI Rewrite"
-                                                                        onClick={() => undoTopicDescription(topic.id)}
-                                                                        style={{
-                                                                            cursor: (histLen ? "pointer" : "not-allowed"),
-                                                                            opacity: (histLen ? 1 : 0.3),
-                                                                            marginRight: "25px"
-                                                                        }}
-                                                                    />
+                                                                {!readOnly && (
+                                                                    <>
+                                                                        {loadingMap[idKey] ? (
+                                                                            <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." style={{ marginTop: "-6px" }} />
+                                                                        ) : (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faMagicWandSparkles}
+                                                                                className="input-with-icon__icon"
+                                                                                title="AI Rewrite"
+                                                                                onClick={() => rewriteTopicDescription(topic.id, meta.description)}
+                                                                                style={{ cursor: "pointer" }}
+                                                                            />
+                                                                        )}
+                                                                        {hasHistory(idKey) && (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faRotateLeft}
+                                                                                className="input-with-icon__icon"
+                                                                                title="Undo AI Rewrite"
+                                                                                onClick={() => undoTopicDescription(topic.id)}
+                                                                                style={{
+                                                                                    cursor: (histLen ? "pointer" : "not-allowed"),
+                                                                                    opacity: (histLen ? 1 : 0.3),
+                                                                                    marginRight: "25px"
+                                                                                }}
+                                                                            />
+                                                                        )}
+
+                                                                    </>
                                                                 )}
                                                             </div>
                                                         </td>
@@ -424,6 +438,7 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                 onChange={(e) => updateTopicMeta(slide.id, "duration", e.target.value)}
                                                                 className="course-outline-input"
                                                                 placeholder="Insert Duration"
+                                                                readOnly={readOnly}
                                                             />
                                                         </td>
                                                         <td className="col-um">
@@ -435,28 +450,33 @@ const InductionOutline = ({ formData, setFormData }) => {
                                                                     onChange={(e) => updateTopicMeta(slide.id, "description", e.target.value)}
                                                                     className="course-outline-input"
                                                                     placeholder="Insert Topic Description"
+                                                                    readOnly={readOnly}
                                                                 />
-                                                                {loadingMap[idKey] ? (
-                                                                    <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." />
-                                                                ) : (
-                                                                    <FontAwesomeIcon
-                                                                        icon={faMagicWandSparkles}
-                                                                        className="input-with-icon__icon"
-                                                                        title="AI Rewrite"
-                                                                        onClick={() => rewriteTopicDescription(slide.id, meta.description)}
-                                                                        style={{ cursor: "pointer" }}
-                                                                    />
+                                                                {!readOnly && (
+                                                                    <>
+                                                                        {loadingMap[idKey] ? (
+                                                                            <FontAwesomeIcon icon={faSpinner} className="input-with-icon__icon spin-animation" title="Rewriting..." />
+                                                                        ) : (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faMagicWandSparkles}
+                                                                                className="input-with-icon__icon"
+                                                                                title="AI Rewrite"
+                                                                                onClick={() => rewriteTopicDescription(slide.id, meta.description)}
+                                                                                style={{ cursor: "pointer" }}
+                                                                            />
+                                                                        )}
+                                                                        <FontAwesomeIcon
+                                                                            icon={faRotateLeft}
+                                                                            className="input-with-icon__icon"
+                                                                            title="Undo AI Rewrite"
+                                                                            onClick={() => undoTopicDescription(slide.id)}
+                                                                            style={{
+                                                                                cursor: (histLen ? "pointer" : "not-allowed"),
+                                                                                opacity: (histLen ? 1 : 0.3)
+                                                                            }}
+                                                                        />
+                                                                    </>
                                                                 )}
-                                                                <FontAwesomeIcon
-                                                                    icon={faRotateLeft}
-                                                                    className="input-with-icon__icon"
-                                                                    title="Undo AI Rewrite"
-                                                                    onClick={() => undoTopicDescription(slide.id)}
-                                                                    style={{
-                                                                        cursor: (histLen ? "pointer" : "not-allowed"),
-                                                                        opacity: (histLen ? 1 : 0.3)
-                                                                    }}
-                                                                />
                                                             </div>
                                                         </td>
                                                     </tr>

@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo, faCalendarDays, faX } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
@@ -1107,7 +1107,7 @@ const CreatePageSI = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedSpecialFiles')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Published Documents</span>
+                  <span className="button-text">Ready for Approval</span>
                 </div>
               </button>
             )}
@@ -1267,6 +1267,10 @@ const CreatePageSI = () => {
                       }))}
                       style={{ width: "100%" }}
                     />
+                    <FontAwesomeIcon
+                      icon={faCalendarDays}
+                      className="date-input-calendar-icon"
+                    />
                   </div>
                 </div>
                 <div className={`input-box-type-special-intruction-date-half`}>
@@ -1291,6 +1295,20 @@ const CreatePageSI = () => {
                       style={{ width: "100%" }}
                       minDate={formData.dateConducted}
                     />
+                    {!formData.expiryDate && (
+                      <FontAwesomeIcon
+                        icon={faCalendarDays}
+                        className="date-input-calendar-icon"
+                      />
+                    )}
+                    {formData.expiryDate && (
+                      <FontAwesomeIcon
+                        icon={faX}
+                        className="date-input-calendar-icon-2"
+                        title="Clear Date"
+                        onClick={() => handleExipryDateChange("")}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

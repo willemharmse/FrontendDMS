@@ -3,7 +3,7 @@ import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare, faFilter, faArrowsLeftRight, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import Hazard from "./RiskInfo/Hazard";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import TaskExecution from "./RiskInfo/TaskExecution";
@@ -35,6 +35,59 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
     const [draggedRowId, setDraggedRowId] = useState(null);
     const [dragOverRowId, setDragOverRowId] = useState(null);
     const draggedElRef = useRef(null);
+    const isResizingRef = useRef(false);
+    const resizingColRef = useRef(null);
+    const resizeStartXRef = useRef(0);
+    const resizeStartWidthRef = useRef(0);
+    const [wrapperWidth, setWrapperWidth] = useState(0);
+
+    const [columnWidths, setColumnWidths] = useState({
+        nr: 50,
+        main: 220,
+        hazards: 200,
+        sub: 550,
+        UE: 200,
+        taskExecution: 200,
+        controls: 550,
+        go: 120,
+        action: 50,
+    });
+
+    const columnSizeLimits = {
+        nr: { min: 50, max: 50 },
+        main: { min: 180, max: 600 },
+        hazards: { min: 180, max: 600 },
+        sub: { min: 350, max: 1200 },
+        UE: { min: 150, max: 400 },
+        taskExecution: { min: 180, max: 600 },
+        controls: { min: 250, max: 900 },
+        go: { min: 100, max: 200 },
+        action: { min: 50, max: 50 },
+    };
+
+    const getDefaultColumnWidths = () => ({
+        nr: 50,
+        main: 220,
+        hazards: 200,
+        sub: 550,
+        UE: 200,
+        taskExecution: 200,
+        controls: 550,
+        go: 120,
+        action: 50,
+    });
+
+    const getDefaultShowColumns = () => [
+        "nr",
+        "main",
+        "hazards",
+        "sub",
+        "UE",
+        "taskExecution",
+        "controls",
+        "go",
+        ...(readOnly ? [] : ["action"]),
+    ];
 
     const closeJRAPopup = () => {
         setShowJRAPopup(false);
@@ -468,7 +521,11 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
         let scrollLeft;
 
         const mouseDownHandler = (e) => {
-            if (e.target.closest('input, textarea, select, button') || e.target.closest('.drag-handle')) {
+            if (
+                e.target.closest('input, textarea, select, button') ||
+                e.target.closest('.drag-handle') ||
+                e.target.closest('.ibra-col-resizer')
+            ) {
                 return;
             }
             isDown = true;
@@ -512,7 +569,10 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
         const adjust = () => {
             if (!ibraBoxRef.current || !tableWrapperRef.current) return;
             const boxW = ibraBoxRef.current.offsetWidth;
-            tableWrapperRef.current.style.width = `${boxW - 60}px`;
+            const wrapperEl = tableWrapperRef.current;
+
+            wrapperEl.style.width = `${boxW - 60}px`;
+            setWrapperWidth(wrapperEl.getBoundingClientRect().width);
         };
         window.addEventListener('resize', adjust);
         adjust();
@@ -527,10 +587,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
             savedWidthRef.current = wrapper.offsetWidth;
         } else if (savedWidthRef.current != null) {
             wrapper.style.width = `${savedWidthRef.current}px`;
+            setWrapperWidth(wrapper.getBoundingClientRect().width);
             return;
         }
         const boxW = ibraBoxRef.current.offsetWidth;
         wrapper.style.width = `${boxW - 30}px`;
+        setWrapperWidth(wrapper.getBoundingClientRect().width);
     }, [isSidebarVisible]);
 
     const [showColumns, setShowColumns] = useState([
@@ -607,6 +669,46 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
     const displayColumns = getDisplayColumns();
 
+    const defaultColumns = useMemo(() => getDefaultShowColumns(), [readOnly]);
+    const defaultWidths = useMemo(() => getDefaultColumnWidths(), []);
+
+    // current table width based on visible columns
+    const visibleMeasuredColumns = displayColumns.filter(
+        (id) => columnWidths[id] != null && !id.startsWith("blank-")
+    );
+    const tableWidth = visibleMeasuredColumns.reduce(
+        (sum, id) => sum + (columnWidths[id] || 0),
+        0
+    );
+
+    // when do we show the Fit button?
+    const showFitButton =
+        wrapperWidth > 0 &&
+        tableWidth > 0 &&
+        tableWidth < wrapperWidth - 1; // small tolerance
+
+    // are the currently shown columns exactly the defaults (same order)?
+    const isUsingDefaultColumns =
+        showColumns.length === defaultColumns.length &&
+        defaultColumns.every((id, idx) => showColumns[idx] === id);
+
+    // is any column wider than its default width?
+    const anyColumnWiderThanDefault = Object.keys(defaultWidths).some((id) => {
+        const current = columnWidths[id] ?? defaultWidths[id];
+        const def = defaultWidths[id];
+        return current > def; // literally "made wider than the default"
+    });
+
+    const anyColumnLessWiderThanDefault = Object.keys(defaultWidths).some((id) => {
+        const current = columnWidths[id] ?? defaultWidths[id];
+        const def = defaultWidths[id];
+        return current < def; // literally "made wider than the default"
+    });
+
+    // when do we show Reset?
+    const showResetButton =
+        !isUsingDefaultColumns || anyColumnWiderThanDefault || anyColumnLessWiderThanDefault;
+
     useEffect(() => {
         const popupSelector = '.floating-dropdown';
         const columnSelector = '.column-selector-popup';
@@ -658,6 +760,131 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
         };
     }, [showColumnSelector, filterPopup]);
 
+    const startColumnResize = (e, colId) => {
+        if (readOnly) return;
+
+        e.preventDefault();
+        e.stopPropagation(); // don’t trigger header click or scroll-drag
+
+        const th = e.currentTarget.parentElement; // the <th>
+        const currentWidth =
+            columnWidths[colId] || (th ? th.getBoundingClientRect().width : 0) || 0;
+
+        resizingColRef.current = colId;
+        resizeStartXRef.current = e.clientX;
+        resizeStartWidthRef.current = currentWidth;
+        isResizingRef.current = false;
+
+        const handleMove = (ev) => {
+            if (!resizingColRef.current) return;
+            const col = resizingColRef.current;
+
+            const delta = ev.clientX - resizeStartXRef.current;
+            const rawWidth = resizeStartWidthRef.current + delta;
+
+            const limits = columnSizeLimits[col] || {};
+            let newWidth = rawWidth;
+            if (limits.min) newWidth = Math.max(limits.min, newWidth);
+            if (limits.max) newWidth = Math.min(limits.max, newWidth);
+
+            setColumnWidths(prev => ({
+                ...prev,
+                [col]: Math.round(newWidth),
+            }));
+
+            // let the header click know we actually dragged
+            isResizingRef.current = true;
+        };
+
+        const handleUp = () => {
+            resizingColRef.current = null;
+            resizeStartXRef.current = 0;
+            resizeStartWidthRef.current = 0;
+
+            // small timeout so click handlers after mouseup don't fire as a "click"
+            setTimeout(() => {
+                isResizingRef.current = false;
+            }, 0);
+
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', handleUp);
+        };
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleUp);
+    };
+
+    const fitTableToWidth = (overrideVisibleColumns, overrideWidths) => {
+        const wrapper = tableWrapperRef.current;
+        if (!wrapper) return;
+
+        const wrapperWidth = wrapper.getBoundingClientRect().width;
+        if (!wrapperWidth) return;
+
+        const visibleCols = (overrideVisibleColumns || getDisplayColumns()).filter(
+            (id) => typeof (overrideWidths?.[id] ?? columnWidths[id]) === "number"
+        );
+        if (!visibleCols.length) return;
+
+        const getWidth = (id) =>
+            (overrideWidths?.[id] ?? columnWidths[id] ?? 0);
+
+        const totalWidth = visibleCols.reduce(
+            (sum, id) => sum + getWidth(id),
+            0
+        );
+        if (!totalWidth) return;
+
+        // Only grow when the table is smaller (use case: dragged too small)
+        if (totalWidth >= wrapperWidth) {
+            return; // nothing to do
+        }
+
+        const scale = wrapperWidth / totalWidth;
+
+        // First pass: proportional scaling
+        let newWidths = visibleCols.map((id) => getWidth(id) * scale);
+
+        // Round
+        newWidths = newWidths.map((w) => Math.round(w));
+
+        // Fix rounding drift to exactly match wrapperWidth
+        let diff =
+            wrapperWidth -
+            newWidths.reduce((sum, w) => sum + w, 0);
+
+        let i = 0;
+        while (diff !== 0 && i < newWidths.length * 2) {
+            const idx = i % newWidths.length;
+            newWidths[idx] += diff > 0 ? 1 : -1;
+            diff =
+                wrapperWidth -
+                newWidths.reduce((sum, w) => sum + w, 0);
+            i++;
+        }
+
+        setColumnWidths((prev) => {
+            const updated = { ...prev };
+            visibleCols.forEach((id, index) => {
+                updated[id] = newWidths[index];
+            });
+            return updated;
+        });
+    };
+
+    const resetToDefaultColumnsAndWidths = () => {
+        const defaultColumns = getDefaultShowColumns();
+        const defaultWidths = getDefaultColumnWidths();
+
+        // Reset state
+        setShowColumns(defaultColumns);
+        setColumnWidths(defaultWidths);
+        setShowColumnSelector(false);
+
+        // Immediately fit those default widths to the wrapper
+        fitTableToWidth(defaultColumns, defaultWidths);
+    };
+
     return (
         <div className={`input-row-risk-ibra `}>
             <div className={`ibra-box ${error ? 'error-create' : ''}`} ref={ibraBoxRef}>
@@ -669,6 +896,22 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                 >
                     <FontAwesomeIcon icon={faTableColumns} className="icon-um-search" />
                 </button>
+
+                {showFitButton && (<button
+                    className="top-right-button-ibra2"
+                    title="Fit to Width"
+                    onClick={() => fitTableToWidth()}
+                >
+                    <FontAwesomeIcon icon={faArrowsLeftRight} className="icon-um-search" />
+                </button>)}
+
+                {showResetButton && (<button
+                    className={showFitButton ? "top-right-button-ibra3" : "top-right-button-ibra2"}
+                    title="Reset To Default"
+                    onClick={resetToDefaultColumnsAndWidths}
+                >
+                    <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
+                </button>)}
 
                 {showColumnSelector && (
                     <div className="column-selector-popup"
@@ -724,7 +967,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                 )}
 
                 <div className="table-wrapper-jra" ref={tableWrapperRef}>
-                    <table className="table-borders-ibra">
+                    <table className="table-borders-ibra-table">
                         <thead className="ibra-table-header">
                             <tr>
                                 {displayColumns.map((columnId, index) => {
@@ -732,25 +975,61 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                     if (!column) {
                                         return <th key={index} className="ibraCent ibraBlank"></th>;
                                     }
+
+                                    const limits = columnSizeLimits[columnId] || {};
+                                    const width = columnWidths[columnId];
+
                                     return (
                                         <th
                                             key={index}
                                             className={`${column.className} jra-header-cell ${filters[columnId] ? 'jra-filter-active' : ''}`}
-                                            onClick={e => openFilterPopup(columnId, e)}
+                                            style={{
+                                                position: 'relative',
+                                                width: width ? `${width}px` : undefined,
+                                                minWidth: limits.min ? `${limits.min}px` : undefined,
+                                                maxWidth: limits.max ? `${limits.max}px` : undefined,
+                                            }}
+                                            onClick={e => {
+                                                // if we dragged, don't treat this as a "click"
+                                                if (isResizingRef.current) return;
+
+                                                // don't open filters from icon/resizer clicks
+                                                if (e.target.closest('.header-icon') || e.target.closest('.ibra-col-resizer')) {
+                                                    return;
+                                                }
+
+                                                openFilterPopup(columnId, e);
+                                            }}
                                         >
                                             {column.icon && (
-                                                <FontAwesomeIcon icon={column.icon} className="header-icon" onClick={e => {
-                                                    e.stopPropagation();
-                                                    openInfo(column.id);
-                                                }} />
+                                                <FontAwesomeIcon
+                                                    icon={column.icon}
+                                                    className="header-icon"
+                                                    onClick={e => {
+                                                        e.stopPropagation();
+                                                        openInfo(column.id);
+                                                    }}
+                                                />
                                             )}
-                                            <div>{column.title.split('(')[0].trim()}{filters[columnId] && (
-                                                <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
-                                            )}</div>
+
+                                            <div>
+                                                {column.title.split('(')[0].trim()}
+                                                {filters[columnId] && (
+                                                    <FontAwesomeIcon icon={faFilter} className="active-filter-icon" style={{ marginLeft: "10px" }} />
+                                                )}
+                                            </div>
+
                                             {column.title.includes('(') && (
                                                 <div className="column-subtitle">
                                                     ({column.title.split('(')[1].split(')')[0]})
                                                 </div>
+                                            )}
+
+                                            {!readOnly && (
+                                                <div
+                                                    className="ibra-col-resizer"
+                                                    onMouseDown={e => startColumnResize(e, columnId)}
+                                                />
                                             )}
                                         </th>
                                     );
@@ -784,9 +1063,19 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                     const meta = availableColumns.find(c => c.id === colId);
                                                     const cls = meta?.className || "";
 
+
+                                                    const limits = columnSizeLimits[colId] || {};
+                                                    const width = columnWidths[colId];
+                                                    const commonCellStyle = {
+                                                        width: width ? `${width}px` : undefined,
+                                                        minWidth: limits.min ? `${limits.min}px` : undefined,
+                                                        maxWidth: limits.max ? `${limits.max}px` : undefined,
+                                                    };
+
+
                                                     if (colId === "nr" && bodyIdx === 0) {
                                                         return (
-                                                            <td key={colIdx} rowSpan={rowCount} className={cls}>
+                                                            <td key={colIdx} rowSpan={rowCount} className={cls} style={commonCellStyle}>
                                                                 <span>{row.nr}</span>
                                                                 {!readOnly && (<FontAwesomeIcon
                                                                     icon={faArrowsUpDown}
@@ -817,6 +1106,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                                 key={colIdx}
                                                                 rowSpan={rowCount}
                                                                 className={[cls, 'main-cell'].join(' ')}
+                                                                style={commonCellStyle}
                                                             >
                                                                 <div className="main-cell-content">
                                                                     <div style={{ display: "block", textAlign: "left", whiteSpace: "pre-wrap" }}>{row.main}</div>
@@ -855,7 +1145,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "action") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}`} style={commonCellStyle}>
                                                                 <FontAwesomeIcon
                                                                     icon={faPlusCircle}
                                                                     style={{ marginBottom: "0px", fontSize: "15px" }}
@@ -882,7 +1172,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "hazards") {
                                                         return (
-                                                            <td key={colIdx} className={`hazard-cell`}>
+                                                            <td key={colIdx} className={`hazard-cell`} style={commonCellStyle}>
                                                                 {body.hazards.map((hObj, hIdx) => {
                                                                     const isFirst = bodyIdx === 0;
                                                                     return (
@@ -905,7 +1195,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "UE") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}`} style={commonCellStyle}>
                                                                 {body.UE.map((uObj, uIdx) => {
                                                                     const isFirst = bodyIdx === 0;
                                                                     return (
@@ -920,7 +1210,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "sub") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}  correct-wrap-ibra`} >
+                                                            <td key={colIdx} className={`${cls}  correct-wrap-ibra`} style={commonCellStyle}>
                                                                 {body.sub.map((sObj, sIdx) => (
                                                                     <div className="test-jra"
                                                                         key={sObj.id}
@@ -949,7 +1239,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "taskExecution") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}`} style={commonCellStyle}>
                                                                 {body.taskExecution.map((teObj, teIdx) => (
                                                                     <div className="test-jra"
                                                                         key={teObj.id}
@@ -979,7 +1269,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "controls") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}`} style={commonCellStyle}>
                                                                 {body.controls.map((cObj, cIdx) => (
                                                                     <div className="test-jra"
                                                                         key={cObj.id}
@@ -1005,7 +1295,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                                                     if (colId === "go") {
                                                         return (
-                                                            <td key={colIdx} className={`${cls}`} >
+                                                            <td key={colIdx} className={`${cls}`} style={commonCellStyle}>
                                                                 {body.go_noGo.map((goObj, goIdx) => (
                                                                     <div className="test-jra"
                                                                         key={goObj.id}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -631,7 +631,7 @@ const UpdateWarehouseComponentPopup = ({ onClose, data }) => {
                                 <div style={{ width: "30%" }} className={`ump-form-group ${errors.issueDate ? "ump-error" : ""}`}>
                                     <label>Issue Date</label>
 
-                                    <div className='date-container-license'>
+                                    <div className='date-container-license' style={{ position: "relative" }}>
                                         <DatePicker
                                             value={issueDate || ""}
                                             format="YYYY-MM-DD"
@@ -648,13 +648,17 @@ const UpdateWarehouseComponentPopup = ({ onClose, data }) => {
                                             inputClass='ump-input-select-new-3'
                                             maxDate={todayString()}
                                         />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className={`ump-form-group ${errors.certificateAuth ? "ump-error" : ""}`}>
                                     <label>Expiry Date</label>
 
-                                    <div className='date-container-license'>
+                                    <div className='date-container-license' style={{ position: "relative" }}>
                                         <DatePicker
                                             value={expiryDate || ""}
                                             format="YYYY-MM-DD"
@@ -669,6 +673,10 @@ const UpdateWarehouseComponentPopup = ({ onClose, data }) => {
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
                                             minDate={issueDate}
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
                                         />
                                     </div>
                                 </div>

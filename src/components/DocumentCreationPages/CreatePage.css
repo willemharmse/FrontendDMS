@@ -1113,10 +1113,33 @@ body {
   height: 41px;
   padding: 6px 12px;
   font-size: 14px;
+  padding-right: 34px;
   line-height: 1.42857143;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.date-input-calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #777;
+  pointer-events: none;
+  /* purely visual; input handles the clicks */
+}
+
+.date-input-calendar-icon-2 {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  color: #777;
+  cursor: pointer;
+  /* purely visual; input handles the clicks */
 }
 
 .input-box-special-instruction {
@@ -1243,6 +1266,7 @@ body {
 
 .date-container-special {
   width: calc(100% - 20px);
+  position: relative;
   margin-bottom: 2px;
   height: 41px;
   font-size: 14px;

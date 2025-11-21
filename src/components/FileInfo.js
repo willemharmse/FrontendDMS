@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faClipboardCheck, faFileAlt, faFileSignature, faHardHat, faHome, faListOl, faScaleBalanced, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsRotate, faBook, faBookOpen, faCaretLeft, faCaretRight, faCertificate, faChalkboardTeacher, faClipboardCheck, faDownload, faFileAlt, faFileSignature, faHardHat, faHome, faListOl, faScaleBalanced, faTrash, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faFileCirclePlus, faFolderOpen, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
@@ -477,7 +477,7 @@ const FileInfo = () => {
   }
 
   return (
-    <div className="file-info-container">
+    <div className="file-info-container" style={{ paddingLeft: "10px" }}>
       {upload && (<UploadPopup onClose={closeUpload} />)}
       {update && (<UpdateFileModal isModalOpen={update} closeModal={closeUpdate} fileID={updateID} />)}
 
@@ -571,9 +571,6 @@ const FileInfo = () => {
             <div className="burger-menu-icon-um">
               <FontAwesomeIcon onClick={() => navigate('/FrontendDMS/home')} icon={faHome} title="Home" />
             </div>
-            <div className="sort-menu-icon-um">
-              <FontAwesomeIcon icon={faSort} onClick={openSortModal} title="Sort" />
-            </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
               <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
               {count != 0 && <div className="notifications-badge"></div>}
@@ -602,74 +599,85 @@ const FileInfo = () => {
         {batch && (<BatchUpload onClose={closeBatch} />)}
         {isRDPopupOpen && (<ReviewDatePopup isOpen={isRDPopupOpen} onClose={closeRDPopup} onUpdate={setReviewDateVal} currVal={reviewDateVal} />)}
 
-        <div className="table-container-file">
-          <table>
-            <thead>
-              <FilterFileName access={access} canIn={canIn} filters={filters} onFilterChange={handleFilterChange} trashed={isTrashView} />
-            </thead>
-            <tbody>
-              {filteredFiles.map((file, index) => (
-                <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
-                  <td className="col">{index + 1}</td>
-                  <td className="col">{file.discipline}</td>
-                  <td
-                    onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
-                    className="file-name-cell"
-                  >
-                    {removeFileExtension(file.fileName)}
+        <div className="table-flameproof-card">
+          <div className="flameproof-table-header-label-wrapper">
+            <label className="risk-control-label">{(type === "Policy" ? "Policies" : `${type}s`)}</label>
+            <FontAwesomeIcon
+              icon={faSort}
+              title="Select Columns to Display"
+              className="top-right-button-control-att"
+              onClick={openSortModal}
+            />
+          </div>
+          <div className="table-container-file">
+            <table>
+              <thead>
+                <FilterFileName access={access} canIn={canIn} filters={filters} onFilterChange={handleFilterChange} trashed={isTrashView} />
+              </thead>
+              <tbody>
+                {filteredFiles.map((file, index) => (
+                  <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
+                    <td className="col">{index + 1}</td>
+                    <td className="col">{file.discipline}</td>
+                    <td
+                      onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
+                      className="file-name-cell"
+                    >
+                      {removeFileExtension(file.fileName)}
 
-                    {(hoveredFileId === file._id && !isTrashView) && (
-                      <PopupMenu file={file} openUpdate={openUpdate} openRenameModal={openRename} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} />
-                    )}
-
-                  </td>
-                  <td className="col">{file.documentType}</td>
-                  {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
-                    <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
-                  )}
-                  <td className="col">
-                    {Array.isArray(file.owner)
-                      ? file.owner[0] // Show first author from array
-                      : typeof file.owner === "string"
-                        ? (() => {
-                          try {
-                            const parsed = JSON.parse(file.owner);
-                            return Array.isArray(parsed) ? parsed[0] : file.owner;
-                          } catch {
-                            return file.owner;
-                          }
-                        })()
-                        : "No Owners"}
-                  </td>
-
-                  <td className="col">{file.departmentHead}</td>
-                  <td className="col">{(file.docID)}</td>
-                  <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
-                  <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
-                  <td className="col">{formatDate(file.uploadDate)}</td>
-                  {canIn(access, "DMS", ["systemAdmin"]) && (
-                    <td className={isTrashView ? "col-act trashed" : "col-act"}>
-                      <button
-                        className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
-                        onClick={() => openModal(file._id, file.fileName)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                      </button>
-
-                      {isTrashView && (
-                        <button
-                          className={isTrashView ? "delete-button-fi col-but-res trashed-color" : "delete-button-fi col-but-res"}
-                          onClick={() => restoreFile(file._id)}
-                        >
-                          <FontAwesomeIcon icon={faRotate} title="Restore Document" />
-                        </button>
+                      {(hoveredFileId === file._id && !isTrashView) && (
+                        <PopupMenu file={file} openUpdate={openUpdate} openRenameModal={openRename} handlePreview={handlePreview} isActionAvailable={isActionAvailable} isOpen={hoveredFileId === file._id} openDownloadModal={openDownloadModal} setHoveredFileId={setHoveredFileId} canIn={canIn} access={access} />
                       )}
+
                     </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <td className="col">{file.documentType}</td>
+                    {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
+                      <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
+                    )}
+                    <td className="col">
+                      {Array.isArray(file.owner)
+                        ? file.owner[0] // Show first author from array
+                        : typeof file.owner === "string"
+                          ? (() => {
+                            try {
+                              const parsed = JSON.parse(file.owner);
+                              return Array.isArray(parsed) ? parsed[0] : file.owner;
+                            } catch {
+                              return file.owner;
+                            }
+                          })()
+                          : "No Owners"}
+                    </td>
+
+                    <td className="col">{file.departmentHead}</td>
+                    <td className="col">{(file.docID)}</td>
+                    <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
+                    <td className="col">{file.userID.username ? (file.userID.username === "Willem" ? file.userID.username + " Harmse" : file.userID.username) : ""}</td>
+                    <td className="col">{formatDate(file.uploadDate)}</td>
+                    {canIn(access, "DMS", ["systemAdmin"]) && (
+                      <td className={isTrashView ? "col-act trashed" : "col-act"}>
+                        <button
+                          className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
+                          onClick={() => openModal(file._id, file.fileName)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} title="Delete Document" />
+                        </button>
+
+                        {isTrashView && (
+                          <button
+                            className={isTrashView ? "delete-button-fi col-but-res trashed-color" : "delete-button-fi col-but-res"}
+                            onClick={() => restoreFile(file._id)}
+                          >
+                            <FontAwesomeIcon icon={faRotate} title="Restore Document" />
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
