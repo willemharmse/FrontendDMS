@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PopupMenuPubInduction = ({ isOpen, setHoveredFileId, openDownloadModal, file, type, risk = false, typeDoc = "", id = null, openPreview }) => {
+const PopupMenuPubInduction = ({ isOpen, setHoveredFileId, undoRetakeChoice, openDownloadModal, file, type, risk = false, typeDoc = "", id = null, openPreview }) => {
     const navigate = useNavigate();
 
     return (
@@ -17,6 +17,9 @@ const PopupMenuPubInduction = ({ isOpen, setHoveredFileId, openDownloadModal, fi
                     <ul>
                         <li onClick={() => navigate(`/FrontendDMS/inductionReview/${file._id}`)}>Review</li>
                     </ul>
+                    {file.undoable && (<ul>
+                        <li onClick={() => undoRetakeChoice(file.batchId)}>Undo Require Retake</li>
+                    </ul>)}
                     <ul>
                         <li onClick={() => navigate(`/FrontendDMS/inductionHistory/${file._id}`)}>Version History</li>
                     </ul>

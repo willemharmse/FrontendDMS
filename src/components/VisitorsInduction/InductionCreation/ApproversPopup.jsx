@@ -17,7 +17,7 @@ import { toast } from "react-toastify";
 
 const ApproversPopup = ({ setApproversPublish, closeModal, handleSubmit }) => {
     const [users, setUsers] = useState([]);
-    const [approvers, setApprovers] = useState([{ userId: "" }]);
+    const [approvers, setApprovers] = useState([{ userId: "" }, { userId: "" }]);
     const [error, setError] = useState("");
 
     // 🔔 toast state
@@ -68,10 +68,10 @@ const ApproversPopup = ({ setApproversPublish, closeModal, handleSubmit }) => {
 
     const removeApprover = (index) => {
         setApprovers(prev => {
-            if (prev.length === 1) {
+            if (prev.length === 2) {
                 toast.dismiss();
                 toast.clearWaitingQueue();
-                toast.error("Must have at least 1 approver.", { autoClose: 2000, closeButton: true });
+                toast.error("Must have at least 2 approver.", { autoClose: 2000, closeButton: true });
                 return prev;
             }
             return prev.filter((_, i) => i !== index);

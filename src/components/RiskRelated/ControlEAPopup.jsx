@@ -397,6 +397,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                                 <select
                                                     className="ibra-popup-page-select"
                                                     value={controlActivation}
+                                                    style={{ paddingRight: "30px" }}
                                                     onChange={(e) => setControlActivation(e.target.value)}
                                                     disabled={readOnly}
                                                 >

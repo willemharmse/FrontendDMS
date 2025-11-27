@@ -454,10 +454,14 @@ const FileInfo = () => {
       (selectedDiscipline.length === 0 || selectedDiscipline.includes(file.discipline)) &&
       (selectedStatus.length === 0 || selectedStatus.includes(file.status));
 
-    const matchesApproval =
-      (can(access, "DMS", "viewer"))
-        ? file.status.toLowerCase() === "approved"
-        : true; // Allow all files for auditors
+    const isViewerOnly =
+      canIn(access, "DMS", ["viewer"]) &&
+      !canIn(access, "DMS", ["systemAdmin", "contributor"]);
+
+    // Filter files based on approval
+    const matchesApproval = isViewerOnly
+      ? file.status.toLowerCase() === "approved"
+      : true;
 
     return matchesSearchQuery && matchesFilters && matchesApproval && matchTextFilters;
   });

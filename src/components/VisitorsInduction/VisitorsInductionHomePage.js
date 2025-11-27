@@ -86,11 +86,13 @@ const VisitorsInductionHomePage = () => {
 
     const getComplianceColor = (status) => {
         if (status === "valid") return "status-good";
+        if (status === "requiresRetake") return "status-bad"
         if (status === "invalid") return "status-worst";
         if (status === "-") return "status-missing"
     };
 
     const formatStatus = (type) => {
+        if (type === "requiresRetake") return "Requires Retake"
         return type
             .replace(/_/g, ' ')
             .replace(/\b\w/g, char => char.toUpperCase());

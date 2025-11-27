@@ -1599,7 +1599,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     <td key={idx} className={colClass} rowSpan={possibilities.length}>
                                                         {Array.isArray(cellData)
                                                             ? (
-                                                                <ul style={{ paddingLeft: '20px', margin: 0, marginRight: '50px', textAlign: "left" }}>
+                                                                <ul style={{ paddingLeft: '20px', margin: 0, marginRight: '10px', textAlign: "left" }}>
                                                                     {cellData.map((item, i) => (
                                                                         <li key={i} style={{ paddingLeft: '5px' }}>{item}</li>
                                                                     ))}

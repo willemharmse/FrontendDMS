@@ -19,6 +19,7 @@ import LoadPublishedIndcutionPopup from "./LoadPublishedIndcutionPopup";
 import PublishedInductionPreviewPage from "./PublishedInductionPreviewPage";
 import RepublishInduction from "./RepublishInduction";
 import ApproversPopup from "./ApproversPopup";
+import RepublishInductionConfirmation from "./RepublishInductionConfirmation";
 
 const InductionReviewPage = () => {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ const InductionReviewPage = () => {
   const [confrimation, setConfirmation] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [approval, setApproval] = useState(false);
+  const [retakeConfirmation, setRetakeConfirmation] = useState(false);
   const [inApproval, setInApproval] = useState(false);
   const [publishType, setPublishType] = useState(false);
 
@@ -53,6 +55,14 @@ const InductionReviewPage = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRetakeConfirm = () => {
+    setRetakeConfirmation(true);
+  }
+
+  const closeRetakeConfirm = () => {
+    setRetakeConfirmation(false);
   }
 
   const openConfirmation = () => {
@@ -65,7 +75,17 @@ const InductionReviewPage = () => {
 
   const retakeInduction = () => {
     closeConfirmation();
+    openRetakeConfirm();
+  }
+
+  const confirmRetakeConfirmation = () => {
+    closeRetakeConfirm();
     handlePublish(true);
+  }
+
+  const cancelRetakeConfirmation = () => {
+    closeRetakeConfirm();
+    openConfirmation();
   }
 
   const normalPublish = () => {
@@ -494,7 +514,7 @@ const InductionReviewPage = () => {
         }
       });
 
-      setReadOnly(false);
+      setReadOnly(true);
       setLoading(false);
 
       if (data.fullyApproved) {
@@ -770,9 +790,7 @@ const InductionReviewPage = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify(
-          retakeRequired
-        )
+        body: JSON.stringify({ retakeRequired })
       });
 
       if (!response.ok) throw new Error("Failed to generate document");
@@ -1060,6 +1078,7 @@ const InductionReviewPage = () => {
       {preview && (<PublishedInductionPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
       {confrimation && (<RepublishInduction closeModal={closeConfirmation} normalPublish={normalPublish} retakeInduction={retakeInduction} />)}
       {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
+      {retakeConfirmation && (<RepublishInductionConfirmation closeModal={cancelRetakeConfirmation} normalPublish={cancelRetakeConfirmation} retakeInduction={confirmRetakeConfirmation} />)}
       <ToastContainer />
     </div>
   );

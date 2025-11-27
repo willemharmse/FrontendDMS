@@ -1204,7 +1204,7 @@ const InductionCreationPage = () => {
 
           {!loadingDraft && (
             <>
-              {!readOnly && (<div className="input-row">
+              {readOnly && (<div className="input-row">
                 <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#CB6F6F", color: "white" }}>
                   <strong>Read-only mode:</strong> This document is currently in its publishing phase and cannot be edited at this time.
                 </div>
