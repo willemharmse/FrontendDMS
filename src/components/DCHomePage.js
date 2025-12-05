@@ -55,7 +55,7 @@ const DCHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-dc-home">
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateProc/Procedure")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateProc/Procedure/new")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/proceduresDMS.svg`} className={"icon-dc"} />
@@ -63,7 +63,7 @@ const DCHomePage = () => {
                             <h3 className="document-title-dc-home">Procedures</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateStand/Standard")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateStand/Standard/new")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/standardsDMS.svg`} className={"icon-dc"} />
@@ -71,7 +71,7 @@ const DCHomePage = () => {
                             <h3 className="document-title-dc-home">Standards</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateSI/Special Instruction")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentCreateSI/Special Instruction/new")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/specialInst.svg`} className={"icon-dc"} />

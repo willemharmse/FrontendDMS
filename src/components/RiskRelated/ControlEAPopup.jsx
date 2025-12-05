@@ -403,11 +403,16 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                                 >
                                                     <option value="">Select Option</option>
                                                     {
-                                                        activationOptions.map((option, index) => (
-                                                            <option key={index} value={option}>
-                                                                {option}
-                                                            </option>
-                                                        ))
+                                                        activationOptions.map((option, index) => {
+                                                            // Remove "Control" / "control" and any space right before it
+                                                            const displayLabel = option.replace(/ ?[Cc]ontrol\b/, '');
+
+                                                            return (
+                                                                <option key={index} value={option}>
+                                                                    {displayLabel}
+                                                                </option>
+                                                            );
+                                                        })
                                                     }
                                                 </select>
                                             </div>
@@ -516,7 +521,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
                                         className="cea-popup-page-textarea-full"
-                                        placeholder="Insert Improvement to Control"
+                                        placeholder="Insert Notes Regarding the Control"
                                         readOnly={readOnly}
                                     ></textarea>
                                 </div>

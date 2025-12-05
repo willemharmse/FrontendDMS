@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faEdit, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
@@ -19,6 +19,7 @@ import ApprovalPopupMachine from "../../SuggestionApprovalPopups/ApprovalPopupMa
 
 const RiskSIPage = () => {
     const [drafts, setDrafts] = useState([]);
+    const { id: draftID } = useParams();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
@@ -298,6 +299,27 @@ const RiskSIPage = () => {
         if (status.toLowerCase() === "approved") return "status-good-admin";
         if (status.toLowerCase() === "declined") return "status-bad-admin";
     };
+    // When drafts are loaded, use the URL id to select/open a draft
+    useEffect(() => {
+        // no id in URL -> do nothing
+        if (!draftID) return;
+
+        // if the id is literally "new", just return (do nothing)
+        if (draftID === "new") return;
+
+        // wait until drafts are loaded
+        if (!drafts || drafts.length === 0) return;
+
+        // find the draft with this id
+        const draft = drafts.find(d => d._id === draftID);
+        if (!draft) return; // id doesn't match any draft -> do nothing
+
+        // only open if it's in Review (same rule as handleRowClick)
+        if (draft.status !== "Review") return;
+
+        setSelectedDraft(draft);
+        setShowPopup(true);
+    }, [draftID, drafts]);
 
     return (
         <div className="risk-admin-draft-info-container">

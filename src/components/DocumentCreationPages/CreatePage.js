@@ -35,6 +35,7 @@ const CreatePage = () => {
   const navigate = useNavigate();
   const access = getCurrentUser();
   const type = useParams().type;
+  const draftId = useParams().id;
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [share, setShare] = useState(false);
@@ -1158,6 +1159,15 @@ const CreatePage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (draftId === "new") {
+      return;
+    }
+    else {
+      loadData(draftId);
+    }
+  }, [draftId])
 
   return (
     <div className="file-create-container">

@@ -8,7 +8,7 @@ import { isAdmin } from "../../utils/auth";
 
 const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
     const navigate = useNavigate();
-    const link = risk ? "/riskApprover" : "/adminApprover";
+    const link = risk ? "/FrontendDMS/riskApprover/new" : "/FrontendDMS/adminApprover/new";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");

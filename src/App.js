@@ -119,6 +119,8 @@ import FlameProofMainAllSites from './components/FlameproofDMS/FlameProofMainAll
 import DigitalWarehouseRemoved from './components/FlameproofDMS/WarehousePages/DigitalWarehouseRemoved';
 import PreviewCertifier from './components/FlameproofDMS/CertifiersPages/PreviewCertifier';
 import InvalidPageMobile from './components/Mobile/InvalidPageMobile';
+import RedirectLogin from './components/RedirectLogin';
+import VersionHistoryAssets from './components/FlameproofDMS/VersionHistoryAssets';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -196,9 +198,9 @@ function App() {
         <Route path="FrontendDMS/visitorLogin" element={isMobile ? <Navigate to="/FrontendDMS/invalidDevice" /> : <VisitorLogin />} />
         <Route path="FrontendDMS/home" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <HomePage />} />
         <Route path='FrontendDMS/documentCreateHome' element={<DCHomePage />} />
-        <Route path="FrontendDMS/documentCreateProc/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
-        <Route path="FrontendDMS/documentCreateStand/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageStandards />} />
-        <Route path="FrontendDMS/documentCreateSI/:type" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageSI />} />
+        <Route path="FrontendDMS/documentCreateProc/:type/:id" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePage />} />
+        <Route path="FrontendDMS/documentCreateStand/:type/:id" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageStandards />} />
+        <Route path="FrontendDMS/documentCreateSI/:type/:id" element={isMobile ? <Navigate to="/mobileHome" /> : <CreatePageSI />} />
         <Route path='FrontendDMS/userManagement' element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <UserManagement />} />
         <Route path='FrontendDMS/403' element={<Forbidden />} />
         <Route path="FrontendDMS/preview/:fileId" element={isMobile ? <Navigate to="/FrontendDMS/mobileHome" /> : <PreviewPage />} />
@@ -210,7 +212,7 @@ function App() {
         <Route path='FrontendDMS/deletedSIDocs' element={<DeletedDocumentsSI />} />
         <Route path='FrontendDMS/generatedStandardFiles' element={<GeneratedStandardsInfo />} />
         <Route path='FrontendDMS/deletedStandardDocs' element={<DeletedDocumentsStandard />} />
-        <Route path='FrontendDMS/adminApprover' element={<AdminApprovalPage />} />
+        <Route path='FrontendDMS/adminApprover/:id' element={<AdminApprovalPage />} />
         <Route path='FrontendDMS/review/:fileId' element={<ReviewPage />} />
         <Route path='FrontendDMS/reviewIBRA/:fileId/:type' element={<RiskReviewPageIBRA />} />
         <Route path='FrontendDMS/reviewJRA/:fileId/:type' element={<RiskReviewPageJRA />} />
@@ -250,10 +252,10 @@ function App() {
         <Route path="FrontendDMS/versionHistoryBLRA/:id" element={<VersionHistoryBLRA />} />
         <Route path="FrontendDMS/versionHistoryJRA/:id" element={<VersionHistoryJRA />} />
         <Route path='FrontendDMS/riskHome' element={<RiskHomePage />} />
-        <Route path="FrontendDMS/riskIBRA/:type" element={<RiskManagementPageIBRA />} />
-        <Route path="FrontendDMS/riskJRA/:type" element={<RiskManagementPageJRA />} />
+        <Route path="FrontendDMS/riskIBRA/:type/:id" element={<RiskManagementPageIBRA />} />
+        <Route path="FrontendDMS/riskJRA/:type/:id" element={<RiskManagementPageJRA />} />
         <Route path="FrontendDMS/riskBTA/:type" element={<RiskManagementPageBTA />} />
-        <Route path="FrontendDMS/riskBLRA/:type" element={<RiskManagementPageBLRA />} />
+        <Route path="FrontendDMS/riskBLRA/:type/:id" element={<RiskManagementPageBLRA />} />
         <Route path="FrontendDMS/controls" element={<ControlAttributes />} />
         <Route path='FrontendDMS/generatedIBRADocs' element={<RiskDocumentsIBRA />} />
         <Route path='FrontendDMS/deletedIBRADocs' element={<DeletedRiskDocumentsIBRA />} />
@@ -261,7 +263,7 @@ function App() {
         <Route path='FrontendDMS/deletedJRADocs' element={<DeletedRiskDocumentsJRA />} />
         <Route path='FrontendDMS/generatedBLRADocs' element={<RiskDocumentsBLRA />} />
         <Route path='FrontendDMS/deletedBLRADocs' element={<DeletedRiskDocumentsBLRA />} />
-        <Route path='FrontendDMS/riskApprover' element={<RiskSIPage />} />
+        <Route path='FrontendDMS/riskApprover/:id' element={<RiskSIPage />} />
         <Route path='FrontendDMS/futureEnhancement' element={<FutureEnhancementPage />} />
         <Route path='FrontendDMS/futureEnhancementRMS' element={<FutureEnhancementPageRMS />} />
         <Route path='FrontendDMS/futureEnhancementEPAC' element={<FutureEnhancementPageEPAC />} />
@@ -304,6 +306,8 @@ function App() {
         <Route path='FrontendDMS/flameReplacedComponents' element={<DigitalWarehouseRemoved />} />
         <Route path='FrontendDMS/previewCertifier/:fileId' element={<PreviewCertifier />} />
         <Route path='FrontendDMS/invalidDevice' element={<InvalidPageMobile />} />
+        <Route path="FrontendDMS/loginRedirect/:module/:action/:id/:type" element={isMobile ? <Navigate to="/mobileLogin" /> : <RedirectLogin />} />
+        <Route path="FrontendDMS/assetVersionHistory/:id" element={<VersionHistoryAssets />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

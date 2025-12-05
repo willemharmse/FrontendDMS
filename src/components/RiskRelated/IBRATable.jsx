@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import './IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendar, faCalendarDays, faArrowsLeftRight, faWindowRestore, faBorderNone, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendar, faCalendarDays, faArrowsLeftRight, faWindowRestore, faBorderNone, faRotateLeft, faArrowsRotate, faFlag } from '@fortawesome/free-solid-svg-icons';
 import IBRAPopup from "./IBRAPopup";
 import IbraNote from "./RiskInfo/IbraNote";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
@@ -1054,6 +1054,19 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         fitTableToWidth(getDisplayColumns(), true);
     }, [isSidebarVisible]);
 
+    const toggleMainFlag = (rowId) => {
+        if (readOnly) return;
+
+        const newRows = rows.map(r =>
+            r.id === rowId
+                ? { ...r, mainFlag: !r.mainFlag }
+                : r
+        );
+
+        // updateRow is the callback that replaces the full IBRA rows array
+        updateRow(newRows);
+    };
+
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
@@ -1423,6 +1436,36 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 if (!isFirst) return null
 
                                                 const cellData = row[colId]
+
+                                                if (colId === "main") {
+                                                    if (!isFirst) return null;
+
+                                                    const isFlagged = !!row.mainFlag;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            className={`${colClass} ibra-main-cell ${isFlagged ? "ibra-main-cell-flagged" : ""} correct-wrap-ibra`}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
+                                                        >
+                                                            <span
+                                                                className={
+                                                                    "ibra-main-flag-icon" +
+                                                                    (isFlagged ? " active" : "") +
+                                                                    (readOnly ? " readonly" : "")
+                                                                }
+                                                                title={isFlagged ? "Unflag main area" : "Flag main area"}
+                                                                onClick={readOnly ? undefined : () => toggleMainFlag(row.id)}
+                                                            >
+                                                                <FontAwesomeIcon icon={faFlag} />
+                                                            </span>
+
+                                                            {/* Main text */}
+                                                            {cellData}
+                                                        </td>
+                                                    );
+                                                }
 
                                                 // blank fillers
                                                 if (colId.startsWith("blank-")) {

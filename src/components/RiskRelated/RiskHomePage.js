@@ -68,12 +68,12 @@ const RiskHomePage = () => {
                             <div className="icon-risk-all">
                                 <img src={`${process.env.PUBLIC_URL}/controlAttributes.svg`} alt="Control Attributes" className="icon-risk-all" />
                             </div>
-                            <h3 className="document-title-risk-home">View Controls<br /></h3>
+                            <h3 className="document-title-risk-home">Manage Controls<br /></h3>
                         </>
                     </div>
                     <div
                         className="document-card-risk-home"
-                        onClick={() => navigate("/FrontendDMS/riskBLRA/BLRA")}
+                        onClick={() => navigate("/FrontendDMS/riskBLRA/BLRA/new")}
                     >
                         <>
                             <div className="icon-risk">
@@ -87,7 +87,7 @@ const RiskHomePage = () => {
                     </div>
                     <div
                         className="document-card-risk-home"
-                        onClick={() => navigate("/FrontendDMS/riskIBRA/IBRA")}
+                        onClick={() => navigate("/FrontendDMS/riskIBRA/IBRA/new")}
                     >
                         <>
                             <div className="icon-risk">
@@ -108,7 +108,7 @@ const RiskHomePage = () => {
                                 <h3 className="document-title-risk-home">IBRA<br /><span style={{ fontWeight: "normal", fontSize: "16px" }}>(Using the BTA tool)</span></h3>
                             </>
                         </div>)}
-                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskJRA/JRA")}>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskJRA/JRA/new")}>
                         <>
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/jra.svg`} alt="Control Attributes" className="icon-risk" />

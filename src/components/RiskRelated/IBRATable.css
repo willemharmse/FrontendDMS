@@ -836,3 +836,36 @@ th.ibraAct {
 .ibra-col-resizer:hover {
     background-color: rgba(0, 0, 0, 0.15);
 }
+
+/* Main area cell wrapper for flag & padding */
+.ibra-main-cell {
+    position: relative;
+    padding-right: 24px;
+    /* room for the flag */
+}
+
+/* When flagged: yellow background */
+.ibra-main-cell-flagged {
+    background-color: #FFFF89 !important;
+    /* soft yellow */
+}
+
+/* Flag icon in the top-right of the cell */
+.ibra-main-flag-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.ibra-main-flag-icon.active {
+    opacity: 1;
+    /* slightly stronger colour – adjust if needed */
+    color: #d4aa00;
+}
+
+.ibra-main-flag-icon.readonly {
+    cursor: default;
+}

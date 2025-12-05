@@ -511,6 +511,20 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
         setHazardRows(updatedRows);
     };
 
+    // Insert a new hazard row right after the clicked row's index
+    const insertHazardRowAfter = (rowIndex) => {
+        setHazardRows(prev => {
+            // generate a new unique id
+            const newId = prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1;
+            const newRow = { id: newId, value: '' };
+
+            const next = [...prev];
+            // insert AFTER the current index (so new row becomes "next number")
+            next.splice(rowIndex + 1, 0, newRow);
+            return next;
+        });
+    };
+
     const addHazardRow = () => {
         const newId = hazardRows.length > 0 ? Math.max(...hazardRows.map(row => row.id)) + 1 : 1;
         setHazardRows([...hazardRows, { id: newId, value: '' }]);
@@ -839,6 +853,18 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
         setShowDropdown(null);
     };
 
+    const insertControlRowAfter = (rowIndex) => {
+        setControlRows(prev => {
+            const newId = prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1;
+            const newRow = { id: newId, value: '' };
+
+            const next = [...prev];
+            // insert AFTER the current row index
+            next.splice(rowIndex + 1, 0, newRow);
+            return next;
+        });
+    };
+
     return (
         <div className="ibra-popup-page-container">
             <div className="ibra-popup-page-overlay">
@@ -942,15 +968,15 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                     </div>
                                 </div>
                                 <div className="ibra-popup-page-form-row-2">
-                                    <div className="ibra-popup-page-additional-row">
+                                    <div className="ibra-popup-page-additional-row-ue-hazard">
                                         <div className="ibra-popup-page-column-half">
-                                            <div className="ibra-popup-page-component-wrapper">
+                                            <div className="ibra-popup-page-component-wrapper-hazards-ue">
                                                 <div className={`ibra-popup-page-form-group ${errors.hazards ? "error-upload-required-up" : ""}`}>
                                                     <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpHaz} style={{ cursor: 'pointer' }} />Hazard</label>
-                                                    <div className="ibra-popup-hazard-table-container" style={{ height: readOnly ? "253px" : "" }}>
+                                                    <div className="ibra-popup-hazard-table-container-ue-hazard-row" style={{ height: readOnly ? "253px" : "" }}>
                                                         <table className="ibra-popup-page-table">
                                                             <tbody>
-                                                                {hazardRows.map(row => (
+                                                                {hazardRows.map((row, index) => (
                                                                     <tr key={row.id}>
                                                                         <td>
                                                                             <div className="ibra-popup-page-row-actions">
@@ -962,13 +988,27 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                                                     placeholder="Insert Hazard"
                                                                                     readOnly={readOnly}
                                                                                 />
-                                                                                {!readOnly && (<button
-                                                                                    type="button"
-                                                                                    className="ibra-popup-page-action-button"
-                                                                                    onClick={() => removeHazardRow(row.id)}
-                                                                                >
-                                                                                    <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
-                                                                                </button>)}
+                                                                                {!readOnly && (
+                                                                                    <>
+
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            className="ibra-popup-page-action-button"
+                                                                                            onClick={() => removeHazardRow(row.id)}
+                                                                                            title="Remove hazard"
+                                                                                        >
+                                                                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            className="ibra-popup-page-action-button-add-hazard"
+                                                                                            onClick={() => insertHazardRowAfter(index)}
+                                                                                            title="Insert hazard below"
+                                                                                        >
+                                                                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -976,13 +1016,6 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                    {!readOnly && (<button
-                                                        type="button"
-                                                        className="ibra-popup-page-add-row-button"
-                                                        onClick={addHazardRow}
-                                                    >
-                                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
-                                                    </button>)}
                                                 </div>
                                             </div>
                                         </div>
@@ -991,6 +1024,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                             <div className="ibra-popup-page-component-wrapper-unwanted-square">
                                                 <div className={`ibra-popup-page-form-group-square-ue`}>
                                                     <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpUE} style={{ cursor: 'pointer', color: "white" }} title="What is an Unwanted Event?" />Unwanted Event</label>
+
                                                     <div className="ue-textarea-wrapper">
                                                         <textarea
                                                             type="text"
@@ -1032,21 +1066,22 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                             <label><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpControl} />Current Controls</label>
                                             <table className="ibra-popup-page-table">
                                                 <tbody>
-                                                    {controlRows.map(row => (
+                                                    {controlRows.map((row, index) => (
                                                         <tr key={row.id}>
                                                             <td>
                                                                 <div className="ibra-popup-page-row-actions">
                                                                     <div className="ibra-popup-page-select-container">
-                                                                        <input
+                                                                        <textarea
                                                                             type="text"
                                                                             value={row.value}
-                                                                            className="ibra-popup-page-input-table ibra-popup-page-row-input"
+                                                                            className="ibra-popup-page-input-table-controls-text-areas ibra-popup-page-row-input"
                                                                             onFocus={() => handleControlFocus(row.id)}
                                                                             onChange={e => handleControlInput(row.id, e.target.value)}
                                                                             ref={el => inputRefs.current[`control-${row.id}`] = el}
                                                                             readOnly={readOnly}
                                                                         />
                                                                     </div>
+
                                                                     <button
                                                                         type="button"
                                                                         className="ibra-popup-page-info-button"
@@ -1054,26 +1089,37 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                                     >
                                                                         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} />
                                                                     </button>
-                                                                    {!readOnly && (<button
-                                                                        type="button"
-                                                                        className="ibra-popup-page-action-button"
-                                                                        onClick={() => removeControlRow(row.id)}
-                                                                    >
-                                                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
-                                                                    </button>)}
+
+                                                                    {!readOnly && (
+                                                                        <>
+
+                                                                            {/* Existing trash button, now to the RIGHT of the + */}
+                                                                            <button
+                                                                                type="button"
+                                                                                className="ibra-popup-page-action-button"
+                                                                                onClick={() => removeControlRow(row.id)}
+                                                                                title="Remove control"
+                                                                            >
+                                                                                <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrashAlt} />
+                                                                            </button>
+                                                                            {/* NEW: insert control below this row */}
+                                                                            <button
+                                                                                type="button"
+                                                                                className="ibra-popup-page-action-button-add-hazard"
+                                                                                onClick={() => insertControlRowAfter(index)}
+                                                                                title="Insert control below"
+                                                                            >
+                                                                                <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    ))}
+                                                    ))
+                                                    }
                                                 </tbody>
                                             </table>
-                                            {!readOnly && (<button
-                                                type="button"
-                                                className="ibra-popup-page-add-row-button"
-                                                onClick={addControlRow}
-                                            >
-                                                <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faCirclePlus} />
-                                            </button>)}
                                         </div>
                                     </div>
                                 </div>
@@ -1186,10 +1232,10 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                     <div className="ibra-popup-page-form-group">
                                         <label>Additional Notes Regarding this Unwanted Event</label>
                                         <textarea
-                                            className="ibra-popup-page-textarea-full"
+                                            className="ibra-popup-page-textarea-full-textable"
                                             value={additionalComments}
                                             onChange={(e) => setAdditionalComments(e.target.value)}
-                                            placeholder="Insert additional notes for this specific unwanted event (Do not include future controls or improvements here, these should be listed at the end of the IBRA table)."
+                                            placeholder="Insert additional notes for this specific unwanted event (Do not include future controls or improvements here, these should be listed at the end of the BLRA table)."
                                             readOnly={readOnly}
                                         />
                                     </div>

@@ -35,6 +35,7 @@ import DatePicker from "react-multi-date-picker";
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
     const riskType = useParams().type;
+    const riskId = useParams().id;
     const [share, setShare] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [companies, setCompanies] = useState([]);
@@ -540,6 +541,7 @@ const RiskManagementPageIBRA = () => {
 
                 return {
                     ...row,
+                    mainFlag: row.mainFlag ?? false,
                     possible: possible.map(block => {
                         const possibleId = block?.id ?? uuidv4();
                         const count = block?.actions?.length;
@@ -681,6 +683,7 @@ const RiskManagementPageIBRA = () => {
                     main: "", sub: "", owner: "", odds: "", riskRank: "",
                     hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
                     R: "-", source: "", material: "", priority: "",
+                    mainFlag: false,
                     possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
                     UE: "", additional: "", maxConsequence: ""
                 }
@@ -724,7 +727,9 @@ const RiskManagementPageIBRA = () => {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
                 LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
-                possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }], UE: "", additional: "", maxConsequence: ""
+                mainFlag: false,
+                possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
+                UE: "", additional: "", maxConsequence: ""
             }
         ],
         cea: [
@@ -1721,6 +1726,15 @@ const RiskManagementPageIBRA = () => {
             cea: updatedCEA
         }));
     };
+
+    useEffect(() => {
+        if (riskId === "new") {
+            return;
+        }
+        else {
+            loadData(riskId);
+        }
+    }, [riskId])
 
     return (
         <div className="risk-create-container">

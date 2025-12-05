@@ -63,7 +63,7 @@ function ResetVisitorPassword() {
                     });
                 }
                 else {
-                    setDeadlineMs(Date.now() + 15 * 60 * 1000);
+                    setDeadlineMs(Date.now() + 5 * 60 * 1000);
                     setStep(2);
                 }
             } catch (err) {

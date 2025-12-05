@@ -40,6 +40,7 @@ import DatePicker from "react-multi-date-picker";
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
     const riskType = useParams().type;
+    const riskId = useParams().id;
     const [share, setShare] = useState(false);
     const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
     const [usedTermCodes, setUsedTermCodes] = useState([]);
@@ -1212,6 +1213,15 @@ const RiskManagementPageJRA = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (riskId === "new") {
+            return;
+        }
+        else {
+            loadData(riskId);
+        }
+    }, [riskId])
 
     return (
         <div className="risk-create-container">

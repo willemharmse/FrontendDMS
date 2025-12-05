@@ -36,6 +36,9 @@ const PopupMenuOptionsAssets = ({ isOpen, setHoveredFileId, openModifyModal, fil
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (<ul>
                         <li onClick={() => navigate(`/FrontendDMS/flameComponents/${file._id}`)}>Update Components</li>
                     </ul>)}
+                    <ul>
+                        <li onClick={() => navigate(`/FrontendDMS/assetVersionHistory/${file._id}`)}>Changes Made</li>
+                    </ul>
                 </div>
             )}
         </div>

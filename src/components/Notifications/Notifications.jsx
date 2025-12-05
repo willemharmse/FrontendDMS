@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Notifications.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-icons";
@@ -6,6 +7,7 @@ import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-
 const Notifications = ({ setClose, getCount }) => {
     const [notifications, setNotifications] = useState([]);
     const [selectedPill, setSelectedPill] = useState("Actions");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const getNotifs = async () => {
@@ -123,6 +125,74 @@ const Notifications = ({ setClose, getCount }) => {
         }
     };
 
+    const handleNotificationClick = async (note) => {
+        try {
+            await markAsRead(note._id);
+
+            if (note.type === "Actions") {
+
+                let targetPath = null;
+
+                if (note.actionLocation === "RMS") {
+                    if (note.actionType === "suggestion") {
+                        targetPath = `/FrontendDMS/riskApprover/${note.actionId}`;
+                    }
+
+                    if (note.actionType === "draftShared") {
+                        if (note.draftType === "IBRA") {
+                            targetPath = `/FrontendDMS/riskIBRA/IBRA/${note.actionId}`
+                        }
+                        else if (note.draftType === "BLRA") {
+                            targetPath = `/FrontendDMS/riskBLRA/BLRA/${note.actionId}`
+                        }
+                        else if (note.draftType === "JRA") {
+                            targetPath = `/FrontendDMS/riskJRA/JRA/${note.actionId}`
+                        }
+                    }
+
+                } else if (note.actionLocation === "DDS") {
+                    if (note.actionType === "suggestion") {
+                        targetPath = `/FrontendDMS/adminApprover/${note.actionId}`;
+                    }
+
+                    if (note.actionType === "draftShared") {
+                        if (note.draftType === "Procedure") {
+                            targetPath = `/FrontendDMS/documentCreateProc/Procedure/${note.actionId}`
+                        }
+                        else if (note.draftType === "Standard") {
+                            targetPath = `/FrontendDMS/documentCreateStand/Standard/${note.actionId}`
+                        }
+                        else if (note.draftType === "Special Instruction") {
+                            targetPath = `/FrontendDMS/documentCreateSI/Special Instruction/${note.actionId}`
+                        }
+                    }
+                } else if (note.actionLocation === "DMS") {
+                    targetPath = `/FrontendDMS/documentManage/${note.fileType}`;
+                } else if (note.actionLocation === "TMS") {
+                    if (note.actionType === "draftShared") {
+                        targetPath = `/FrontendDMS/inductionCreation/${note.actionId}`;
+                    }
+
+                    if (note.actionType === "draftApprove") {
+                        targetPath = `/FrontendDMS/inductionCreation/${note.actionId}`;
+                    }
+
+                    if (note.actionType === "publishApprove") {
+                        targetPath = `/FrontendDMS/inductionReview/${note.actionId}`;
+                    }
+                }
+
+                if (targetPath) {
+                    navigate(targetPath);
+                }
+            }
+
+            setClose(false);
+        } catch (err) {
+            console.error("Error handling notification click:", err);
+        }
+    };
+
     // Function to format the date and time
     const formatDateTime = (dateTime) => {
         const date = new Date(dateTime);
@@ -175,7 +245,7 @@ const Notifications = ({ setClose, getCount }) => {
                                 key={note._id}
                                 className={`notifications-modal-item ${note.read ? 'notifications-read' : 'notifications-unread'}`}
                             >
-                                <div className="notifications-item-content" onClick={() => markAsRead(note._id)}>
+                                <div className="notifications-item-content" onClick={() => handleNotificationClick(note)}>
                                     <div className="notifications-item-text">
                                         {note.notification}
                                     </div>

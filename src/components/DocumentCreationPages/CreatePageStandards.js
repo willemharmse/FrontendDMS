@@ -30,6 +30,7 @@ import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 const CreatePageStandards = () => {
   const navigate = useNavigate();
   const type = useParams().type;
+  const draftId = useParams().id;
   const access = getCurrentUser();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
@@ -1135,6 +1136,15 @@ const CreatePageStandards = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (draftId === "new") {
+      return;
+    }
+    else {
+      loadData(draftId);
+    }
+  }, [draftId])
 
   return (
     <div className="file-create-container">

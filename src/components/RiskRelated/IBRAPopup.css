@@ -99,6 +99,22 @@
     color: #dc3545;
 }
 
+.ibra-popup-page-action-button-add-hazard {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ibra-popup-page-action-button-add-hazard:hover {
+    color: #002060;
+}
+
 .ibra-popup-page-info-button {
     background: none;
     border: none;
@@ -230,6 +246,25 @@
     border: 1px solid #e8e8e8;
 }
 
+.ibra-popup-page-component-wrapper-hazards-ue {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e8e8e8;
+    height: calc(100% - 42px);
+}
+
+.ibra-popup-page-component-wrapper-hazards-ue label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 15px;
+}
+
 .ibra-popup-page-component-wrapper-unwanted-square {
     position: relative;
     background-color: #ffffff;
@@ -239,6 +274,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e8e8e8;
     height: calc(100% - 42px);
+    max-height: 276px;
     background-color: #CB6F6F;
 }
 
@@ -302,6 +338,26 @@
     width: 100%;
 }
 
+.ibra-popup-page-additional-row-ue-hazard {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    /* let content drive height */
+    height: auto;
+    align-items: center;
+    /* make columns match height */
+}
+
+.ibra-popup-page-additional-row-areas {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    /* let content drive height */
+    height: auto;
+    align-items: center;
+    /* make columns match height */
+}
+
 .ibra-popup-page-additional-row-2 {
     display: flex;
     gap: 15px;
@@ -356,10 +412,31 @@
     font-family: Arial, sans-serif;
 }
 
+.ibra-popup-page-textarea-full-textable {
+    width: calc(100% - 20px);
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #555;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+    field-sizing: content;
+}
+
 .ibra-popup-page-form-row-2 {
     display: flex;
     flex-direction: column;
     width: 100%;
+}
+
+.ibra-popup-page-form-row-ue-hazard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 2300px;
 }
 
 .ibra-popup-page-form-group {
@@ -383,7 +460,7 @@
 .ibra-popup-page-form-group-square-ue {
     flex: 1;
     min-width: 0;
-    height: calc(100% - 55px);
+    height: calc(100% - 35px);
 }
 
 .ibra-popup-page-form-group-square-ue label {
@@ -517,8 +594,10 @@
     font-size: 14px;
     font-family: Arial !important;
     resize: none;
-    height: 100%;
+    field-sizing: content;
     padding-bottom: 20px;
+    max-height: 224px;
+    min-height: 36px;
 }
 
 .ibra-popup-page-select-container::after {
@@ -590,6 +669,17 @@
 .ibra-popup-hazard-table-container {
     height: 220px;
     overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 10px;
+}
+
+.ibra-popup-hazard-table-container-ue-hazard-row {
+    /* start small, grow with content */
+    min-height: 60px;
+    max-height: 210px;
+    /* ⬅ cap at 220px */
+    overflow-y: auto;
+    /* scroll after max height */
     padding-right: 4px;
     margin-bottom: 10px;
 }
@@ -781,14 +871,14 @@
     height: 100%;
 }
 
-/* Bottom-right character counter */
 .ue-char-counter {
     position: absolute;
-    right: 15px;
-    bottom: -25px;
+    right: 12px;
+    bottom: 10px;
+    /* ⬅ inside the textarea, near the bottom */
     font-size: 12px;
     color: #333;
     opacity: 0.8;
     pointer-events: none;
-    /* so user can click textarea through it */
+    /* still lets clicks go through */
 }
