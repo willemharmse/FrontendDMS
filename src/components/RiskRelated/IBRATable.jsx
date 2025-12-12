@@ -30,6 +30,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const isResizingRef = useRef(false);
     const [wrapperWidth, setWrapperWidth] = useState(0);
     const [hasFittedOnce, setHasFittedOnce] = useState(false);
+    const [showFlagged, setShowFlagged] = useState(false);
 
     const excludedColumns = ["UE", "S", "H", "E", "C", "LR", "M", "R", "actions", "responsible", "dueDate"];
 
@@ -133,6 +134,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
     const filteredRows = useMemo(() => {
         return rows.filter(row => {
+            // 1) Apply existing text filters
             for (const [col, value] of Object.entries(filters)) {
                 const text = value.toLowerCase();
                 if (col === 'main') {
@@ -185,9 +187,28 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                     )) return false;
                 }
             }
+
+            // 2) If "show flagged only" is on, require at least one flag
+            if (showFlagged) {
+                const isFlagged =
+                    !!row.mainFlag ||
+                    !!row.subFlag ||
+                    !!row.ownerFlag ||
+                    !!row.oddsFlag ||
+                    !!row.riskRankFlag ||
+                    !!row.maxConsequenceFlag ||
+                    !!row.controlFlag ||
+                    !!row.hazardFlag ||
+                    !!row.sourceFlag ||
+                    !!row.ueFlag ||
+                    !!row.additionalFlag;
+
+                if (!isFlagged) return false;
+            }
+
             return true;
         });
-    }, [rows, filters]);
+    }, [rows, filters, showFlagged]);
 
     function openFilterPopup(colId, e) {
         if (colId === "nr" || colId === "action") return;
@@ -1067,6 +1088,18 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         updateRow(newRows);
     };
 
+    const resetBtnClass = showFitButton && showResetButton
+        ? "top-right-button-ibra5"
+        : showFitButton
+            ? "top-right-button-ibra4"
+            : showResetButton
+                ? "top-right-button-ibra4"
+                : "top-right-button-ibra3";
+
+    const toggleFlagFilter = () => {
+        setShowFlagged(prev => !prev);
+    };
+
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
@@ -1102,6 +1135,14 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 >
                     <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
                 </button>)}
+
+                <button
+                    className={`${resetBtnClass}`}
+                    title={showFlagged ? "Show All Items" : "Show Flagged Items Only"}
+                    onClick={toggleFlagFilter}
+                >
+                    <FontAwesomeIcon icon={faFlag} className={`icon-um-search ${showFlagged ? "flag-filter-active" : ""}`} />
+                </button>
 
                 {showColumnSelector && (
                     <div className="column-selector-popup"
@@ -1314,7 +1355,8 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                     const additionalText = row.additional;
                                                     return (
-                                                        <td key={idx} className={colClass} rowSpan={possibilities.length} style={commonCellStyle}>
+                                                        <td key={idx} className={`${colClass}  ibra-main-cell`} rowSpan={possibilities.length} style={commonCellStyle}>
+
                                                             {additionalText
                                                                 ? <button
                                                                     className="ibra-view-additional-button"
@@ -1440,28 +1482,71 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 if (colId === "main") {
                                                     if (!isFirst) return null;
 
-                                                    const isFlagged = !!row.mainFlag;
+                                                    const isFlagged = !!row.mainFlag || !!row.subFlag || !!row.ownerFlag || !!row.oddsFlag || !!row.riskRankFlag || !!row.maxConsequenceFlag || !!row.controlFlag || !!row.hazardFlag || !!row.sourceFlag || !!row.ueFlag;
 
                                                     return (
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
-                                                            className={`${colClass} ibra-main-cell ${isFlagged ? "ibra-main-cell-flagged" : ""} correct-wrap-ibra`}
+                                                            className={`${colClass} ibra-main-cell correct-wrap-ibra`}
                                                             style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
                                                         >
-                                                            <span
+                                                            {isFlagged && (<span
                                                                 className={
                                                                     "ibra-main-flag-icon" +
-                                                                    (isFlagged ? " active" : "") +
-                                                                    (readOnly ? " readonly" : "")
+                                                                    (isFlagged ? " active" : "")
                                                                 }
                                                                 title={isFlagged ? "Unflag main area" : "Flag main area"}
-                                                                onClick={readOnly ? undefined : () => toggleMainFlag(row.id)}
                                                             >
                                                                 <FontAwesomeIcon icon={faFlag} />
-                                                            </span>
+                                                            </span>)}
 
                                                             {/* Main text */}
+                                                            {cellData}
+                                                        </td>
+                                                    );
+                                                }
+
+                                                if (colId === "sub") {
+                                                    if (!isFirst) return null;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            className={`${colClass} ibra-main-cell correct-wrap-ibra`}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
+                                                        >
+                                                            {cellData}
+                                                        </td>
+                                                    );
+                                                }
+
+                                                if (colId === "owner") {
+                                                    if (!isFirst) return null;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            className={`${colClass} ibra-main-cell correct-wrap-ibra`}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
+                                                        >
+                                                            {cellData}
+                                                        </td>
+                                                    );
+                                                }
+
+                                                if (colId === "odds") {
+                                                    if (!isFirst) return null;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            className={`${colClass} ibra-main-cell correct-wrap-ibra`}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
+                                                        >
                                                             {cellData}
                                                         </td>
                                                     );
@@ -1487,7 +1572,7 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                     return (
                                                         <td
                                                             key={idx}
-                                                            className={`${colClass} ${colourClass} correct-wrap-ibra`}
+                                                            className={`${colClass} ${colourClass} ibra-main-cell correct-wrap-ibra`}
                                                             rowSpan={possibilities.length}
                                                             style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
                                                         >
@@ -1530,12 +1615,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                 if (colId === "maxConsequence") {
                                                     if (!isFirst) return null;
+
                                                     return (
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
                                                             style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
-                                                            className="correct-wrap-ibra"
+                                                            className="correct-wrap-ibra ibra-main-cell"
                                                         >
                                                             {row.maxConsequence}
                                                         </td>
@@ -1544,12 +1630,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                 if (colId === "UE") {
                                                     if (!isFirst) return null;
+
                                                     return (
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
                                                             style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
-                                                            className={`${colId === "UE" ? "unwanted-event-borders" : ""} correct-wrap-ibra`}
+                                                            className={`${colId === "UE" ? "unwanted-event-borders" : ""} correct-wrap-ibra  ibra-main-cell`}
                                                         >
                                                             {row.UE}
                                                         </td>
@@ -1558,12 +1645,13 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
                                                 if (colId === "source") {
                                                     if (!isFirst) return null;
+
                                                     return (
                                                         <td
                                                             key={idx}
                                                             rowSpan={possibilities.length}
                                                             style={{ ...commonCellStyle, textAlign: "left", whiteSpace: "pre-wrap" }}
-                                                            className="correct-wrap-ibra"
+                                                            className="correct-wrap-ibra  ibra-main-cell"
                                                         >
                                                             {row.source}
                                                         </td>
@@ -1635,6 +1723,72 @@ const IBRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                             </div>
                                                         </td>
                                                     )
+                                                }
+
+                                                if (colId === "hazards") {
+                                                    if (!isFirst) return null;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            className={`${colClass}  ibra-main-cell`}
+                                                            rowSpan={possibilities.length}
+                                                            style={commonCellStyle}
+                                                        >
+                                                            {/* Existing hazards list rendering */}
+                                                            {Array.isArray(row.hazards) ? (
+                                                                <ul
+                                                                    style={{
+                                                                        paddingLeft: "20px",
+                                                                        margin: 0,
+                                                                        marginRight: "10px",
+                                                                        textAlign: "left",
+                                                                    }}
+                                                                >
+                                                                    {row.hazards.map((item, i) => (
+                                                                        <li key={i} style={{ paddingLeft: "5px" }}>
+                                                                            {typeof item === "string" ? item : item.hazard || ""}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                row.hazards
+                                                            )}
+                                                        </td>
+                                                    );
+                                                }
+
+                                                if (colId === "controls") {
+                                                    if (!isFirst) return null;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            className={`${colClass}  ibra-main-cell`}
+                                                            rowSpan={possibilities.length}
+                                                            style={commonCellStyle}
+                                                        >
+                                                            {/* Existing controls list rendering */}
+                                                            {Array.isArray(row.controls) ? (
+                                                                <ul
+                                                                    style={{
+                                                                        paddingLeft: "20px",
+                                                                        margin: 0,
+                                                                        marginRight: "10px",
+                                                                        textAlign: "left",
+                                                                    }}
+                                                                >
+                                                                    {row.controls.map((item, i) => (
+                                                                        <li key={i} style={{ paddingLeft: "5px" }}>
+                                                                            {typeof item === "string" ? item : item.control || ""}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                row.controls
+                                                            )}
+                                                        </td>
+                                                    );
                                                 }
 
                                                 // Default: strings or arrays

@@ -1,4 +1,4 @@
-const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort, site = false, assetType = true }) => {
+const SortPopupVisitorManagementPage = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort, site = false, assetType = true }) => {
     return (
         <div className="sort-popup-overlay">
             <div className="sort-popup-content">
@@ -22,10 +22,12 @@ const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortFie
                             <option value="contactNr" style={{ color: "black" }}>Contact Number</option>
                             <option value="email" style={{ color: "black" }}>Email</option>
                             <option value="idNumber" style={{ color: "black" }}>ID/Passport</option>
+                            <option value="completionDate" style={{ color: "black" }}>Induction Completion Date</option>
                             <option value="expiryDate" style={{ color: "black" }}>Induction Expiry Date</option>
                             <option value="validity" style={{ color: "black" }}>Induction Validity</option>
                             <option value="indicationVersion" style={{ color: "black" }}>Induction Version Nr</option>
                             <option value="name" style={{ color: "black" }}>Name</option>
+                            <option value="dateAdded" style={{ color: "black" }}>Profile Creation Date</option>
                             <option value="surname" style={{ color: "black" }}>Surname</option>
                         </select>
                     </div>
@@ -56,4 +58,4 @@ const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortFie
     );
 };
 
-export default SortPopupVisitors;
+export default SortPopupVisitorManagementPage;

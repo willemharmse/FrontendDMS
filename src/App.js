@@ -121,6 +121,17 @@ import PreviewCertifier from './components/FlameproofDMS/CertifiersPages/Preview
 import InvalidPageMobile from './components/Mobile/InvalidPageMobile';
 import RedirectLogin from './components/RedirectLogin';
 import VersionHistoryAssets from './components/FlameproofDMS/VersionHistoryAssets';
+import OnlineTrainingHomePage from './components/OnlineTrainingModule/OnlineTrainingHomePage';
+import OnlineCourseCreationPage from './components/OnlineTrainingModule/OnlineCourseCreationPage';
+import OnlineTrainingReviewPage from './components/OnlineTrainingModule/OnlineTrainingReviewPage';
+import OnlineTrainingDrafts from './components/OnlineTrainingModule/OnlineTrainingDrafts';
+import OnlineTrainingPublished from './components/OnlineTrainingModule/OnlineTrainingPublished';
+import OnlineTrainingStudentProfiles from './components/OnlineTrainingModule/OnlineTrainingStudentProfiles';
+import VersionHistoryOnlineTraining from './components/OnlineTrainingModule/VersionHistoryOnlineTraining';
+import VisitorManagementPage from './components/VisitorManagement/VisitorManagementPage';
+import VisitorManagementDevices from './components/VisitorManagement/VisitorManagementDevices';
+import VisitorManagementDeletedDevices from './components/VisitorManagement/VisitorManagementDeletedDevices';
+import VisitorRegisteredDevices from './components/TrainingManagement/UserView/VisitorRegisteredDevices';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -308,6 +319,17 @@ function App() {
         <Route path='FrontendDMS/invalidDevice' element={<InvalidPageMobile />} />
         <Route path="FrontendDMS/loginRedirect/:module/:action/:id/:type" element={isMobile ? <Navigate to="/mobileLogin" /> : <RedirectLogin />} />
         <Route path="FrontendDMS/assetVersionHistory/:id" element={<VersionHistoryAssets />} />
+        <Route path='FrontendDMS/onlineTrainingHome' element={<OnlineTrainingHomePage />} />
+        <Route path='FrontendDMS/onlineCreateCourse/:id' element={<OnlineCourseCreationPage />} />
+        <Route path='FrontendDMS/onlineReviewCourse/:fileId' element={<OnlineTrainingReviewPage />} />
+        <Route path='FrontendDMS/onlineDraftCourses' element={<OnlineTrainingDrafts />} />
+        <Route path='FrontendDMS/onlinePublishedCourses' element={<OnlineTrainingPublished />} />
+        <Route path='FrontendDMS/onlineProfiles' element={<OnlineTrainingStudentProfiles />} />
+        <Route path='FrontendDMS/onlineTrainingHistory/:id' element={<VersionHistoryOnlineTraining />} />
+        <Route path='FrontendDMS/visitorManagementPage' element={<VisitorManagementPage />} />
+        <Route path='FrontendDMS/visitorDevices/:id' element={<VisitorManagementDevices />} />
+        <Route path='FrontendDMS/visitorDeletedDevices/:id' element={<VisitorManagementDeletedDevices />} />
+        <Route path='FrontendDMS/visitorRegisteredDevices' element={<VisitorRegisteredDevices />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

@@ -542,6 +542,18 @@ const RiskManagementPageIBRA = () => {
                 return {
                     ...row,
                     mainFlag: row.mainFlag ?? false,
+                    subFlag: row.subFlag ?? false,
+                    ownerFlag: row.ownerFlag ?? false,
+                    oddsFlag: row.oddsFlag ?? false,
+                    riskRankFlag: row.riskRankFlag ?? false,
+                    hazardFlag: row.hazardFlag ?? false,
+                    controlFlag: row.controlFlag ?? false,
+                    ueFlag: row.ueFlag ?? false,
+                    additionalFlag: row.additionalFlag ?? false,
+                    maxConsequenceFlag: row.maxConsequenceFlag ?? false,
+                    sourceFlag: row.sourceFlag ?? false,
+                    materialFlag: row.materialFlag ?? false,
+                    priorityFlag: row.priorityFlag ?? false,
                     possible: possible.map(block => {
                         const possibleId = block?.id ?? uuidv4();
                         const count = block?.actions?.length;
@@ -683,7 +695,7 @@ const RiskManagementPageIBRA = () => {
                     main: "", sub: "", owner: "", odds: "", riskRank: "",
                     hazards: [], controls: [], S: "-", H: "-", E: "-", C: "-", LR: "-", M: "-",
                     R: "-", source: "", material: "", priority: "",
-                    mainFlag: false,
+                    mainFlag: false, subFlag: false, ownerFlag: false, oddsFlag: false, riskRankFlag: false, hazardFlag: false, controlFlag: false, ueFlag: false, additionalFlag: false, maxConsequenceFlag: false, sourceFlag: false, materialFlag: false, priorityFlag: false,
                     possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
                     UE: "", additional: "", maxConsequence: ""
                 }
@@ -727,7 +739,7 @@ const RiskManagementPageIBRA = () => {
                 id: uuidv4(), nr: 1, main: "", sub: "", owner: "", odds: "", riskRank: "",
                 hazards: [], controls: [], S: "-", H: '-', E: "-", C: "-",
                 LR: "-", M: "-", R: "-", source: "", material: "", priority: "",
-                mainFlag: false,
+                mainFlag: false, subFlag: false, ownerFlag: false, oddsFlag: false, riskRankFlag: false, hazardFlag: false, controlFlag: false, ueFlag: false, additionalFlag: false, maxConsequenceFlag: false, sourceFlag: false, materialFlag: false, priorityFlag: false,
                 possible: [{ id: uuidv4(), actions: [{ id: uuidv4(), action: "" }], responsible: [{ id: uuidv4(), person: "" }], dueDate: [{ id: uuidv4(), date: "" }] }],
                 UE: "", additional: "", maxConsequence: ""
             }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../IBRAPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faFlag } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FunctionalOwnership from '../RiskInfo/FunctionalOwnership';
@@ -21,6 +21,19 @@ import { v4 as uuidv4 } from 'uuid';
 import MaterialUE from '../RiskInfo/MaterialUE';
 
 const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
+    const [mainFlag, setMainFlag] = useState("");
+    const [subFlag, setSubFlag] = useState("");
+    const [ownerFlag, setOwnerFlag] = useState("");
+    const [oddsFlag, setOddsFlag] = useState("");
+    const [riskRankFlag, setRiskRankFlag] = useState("");
+    const [hazardFlag, setHazardFlag] = useState("");
+    const [controlFlag, setControlFlag] = useState("");
+    const [ueFlag, setUEFlag] = useState("");
+    const [additionalFlag, setAdditionalFlag] = useState("");
+    const [maxConsequenceFlag, setMaxConsequenceFlag] = useState("");
+    const [sourceFlag, setSourceFlag] = useState("");
+    const [priorityFlag, setPriorityFlag] = useState("");
+    const [materialFlag, setMaterialFlag] = useState("");
     const [groupedAreas, setGroupedAreas] = useState({});     // { MA1: [...], MA2: [...] }
     const [mainAreas, setMainAreas] = useState([]);     // [ 'MA1', 'MA2', … ]
     const [availableSubAreas, setAvailableSubAreas] = useState([]);
@@ -368,6 +381,19 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
         if (data) {
             // Set static fields
             setSelectedMainArea(data.main || '');
+            setMainFlag(data.mainFlag || false);
+            setSubFlag(data.subFlag || false);
+            setOwnerFlag(data.ownerFlag || false);
+            setOddsFlag(data.oddsFlag || false);
+            setRiskRankFlag(data.riskRankFlag || false);
+            setHazardFlag(data.hazardFlag || false);
+            setControlFlag(data.controlFlag || false);
+            setUEFlag(data.ueFlag || false);
+            setAdditionalFlag(data.additionalFlag || false);
+            setMaxConsequenceFlag(data.maxConsequenceFlag || false);
+            setSourceFlag(data.sourceFlag || false);
+            setPriorityFlag(data.priorityFlag || false);
+            setMaterialFlag(data.materialFlag || false);
             setSelectedSubArea(data.sub || '');
             setSelectedOwner(data.owner || '');
             setSelectedLikelihood(data.odds || '');
@@ -587,6 +613,19 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
             return;
         }
         const updatedData = {
+            mainFlag: mainFlag,
+            subFlag: subFlag,
+            ownerFlag: ownerFlag,
+            oddsFlag: oddsFlag,
+            riskRankFlag: riskRankFlag,
+            hazardFlag: hazardFlag,
+            controlFlag: controlFlag,
+            ueFlag: ueFlag,
+            additionalFlag: additionalFlag,
+            maxConsequenceFlag: maxConsequenceFlag,
+            sourceFlag: sourceFlag,
+            priorityFlag: priorityFlag,
+            materialFlag: materialFlag,
             main: selectedMainArea,
             sub: selectedSubArea,
             owner: selectedOwner,
@@ -865,6 +904,58 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
         });
     };
 
+    const setFlagMain = () => {
+        setMainFlag(!mainFlag);
+    }
+
+    const setFlagSub = () => {
+        setSubFlag(!subFlag);
+    }
+
+    const setFlagOwner = () => {
+        setOwnerFlag(!ownerFlag);
+    }
+
+    const setFlagOdds = () => {
+        setOddsFlag(!oddsFlag);
+    }
+
+    const setFlagRiskRank = () => {
+        setRiskRankFlag(!riskRankFlag);
+    }
+
+    const setFlagHazard = () => {
+        setHazardFlag(!hazardFlag);
+    }
+
+    const setFlagControl = () => {
+        setControlFlag(!controlFlag);
+    }
+
+    const setFlagUE = () => {
+        setUEFlag(!ueFlag);
+    }
+
+    const setFlagAdditional = () => {
+        setAdditionalFlag(!additionalFlag);
+    }
+
+    const setFlagMaxCons = () => {
+        setMaxConsequenceFlag(!maxConsequenceFlag);
+    }
+
+    const setFlagSource = () => {
+        setSourceFlag(!sourceFlag);
+    }
+
+    const setFlagMaterial = () => {
+        setMaterialFlag(!materialFlag);
+    }
+
+    const setFlagPriority = () => {
+        setPriorityFlag(!priorityFlag);
+    }
+
     return (
         <div className="ibra-popup-page-container">
             <div className="ibra-popup-page-overlay">
@@ -879,9 +970,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                             <div className="ibra-popup-page-form-group-main-container-2">
                                 <div className="ibra-popup-page-additional-row">
                                     <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-component-wrapper" style={{ background: mainFlag ? "#FFFF89" : "" }}>
                                             <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
-                                                <label>Main Area</label>
+                                                <label><FontAwesomeIcon icon={faFlag} onClick={setFlagMain} style={{ marginRight: "5px", cursor: "pointer", color: mainFlag ? "#d4aa00" : "", fontSize: "14px", marginTop: "2px" }} title='Toggle Flag' /> Main Area</label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <input
                                                         type="text"
@@ -899,9 +990,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                         </div>
                                     </div>
                                     <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-component-wrapper" style={{ background: subFlag ? "#FFFF89" : "" }}>
                                             <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
-                                                <label>Sub Area</label>
+                                                <label><FontAwesomeIcon icon={faFlag} onClick={setFlagSub} style={{ marginRight: "5px", cursor: "pointer", color: subFlag ? "#d4aa00" : "", fontSize: "14px", marginTop: "2px" }} title='Toggle Flag' /> Sub Area</label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <input
                                                         type="text"
@@ -923,9 +1014,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                             <div className="ibra-popup-page-form-group-main-container-2">
                                 <div className="ibra-popup-page-additional-row">
                                     <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-component-wrapper" style={{ background: ownerFlag ? "#FFFF89" : "" }}>
                                             <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpFO} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Functional Ownership</label>
+                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpFO} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" /><FontAwesomeIcon icon={faFlag} onClick={setFlagOwner} style={{ marginRight: "5px", cursor: "pointer", color: ownerFlag ? "#d4aa00" : "" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Functional Ownership</label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <div className="ibra-popup-page-select-container">
                                                         <input
@@ -945,19 +1036,20 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                         </div>
                                     </div>
                                     <div className="ibra-popup-page-column-half">
-                                        <div className="ibra-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-component-wrapper" style={{ background: sourceFlag ? "#FFFF89" : "" }}>
                                             <div className={`ibra-popup-page-form-group ${errors.riskSource ? "error-upload-required-up" : ""}`}>
-                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" />Hazard Classification / Energy Release </label>
+                                                <label><FontAwesomeIcon icon={faInfoCircle} onClick={openHelpRS} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" /><FontAwesomeIcon icon={faFlag} onClick={setFlagSource} style={{ marginRight: "5px", cursor: "pointer", color: sourceFlag ? "#d4aa00" : "" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Hazard Classification / Energy Release </label>
                                                 <div className="ibra-popup-page-select-container">
                                                     <select
                                                         className="ibra-popup-page-select"
                                                         value={riskSource}
                                                         onChange={(e) => setRiskSource(e.target.value)}
                                                         disabled={readOnly}
+                                                        style={{ color: riskSource === "" ? "#838383ff" : "black" }}
                                                     >
-                                                        <option value="">Select Hazard Classification / Energy Release</option>
+                                                        <option className={"ibra-select-styling"} value="">Select Hazard Classification / Energy Release</option>
                                                         {riskSources.map((term, index) => (
-                                                            <option key={index} value={term.term}>
+                                                            <option className={"ibra-select-styling"} key={index} value={term.term}>
                                                                 {term.term}
                                                             </option>
                                                         ))}
@@ -970,14 +1062,14 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                 <div className="ibra-popup-page-form-row-2">
                                     <div className="ibra-popup-page-additional-row-ue-hazard">
                                         <div className="ibra-popup-page-column-half">
-                                            <div className="ibra-popup-page-component-wrapper-hazards-ue">
+                                            <div className="ibra-popup-page-component-wrapper-hazards-ue" style={{ background: hazardFlag ? "#FFFF89" : "" }}>
                                                 <div className={`ibra-popup-page-form-group ${errors.hazards ? "error-upload-required-up" : ""}`}>
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpHaz} style={{ cursor: 'pointer' }} />Hazard</label>
+                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpHaz} style={{ cursor: 'pointer' }} /><FontAwesomeIcon icon={faFlag} onClick={setFlagHazard} style={{ marginRight: "5px", cursor: "pointer", color: hazardFlag ? "#d4aa00" : "" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Hazard</label>
                                                     <div className="ibra-popup-hazard-table-container-ue-hazard-row" style={{ height: readOnly ? "253px" : "" }}>
                                                         <table className="ibra-popup-page-table">
                                                             <tbody>
                                                                 {hazardRows.map((row, index) => (
-                                                                    <tr key={row.id}>
+                                                                    <tr key={row.id} style={{ background: hazardFlag ? "#FFFF89" : "" }}>
                                                                         <td>
                                                                             <div className="ibra-popup-page-row-actions">
                                                                                 <textarea
@@ -1023,7 +1115,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                         <div className="ibra-popup-page-column-half">
                                             <div className="ibra-popup-page-component-wrapper-unwanted-square">
                                                 <div className={`ibra-popup-page-form-group-square-ue`}>
-                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpUE} style={{ cursor: 'pointer', color: "white" }} title="What is an Unwanted Event?" />Unwanted Event</label>
+                                                    <label><FontAwesomeIcon icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpUE} style={{ cursor: 'pointer', color: "white" }} title="What is an Unwanted Event?" /><FontAwesomeIcon icon={faFlag} onClick={setFlagUE} style={{ marginRight: "5px", cursor: "pointer", color: ueFlag ? "#d4aa00" : "white" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Unwanted Event</label>
 
                                                     <div className="ue-textarea-wrapper">
                                                         <textarea
@@ -1049,9 +1141,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="ibra-popup-page-component-wrapper-special">
+                                    <div className="ibra-popup-page-component-wrapper-special" style={{ background: maxConsequenceFlag ? "#FFFF89" : "" }}>
                                         <div className="ibra-popup-page-form-group">
-                                            <label style={{ fontSize: "16px" }}><FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} />Max Reasonable Consequence Description</label>
+                                            <label style={{ fontSize: "16px" }}><FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faInfoCircle} className="ibra-popup-label-icon" onClick={openHelpMaxCons} /><FontAwesomeIcon icon={faFlag} onClick={setFlagMaxCons} style={{ marginRight: "5px", cursor: "pointer", color: maxConsequenceFlag ? "#d4aa00" : "" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Max Reasonable Consequence Description</label>
                                             <textarea
                                                 className="ibra-popup-page-textarea-2"
                                                 value={maxConsequence}
@@ -1061,13 +1153,13 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                             ></textarea>
                                         </div>
                                     </div>
-                                    <div className="ibra-popup-page-component-wrapper">
+                                    <div className="ibra-popup-page-component-wrapper" style={{ background: controlFlag ? "#FFFF89" : "" }}>
                                         <div className={`ibra-popup-page-form-group ${errors.controls ? "error-upload-required-up" : ""}`}>
-                                            <label><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpControl} />Current Controls</label>
+                                            <label><FontAwesomeIcon icon={faInfoCircle} style={{ cursor: 'pointer' }} className="ibra-popup-label-icon" onClick={openHelpControl} /><FontAwesomeIcon icon={faFlag} onClick={setFlagControl} style={{ marginRight: "5px", cursor: "pointer", color: controlFlag ? "#d4aa00" : "" }} className="ibra-popup-label-icon-flag" title='Toggle Flag' /> Current Controls</label>
                                             <table className="ibra-popup-page-table">
                                                 <tbody>
                                                     {controlRows.map((row, index) => (
-                                                        <tr key={row.id}>
+                                                        <tr key={row.id} style={{ background: controlFlag ? "#FFFF89" : "" }}>
                                                             <td>
                                                                 <div className="ibra-popup-page-row-actions">
                                                                     <div className="ibra-popup-page-select-container">
@@ -1126,9 +1218,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                             </div>
 
                             <div className="ibra-popup-page-form-group-main-container-2">
-                                <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-component-wrapper" style={{ background: oddsFlag ? "#FFFF89" : "" }}>
                                     <div className={`ibra-popup-page-form-group inline-field ${errors.author ? "error-upload-required-up" : ""}`}>
-                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px", cursor: "pointer", marginRight: "10px" }} onClick={openHelpOdds} />Likelihood of the Event</label>
+                                        <label style={{ marginRight: "120px" }}><FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: "18px", cursor: "pointer", marginRight: "10px" }} onClick={openHelpOdds} /><FontAwesomeIcon icon={faFlag} onClick={setFlagOdds} style={{ marginRight: "5px", cursor: "pointer", color: oddsFlag ? "#d4aa00" : "", fontSize: "14px", marginTop: "2px" }} title='Toggle Flag' /> Likelihood of the Event</label>
                                         <div className="ibra-popup-page-select-container">
                                             <select
                                                 className="ibra-popup-page-select"
@@ -1136,9 +1228,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                 onChange={(e) => setSelectedLikelihood(e.target.value)}
                                                 disabled={readOnly}
                                             >
-                                                <option value="">Select Likelihood</option>
+                                                <option className={"ibra-select-styling"} value="">Select Likelihood</option>
                                                 {likelihoodOptions.map((option, index) => (
-                                                    <option key={index} value={option}>
+                                                    <option className={"ibra-select-styling"} key={index} value={option}>
                                                         {option}
                                                     </option>
                                                 ))}
@@ -1169,7 +1261,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                                                                         disabled={readOnly}
                                                                     >
                                                                         {riskRankOptions.map((option, index) => (
-                                                                            <option key={index} value={option}>
+                                                                            <option className={"ibra-select-styling"} key={index} value={option}>
                                                                                 {option}
                                                                             </option>
                                                                         ))}
@@ -1228,9 +1320,9 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false }) => {
                             </div>
 
                             <div className="ibra-popup-page-form-group-main-container-2">
-                                <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-component-wrapper" style={{ background: additionalFlag ? "#FFFF89" : "" }}>
                                     <div className="ibra-popup-page-form-group">
-                                        <label>Additional Notes Regarding this Unwanted Event</label>
+                                        <label><FontAwesomeIcon icon={faFlag} onClick={setFlagAdditional} style={{ marginRight: "5px", cursor: "pointer", color: additionalFlag ? "#d4aa00" : "", fontSize: "14px", marginTop: "2px" }} className="ibra-popup-label-icon" title='Toggle Flag' /> Additional Notes Regarding this Unwanted Event</label>
                                         <textarea
                                             className="ibra-popup-page-textarea-full-textable"
                                             value={additionalComments}

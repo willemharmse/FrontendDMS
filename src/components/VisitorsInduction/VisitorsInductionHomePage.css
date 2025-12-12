@@ -316,6 +316,14 @@
     /* allow natural width */
 }
 
+.limit-table-height-visitor.wide2 {
+    min-width: 2200px;
+    width: max-content;
+    /* let table grow */
+    table-layout: auto;
+    /* allow natural width */
+}
+
 /* Empty table fallback */
 .limit-table-height-visitor .empty-row td {
     padding: 0;
@@ -394,4 +402,121 @@
         table-layout: auto;
         /* allow natural width */
     }
+}
+
+.visitor-management-num-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 5%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-name-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-surname-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-email-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-phone-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-id-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-company-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-profileBy-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-valid-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-added-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-comp-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-exp-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.visitor-management-vers-filter {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    width: 8%;
+    font-size: 16px;
+    text-align: center;
 }

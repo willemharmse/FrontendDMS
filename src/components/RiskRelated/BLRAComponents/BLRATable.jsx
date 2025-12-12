@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import '../IBRATable.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendarDays, faArrowsLeftRight, faRotateLeft, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlusCircle, faTableColumns, faTimes, faGripVertical, faInfoCircle, faArrowUpRightFromSquare, faCheck, faDownload, faArrowsUpDown, faCopy, faFilter, faCalendarDays, faArrowsLeftRight, faRotateLeft, faArrowsRotate, faFlag } from '@fortawesome/free-solid-svg-icons';
 import BLRAPopup from "./BLRAPopup";
 import IbraNote from "../RiskInfo/IbraNote";
 import UnwantedEvent from "../RiskInfo/UnwantedEvent";
@@ -36,6 +36,7 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
     const isResizingRef = useRef(false);
     const [wrapperWidth, setWrapperWidth] = useState(0);
     const [hasFittedOnce, setHasFittedOnce] = useState(false);
+    const [showFlagged, setShowFlagged] = useState(false);
 
     const excludedColumns = ["UE", "S", "H", "E", "C", "LR", "M", "R", "actions", "responsible", "dueDate"];
     const [filters, setFilters] = useState({});
@@ -132,6 +133,7 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
 
     const filteredRows = useMemo(() => {
         return rows.filter(row => {
+            // 1) Apply existing text filters
             for (const [col, value] of Object.entries(filters)) {
                 const text = value.toLowerCase();
                 if (col === 'main') {
@@ -184,9 +186,28 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                     )) return false;
                 }
             }
+
+            // 2) If "show flagged only" is on, require at least one flag
+            if (showFlagged) {
+                const isFlagged =
+                    !!row.mainFlag ||
+                    !!row.subFlag ||
+                    !!row.ownerFlag ||
+                    !!row.oddsFlag ||
+                    !!row.riskRankFlag ||
+                    !!row.maxConsequenceFlag ||
+                    !!row.controlFlag ||
+                    !!row.hazardFlag ||
+                    !!row.sourceFlag ||
+                    !!row.ueFlag ||
+                    !!row.additionalFlag;
+
+                if (!isFlagged) return false;
+            }
+
             return true;
         });
-    }, [rows, filters]);
+    }, [rows, filters, showFlagged]);
 
     function openFilterPopup(colId, e) {
         if (colId === "nr" || colId === "action") return;
@@ -1025,6 +1046,18 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
         fitTableToWidth(getDisplayColumns(), true);
     }, [isSidebarVisible]);
 
+    const resetBtnClass = showFitButton && showResetButton
+        ? "top-right-button-ibra5"
+        : showFitButton
+            ? "top-right-button-ibra4"
+            : showResetButton
+                ? "top-right-button-ibra4"
+                : "top-right-button-ibra3";
+
+    const toggleFlagFilter = () => {
+        setShowFlagged(prev => !prev);
+    };
+
     return (
         <div className="input-row-risk-ibra">
             <div className={`ibra-box ${error ? "error-create" : ""}`} ref={ibraBoxRef}>
@@ -1060,6 +1093,14 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                 >
                     <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
                 </button>)}
+                
+                <button
+                    className={`${resetBtnClass}`}
+                    title={showFlagged ? "Show All Items" : "Show Flagged Items Only"}
+                    onClick={toggleFlagFilter}
+                >
+                    <FontAwesomeIcon icon={faFlag} className={`icon-um-search ${showFlagged ? "flag-filter-active" : ""}`} />
+                </button>
 
                 {showColumnSelector && (
                     <div className="column-selector-popup"
@@ -1383,6 +1424,34 @@ const BLRATable = ({ rows, updateRows, addRow, removeRow, generate, updateRow, i
                                                 if (!isFirst) return null
 
                                                 const cellData = row[colId]
+
+                                                if (colId === "main") {
+                                                    if (!isFirst) return null;
+
+                                                    const isFlagged = !!row.mainFlag || !!row.subFlag || !!row.ownerFlag || !!row.oddsFlag || !!row.riskRankFlag || !!row.maxConsequenceFlag || !!row.controlFlag || !!row.hazardFlag || !!row.sourceFlag || !!row.ueFlag;
+
+                                                    return (
+                                                        <td
+                                                            key={idx}
+                                                            rowSpan={possibilities.length}
+                                                            className={`${colClass} ibra-main-cell correct-wrap-ibra`}
+                                                            style={{ ...commonCellStyle, whiteSpace: "pre-wrap" }}
+                                                        >
+                                                            {isFlagged && (<span
+                                                                className={
+                                                                    "ibra-main-flag-icon" +
+                                                                    (isFlagged ? " active" : "")
+                                                                }
+                                                                title={isFlagged ? "Unflag main area" : "Flag main area"}
+                                                            >
+                                                                <FontAwesomeIcon icon={faFlag} />
+                                                            </span>)}
+
+                                                            {/* Main text */}
+                                                            {cellData}
+                                                        </td>
+                                                    );
+                                                }
 
                                                 // blank fillers
                                                 if (colId.startsWith("blank-")) {

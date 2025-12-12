@@ -27,18 +27,20 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
 
     const availableColumns = [
         { id: "nr", title: "Nr", className: "control-analysis-nr", icon: null },
-        { id: "control", title: "Control", className: "control-analysis-control", icon: null },
+        { id: "control", title: "Control Name", className: "control-analysis-control", icon: null },
+        { id: "description", title: "Control Description", className: "control-analysis-control", icon: null },
+        { id: "performance", title: "Performance Requirements & Verifications", className: "control-analysis-control", icon: null },
         { id: "critical", title: "Critical Control", className: "control-analysis-critcal", icon: null },
         { id: "act", title: "Act, Object or System", className: "control-analysis-act", icon: null },
         { id: "activation", title: "Control Activation (Pre or Post Unwanted Event)", className: "control-analysis-activation", icon: null },
         { id: "hierarchy", title: "Hierarchy of Controls", className: "control-analysis-hiearchy", icon: null },
-        { id: "cons", title: "Main Consequence Addressed", className: "control-analysis-cons", icon: null },
         { id: "quality", title: "Quality (%)", className: "control-analysis-quality", icon: null },
         { id: "cer", title: "Control Effectiveness Rating (CER)", className: "control-analysis-cer", icon: null },
-        { id: "action", title: "Required Action", className: "control-analysis-action", icon: null },
+        { id: "cons", title: "Specific Consequence Addressed", className: "control-analysis-cons", icon: null },
+        { id: "notes", title: "Notes Regarding the Control", className: "control-analysis-notes", icon: null },
+        { id: "action", title: "Control Improvement/ Action", className: "control-analysis-action", icon: null },
         { id: "responsible", title: "Responsible Person", className: "control-analysis-responsible", icon: null },
         { id: "dueDate", title: "Due Date", className: "control-analysis-date", icon: null },
-        { id: "notes", title: "Notes Regarding the Control", className: "control-analysis-notes", icon: null },
         ...(!readOnly
             ? [{ id: "actions", title: "Action", className: "control-analysis-nr", icon: null }] : []),
     ];
@@ -46,6 +48,8 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
     const initialColumnWidths = {
         nr: 55,
         control: 500,
+        description: 500,
+        performance: 500,
         critical: 75,
         act: 75,
         activation: 120,
@@ -64,6 +68,8 @@ const ControlAnalysisTable = ({ rows, updateRows, ibra, addRow, removeRow, updat
     const columnSizeLimits = {
         nr: { min: 40, max: 120 },
         control: { min: 200, max: 900 },
+        description: { min: 200, max: 900 },
+        performance: { min: 200, max: 900 },
         critical: { min: 60, max: 150 },
         act: { min: 60, max: 250 },
         activation: { min: 100, max: 300 },

@@ -328,66 +328,63 @@ const VisitorInductionHomePage = () => {
 
                     {/* Controls: dropdown + search + sort */}
                     <div className="course-home-info-card">
-                        {/* Table box with scrollable body */}
-                        <div className="course-home-info-tablebox">
-                            <div className="table-container-course-home-info">
-                                <table className="course-home-info-table">
-                                    <thead className="course-home-info-head">
-                                        <tr className="course-home-info-tr">
-                                            <th className="course-home-info-num" style={{ width: "5%" }}>Nr</th>
-                                            <th className="course-home-info-code" style={{ width: "25%" }}>Visitor Induction</th>
-                                            <th className="course-home-info-name" style={{ width: "10%" }}>Version Nr</th>
-                                            <th className="course-home-info-progress" style={{ width: "15%" }}>
-                                                <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openProgess} />
-                                                Induction Progress
-                                            </th>
+                        <div className="table-container-course-home-info">
+                            <table className="course-home-info-table">
+                                <thead className="course-home-info-head">
+                                    <tr className="course-home-info-tr">
+                                        <th className="course-home-info-num" style={{ width: "5%" }}>Nr</th>
+                                        <th className="course-home-info-code" style={{ width: "25%" }}>Visitor Induction</th>
+                                        <th className="course-home-info-name" style={{ width: "10%" }}>Version Nr</th>
+                                        <th className="course-home-info-progress" style={{ width: "15%" }}>
+                                            <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openProgess} />
+                                            Induction Progress
+                                        </th>
 
-                                            <th className="course-home-info-name" style={{ width: "10%" }}>
-                                                <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openValid} />
-                                                Validity
-                                            </th>
-                                            <th className="course-home-info-access" style={{ width: "15%" }}>Expiry Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filtered
-                                            .filter(c => {
-                                                if (viewFilter === 'Completed') return c.progressStatus.toLowerCase().includes('completed');
-                                                if (viewFilter === 'In Progress') return c.progressStatus.toLowerCase().includes('in progress');
-                                                if (viewFilter === 'Overdue') return c.progressStatus.toLowerCase().includes('overdue') || c.progressStatus.toLowerCase().includes('not passed');
-                                                return true; // View / All
-                                            })
-                                            .map((course, index) => (
-                                                <tr key={`${course.formData.courseTitle}-${index}`} className="course-home-info-tr"
-                                                    onClick={
-                                                        handleCertificateClick(course)
-                                                    }>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{index + 1}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "left", fontFamily: "Arial", position: "relative" }}>
-                                                        {course.formData.courseTitle}
+                                        <th className="course-home-info-name" style={{ width: "10%" }}>
+                                            <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: "8px", color: "white" }} onClick={openValid} />
+                                            Validity
+                                        </th>
+                                        <th className="course-home-info-access" style={{ width: "15%" }}>Expiry Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered
+                                        .filter(c => {
+                                            if (viewFilter === 'Completed') return c.progressStatus.toLowerCase().includes('completed');
+                                            if (viewFilter === 'In Progress') return c.progressStatus.toLowerCase().includes('in progress');
+                                            if (viewFilter === 'Overdue') return c.progressStatus.toLowerCase().includes('overdue') || c.progressStatus.toLowerCase().includes('not passed');
+                                            return true; // View / All
+                                        })
+                                        .map((course, index) => (
+                                            <tr key={`${course.formData.courseTitle}-${index}`} className="course-home-info-tr"
+                                                onClick={
+                                                    handleCertificateClick(course)
+                                                }>
+                                                <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{index + 1}</td>
+                                                <td style={{ fontSize: "14px", textAlign: "left", fontFamily: "Arial", position: "relative" }}>
+                                                    {course.formData.courseTitle}
 
-                                                        {(hoveredFileId === course._id) && (
-                                                            <PopupMenuCertificateOptions
-                                                                file={course}
-                                                                downloadCertficate={handleGenerateCertificateDocument}
-                                                                previewCertificate={handlePreview}
-                                                                isOpen={hoveredFileId === course._id}
-                                                                setHoveredFileId={setHoveredFileId}
-                                                                id={course._id}
-                                                            />
-                                                        )}
-                                                    </td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{course.version}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>
-                                                        {renderProgress(course.trainee.progress)}
-                                                    </td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }} className={`${getComplianceColor(course.trainee)}`}>{formatStatus(course.trainee)}</td>
-                                                    <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.expiryDate) || "N/A"}</td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    {(hoveredFileId === course._id) && (
+                                                        <PopupMenuCertificateOptions
+                                                            file={course}
+                                                            downloadCertficate={handleGenerateCertificateDocument}
+                                                            previewCertificate={handlePreview}
+                                                            isOpen={hoveredFileId === course._id}
+                                                            setHoveredFileId={setHoveredFileId}
+                                                            id={course._id}
+                                                        />
+                                                    )}
+                                                </td>
+                                                <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{course.version}</td>
+                                                <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>
+                                                    {renderProgress(course.trainee.progress)}
+                                                </td>
+                                                <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }} className={`${getComplianceColor(course.trainee)}`}>{formatStatus(course.trainee)}</td>
+                                                <td style={{ fontSize: "14px", textAlign: "center", fontFamily: "Arial" }}>{formatDate(course.trainee.expiryDate) || "N/A"}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

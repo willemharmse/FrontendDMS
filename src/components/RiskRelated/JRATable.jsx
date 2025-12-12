@@ -3,7 +3,7 @@ import './JRATable.css';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare, faFilter, faArrowsLeftRight, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faArrowsUpDown, faCopy, faMagicWandSparkles, faTableColumns, faTimes, faInfoCircle, faCirclePlus, faDownload, faSpinner, faPlusCircle, faArrowUpRightFromSquare, faFilter, faArrowsLeftRight, faArrowsRotate, faFlag } from '@fortawesome/free-solid-svg-icons';
 import Hazard from "./RiskInfo/Hazard";
 import UnwantedEvent from "./RiskInfo/UnwantedEvent";
 import TaskExecution from "./RiskInfo/TaskExecution";
@@ -40,6 +40,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
     const resizeStartXRef = useRef(0);
     const resizeStartWidthRef = useRef(0);
     const [wrapperWidth, setWrapperWidth] = useState(0);
+    const [showFlagged, setShowFlagged] = useState(false);
 
     const [columnWidths, setColumnWidths] = useState({
         nr: 50,
@@ -330,6 +331,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
         let keepRow = true;
         let survivingBodies = row.jraBody;
 
+        // 1. Apply Text Filters
         for (const [colId, text] of Object.entries(filters)) {
             const lcText = text.toLowerCase();
 
@@ -355,6 +357,26 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
             }
         }
 
+        // 2. Apply Flag Filter (if enabled)
+        if (keepRow && showFlagged) {
+            const isRowFlagged = row.rowFlagged;
+
+            survivingBodies = survivingBodies.filter(body => {
+                // Check specific flags on this body
+                const isSubFlagged = body.subStepFlagged;
+                const isHazFlagged = body.hazards?.some(h => h.flagged);
+                const isUEFlagged = body.UE?.some(u => u.flagged);
+
+                // Keep the body if it has a flag OR if the parent Main Step is flagged
+                return isRowFlagged || isSubFlagged || isHazFlagged || isUEFlagged;
+            });
+
+            // If no bodies survived the flag check, hide the whole row
+            if (survivingBodies.length === 0) {
+                keepRow = false;
+            }
+        }
+
         if (keepRow) {
             acc.push({ ...row, jraBody: survivingBodies });
         }
@@ -369,8 +391,9 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
 
                 const newEntry = {
                     idBody: uuidv4(),
-                    hazards: [{ hazard: "" }],
-                    UE: [{ ue: "" }],
+                    subStepFlagged: false, // <--- ADD THIS
+                    hazards: [{ hazard: "", flagged: false }], // <--- ADD FLAG
+                    UE: [{ ue: "", flagged: false }], // <--- ADD FLAG
                     sub: [{ task: "" }],
                     taskExecution: [{ R: "" }],
                     controls: [{ control: "" }],
@@ -394,10 +417,12 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                 id: uuidv4(),
                 nr: null,
                 main: "",
+                rowFlagged: false, // <--- ADD THIS
                 jraBody: [{
                     idBody: uuidv4(),
-                    hazards: [{ hazard: "Work Execution" }],
-                    UE: [{ ue: "Non-adherence to task step requirements / specifications" }],
+                    subStepFlagged: false, // <--- ADD THIS
+                    hazards: [{ hazard: "Work Execution", flagged: false }], // <--- ADD FLAG
+                    UE: [{ ue: "Non-adherence...", flagged: false }], // <--- ADD FLAG
                     sub: [{ task: "" }],
                     taskExecution: [{ R: "" }],
                     controls: [{ control: "" }],
@@ -885,6 +910,37 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
         fitTableToWidth(defaultColumns, defaultWidths);
     };
 
+    const getRowFlagStatus = (row) => {
+        // 1. Check Main Step Flag
+        if (row.rowFlagged) return true;
+
+        // 2. Check JRA Body (Hazards, UE, Sub-steps)
+        return row.jraBody.some(body => {
+            // Check Sub-step/Control Group Flag
+            if (body.subStepFlagged) return true;
+
+            // Check Hazards Flags
+            if (body.hazards?.some(h => h.flagged)) return true;
+
+            // Check Unwanted Events Flags
+            if (body.UE?.some(u => u.flagged)) return true;
+
+            return false;
+        });
+    };
+
+    const resetBtnClass = showFitButton && showResetButton
+        ? "top-right-button-ibra4"
+        : showFitButton
+            ? "top-right-button-ibra3"
+            : showResetButton
+                ? "top-right-button-ibra3"
+                : "top-right-button-ibra2";
+
+    const toggleFlagFilter = () => {
+        setShowFlagged(prev => !prev);
+    };
+
     return (
         <div className={`input-row-risk-ibra `}>
             <div className={`ibra-box ${error ? 'error-create' : ''}`} ref={ibraBoxRef}>
@@ -912,6 +968,14 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                 >
                     <FontAwesomeIcon icon={faArrowsRotate} className="icon-um-search" />
                 </button>)}
+
+                <button
+                    className={`${resetBtnClass}`}
+                    title={showFlagged ? "Show All Items" : "Show Flagged Items Only"}
+                    onClick={toggleFlagFilter}
+                >
+                    <FontAwesomeIcon icon={faFlag} className={`icon-um-search ${showFlagged ? "flag-filter-active" : ""}`} />
+                </button>
 
                 {showColumnSelector && (
                     <div className="column-selector-popup"
@@ -1105,10 +1169,19 @@ const JRATable = ({ formData, setFormData, isSidebarVisible, error, setErrors, r
                                                             <td
                                                                 key={colIdx}
                                                                 rowSpan={rowCount}
-                                                                className={[cls, 'main-cell'].join(' ')}
+                                                                className={`${[cls, 'main-cell'].join(' ')}  correct-wrap-ibra`}
                                                                 style={commonCellStyle}
                                                             >
                                                                 <div className="main-cell-content">
+                                                                        {getRowFlagStatus(row) && (<span
+                                                                            className={
+                                                                                "ibra-main-flag-icon" +
+                                                                                (getRowFlagStatus(row) ? " active" : "")
+                                                                            }
+                                                                            title={getRowFlagStatus(row) ? "Unflag main area" : "Flag main area"}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faFlag} />
+                                                                        </span>)}
                                                                     <div style={{ display: "block", textAlign: "left", whiteSpace: "pre-wrap" }}>{row.main}</div>
                                                                 </div>
                                                                 {!readOnly && (<>

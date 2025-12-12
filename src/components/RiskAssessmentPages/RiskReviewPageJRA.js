@@ -370,11 +370,13 @@ const RiskReviewPageJRA = () => {
                 id: uuidv4(),
                 nr: 1,
                 main: "",
+                rowFlagged: false,
                 jraBody: [
                     {
                         idBody: uuidv4(),
-                        hazards: [{ hazard: "Work Execution" }],            // now an array, one hazard per sub-step
-                        UE: [{ ue: "Non-adherence to task step requirements / specifications" }],                 // array of unwanted-events
+                        subStepFlagged: false,
+                        hazards: [{ hazard: "Work Execution", flagged: false }],            // now an array, one hazard per sub-step
+                        UE: [{ ue: "Non-adherence to task step requirements / specifications", flagged: false }],                 // array of unwanted-events
                         sub: [{ task: "" }],    // array of sub-step objects
                         taskExecution: [{          // keep as object, A and R dropdowns
                             R: ""

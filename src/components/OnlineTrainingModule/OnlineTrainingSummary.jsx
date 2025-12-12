@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlusCircle, faMagicWandSparkles, faSpinner, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
-const InductionSummary = ({ formData, setFormData, readOnly = false }) => {
+const OnlineTrainingSummary = ({ formData, setFormData, readOnly = false }) => {
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [rewriteHistory, setRewriteHistory] = useState({
         summary: []
@@ -64,7 +64,7 @@ const InductionSummary = ({ formData, setFormData, readOnly = false }) => {
                     rows="5"
                     value={formData.summary}
                     onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                    placeholder="Insert visitor induction summary."
+                    placeholder="Insert course summary."
                     readOnly={readOnly}
                 />
 
@@ -99,4 +99,4 @@ const InductionSummary = ({ formData, setFormData, readOnly = false }) => {
     );
 };
 
-export default InductionSummary;
+export default OnlineTrainingSummary;

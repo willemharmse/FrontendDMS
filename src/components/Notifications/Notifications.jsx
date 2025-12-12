@@ -196,7 +196,15 @@ const Notifications = ({ setClose, getCount }) => {
     // Function to format the date and time
     const formatDateTime = (dateTime) => {
         const date = new Date(dateTime);
-        return date.toLocaleString(); // You can customize this format as per your preference
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
     };
 
     const filteredNotifications = selectedPill === "All"

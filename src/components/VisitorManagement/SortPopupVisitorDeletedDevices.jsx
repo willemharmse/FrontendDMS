@@ -1,9 +1,9 @@
-const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort, site = false, assetType = true }) => {
+const SortPopupVisitorDeletedDevices = ({ setSortField, setSortOrder, closeSortModal, sortField, sortOrder, handleSort, site = false, assetType = true }) => {
     return (
         <div className="sort-popup-overlay">
             <div className="sort-popup-content">
                 <div className="sort-file-header">
-                    <h2 className="sort-file-title">Sort Visitors</h2>
+                    <h2 className="sort-file-title">Sort Visitor Devices</h2>
                     <button className="sort-file-close" onClick={closeSortModal} title="Close Popup">×</button>
                 </div>
 
@@ -18,15 +18,11 @@ const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortFie
                             style={{ color: sortField === "" ? "gray" : "black" }}
                         >
                             <option value="" style={{ color: "gray" }}>Select Field</option>
-                            <option value="company" style={{ color: "black" }}>Company</option>
-                            <option value="contactNr" style={{ color: "black" }}>Contact Number</option>
-                            <option value="email" style={{ color: "black" }}>Email</option>
-                            <option value="idNumber" style={{ color: "black" }}>ID/Passport</option>
-                            <option value="expiryDate" style={{ color: "black" }}>Induction Expiry Date</option>
-                            <option value="validity" style={{ color: "black" }}>Induction Validity</option>
-                            <option value="indicationVersion" style={{ color: "black" }}>Induction Version Nr</option>
-                            <option value="name" style={{ color: "black" }}>Name</option>
-                            <option value="surname" style={{ color: "black" }}>Surname</option>
+                            <option value="deletedDate" style={{ color: "black" }}>Deletion Date</option>
+                            <option value="deviceName" style={{ color: "black" }}>Device Name</option>
+                            <option value="deviceType" style={{ color: "black" }}>Device Type</option>
+                            <option value="serialNumber" style={{ color: "black" }}>Serial Number</option>
+                            <option value="deletedReason" style={{ color: "black" }}>Reason for Deletion</option>
                         </select>
                     </div>
                 </div>
@@ -56,4 +52,4 @@ const SortPopupVisitors = ({ setSortField, setSortOrder, closeSortModal, sortFie
     );
 };
 
-export default SortPopupVisitors;
+export default SortPopupVisitorDeletedDevices;

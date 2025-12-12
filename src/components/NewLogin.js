@@ -10,6 +10,8 @@ import AccountLockOut from './AccountLockout/AccountLockOut';
 import { ToastContainer, toast } from 'react-toastify';
 import SplashScreen from './Construction/SplashScreen';
 import { getCurrentUser, can } from "../utils/auth";
+import { getOrCreateDeviceId } from '../utils/deviceId';
+import MFAOtpPage from './MFAOtpPage';
 
 const NewLogin = () => {
     const [username, setUsername] = useState('');
@@ -21,6 +23,9 @@ const NewLogin = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [loadingScreen, setLoadingScreen] = useState(true);
+    const [showOtpPopup, setShowOtpPopup] = useState(false);
+    const [otpDeviceId, setOtpDeviceId] = useState(null);
+    const [otpUsername, setOtpUsername] = useState('');
 
     const secret = process.env.REACT_APP_SECRET;
 
@@ -131,6 +136,7 @@ const NewLogin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const deviceId = getOrCreateDeviceId();
         setError('');
 
         if (!navigator.onLine) {
@@ -233,13 +239,136 @@ const NewLogin = () => {
         }
     };
 
+    const handleSubmitNew = async (e) => {
+        e.preventDefault();
+        const deviceId = getOrCreateDeviceId();
+        setError('');
+
+        if (!navigator.onLine) {
+            const toastContainer = document.querySelector('.Toastify__toast-container');
+            if (toastContainer) {
+                toastContainer.classList.add('toast-offline-alert', 'margin-remover-login');
+                setTimeout(() => {
+                    toastContainer.classList.remove('toast-offline-alert', 'margin-remover-login');
+                }, 1000);
+            }
+
+            toast.info("No Internet Connection", {
+                toastId: 'network-error',
+                autoClose: false,
+                closeButton: false,
+                position: "top-right",
+                hideProgressBar: true,
+                closeOnClick: false,
+                pauseOnHover: false,
+                className: 'toast-network-wrapper',
+                bodyClassName: 'toast-network-body',
+                icon: <FontAwesomeIcon icon={faWifi} size="lg" />,
+            });
+
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/login2`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, deviceId }),
+            });
+
+            if (response.status === 423) {
+                toggleLocked();
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.error || 'Login failed. Please check your credentials.');
+            }
+
+            // 🔐 If MFA is required, show the OTP popup and stop here
+            if (data.mfaRequired) {
+                setOtpUsername(username);
+                setOtpDeviceId(deviceId);
+                setShowOtpPopup(true);
+                return;
+            }
+
+            // ✅ Trusted device — normal login
+            if (data.token) {
+                await completeLogin(data.token, data.firstLogin);
+            } else {
+                throw new Error('Invalid login attempt.');
+            }
+        } catch (err) {
+            if (!(err.name === 'TypeError' && err.message.includes('fetch'))) {
+                setError(err.message);
+                setTimeout(() => setError(''), 3000);
+            }
+        } finally {
+            setTimeout(() => {
+                setLoading(false);
+            }, 500);
+        }
+    };
+
+    const completeLogin = async (token, firstLoginValue) => {
+        if (rememberMe) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('rememberMe', 'true');
+            localStorage.setItem('savedUsername', CryptoJS.AES.encrypt(username, secret).toString());
+            localStorage.setItem('savedPassword', CryptoJS.AES.encrypt(password, secret).toString());
+            localStorage.setItem('firstLogin', firstLoginValue ? 'true' : 'false');
+        } else {
+            localStorage.setItem('token', token);
+            localStorage.removeItem('rememberMe');
+            localStorage.setItem('firstLogin', firstLoginValue ? 'true' : 'false');
+        }
+
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.userId;
+        await fetchAndCacheProfilePic(userId, token);
+
+        navigate('/FrontendDMS/home');
+    };
+
+    // Called by MFAOtpPage when OTP is successfully verified
+    const handleOtpCompleted = async (token, firstLoginValue) => {
+        setShowOtpPopup(false);
+        await completeLogin(token, firstLoginValue);
+    };
+
+    // Called by MFAOtpPage when user presses "Resend"
+    const resendOTP = async () => {
+        const deviceId = otpDeviceId || getOrCreateDeviceId();
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/login2`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: otpUsername, password, deviceId }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                toast.error(data?.error || 'Failed to resend code');
+            } else {
+                toast.success('A new code has been sent to your email.');
+            }
+        } catch (err) {
+            toast.error('Error while resending code');
+        }
+    };
 
     return (
         <div className="nl-login-container">
             <div className="nl-login-card">
                 <img src='CH_Logo.svg' className='nl-logo-img' />
                 <div className="nl-login-title">ComplianceHub{"\u2122"}</div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmitNew}>
                     <div className="nl-form-group">
                         <div className="nl-input-container">
                             <i><FontAwesomeIcon icon={faUser} /></i>
@@ -308,6 +437,14 @@ const NewLogin = () => {
 
             {locked && (<AccountLockOut toggleLocked={toggleLocked} />)}
             {loadingScreen && (<SplashScreen logoSrc={`${process.env.PUBLIC_URL}/CH_Logo.svg`} onDone={closeLoading} pingUrl={`${process.env.REACT_APP_URL}/ping`} />)}
+            {showOtpPopup && (
+                <MFAOtpPage
+                    username={otpUsername}
+                    deviceId={otpDeviceId}
+                    resendOTP={resendOTP}
+                    setOtpCompleted={handleOtpCompleted}
+                />
+            )}
             <ToastContainer />
         </div>
     );

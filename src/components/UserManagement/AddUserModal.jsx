@@ -7,9 +7,59 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
         closeModal();
     };
 
+    const DESIGNATIONS = [
+        "Automation & Systems Manager",
+        "Boilermaker",
+        "Business Development Manager",
+        "Construction Manager",
+        "Control and Instrumentation (C&I) Technician",
+        "Diesel Mechanic",
+        "Electrician",
+        "Electrical Technician",
+        "Engineer",
+        "Engineering Assistant",
+        "Engineering Foreman (Mechanical/Electrical)",
+        "Engineering Manager",
+        "Engineering Superintendent",
+        "Fitter",
+        "Full Stack Developer",
+        "Health and Safety Manager",
+        "HR Manager",
+        "HR Manager – Technical Training",
+        "Instrumentation Mechanic",
+        "LFI Specialist",
+        "Maintenance Planner",
+        "Mechanical Technician",
+        "Millwright",
+        "ORM Support",
+        "Pit Superintendent",
+        "Plant Manager",
+        "Principal Network Engineer",
+        "Project Coordinator",
+        "Project Engineer",
+        "Project Management Lead",
+        "Project Manager",
+        "Section Engineer",
+        "Section Engineering Manager",
+        "Senior C&I Technician/ Superintendent",
+        "Senior Engineering Manager",
+        "Senior Product Manager",
+        "Senior Supervisor MineProtect",
+        "Site Area Supervisor",
+        "Solution Analyst",
+        "Surface Chief Safety Officer",
+        "Surface TMM Engineer",
+        "Technician",
+        "Underground TMM Engineer",
+        "Utilities Engineer",
+        "Vehicle Operator",
+        "Workspace Manager"
+    ];
+
+
     const [departments, setDepartments] = useState([]);
     const [users, setUsers] = useState([]);
-    const [designations, setDesignations] = useState([]);
+    const [designations, setDesignations] = useState(DESIGNATIONS);
 
     const fetchDepartments = async () => {
         try {
@@ -53,31 +103,9 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
         }
     };
 
-    const fetchAuthors = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/stk`);
-            if (!response.ok) throw new Error("Failed to fetch values");
-
-            const data = await response.json();
-
-            const positions = Array.from(
-                new Set(
-                    (data?.stakeholders ?? [])
-                        .map(d => (d?.pos ?? '').toString().trim()) // normalize + trim
-                        .filter(Boolean)                            // drop "", null, undefined
-                )
-            ).sort((a, b) => a.localeCompare(b));
-
-            setDesignations(positions);
-        } catch (error) {
-            console.error("Error fetching authors:", error);
-        }
-    };
-
     useEffect(() => {
         fetchDepartments();
         fetchUsers();
-        fetchAuthors();
     }, []);
 
     if (!isModalOpen) return null;
@@ -184,7 +212,7 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
                                     onChange={(e) => setNewUser({ ...newUser, designation: e.target.value })}
                                 >
                                     <option value="" className="def-colour">Select Designation</option>
-                                    {designations.map((designation, index) => (
+                                    {DESIGNATIONS.map((designation, index) => (
                                         <option key={index} value={designation} className="norm-colour">
                                             {designation}
                                         </option>

@@ -354,6 +354,28 @@
     /* REMOVE: height: 100%; max-height: calc(100% - 24px); */
 }
 
+.course-home-info-card-new {
+    position: relative;
+    border: none;
+    /* light grey border */
+    border-radius: 10px;
+    /* rounded corners */
+    background: #ffffff;
+    /* white card */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 15px 5px;
+    padding-bottom: 0px;
+    /* space between border and inner scroller */
+    height: calc(100% - 50px);
+    /* let the inner scroller control height */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin-top: 12px;
+    /* important so child can scroll in flex layouts */
+}
+
 /* Single progress badge that fills behind its own text */
 .course-home-info-progress-badge {
     position: relative;
@@ -397,4 +419,20 @@
 
 .course-home-info-progress-badge.is-overdue {
     color: white;
+}
+
+.empty-placeholder {
+    user-select: none;
+    /* prevents text selection */
+    pointer-events: none;
+    /* prevents clicks (optional) */
+}
+
+.course-home-info-card .table-container-course-home-info {
+    flex: 1;
+    /* take available height */
+    min-height: 0;
+    /* prevents stretching the row!!! */
+    overflow-y: auto;
+    /* scroll inside */
 }

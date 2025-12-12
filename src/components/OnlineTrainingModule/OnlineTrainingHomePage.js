@@ -5,15 +5,16 @@ import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faBookOpen, faBullhorn, faChalkboardTeacher, faDownload, faLaptop, faCircle } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
-import CreateProfilePopup from "../VisitorsInduction/Popups/CreateProfilePopup";
+import { getCurrentUser, canIn } from "../../utils/auth";
 
-const TMSHomePage = () => {
+const OnlineTrainingHomePage = () => {
     const [error, setError] = useState(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [token, setToken] = useState('');
     const [count, setCount] = useState([]);
     const [loggedInUserId, setloggedInUserId] = useState('');
     const [searchQuery, setSearchQuery] = useState("");
+    const access = getCurrentUser();
     const navigate = useNavigate();
 
     const clearSearch = () => {
@@ -53,13 +54,6 @@ const TMSHomePage = () => {
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Training Management</p>
                     </div>
-                    <div className="button-container-rm-home">
-                        <button className="but-rm-home" onClick={() => navigate("/FrontendDMS/futureEnhancementTMS")}>
-                            <div className="button-content">
-                                <span className="button-text">Coming Soon</span>
-                            </div>
-                        </button>
-                    </div>
                 </div>
             )}
 
@@ -74,7 +68,7 @@ const TMSHomePage = () => {
             <div className="main-box-user">
                 <div className="top-section-um">
                     <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faArrowLeft} title="Back" />
+                        <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/trainingHomePage")} icon={faArrowLeft} title="Back" />
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -84,28 +78,44 @@ const TMSHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-fi-home">
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorInductionHome")}>
+                    {canIn(access, "TMS", ["systemAdmin"]) && (<div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/onlineCreateCourse/new")}>
+                        <>
+                            <div className="all-icon-fi-home">
+                                <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} className={"all-icon-fi-home"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Develop Course</h3>
+                        </>
+                    </div>)}
+                    {canIn(access, "TMS", ["systemAdmin"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlineDraftCourses")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/visitorInductionMainIcon.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsSavedDrafts.svg`} icon={faFolderOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Visitor Induction</h3>
+                            <h3 className="document-title-fi-home">Saved Drafts</h3>
                         </>
-                    </div>
-                    <div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorManagementPage")}>
+                    </div>)}
+                    {canIn(access, "TMS", ["systemAdmin"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlinePublishedCourses")}>
                         <>
                             <div className="icon-dept">
-                                <img src={`${process.env.PUBLIC_URL}/visitorManagement.svg`} className={"icon-dept"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} icon={faFolderOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Visitor Management</h3>
+                            <h3 className="document-title-fi-home">Published Courses</h3>
                         </>
-                    </div>
-                    {false && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlineTrainingHome")}>
+                    </div>)}
+                    {canIn(access, "TMS", ["systemAdmin", "profileManager"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlineProfiles")}>
+                        <>
+                            <div className="icon-dept">
+                                <img src={`${process.env.PUBLIC_URL}/visitorInductionIcon.svg`} className={"icon-dept"} />
+                            </div>
+                            <h3 className="document-title-fi-home">Student Profiles</h3>
+                        </>
+                    </div>)}
+                    {canIn(access, "TMS", ["systemAdmin", "profileManager"]) && (<div className={`document-card-fi-home`}>
                         <>
                             <div className="icon-dept">
                                 <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Online Training</h3>
+                            <h3 className="document-title-fi-home">Chat Box</h3>
                         </>
                     </div>)}
                 </div>
@@ -115,4 +125,4 @@ const TMSHomePage = () => {
     );
 };
 
-export default TMSHomePage;
+export default OnlineTrainingHomePage;

@@ -108,7 +108,7 @@
     border-radius: 4px;
     box-sizing: border-box;
     appearance: none;
-    z-index: 100000;
+    z-index: 100000 !important;
 }
 
 .ump-input-select-container-new {

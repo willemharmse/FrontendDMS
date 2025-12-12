@@ -449,7 +449,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                 <div className="ibra-popup-page-column-half">
                                     <div className="cea-popup-page-component-wrapper">
                                         <div className={`ibra-popup-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                            <label>Main Consequence that the Control Aims to Address</label>
+                                            <label>Specific Consequence that the Control Aims to Address</label>
                                             <div className="ibra-popup-page-select-container">
                                                 <select
                                                     className="ibra-popup-page-select"
@@ -576,7 +576,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly }) =>
                                                 <div className="ibra-popup-page-column-half">
                                                     <div className="ibra-popup-page-component-wrapper">
                                                         <div className="ibra-popup-page-form-group">
-                                                            <label style={{ fontSize: "15px" }}>Responible Person
+                                                            <label style={{ fontSize: "15px" }}>Responsible Person
                                                             </label>
                                                             <div className="ibra-popup-page-select-container">
                                                                 <input

@@ -23,6 +23,9 @@ const PopupMenuCertificateOptions = ({ isOpen, file, setHoveredFileId, previewCe
                             <ul>
                                 <li onClick={() => downloadCertficate(file)}>Download Certificate</li>
                             </ul>
+                            <ul>
+                                <li onClick={() => navigate(`/FrontendDMS/visitorRegisteredDevices`)}>Register Devices</li>
+                            </ul>
                         </>
                     )}
 

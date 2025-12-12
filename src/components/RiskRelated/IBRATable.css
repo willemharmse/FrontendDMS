@@ -614,6 +614,26 @@ td.ibraDeadline {
     padding: 0px;
 }
 
+.top-right-button-ibra5 {
+    position: absolute;
+    top: 15px;
+    right: 225px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}
+
 .column-checkbox-item input:disabled+span {
     color: #aaa;
 }
@@ -856,7 +876,6 @@ th.ibraAct {
     top: 4px;
     right: 4px;
     font-size: 12px;
-    cursor: pointer;
     opacity: 0.7;
 }
 
@@ -868,4 +887,9 @@ th.ibraAct {
 
 .ibra-main-flag-icon.readonly {
     cursor: default;
+}
+
+.flag-filter-active {
+    color: #ffc107;
+    /* whatever highlight you like */
 }
