@@ -242,7 +242,6 @@ const EditUserModal = ({ isEditModalOpen, setIsEditModalOpen, updateUser, formEr
                             >
                                 <option value="" className="def-colour">Select Role</option>
                                 {isAdmin(current) && <option value="admin" className="norm-colour">Admin</option>}
-                                {isAdmin(current) && <option value="superadmin" className="norm-colour">Super Admin</option>}
                                 {isAdmin(current) && <option value="standarduser" className="norm-colour">Standard User</option>}
                             </select>
                         </div>

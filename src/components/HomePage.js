@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGraduationCap, faClipboardList, faFileAlt, faFolderOpen, faFileSignature, faCertificate, faCircle, faCircleInfo, faGear, faBell, faCircleUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faGraduationCap, faClipboardList, faFileAlt, faFolderOpen, faFileSignature, faCertificate, faCircle, faCircleInfo, faGear, faBell, faCircleUser, faChevronLeft, faChevronRight, faInfo, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import "./HomePage.css";
 import { toast, ToastContainer } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
@@ -109,6 +109,9 @@ const HomePage = () => {
   return (
     <div className="homepage-container" style={{ userSelect: "none" }}>
       <div className="nl-floating-pill">
+        <div className="burger-menu-icon-um notifications-bell-wrapper">
+          <FontAwesomeIcon icon={faInfoCircle} onClick={() => navigate(`/FrontendDMS/infoHelp/*`)} title="Info" />
+        </div>
         <div className="burger-menu-icon-um notifications-bell-wrapper">
           <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
           {count != 0 && <div className="notifications-badge"></div>}{/* Replace with unread count from backend later */}

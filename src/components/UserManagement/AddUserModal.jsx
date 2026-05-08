@@ -230,7 +230,6 @@ const AddUserModal = ({ isModalOpen, closeModal, createUser, formError, newUser,
                                 >
                                     <option value="" className="def-colour">Select Role</option>
                                     {isAdmin(current) && <option value="admin" className="norm-colour">Admin</option>}
-                                    {isAdmin(current) && <option value="superadmin" className="norm-colour">Super Admin</option>}
                                     <option value="standarduser" className="norm-colour">Standard User</option>
                                 </select>
                             </div>

@@ -60,7 +60,7 @@ const RiskHomePage = () => {
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} showInfo={true} type={"RMS"} />
                 </div>
 
                 <div className="scrollable-box-risk-home">

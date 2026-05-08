@@ -1,0 +1,297 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { jwtDecode } from "jwt-decode";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faCalendarDays, faTrash, faClock } from '@fortawesome/free-solid-svg-icons';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import DatePicker, { DateObject } from 'react-multi-date-picker';
+import TimePicker from "react-multi-date-picker/plugins/time_picker";
+import { toast } from 'react-toastify';
+import './AddTaskPopup.css';
+
+const AREAS = [
+    "All Areas",
+    "Offices",
+    "Plant",
+    "Surface",
+    "Underground",
+];
+
+const AddTemplatePopup = ({ onClose, onTaskAdded }) => {
+    const [taskTitle, setTaskTitle] = useState("");
+    const [taskPriority, setTaskPriority] = useState("");
+    const [taskType, setTaskType] = useState("");
+    const [taskDescription, setTaskDescription] = useState("");
+    const [comments, setComments] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [area, setArea] = useState("");
+    const [discipline, setDiscipline] = useState("");
+    const [disciplineOptions, setDisciplineOptions] = useState([]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!taskTitle.trim()) {
+            toast.warn('Task title is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        if (!taskPriority.trim()) {
+            toast.warn('Task priority is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        if (!taskType.trim()) {
+            toast.warn('Task type is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        if (!taskDescription.trim()) {
+            toast.warn('Task description is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        if (!discipline.trim()) {
+            toast.warn('Task discipline is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        if (!area.trim()) {
+            toast.warn('Task area is required.', { autoClose: 2000, closeButton: false });
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        try {
+            setLoading(true);
+
+            await axios.post(
+                `${process.env.REACT_APP_URL}/api/taskTemplates/create`,
+                {
+                    taskDescription: taskDescription.trim(),
+                    taskType,
+                    taskTitle: taskTitle.trim(),
+                    taskPriority,
+                    comment: comments.trim(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            toast.success('Task template created successfully.', { autoClose: 2000, closeButton: false });
+            onTaskAdded?.();
+            onClose?.();
+        } catch (error) {
+            toast.error(
+                error?.response?.data?.error ||
+                error?.response?.data?.details ||
+                'Failed to create task.',
+                { autoClose: 2500, closeButton: false }
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDepartments = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/department/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data?.error || "Failed to fetch departments");
+            }
+
+            const sortedDepartments = [...data.departments].sort((a, b) =>
+                String(a.department || "").localeCompare(
+                    String(b.department || ""),
+                    undefined,
+                    { sensitivity: "base" }
+                )
+            );
+
+            setDisciplineOptions(sortedDepartments);
+        } catch (error) {
+            console.error("Failed to fetch departments:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchDepartments();
+    }, []);
+
+    return (
+        <div className="ibra-popup-page-container">
+            <div className="ibra-popup-page-overlay">
+                <div className="ibra-popup-page-popup-right">
+                    <div className="ibra-popup-page-popup-header-right">
+                        <h2>Add Task Template</h2>
+                        <button className="review-date-close" onClick={onClose} title="Close Popup">×</button>
+                    </div>
+
+                    <div className="ibra-popup-page-form-group-main-container">
+                        <div className="ibra-popup-page-form-group-main-container-2 scrollable-container-controlea">
+                            <div className="cea-popup-page-component-wrapper">
+                                <div className={`ibra-popup-page-form-group`}>
+                                    <label>Title <span className="required-field">*</span></label>
+                                    <textarea
+                                        value={taskTitle}
+                                        onChange={(e) => setTaskTitle(e.target.value)}
+                                        className="task-title-popup-page-textarea-full"
+                                        placeholder="Title of task"
+                                        style={{ resize: "none" }}
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div className="cea-popup-page-component-wrapper">
+                                <div className={`ibra-popup-page-form-group`}>
+                                    <label>Description <span className="required-field">*</span></label>
+                                    <textarea
+                                        value={taskDescription}
+                                        onChange={(e) => setTaskDescription(e.target.value)}
+                                        className="cea-popup-page-textarea-full"
+                                        placeholder="Description of task"
+                                        style={{ resize: "none" }}
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div className="ibra-popup-page-additional-row">
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className={`ibra-popup-page-form-group`}>
+                                            <label>Type <span className="required-field">*</span></label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={taskType}
+                                                    onChange={(e) => setTaskType(e.target.value)}
+                                                >
+                                                    <option value="">Select Option</option>
+                                                    <option value="Develop">Develop</option>
+                                                    <option value="Evaluate">Evaluate</option>
+                                                    <option value="Inspect">Inspect</option>
+                                                    <option value="Investigate">Investigate</option>
+                                                    <option value="Monitor">Monitor</option>
+                                                    <option value="Review">Review</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className={`ibra-popup-page-form-group`}>
+                                            <label>Priority <span className="required-field">*</span></label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={taskPriority}
+                                                    onChange={(e) => setTaskPriority(e.target.value)}
+                                                >
+                                                    <option value="">Select Option</option>
+                                                    <option value="Critical">Critical</option>
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="ibra-popup-page-additional-row">
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-form-group">
+                                            <label>Area</label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={area}
+                                                    onChange={(e) => {
+                                                        setArea(e.target.value);
+                                                    }}
+                                                >
+                                                    <option value="">Select Area</option>
+                                                    {AREAS.map((a) => (
+                                                        <option key={a} value={a}>{a}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-form-group">
+                                            <label>Discipline</label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={discipline}
+                                                    onChange={(e) => setDiscipline(e.target.value)}
+                                                >
+                                                    <option value="">
+                                                        {"Select Discipline"}
+                                                    </option>
+                                                    {disciplineOptions.map((d) => (
+                                                        <option key={d.department} value={d.department}>{d.department}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="ibra-popup-page-component-wrapper">
+                                <div className="ibra-popup-page-form-group">
+                                    <label style={{ fontSize: "15px" }}>Comments/ Notes</label>
+                                    <textarea
+                                        value={comments}
+                                        onChange={(e) => setComments(e.target.value)}
+                                        className="cea-popup-page-textarea-full"
+                                        placeholder="Add Comments or Notes"
+                                        style={{ resize: "none" }}
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div className="ibra-popup-page-form-footer">
+                        <div className="create-user-buttons">
+                            <button
+                                className="ibra-popup-page-upload-button"
+                                onClick={handleSubmit}
+                            >
+                                {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : (`Submit`)}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div >
+    );
+};
+
+export default AddTemplatePopup;

@@ -6,7 +6,7 @@ import "./FileInfoHome.css";
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import UploadPopup from "./FileInfo/UploadPopup";
-import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faGripVertical, faBars, faArrowRight, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faX, faArrowLeft, faSearch, faFileCirclePlus, faCaretLeft, faCaretRight, faGripVertical, faBars, faArrowRight, faUser, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "./Notifications/TopBar";
 import ChangePassword from "./UserManagement/ChangePassword";
 import { getCurrentUser, can, isAdmin, canIn } from "../utils/auth";
@@ -223,9 +223,7 @@ const FileInfoHome = () => {
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
-
-                    {/* Container for right-aligned icons */}
-                    <TopBar menu={"Admin"} reset={"true"} setReset={setReset} />
+                    <TopBar menu={"Admin"} reset={"true"} setReset={setReset} showInfo={true} type={"DMS"} />
                 </div>
 
                 <div className="scrollable-box-fi-home">

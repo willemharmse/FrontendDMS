@@ -6,7 +6,7 @@ import { faTrash, faTimes, faBrush, faBroom } from "@fortawesome/free-solid-svg-
 
 const NotificationsHomePage = ({ setClose, getCount }) => {
     const [notifications, setNotifications] = useState([]);
-    const [selectedPill, setSelectedPill] = useState("Approvals");
+    const [selectedPill, setSelectedPill] = useState("Actions");
     const navigate = useNavigate();
 
     const modalRef = useRef(null);
@@ -143,7 +143,7 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
         try {
             await markAsRead(note._id);
 
-            if (note.type === "Actions" || note.type === "Collabs" || note.type === "Approvals") {
+            if (note.type === "Actions" || note.type === "Collabs" || note.type === "Approvals" || note.type === "Tasks") {
 
                 let targetPath = null;
 
@@ -285,6 +285,15 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
                         }
                     }
                 }
+                else if (note.actionLocation === "CTS") {
+                    if (note.actionType === "suggestionTaskTemplate") {
+                        targetPath = `/FrontendDMS/suggestedTaskTemplates/${note.actionId}`;
+
+                    }
+                    else {
+                        targetPath = `/FrontendDMS/manualTaskingPage`
+                    }
+                }
 
                 if (targetPath) {
                     navigate(targetPath);
@@ -317,8 +326,8 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
             : notifications.filter(n => {
                 const type = n.type?.toLowerCase();
 
-                if (selectedPill === "Updates") {
-                    return type === "tasks" || type === "updates";
+                if (selectedPill === "Actions") {
+                    return type === "tasks" || type === "approvals";
                 }
 
                 return type === selectedPill.toLowerCase();
@@ -345,7 +354,7 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
                     </div>
                 </div>
                 <div className="notifications-pill-bar">
-                    {["Approvals", "Collabs", "Updates", "All"].map((pill, idx) => (
+                    {["Actions", "Collabs", "Updates", "All"].map((pill, idx) => (
                         <div
                             key={idx}
                             className={`notifications-pill ${selectedPill === pill ? 'active' : ''}`}

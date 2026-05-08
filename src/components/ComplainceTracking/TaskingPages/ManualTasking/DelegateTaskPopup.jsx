@@ -25,6 +25,7 @@ const DelegateTaskPopup = ({ open, taskName, taskId, onClose, onDelegated }) => 
     const [usersList, setUsersList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fetchingUsers, setFetchingUsers] = useState(false);
+    const [message, setMessage] = useState("")
 
     // ── Fetch assignable users (same hierarchy endpoint used elsewhere) ───────
     useEffect(() => {
@@ -81,6 +82,7 @@ const DelegateTaskPopup = ({ open, taskName, taskId, onClose, onDelegated }) => 
                     body: JSON.stringify({
                         delegateTo: delegateTo,
                         delegateToName: selectedUser?.username || "",
+                        delegationReason: message
                     }),
                 }
             );
@@ -144,6 +146,10 @@ const DelegateTaskPopup = ({ open, taskName, taskId, onClose, onDelegated }) => 
                             </select>
                         )}
                     </div>
+                </div>
+                <div className="manDefs-popup-group">
+                    <label className="manDefs-popup-label">Delegation Reason</label>
+                    <textarea rows={4} style={{ resize: "none" }} spellcheck="true" className="manDefs-input-text-area" placeholder="Insert the reason for the delegation." type="text" value={message} onChange={(e) => setMessage(e.target.value)} />
                 </div>
 
                 <div className="delete-file-buttons">

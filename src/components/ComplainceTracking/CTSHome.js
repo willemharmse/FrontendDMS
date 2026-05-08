@@ -54,6 +54,14 @@ const CTSHome = () => {
                 </div>
 
                 <div className="scrollable-box-dc-home">
+                    <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/taskTemplates")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/templateManagement1.svg`} className={"all-icon-fi-home"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Manage Templates</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/manualTaskingPage")}>
                         <>
                             <div className="icon-dc">

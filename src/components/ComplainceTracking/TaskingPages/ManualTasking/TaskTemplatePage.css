@@ -1,0 +1,81 @@
+.templateTask-nr {
+    width: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-title {
+    width: 15%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-desc {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-priority {
+    width: 10%;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.templateTask-type {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-comment {
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-by {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.templateTask-act {
+    width: 10%;
+    padding: 10px;
+    text-align: center;
+}
+
+.task-cent {
+    text-align: center;
+}
+
+.priority-critical {
+    background-color: #CB6F6F;
+    font-weight: normal;
+    color: #FFFFFF;
+}
+
+.priority-high {
+    background-color: #FFA500;
+    font-weight: normal;
+    color: #000000;
+}
+
+.priority-medium {
+    background-color: #FFFF00;
+    font-weight: normal;
+    color: #000000;
+}
+
+.priority-low {
+    background-color: #FFFFEE;
+    font-weight: normal;
+    color: #000000;
+}
+
+.priority-empty {
+    background-color: transparent;
+    color: inherit;
+}

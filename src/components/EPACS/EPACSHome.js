@@ -31,13 +31,6 @@ const EPACSHome = () => {
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">EPA Management</p>
                     </div>
-                    <div className="button-container-rm-home">
-                        <button className="but-rm-home" onClick={() => navigate("/FrontendDMS/futureEnhancementEPAC")}>
-                            <div className="button-content">
-                                <span className="button-text">Coming Soon</span>
-                            </div>
-                        </button>
-                    </div>
                 </div>
             )}
 
@@ -56,7 +49,7 @@ const EPACSHome = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBar />
+                    <TopBar showInfo={true} type={"EPAMS"} />
                 </div>
 
                 <div className="scrollable-box-dc-home">

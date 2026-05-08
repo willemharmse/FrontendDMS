@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import ExcelJS from "exceljs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowLeft, faSearch, faTimes, faCaretLeft, faCaretRight,
     faTableColumns, faArrowsRotate, faCirclePlus, faEdit,
     faFilter, faX, faTrash, faClockRotateLeft,
-    faFilePdf
+    faFilePdf,
+    faClock,
+    faFileExcel,
+    faDownLong,
+    faDownload,
+    faClockFour,
+    faPen,
+    faPlusCircle,
+    faCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import { saveAs } from "file-saver";
@@ -13,6 +22,7 @@ import TopBar from "../../../Notifications/TopBar";
 import { canIn, getCurrentUser } from "../../../../utils/auth";
 import { ToastContainer, toast } from "react-toastify";
 import AddTaskPopup from "./AddTaskPopup";
+import AddRepeatingTaskPopup from "./AddRepeatingTaskPopup";
 import DeleteAllocatedTask from "./DeleteAllocatedTask";
 import CloseAllocatedTask from "./CloseAllocatedTask";
 import ReopenAllocatedTask from "./ReopenAllocatedTask";
@@ -27,28 +37,30 @@ import PopupMenuTasks from "./PopupMenuTasks";
 
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
+    { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "taskType", title: "Type", views: "both", collapsed: false },
+    { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "taskTitle", title: "Title", views: "both", collapsed: false },
-    { id: "taskDescription", title: "Description", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "taskDescription", title: "Description", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "priority", title: "Priority", views: "both", collapsed: false },
-    { id: "allocatedBy", class: `task-grey2`, title: "Originator", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "allocatedBy", class: `task-grey2`, title: "Originator", views: "both", collapsed: true, collapsedFor: "viewer" },
     { id: "allocatedDate", class: `task-grey2`, title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "category", class: `task-grey2`, title: "Category", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "comments", class: `task-grey2`, title: "Originator Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "attachments", class: `task-grey2`, title: "Originator Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "responsible", class: `task-grey2`, title: "Responsible Person", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "responsible", class: `task-grey2`, title: "Responsible Person", views: "both", collapsed: true, collapsedFor: "viewer" },
     { id: "dueDate", class: `task-grey2`, title: "Due Date", views: "both", collapsed: false },
-    { id: "acceptanceStatus", class: `task-grey1`, title: "Acceptance Status", views: "both", collapsed: false },
-    { id: "status", class: `task-grey1`, title: "Status", views: "both", collapsed: false },
-    { id: "userComments", class: `task-grey1`, title: "Responsible Person Comments", views: "both", collapsed: true, collapsedFor: "viewer" },
+    { id: "acceptanceStatus", class: `task-grey1`, title: "Acceptance Status", views: "both", collapsed: true, collapsedFor: "viewer" },
+    { id: "status", class: `task-grey1`, title: "Status", views: "both", collapsed: true, collapsedFor: "viewer" },
+    { id: "userComments", class: `task-grey1`, title: "Responsible Person Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "userAttachments", class: `task-grey1`, title: "Responsible Person Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "completionDate", title: "Completion Date", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: false },
+    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "closeOutComments", title: "Close Out Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "action", title: "Action", views: "both", collapsed: false },
 ];
 
-const TASK_TYPE_OPTIONS = ["Inspection", "Review", "Approval"];
+const TASK_TYPE_OPTIONS = ["Develop", "Evaluate", "Inspect", "Investigate", "Monitor", "Review"];
 
 const PRIORITY_OPTIONS = [
     { value: "Critical", color: "#CB6F6F", textColor: "#FFFFFF" },
@@ -66,49 +78,53 @@ const STATUS_OPTIONS = [
 ];
 
 const DEFAULT_COLUMN_WIDTHS = {
-    nr: 40,
-    taskType: 40,
-    taskTitle: 80,
-    taskDescription: 110,
-    priority: 40,
-    responsible: 100,
-    acceptanceStatus: 50,
+    nr: 50,
+    taskType: 30,
+    taskTitle: 70,
+    taskDescription: 350,
+    priority: 30,
+    responsible: 50,
+    acceptanceStatus: 40,
     allocatedDate: 130,
-    dueDate: 50,
+    dueDate: 40,
     completionDate: 140,
-    status: 80,
+    status: 60,
     attachments: 220,
     comments: 200,
     userAttachments: 220,
     userComments: 120,
     closeStatus: 50,
     closeOutComments: 300,
-    allocatedBy: 60,
-    category: 150,
-    action: 110,
+    allocatedBy: 50,
+    category: 50,
+    discipline: 50,
+    area: 50,
+    action: 90,
 };
 
 const COLUMN_SIZE_LIMITS = {
-    nr: { min: 40, max: 40 },
-    category: { min: 120, max: 260 },
-    taskType: { min: 40, max: 260 },
-    taskTitle: { min: 80, max: 600 },
+    nr: { min: 50, max: 50 },
+    category: { min: 50, max: 260 },
+    taskType: { min: 30, max: 260 },
+    taskTitle: { min: 70, max: 600 },
     taskDescription: { min: 110, max: 800 },
-    priority: { min: 40, max: 200 },
-    responsible: { min: 100, max: 400 },
-    acceptanceStatus: { min: 50, max: 300 },
+    priority: { min: 30, max: 200 },
+    responsible: { min: 50, max: 400 },
+    acceptanceStatus: { min: 40, max: 300 },
     allocatedDate: { min: 100, max: 260 },
-    allocatedBy: { min: 60, max: 300 },
-    dueDate: { min: 50, max: 260 },
+    allocatedBy: { min: 50, max: 300 },
+    dueDate: { min: 40, max: 260 },
     completionDate: { min: 100, max: 260 },
-    status: { min: 70, max: 260 },
+    status: { min: 60, max: 260 },
     attachments: { min: 180, max: 420 },
     comments: { min: 150, max: 700 },
     userAttachments: { min: 180, max: 420 },
     userComments: { min: 120, max: 700 },
     closeStatus: { min: 50, max: 260 },
     closeOutComments: { min: 200, max: 700 },
-    action: { min: 110, max: 110 },
+    action: { min: 90, max: 90 },
+    discipline: { min: 50, max: 300 },
+    area: { min: 50, max: 300 },
 };
 
 const getColumnsForView = (view) => {
@@ -172,6 +188,8 @@ const normalizeTask = (task) => ({
     taskTitle: task?.taskTitle || "",
     priority: task?.priority || "",
     category: task?.category || "",
+    discipline: task?.discipline || "",
+    area: task?.area || "",
     acceptanceStatus: task?.acceptanceStatus || "",
 });
 
@@ -204,6 +222,7 @@ const ManualTaskingPage = () => {
     const excelPopupRef = useRef(null);
 
     const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+    const [showAddRepeatingTaskPopup, setShowAddRepeatingTaskPopup] = useState(false);
     const [deleteTaskPopup, setDeleteTaskPopup] = useState({ open: false, task: null, taskName: "" });
     const [closeTaskPopup, setCloseTaskPopup] = useState({ open: false, task: null, taskName: "" });
     const [reopenTaskPopup, setReopenTaskPopup] = useState({ open: false, task: null, taskName: "" });
@@ -456,7 +475,7 @@ const ManualTaskingPage = () => {
         }
     };
 
-    const handleReopenTask = async (taskId) => {
+    const handleReopenTask = async (taskId, message) => {
         if (reopeningTaskIds.has(taskId)) return;
         setReopeningTaskIds(prev => new Set(prev).add(taskId));
         try {
@@ -464,6 +483,7 @@ const ManualTaskingPage = () => {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/complainceTasks/${taskId}/reopen`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${storedToken}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ reopenReason: message }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data?.error || "Failed to reopen task");
@@ -954,11 +974,261 @@ const ManualTaskingPage = () => {
 
     const getFilterBtnClass = () => showResetButton ? "top-right-button-control-att-3-new" : "top-right-button-control-att-2-new";
 
+    const handleExportExcel = async () => {
+        const COL_META = {
+            nr: { width: 6, centre: true, headerGroup: "navy" },
+            area: { width: 18, centre: true, headerGroup: "navy" },
+            discipline: { width: 18, centre: true, headerGroup: "navy" },
+            taskType: { width: 16, centre: true, headerGroup: "navy" },
+            category: { width: 16, centre: true, headerGroup: "navy" },
+            taskTitle: { width: 28, centre: false, headerGroup: "navy" },
+            taskDescription: { width: 40, centre: false, headerGroup: "navy" },
+            priority: { width: 14, centre: true, headerGroup: "navy" },
+            allocatedBy: { width: 20, centre: true, headerGroup: "grey2" },
+            allocatedDate: { width: 18, centre: true, headerGroup: "grey2" },
+            comments: { width: 35, centre: false, headerGroup: "grey2" },
+            attachments: { width: 30, centre: false, headerGroup: "grey2" },
+            responsible: { width: 20, centre: true, headerGroup: "grey2" },
+            dueDate: { width: 14, centre: true, headerGroup: "grey2" },
+            acceptanceStatus: { width: 20, centre: true, headerGroup: "grey1" },
+            status: { width: 22, centre: true, headerGroup: "grey1" },
+            userComments: { width: 35, centre: false, headerGroup: "grey1" },
+            userAttachments: { width: 30, centre: false, headerGroup: "grey1" },
+            completionDate: { width: 18, centre: true, headerGroup: "navy" },
+            closeStatus: { width: 16, centre: true, headerGroup: "navy" },
+            closeOutComments: { width: 35, centre: false, headerGroup: "navy" },
+        };
+
+        const HEADER_BORDER = {
+            top: { style: "thin", color: { argb: "FF002060" } },
+            left: { style: "thin", color: { argb: "FF002060" } },
+            bottom: { style: "thin", color: { argb: "FF002060" } },
+            right: { style: "thin", color: { argb: "FF002060" } },
+        };
+        const HEADER_BORDER_GREY2 = {
+            top: { style: "thin", color: { argb: "FFD9D9D9" } },
+            left: { style: "thin", color: { argb: "FFD9D9D9" } },
+            bottom: { style: "thin", color: { argb: "FFD9D9D9" } },
+            right: { style: "thin", color: { argb: "FFD9D9D9" } },
+        };
+        const HEADER_BORDER_GREY1 = {
+            top: { style: "thin", color: { argb: "FFBFBFBF" } },
+            left: { style: "thin", color: { argb: "FFBFBFBF" } },
+            bottom: { style: "thin", color: { argb: "FFBFBFBF" } },
+            right: { style: "thin", color: { argb: "FFBFBFBF" } },
+        };
+        const HEADER_ALIGN = { horizontal: "center", vertical: "middle", wrapText: true };
+
+        // Navy header (task info group) — white text on dark navy
+        const HDR_NAVY_FONT = { name: "Arial", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+        const HDR_NAVY_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: "FF002060" } };
+
+        // Grey2 header (originator group) — dark text on mid grey
+        const HDR_GREY2_FONT = { name: "Arial", size: 10, bold: true, color: { argb: "FF000000" } };
+        const HDR_GREY2_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+
+        // Grey1 header (responsible person group) — dark text on light grey
+        const HDR_GREY1_FONT = { name: "Arial", size: 10, bold: true, color: { argb: "FF000000" } };
+        const HDR_GREY1_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: "FFBFBFBF" } };
+
+        const DATA_FONT = { name: "Arial", size: 10 };
+        const DATA_BORDER = {
+            top: { style: "thin", color: { argb: "FFBFBFBF" } },
+            left: { style: "thin", color: { argb: "FFBFBFBF" } },
+            bottom: { style: "thin", color: { argb: "FFBFBFBF" } },
+            right: { style: "thin", color: { argb: "FFBFBFBF" } },
+        };
+        const DATA_ALIGN_C = { horizontal: "center", vertical: "middle", wrapText: true };
+        const DATA_ALIGN_L = { horizontal: "left", vertical: "middle", wrapText: true };
+
+        // Banner — exact gradient from the template (degree 0, theme:1 → FF002060)
+        const BANNER_FILL = {
+            type: "gradient", gradient: "angle", degree: 0,
+            stops: [
+                { position: 0, color: { theme: 1 } },
+                { position: 1, color: { argb: "FF002060" } },
+            ],
+        };
+        const BANNER_FONT = { name: "Arial", size: 11, bold: true, color: { theme: 0 } };
+        const BANNER_ALIGN = { horizontal: "center", vertical: "middle", wrapText: true };
+
+        // ── Build column list from what's currently visible ───────────────────
+        const exportHeaders = availableColumns
+            .filter(col => showColumns.includes(col.id) && col.id !== "action")
+            .map(col => ({ id: col.id, title: col.title, meta: COL_META[col.id] ?? { width: 18, centre: false, headerGroup: "navy" } }));
+
+        const SPACER = 2;                              // col B = index 2
+        const bannerEnd = SPACER + exportHeaders.length - 1;
+
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const ws = workbook.addWorksheet("Tasks");
+
+            ws.views = [
+                {
+                    showGridLines: false,
+                },
+            ];
+
+            ws.getColumn(1).width = 3.14;                 // col A narrow decriptio
+            exportHeaders.forEach((hdr, i) => {
+                ws.getColumn(SPACER + i).width = hdr.meta.width;
+            });
+
+            ws.getRow(1).height = 12;
+
+            ws.getRow(2).height = 54;
+            ws.mergeCells(2, SPACER, 2, bannerEnd);
+            const banner = ws.getCell(2, SPACER);
+            banner.value = {
+                richText: [
+                    { text: "ComplianceHub", font: { name: "Arial", size: 20, bold: true, color: { theme: 0 } } },
+                    { text: "\n", font: { name: "Arial", size: 12, bold: true, color: { theme: 0 } } },
+                    { text: "Task List", font: { name: "Arial", size: 12, bold: true, color: { theme: 0 } } },
+                ],
+            };
+            banner.fill = BANNER_FILL;
+            banner.alignment = BANNER_ALIGN;
+
+            ws.getRow(3).height = 12;
+
+            ws.getRow(4).height = 28;
+            exportHeaders.forEach((hdr, i) => {
+                const cell = ws.getCell(4, SPACER + i);
+                cell.value = hdr.title;
+                cell.alignment = HEADER_ALIGN;
+
+                if (hdr.meta.headerGroup === "grey2") {
+                    cell.font = HDR_GREY2_FONT;
+                    cell.fill = HDR_GREY2_FILL;
+                    cell.border = HEADER_BORDER_GREY2;
+                } else if (hdr.meta.headerGroup === "grey1") {
+                    cell.font = HDR_GREY1_FONT;
+                    cell.fill = HDR_GREY1_FILL;
+                    cell.border = HEADER_BORDER_GREY1;
+                } else {
+                    cell.font = HDR_NAVY_FONT;
+                    cell.fill = HDR_NAVY_FILL;
+                    cell.border = HEADER_BORDER;
+                }
+            });
+
+            ws.views = [
+                {
+                    state: "frozen",
+                    xSplit: 0,
+                    ySplit: 4,
+                    topLeftCell: "B5",
+                    activeCell: "B5",
+                    showGridLines: false,
+                },
+            ];
+
+            ws.getRow(4).height = 36;
+
+            processedTasks.forEach((row, rowIdx) => {
+                const excelRow = ws.getRow(5 + rowIdx);
+                let maxLines = 1;
+                exportHeaders.forEach((hdr) => {
+                    let val = "";
+                    if (hdr.id === "nr") val = String(rowIdx + 1);
+                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Closed" : "Open";
+                    else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
+                    else if (hdr.id === "userAttachments") val = Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? row.userAttachments.join("\n") : "No files";
+                    else val = String(row[hdr.id] ?? "-");
+                    // Estimate lines: count newlines + rough word-wrap estimate based on col width
+                    const colWidthChars = (hdr.meta.width || 18) * 1.2; // approximate chars per line
+                    const newlines = (val.match(/\n/g) || []).length;
+                    const wrapLines = Math.ceil(val.replace(/\n/g, " ").length / colWidthChars);
+                    const lines = newlines + Math.max(1, wrapLines);
+                    if (lines > maxLines) maxLines = lines;
+                });
+                excelRow.height = Math.max(20, Math.min(maxLines * 15, 200));
+
+                exportHeaders.forEach((hdr, colIdx) => {
+                    const cell = excelRow.getCell(SPACER + colIdx);
+
+                    let value;
+                    if (hdr.id === "nr") {
+                        value = rowIdx + 1;
+                    } else if (hdr.id === "closeStatus") {
+                        value = row.closeStatus ? "Closed" : "Open";
+                    } else if (hdr.id === "attachments") {
+                        const a = row.attachments;
+                        value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
+                    } else if (hdr.id === "userAttachments") {
+                        const a = row.userAttachments;
+                        value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
+                    } else {
+                        const v = row[hdr.id];
+                        value = (v === null || v === undefined || v === "") ? "-" : v;
+                    }
+
+                    cell.value = value;
+                    cell.font = DATA_FONT;
+                    cell.border = DATA_BORDER;
+                    cell.alignment = hdr.meta.centre ? DATA_ALIGN_C : DATA_ALIGN_L;
+                });
+            });
+
+            // ── Write to blob and trigger download ────────────────────────────
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            const dateStr = new Date().toLocaleDateString("en-ZA", {
+                day: "2-digit", month: "2-digit", year: "numeric",
+                timeZone: "Africa/Johannesburg",
+            }).replace(/\//g, ".");
+            saveAs(blob, `ComplianceHub Task List.xlsx`);
+
+        } catch (err) {
+            console.error(err);
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.error("Failed to export task list.", { autoClose: 3000, closeButton: false });
+        }
+    };
+
     // ── Cell renderer ────────────────────────────────────────────────────────
     const renderCell = (col, row, index) => {
         switch (col.id) {
             case "nr":
-                return <td key="nr" className="procCent" style={{ fontSize: "14px" }}>{index + 1}</td>;
+                return <td key="nr" className="procCent" style={{ fontSize: "14px" }}>{index + 1}
+                    {view === "allocator" ? (
+                        <>
+                            <button type="button" className="rca-action-btn" title="Modify Allocated Task"
+                                onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
+                                <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                className="rca-action-btn"
+                                title={
+                                    row.acceptanceStatus !== "Accepted"
+                                        ? "You must accept this task before editing"
+                                        : "Modify Task Progress"
+                                }
+                                style={{
+                                    opacity: row.acceptanceStatus !== "Accepted" ? 0.4 : 1,
+                                    cursor: row.acceptanceStatus !== "Accepted" ? "not-allowed" : "pointer",
+                                }}
+                                onClick={() => {
+                                    if (row.acceptanceStatus !== "Accepted") {
+                                        toast.warn("You must accept this task before editing.", { autoClose: 3000, closeButton: false });
+                                        return;
+                                    }
+                                    handleOpenModifyPopup({ ...row, attachments: row._rawAttachments, userAttachments: row._rawUserAttachments });
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
+                            </button>
+                        </>
+                    )}
+                </td>;
 
             case "taskType":
                 return <td key="taskType" className="procCent" style={{ fontSize: "14px" }}>{row.taskType || "-"}</td>;
@@ -997,6 +1267,12 @@ const ManualTaskingPage = () => {
 
             case "category":
                 return <td key="category" className="procCent" style={{ fontSize: "14px" }}>{row.category || "-"}</td>;
+
+            case "discipline":
+                return <td key="discipline" className="procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
+
+            case "area":
+                return <td key="area" className="procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
 
             case "priority":
                 return (
@@ -1222,10 +1498,6 @@ const ManualTaskingPage = () => {
                     <td key="action" className="risk-control-attributes-action-cell">
                         {view === "allocator" ? (
                             <>
-                                <button type="button" className="rca-action-btn" title="Modify Allocated Task"
-                                    onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
-                                    <FontAwesomeIcon icon={faEdit} />
-                                </button>
                                 <button
                                     type="button"
                                     className="rca-action-btn"
@@ -1242,7 +1514,6 @@ const ManualTaskingPage = () => {
                             </>
                         ) : (
                             <>
-                                {/* Circle-check: only visible when task has NOT been accepted yet */}
                                 {row.acceptanceStatus !== "Accepted" && (
                                     <button
                                         type="button"
@@ -1262,28 +1533,6 @@ const ManualTaskingPage = () => {
                                     onClick={() => handleDownloadJobCard(row)}
                                 >
                                     <FontAwesomeIcon icon={faFilePdf} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="rca-action-btn"
-                                    title={
-                                        row.acceptanceStatus !== "Accepted"
-                                            ? "You must accept this task before editing"
-                                            : "Modify Task Progress"
-                                    }
-                                    style={{
-                                        opacity: row.acceptanceStatus !== "Accepted" ? 0.4 : 1,
-                                        cursor: row.acceptanceStatus !== "Accepted" ? "not-allowed" : "pointer",
-                                    }}
-                                    onClick={() => {
-                                        if (row.acceptanceStatus !== "Accepted") {
-                                            toast.warn("You must accept this task before editing.", { autoClose: 3000, closeButton: false });
-                                            return;
-                                        }
-                                        handleOpenModifyPopup({ ...row, attachments: row._rawAttachments, userAttachments: row._rawUserAttachments });
-                                    }}
-                                >
-                                    <FontAwesomeIcon icon={faEdit} />
                                 </button>
                             </>
                         )}
@@ -1336,6 +1585,25 @@ const ManualTaskingPage = () => {
                         <div className="burger-menu-icon-um">
                             <FontAwesomeIcon icon={faCirclePlus} title="Allocate Task" onClick={() => setShowAddTaskPopup(true)} />
                         </div>
+                    )}
+
+                    {/* Allocate Repeating Task button — allocator only */}
+                    {view === "allocator" && canIn(access, "CTS", ["systemAdmin", "contributor"]) && (
+                        <span className="fa-layers fa-fw" style={{ fontSize: "28px", color: "grey", cursor: "pointer", marginRight: "5px" }} onClick={() => setShowAddRepeatingTaskPopup(true)} title="Schedule Repeating Task">
+                            {/* base floppy-disk, full size */}
+                            <FontAwesomeIcon icon={faClock} />
+                            {/* pen, shrunk & nudged down/right into corner */}
+                            <FontAwesomeIcon
+                                icon={faCircle}
+                                transform="shrink-6 down-5 right-7"
+                                color="white"   /* or whatever contrast you need */
+                            />
+                            <FontAwesomeIcon
+                                icon={faPlusCircle}
+                                transform="shrink-7 down-5 right-7"
+                                color="gray"   /* or whatever contrast you need */
+                            />
+                        </span>
                     )}
 
                     <div className="um-input-container">
@@ -1402,6 +1670,14 @@ const ManualTaskingPage = () => {
                                 onClick={resetColumnWidths}
                             />
                         )}
+
+                        <FontAwesomeIcon
+                            icon={faDownload}
+                            title="Export to Excel"
+                            className={showResetButton ? `top-right-button-control-att-4-new` : "top-right-button-control-att-3-new"}
+                            style={{ cursor: "pointer", color: "gray" }}
+                            onClick={handleExportExcel}
+                        />
 
                         {/* Column selector popup */}
                         {showColumnSelector && (
@@ -1593,6 +1869,7 @@ const ManualTaskingPage = () => {
 
             {/* Allocator popups */}
             {showAddTaskPopup && <AddTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddTaskPopup(false)} />}
+            {showAddRepeatingTaskPopup && <AddRepeatingTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddRepeatingTaskPopup(false)} />}
 
             {deleteTaskPopup.open && (
                 <DeleteAllocatedTask
@@ -1614,7 +1891,7 @@ const ManualTaskingPage = () => {
                 <ReopenAllocatedTask
                     open={reopenTaskPopup.open} taskName={reopenTaskPopup.taskName}
                     onClose={closeReopenTaskPopup}
-                    onConfirm={() => { handleReopenTask(reopenTaskPopup.task._id); closeReopenTaskPopup(); }}
+                    onConfirm={(message) => { handleReopenTask(reopenTaskPopup.task._id, message); closeReopenTaskPopup(); }}
                 />
             )}
 

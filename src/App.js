@@ -201,6 +201,10 @@ import ManualTaskingAllocationPage from './components/ComplainceTracking/Tasking
 import ManualTaskingViewPage from './components/ComplainceTracking/TaskingPages/ManualTasking/ManualTaskingViewPage';
 import ManualTaskingPage from './components/ComplainceTracking/TaskingPages/ManualTasking/ManualTaskingPage';
 import TaskVersionHistoryPage from './components/ComplainceTracking/TaskingPages/ManualTasking/TaskVersionHistoryPage';
+import TaskTemplatesPage from './components/ComplainceTracking/TaskingPages/ManualTasking/TaskTemplatesPage';
+import DeletedTaskTemplates from './components/ComplainceTracking/TaskingPages/ManualTasking/DeletedTaskTemplates';
+import SuggestedTaskTemplates from './components/ComplainceTracking/TaskingPages/ManualTasking/SuggestedTaskTemplates';
+import InfoPage from './components/InfoPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -468,6 +472,10 @@ function App() {
         <Route path="FrontendDMS/manualTaskingTasks" element={<ManualTaskingViewPage />} />
         <Route path="FrontendDMS/manualTaskingPage" element={<ManualTaskingPage />} />
         <Route path="FrontendDMS/manual-tasks-history/:taskId" element={<TaskVersionHistoryPage />} />
+        <Route path="FrontendDMS/taskTemplates" element={<TaskTemplatesPage />} />
+        <Route path="FrontendDMS/deletedTaskTemplates" element={<DeletedTaskTemplates />} />
+        <Route path="FrontendDMS/suggestedTaskTemplates/:taskID" element={<SuggestedTaskTemplates />} />
+        <Route path="FrontendDMS/infoHelp/:id" element={<InfoPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

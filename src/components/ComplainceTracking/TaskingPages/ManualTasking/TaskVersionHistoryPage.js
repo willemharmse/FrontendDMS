@@ -13,6 +13,8 @@ import "react-toastify/dist/ReactToastify.css";
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr" },
     { id: "version", title: "Version" },
+    { id: "area", title: "Area" },
+    { id: "discipline", title: "Discipline" },
     { id: "taskType", title: "Task Type" },
     { id: "taskTitle", title: "Task Title" },
     { id: "taskDescription", title: "Task Description" },
@@ -32,6 +34,11 @@ const ALL_COLUMNS = [
     { id: "closeStatus", title: "Closeout Status" },
     { id: "closeoutDate", title: "Closeout Date" },
     { id: "closeOutComments", title: "Close Out Comments" },
+    { id: "prevResponsible", title: "Delegated From" },
+    { id: "delegateDate", title: "Delegation Date" },
+    { id: "delegationReason", title: "Delegation Reason" },
+    { id: "reopenDate", title: "Reopen Date" },
+    { id: "reopenReason", title: "Reopen Reason" },
     { id: "changedBy", title: "Updated By" },
     { id: "changedOn", title: "Updated On" },
 ];
@@ -39,6 +46,8 @@ const ALL_COLUMNS = [
 const DEFAULT_COLUMN_WIDTHS = {
     nr: 60,
     version: 160,
+    area: 130,
+    discipline: 150,
     taskType: 150,
     taskTitle: 240,
     taskDescription: 300,
@@ -58,6 +67,11 @@ const DEFAULT_COLUMN_WIDTHS = {
     closeStatus: 140,
     closeoutDate: 150,
     closeOutComments: 260,
+    prevResponsible: 180,
+    delegateDate: 150,
+    delegationReason: 260,
+    reopenDate: 150,
+    reopenReason: 260,
     changedBy: 180,
     changedOn: 160,
 };
@@ -65,6 +79,8 @@ const DEFAULT_COLUMN_WIDTHS = {
 const COLUMN_SIZE_LIMITS = {
     nr: { min: 60, max: 60 },
     version: { min: 120, max: 260 },
+    area: { min: 80, max: 300 },
+    discipline: { min: 80, max: 300 },
     taskType: { min: 100, max: 240 },
     taskTitle: { min: 160, max: 520 },
     taskDescription: { min: 200, max: 700 },
@@ -84,6 +100,11 @@ const COLUMN_SIZE_LIMITS = {
     closeStatus: { min: 110, max: 240 },
     closeoutDate: { min: 110, max: 240 },
     closeOutComments: { min: 180, max: 600 },
+    prevResponsible: { min: 140, max: 340 },
+    delegateDate: { min: 110, max: 240 },
+    delegationReason: { min: 180, max: 600 },
+    reopenDate: { min: 110, max: 240 },
+    reopenReason: { min: 180, max: 600 },
     changedBy: { min: 140, max: 340 },
     changedOn: { min: 130, max: 260 },
 };
@@ -140,6 +161,23 @@ const normalizeNode = (node) => ({
         ? String(node.completionDate).slice(0, 10)
         : "",
     category: node?.category ?? "",
+    area: node?.area ?? "",
+    discipline: node?.discipline ?? "",
+    prevResponsible: node?.prevResponsible?.username ?? node?.prevResponsibleName ?? node?.prevResponsible ?? "",
+    delegateDate: node?.delegateDate
+        ? new Date(node.delegateDate).toLocaleDateString("en-GB", {
+            day: "2-digit", month: "2-digit", year: "numeric",
+            timeZone: "Africa/Johannesburg",
+        })
+        : "",
+    delegationReason: node?.delegationReason && node.delegationReason !== "null" ? node.delegationReason : "",
+    reopenDate: node?.reopenDate
+        ? new Date(node.reopenDate).toLocaleDateString("en-GB", {
+            day: "2-digit", month: "2-digit", year: "numeric",
+            timeZone: "Africa/Johannesburg",
+        })
+        : "",
+    reopenReason: node?.reopenReason && node.reopenReason !== "null" ? node.reopenReason : "",
     _rawAttachments: Array.isArray(node?.attachments) ? node.attachments : [],
     _rawUserAttachments: Array.isArray(node?.userAttachments) ? node.userAttachments : [],
     attachments: Array.isArray(node?.attachments)
@@ -527,6 +565,27 @@ const TaskVersionHistoryPage = () => {
 
             case "closeOutComments":
                 return <td key="closeOutComments" style={{ fontSize: "14px" }}>{row.closeOutComments || "-"}</td>;
+
+            case "area":
+                return <td key="area" className="procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
+
+            case "discipline":
+                return <td key="discipline" className="procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
+
+            case "prevResponsible":
+                return <td key="prevResponsible" className="procCent" style={{ fontSize: "14px" }}>{row.prevResponsible || "-"}</td>;
+
+            case "delegateDate":
+                return <td key="delegateDate" className="procCent" style={{ fontSize: "14px" }}>{row.delegateDate || "-"}</td>;
+
+            case "delegationReason":
+                return <td key="delegationReason" style={{ fontSize: "14px" }}>{row.delegationReason || "-"}</td>;
+
+            case "reopenDate":
+                return <td key="reopenDate" className="procCent" style={{ fontSize: "14px" }}>{row.reopenDate || "-"}</td>;
+
+            case "reopenReason":
+                return <td key="reopenReason" style={{ fontSize: "14px" }}>{row.reopenReason || "-"}</td>;
 
             case "changedBy":
                 return <td key="changedBy" className="procCent" style={{ fontSize: "14px" }}>{row.changedBy || "-"}</td>;

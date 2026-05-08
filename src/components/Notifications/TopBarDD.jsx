@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faCircleExclamation, faHome, faArrowsRotate, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faCircleExclamation, faHome, faArrowsRotate, faArrowRight, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
 
-const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOfflineDraft, risk = false }) => {
+const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOfflineDraft, risk = false, showInfo = false, type }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,6 +49,14 @@ const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOffline
                     title="Refresh Page"
                     style={{ cursor: "pointer" }}
                     onClick={() => window.location.reload()}
+                />
+            </div>)}
+            {showInfo && (<div className="burger-menu-icon-create-page-2">
+                <FontAwesomeIcon
+                    icon={faInfoCircle}
+                    title="Info"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/FrontendDMS/infoHelp/${type}`)}
                 />
             </div>)}
             <div className="burger-menu-icon-create-page-2">
