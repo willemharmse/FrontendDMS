@@ -50,7 +50,7 @@ const CTSHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar />
+                    <TopBar showInfo={true} type={"CTS"} />
                 </div>
 
                 <div className="scrollable-box-dc-home">

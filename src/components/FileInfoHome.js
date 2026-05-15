@@ -72,7 +72,7 @@ const FileInfoHome = () => {
         "All Document": "allDocumentsDMS.svg",
         Audit: "auditsDMS.svg",
         Guideline: "guidelinesDMS.svg",
-        "DMRE MCOP Guideline": "guidelinesDMS.svg",
+        "DMPR MCOP Guideline": "guidelinesDMS.svg",
         "Industry Document": "guidelinesDMS.svg",
         MCOP: "guidelinesDMS.svg",
         Policy: "policiesDMS.svg",

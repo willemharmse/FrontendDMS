@@ -40,19 +40,21 @@ const InfoPage = () => {
         };
     }, [id]);
 
-    const pageMap = {
-        RMS: 17,
-        DDS: 14,
-        TMS: 20,
-        DMS: 12,
-        EPAMS: 22
+    const fileMap = {
+        product: "0. TAU5 - ComplianceHub - Product Presentation (Q2 2026).pdf",
+        dms: "1. TAU5 - ComplianceHub - DMS Q2 2026.pdf",
+        dds: "2. TAU5 - ComplianceHub - DDS Q2 2026.pdf",
+        rms: "3. TAU5 - ComplianceHub - RMS Q2 2026.pdf",
+        tms: "4. TAU5 - ComplianceHub - TMS Q2 2026.pdf",
+        epams: "5. TAU5 - ComplianceHub - EPA Q2 2026.pdf",
+        cts: "6. TAU5 - ComplianceHub - CTS Q2 2026.pdf",
     };
 
-    const page = 1;
+    const selectedFile = fileMap[id?.toLowerCase()] || fileMap.product;
 
     const fileUrl = useMemo(() => {
-        return `${process.env.PUBLIC_URL}/TAU5 - ComplianceHub - Product Presentation.pdf#page=${page}&zoom=page-width`;
-    }, [page]);
+        return `${process.env.PUBLIC_URL}/${selectedFile}#page=1&zoom=page-width`;
+    }, [selectedFile]);
 
     return (
         <div className="pdf-info-container">
@@ -91,7 +93,7 @@ const InfoPage = () => {
                 <div className="file-preview-container">
                     {fileUrl ? (
                         <iframe
-                            key={`${id}-${page}`}
+                            key={`${id}-${selectedFile}`}
                             src={fileUrl}
                             className="file-viewer"
                             title="File Preview"

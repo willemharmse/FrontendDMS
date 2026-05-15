@@ -110,7 +110,7 @@ const HomePage = () => {
     <div className="homepage-container" style={{ userSelect: "none" }}>
       <div className="nl-floating-pill">
         <div className="burger-menu-icon-um notifications-bell-wrapper">
-          <FontAwesomeIcon icon={faInfoCircle} onClick={() => navigate(`/FrontendDMS/infoHelp/*`)} title="Info" />
+          <FontAwesomeIcon icon={faInfoCircle} onClick={() => navigate(`/FrontendDMS/infoHelp/PRODUCT`)} title="Info" />
         </div>
         <div className="burger-menu-icon-um notifications-bell-wrapper">
           <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />

@@ -433,7 +433,7 @@ const FileInfo = () => {
     "All Document": "allDocumentsDMS.svg",
     Audit: "auditsDMSInverted.svg",
     Guideline: "guidelinesDMSInverted.svg",
-    "DMRE MCOP Guideline": "guidelinesDMSInverted.svg",
+    "DMPR MCOP Guideline": "guidelinesDMSInverted.svg",
     "Industry Document": "guidelinesDMSInverted.svg",
     MCOP: "guidelinesDMSInverted.svg",
     Policy: "policiesDMSInverted.svg",

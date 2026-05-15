@@ -154,14 +154,6 @@ const ModifyMyTask = ({ onClose, data, onSaved }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!completionStatus) {
-            toast.warn("Please select a completion status.", {
-                autoClose: 2000,
-                closeButton: false,
-            });
-            return;
-        }
-
         if (!data?._id) {
             toast.error("Task ID is missing. Please close and reopen the task.", {
                 autoClose: 3000,
@@ -176,7 +168,6 @@ const ModifyMyTask = ({ onClose, data, onSaved }) => {
             const storedToken = localStorage.getItem("token");
 
             const formData = new FormData();
-            formData.append("status", completionStatus);
             formData.append("comments", comments);
 
             const removedIds = removedServerIdsRef.current;
