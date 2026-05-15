@@ -341,7 +341,7 @@ const RiskDocumentsJRA = () => {
                                 }`}
                             onClick={() => toggleSort(excelFilter.colId, "asc")}
                         >
-                            Sort A to Z
+                            Sort Acsending
                         </button>
 
                         <button
@@ -351,7 +351,7 @@ const RiskDocumentsJRA = () => {
                                 }`}
                             onClick={() => toggleSort(excelFilter.colId, "desc")}
                         >
-                            Sort Z to A
+                            Sort Descending
                         </button>
                     </div>
 

@@ -921,7 +921,7 @@ const AttendanceTable = ({ collapsible = false, rows = [], addRow, removeRow, er
                                 }
                             }}
                         >
-                            Sort A to Z
+                            Sort Acsending
                         </button>
                         <button
                             type="button"
@@ -934,7 +934,7 @@ const AttendanceTable = ({ collapsible = false, rows = [], addRow, removeRow, er
                                 }
                             }}
                         >
-                            Sort Z to A
+                            Sort Descending
                         </button>
                     </div>
 

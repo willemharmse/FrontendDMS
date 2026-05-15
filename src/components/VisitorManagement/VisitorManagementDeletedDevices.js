@@ -683,14 +683,14 @@ const VisitorManagementDeletedDevices = () => {
                             className={`excel-sort-btn ${sortField === excelFilter.colId && sortOrder === "ascending" ? "active" : ""}`}
                             onClick={() => toggleExcelSort(excelFilter.colId, "ascending")}
                         >
-                            Sort A to Z
+                            Sort Acsending
                         </button>
                         <button
                             type="button"
                             className={`excel-sort-btn ${sortField === excelFilter.colId && sortOrder === "descending" ? "active" : ""}`}
                             onClick={() => toggleExcelSort(excelFilter.colId, "descending")}
                         >
-                            Sort Z to A
+                            Sort Descending
                         </button>
                     </div>
 

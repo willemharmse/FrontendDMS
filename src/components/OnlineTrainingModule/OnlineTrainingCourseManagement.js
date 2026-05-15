@@ -525,9 +525,7 @@ const OnlineTrainingCourseManagement = () => {
                     <div className="burger-menu-icon-um">
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                     </div>
-                    {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
-
                     <TopBarDD />
                 </div>
                 <div className="table-flameproof-card">
@@ -726,7 +724,7 @@ const OnlineTrainingCourseManagement = () => {
                                 }`}
                             onClick={() => toggleSort(excelFilter.colId, "asc")}
                         >
-                            Sort A to Z
+                            Sort Acsending
                         </button>
 
                         <button
@@ -736,7 +734,7 @@ const OnlineTrainingCourseManagement = () => {
                                 }`}
                             onClick={() => toggleSort(excelFilter.colId, "desc")}
                         >
-                            Sort Z to A
+                            Sort Descending
                         </button>
                     </div>
 

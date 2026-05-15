@@ -40,6 +40,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
     const [assetNumberR, setAssetNumberR] = useState("");
     const navigate = useNavigate();
     const [certifiers, setCertifiers] = useState([]);
+    const [expiryDate, setExpiryDate] = useState('');
 
     const fetchCertifiers = async () => {
         try {
@@ -263,6 +264,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
         formData.append('issueDate', issueDate);
         formData.append('component', component);
         formData.append('site', siteId);
+        formData.append('expiryDate', expiryDate);
 
         try {
             setLoading(true);
@@ -285,6 +287,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
             setIssueDate('');
             setAssetNr("");
             setSiteId("");
+            setExpiryDate("")
 
             setError(null);
             setLoading(false);
@@ -302,7 +305,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
 
     const handleNavigateUpdate = () => {
         setConfirmNavigation(false);
-        navigate(`/FrontendDMS/flameComponents/${assetID}`);
+        navigate(`/flameComponents/${assetID}`);
     }
 
     const handleNavigateNormal = () => {
@@ -530,6 +533,42 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                                             className="date-input-calendar-icon"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="ump-form-row">
+
+                                <div className={`ump-form-group`}>
+                                    <label>Expiry Date</label>
+
+                                    <div className='date-container-license' style={{ position: "relative" }}>
+                                        <DatePicker
+                                            value={expiryDate || ""}
+                                            format="YYYY-MM-DD"
+                                            onChange={(val) => {
+                                                const v = val?.format("YYYY-MM-DD");
+                                                const max = todayString();
+                                                setExpiryDate(v && v > max ? max : v); // clamp to today if future picked/typed
+                                            }}
+                                            rangeHover={false}
+                                            highlightToday={false}
+                                            editable={false}
+                                            placeholder="YYYY-MM-DD"
+                                            hideIcon={false}
+                                            inputClass='ump-input-select-new-3'
+                                            minDate={todayString()}
+                                            onOpenPickNewDate={false}
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDays}
+                                            className="date-input-calendar-icon"
+                                        />
+                                    </div>
+                                </div>
+                                <div className={`ump-form-group `}>
+                                </div>
+
+                                <div className={`ump-form-group`}>
                                 </div>
                             </div>
                         </form>

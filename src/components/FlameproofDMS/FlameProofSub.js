@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft, faSpinner, faDownload, faSort, faEdit, faFilter, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faTrash, faRotate, faX, faFileCirclePlus, faSearch, faArrowLeft, faSpinner, faDownload, faSort, faEdit, faFilter, faSortUp, faSortDown, faClock } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import Select from "react-select";
 import { toast, ToastContainer } from 'react-toastify';
@@ -22,6 +22,7 @@ import DeleteCertificate from "./Popups/DeleteCertificate";
 import ReplaceComponentPopup from "./WarehousePopups/ReplaceComponentPopup";
 import { saveAs } from "file-saver";
 import ModifyCertificateDetailsPopup from "./Popups/ModifyCertificateDetailsPopup";
+import CertExpiryDatePopup from "./Popups/CertExpiryDatePopup";
 
 const FlameProofSub = () => {
   const { type, assetId } = useParams();
@@ -70,6 +71,8 @@ const FlameProofSub = () => {
   const [replaceID, setReplaceID] = useState("");
   const [modifyData, setModifyData] = useState([]);
   const [modifyPopup, setModifyPopup] = useState(false);
+  const [expiryDateVal, setExpiryDateVal] = useState(30);
+  const [isExpiryPopupOpen, setIsExpiryPopupOpen] = useState(false);
 
   // --- EXCEL FILTER STATE ---
   const excelPopupRef = useRef(null);
@@ -160,6 +163,17 @@ const FlameProofSub = () => {
   }, [token]);
 
   useEffect(() => { fetchFiles(); }, [isTrashView]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("highlightCertExpiryDates");
+    if (saved && !isNaN(saved) && Number(saved) > 0) {
+      setExpiryDateVal(Number(saved));
+    } else {
+      localStorage.setItem("highlightCertExpiryDates", "30");
+      setExpiryDateVal(30);
+    }
+  }, []);
+
 
   const handleSort = () => {
     const sortedFiles = [...files].sort((a, b) => {
@@ -441,6 +455,18 @@ const FlameProofSub = () => {
   const closeDownloadModal = () => { setDownloadFileId(null); setDownloadFileName(null); setIsDownloadModalOpen(false); };
   const confirmDownload = () => { if (downloadFileId && downloadFileName) downloadFile(downloadFileId, downloadFileName); closeDownloadModal(); };
   const getComplianceColor = (status) => { if (status === "valid") return "status-good"; if (status === "invalid") return "status-worst"; if (status === "not uploaded") return "status-missing" };
+  const getExpiryClass = (expiryDate) => {
+    if (!expiryDate) return "";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+    const timeDiff = expiry - today;
+    if (timeDiff < 0) return "review-past";
+    if (timeDiff <= expiryDateVal * 24 * 60 * 60 * 1000) return "review-soon";
+    return "review-ongoing";
+  };
+
 
   const filteredFiles = useMemo(() => {
     let current = [...files];
@@ -670,6 +696,14 @@ const FlameProofSub = () => {
               onMouseLeave={closeFilterMenuWithDelay}
               onDoubleClick={handleClearFilters}
             />
+            <button
+              className="top-right-button-control-att-3"
+              title="Highlight Certificate Expiry Dates"
+              onClick={() => setIsExpiryPopupOpen(true)}
+              style={{ cursor: "pointer", color: "gray", userSelect: "none", background: "none", border: "none", fontSize: "25px" }}
+            >
+              <FontAwesomeIcon icon={faClock} />
+            </button>
           </div>
           <div className="table-container-file-flameproof-all-assets">
             <table>
@@ -707,7 +741,7 @@ const FlameProofSub = () => {
                     <td className={`col ${getComplianceColor(file.status)}`}>{formatStatus(file.status)}</td>
                     <td className={`col`}>{getReason(file.status, file)}</td>
                     <td className={`col`}>{formatDate(file.issueDate)}</td>
-                    {!isTrashView && (<td className={`col`}>{formatDate(file.certificateExipryDate)}</td>)}
+                    {!isTrashView && (<td className={`col ${getExpiryClass(file.certificateExipryDate)}`}>{formatDate(file.certificateExipryDate)}</td>)}
                     {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                       <td className={`col-act ${isTrashView ? "trashed" : ""}`}>
                         {isTrashView && (<button className={"delete-button-fi col-but-res trashed-color"} onClick={() => restoreFile(file._id)}><FontAwesomeIcon icon={faRotate} title="Restore Document" /></button>)}
@@ -749,7 +783,7 @@ const FlameProofSub = () => {
                 }`}
               onClick={() => toggleSort(excelFilter.colId, "asc")}
             >
-              Sort A to Z
+              Sort Acsending
             </button>
 
             <button
@@ -759,7 +793,7 @@ const FlameProofSub = () => {
                 }`}
               onClick={() => toggleSort(excelFilter.colId, "desc")}
             >
-              Sort Z to A
+              Sort Descending
             </button>
           </div>
 
@@ -869,6 +903,7 @@ const FlameProofSub = () => {
         </div>
       )}
 
+      {isExpiryPopupOpen && (<CertExpiryDatePopup isOpen={isExpiryPopupOpen} onClose={() => setIsExpiryPopupOpen(false)} onUpdate={setExpiryDateVal} currVal={expiryDateVal} />)}
       {isModalOpen && (<DeleteCertificate closeModal={closeModal} deleteFile={deleteFile} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} deleteFileFromTrash={deleteFileFromTrash} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {upload && (<UploadComponentPopup onClose={closeUpload} refresh={fetchFiles} site={site} assetNumber={type} />)}

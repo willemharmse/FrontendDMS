@@ -6,17 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-/**
- * ModifyMyTask
- *
- * Props:
- *   onClose   – closes the popup
- *   data      – the full task object from the table row (raw attachment objects)
- *   onSaved   – callback(updatedTask) called after a successful PUT so the
- *               parent table row updates without a full page reload
- */
 const ModifyMyTask = ({ onClose, data, onSaved }) => {
-    const [completionStatus, setCompletionStatus] = useState("");
     const [comments, setComments] = useState("");
     const [loading, setLoading] = useState(false);
     const [attachments, setAttachments] = useState([]);
@@ -31,7 +21,6 @@ const ModifyMyTask = ({ onClose, data, onSaved }) => {
     useEffect(() => {
         if (!data) return;
 
-        setCompletionStatus(data.status || "");
         setComments(data.userComments || "");
         removedServerIdsRef.current = [];
         const existing = (data.userAttachments || []).map((a) => ({
@@ -180,8 +169,12 @@ const ModifyMyTask = ({ onClose, data, onSaved }) => {
                 formData.append("userAttachments", a.file, a.name);
             });
 
+            const apiBase = data?._taskSource === "autoAuto"
+                ? `${process.env.REACT_APP_URL}/api/auto-auto-tasks`
+                : `${process.env.REACT_APP_URL}/api/complainceTasks`;
+
             const response = await axios.put(
-                `${process.env.REACT_APP_URL}/api/complainceTasks/${data._id}/update-my-task`,
+                `${apiBase}/${data._id}/update-my-task`,
                 formData,
                 {
                     headers: {

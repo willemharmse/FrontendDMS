@@ -272,7 +272,7 @@ const UserTable = ({
                                 <td className="col-um">{index + 1}</td>
                                 <td
                                     className="col-um"
-                                    onClick={() => navigate(`/FrontendDMS/userActivity/${user._id}`)}
+                                    onClick={() => navigate(`/userActivity/${user._id}`)}
                                     style={{ cursor: "pointer" }}
                                 >
                                     {user.username}
@@ -349,7 +349,7 @@ const UserTable = ({
                                     }`}
                                 onClick={() => toggleSort(excelFilter.colId, "asc")}
                             >
-                                Sort A to Z
+                                Sort Acsending
                             </button>
 
                             <button
@@ -359,7 +359,7 @@ const UserTable = ({
                                     }`}
                                 onClick={() => toggleSort(excelFilter.colId, "desc")}
                             >
-                                Sort Z to A
+                                Sort Descending
                             </button>
                         </div>
 
