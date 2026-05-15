@@ -423,7 +423,7 @@ const OnlineTrainingDrafts = () => {
                                     {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
                                         displayDrafts
                                             .map((item, index) => (
-                                                <tr key={item._id} style={{ backgroundColor: item.approvalState ? "#7EAC89" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/onlineCreateCourse/${item._id}`)}>
+                                                <tr key={item._id} style={{ backgroundColor: item.approvalState ? "#7EAC89" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/FrontendDMS/onlineCreateCourse/${item._id}`)}>
                                                     <td style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial", textAlign: "center" }}>
                                                         {index + 1}
                                                     </td>

@@ -111,7 +111,7 @@ const DigitalWarehouseReplaced = () => {
   const closeUpload = (assetNr, id, nav) => {
     setUpload(!upload);
     if (nav) {
-      navigate(`/flameManageSub/${assetNr}/${id}`)
+      navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`)
     }
   };
 
@@ -121,7 +121,7 @@ const DigitalWarehouseReplaced = () => {
 
   const closeRegister = (id, type) => {
     setRegister(!register);
-    navigate(`/flameproofComponents/${type}/${id}`)
+    navigate(`/FrontendDMS/flameproofComponents/${type}/${id}`)
   };
 
   const exitRegister = () => {
@@ -359,7 +359,7 @@ const DigitalWarehouseReplaced = () => {
             <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
-            <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+            <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
             <p className="logo-text-um">EPA Management</p>
           </div>
 

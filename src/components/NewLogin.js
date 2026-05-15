@@ -415,7 +415,7 @@ const NewLogin = () => {
                             />
                             Remember Me
                         </label>
-                        <a onClick={() => navigate("/forgot")} className="nl-forgot-password">Forgot Password?</a>
+                        <a onClick={() => navigate("/FrontendDMS/forgot")} className="nl-forgot-password">Forgot Password?</a>
                     </div>
 
                     <div className="nl-login-error">{error}</div>

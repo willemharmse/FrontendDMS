@@ -31,7 +31,7 @@ const TrainingPopupMenu = ({ isOpen, setHoveredCourseCode, course }) => {
                     onMouseLeave={() => setHoveredCourseCode(null)}
                 >
                     <ul>
-                        <li onClick={() => navigate(`/courseDetails/${course.courseCode}`)}>View Course</li>
+                        <li onClick={() => navigate(`/FrontendDMS/courseDetails/${course.courseCode}`)}>View Course</li>
                     </ul>
                     <ul>
                         <li>Manage Trainees</li>

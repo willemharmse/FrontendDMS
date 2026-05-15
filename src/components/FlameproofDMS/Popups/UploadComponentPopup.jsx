@@ -302,7 +302,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
 
     const handleNavigateUpdate = () => {
         setConfirmNavigation(false);
-        navigate(`/flameComponents/${assetID}`);
+        navigate(`/FrontendDMS/flameComponents/${assetID}`);
     }
 
     const handleNavigateNormal = () => {

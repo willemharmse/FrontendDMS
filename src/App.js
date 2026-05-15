@@ -223,14 +223,14 @@ function App() {
     if (localToken) {
       localStorage.removeItem('token');
       console.log('Logged out (localStorage token) due to inactivity');
-      navigate('/');
+      navigate('/FrontendDMS/');
     } else if (sessionToken) {
       sessionStorage.removeItem('token');
       console.log('Logged out (sessionStorage token) due to inactivity');
-      navigate('/visitorLogin');
+      navigate('/FrontendDMS/visitorLogin');
     } else {
       console.log('No token found to log out.');
-      navigate('/');
+      navigate('/FrontendDMS/');
     }
 
     // Common cleanup

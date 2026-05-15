@@ -660,7 +660,7 @@ const VisitorManagementPage = () => {
                                     </tr>
                                 ) : (
                                     processedFiles.map((file, index) => (
-                                        <tr key={file._id ?? index} className="file-info-row-height vihr-expandable-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/visitorDevices/${file._id}`)}>
+                                        <tr key={file._id ?? index} className="file-info-row-height vihr-expandable-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/FrontendDMS/visitorDevices/${file._id}`)}>
                                             {visibleColumns.map(col => {
                                                 if (col.id === "validity") {
                                                     return (

@@ -87,7 +87,7 @@ const VisitorInductionMainPage = () => {
             <div className="main-box-user">
                 <div className="top-section-um">
                     <div className="burger-menu-icon-um">
-                        <FontAwesomeIcon onClick={() => navigate("/trainingHomePage")} icon={faArrowLeft} title="Back" />
+                        <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/trainingHomePage")} icon={faArrowLeft} title="Back" />
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>

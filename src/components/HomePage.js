@@ -54,11 +54,11 @@ const HomePage = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-    navigate("/");
+    navigate("/FrontendDMS/");
   };
 
   const handleNavigateAdmin = () => {
-    navigate("/admin");
+    navigate("/FrontendDMS/admin");
   };
 
   const RAW_MENU = [

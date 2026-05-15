@@ -27,7 +27,7 @@ const TaskingHomePage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Compliance Tracking</p>
                     </div>
                 </div>
@@ -54,7 +54,7 @@ const TaskingHomePage = () => {
                 </div>
 
                 <div className="scrollable-box-dc-home">
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/constructionCM")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/constructionCM")}>
                         <>
                             <div className="icon-dc">
                                 <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} src={"/proceduresDMS.svg"} className={"icon-dc"} />
@@ -62,7 +62,7 @@ const TaskingHomePage = () => {
                             <h3 className="document-title-dc-home">Auto Task Management</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/manualTasking")}>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/manualTasking")}>
                         <>
                             <div className="icon-dc">
                                 <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} src={"/standardsDMS.svg"} className={"icon-dc"} />

@@ -748,7 +748,7 @@ const CourseCreationPage = () => {
       setLoading(false);
 
       setTimeout(() => {
-        navigate('/generatedFileInfo'); // Redirect to the generated file info page
+        navigate('/FrontendDMS/generatedFileInfo'); // Redirect to the generated file info page
       }, 1000);
     } catch (error) {
       console.error("Error generating document:", error);

@@ -12,7 +12,7 @@ const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        navigate("/");
+        navigate("/FrontendDMS/");
     };
 
     const handleDownload = async () => {
@@ -67,7 +67,7 @@ const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 
-                        <li onClick={() => navigate("/userProfile")}>My Profile</li>
+                        <li onClick={() => navigate("/FrontendDMS/userProfile")}>My Profile</li>
                         <li onClick={handleLogout}>Logout</li>
                     </ul>
                 </div>

@@ -161,7 +161,7 @@ const UpdateCertificateModal = ({ isModalOpen, closeModal, certificateID, refres
 
     const handleNavigateUpdate = () => {
         setConfirmNavigation(false);
-        navigate(`/flameComponents/${assetID}`);
+        navigate(`/FrontendDMS/flameComponents/${assetID}`);
     }
 
     const handleNavigateNormal = () => {
