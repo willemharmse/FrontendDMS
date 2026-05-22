@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PopupMenuTasks = ({ isOpen, setHoveredId, hoveredId, file }) => {
+const PopupMenuTasks = ({ isOpen, setHoveredId, hoveredId, file, allowed }) => {
     const navigate = useNavigate();
     const popupRef = useRef(null);
     const [position, setPosition] = useState("below");
@@ -24,7 +24,7 @@ const PopupMenuTasks = ({ isOpen, setHoveredId, hoveredId, file }) => {
     return (
         <div className="popup-menu-container-FI" style={{ marginTop: "30px" }}>
             <div className="popup-menu-container-pub-files">
-                {isOpen && (
+                {(isOpen && allowed) && (
                     <div className="popup-content-pub-files"
                         onMouseEnter={() => setHoveredId(file._id)}
                         onMouseLeave={() => setHoveredId(null)}

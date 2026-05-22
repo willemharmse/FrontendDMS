@@ -899,9 +899,9 @@ const TaskTemplatesPage = () => {
                                                         width: `${columnWidths[col.id] ?? 100}px`,
                                                         minWidth: `${(COLUMN_SIZE_LIMITS[col.id]?.min ?? 40)}px`,
                                                         maxWidth: COLUMN_SIZE_LIMITS[col.id]?.max ? `${COLUMN_SIZE_LIMITS[col.id].max}px` : undefined,
-                                                        overflow: "hidden",
-                                                        whiteSpace: "nowrap",
-                                                        textOverflow: "ellipsis",
+                                                        overflow: "visible",
+                                                        whiteSpace: "normal",
+                                                        wordBreak: "break-word",
                                                         userSelect: "none",
                                                     }}
                                                 >
@@ -952,9 +952,10 @@ const TaskTemplatesPage = () => {
                                                             style={{
                                                                 width: `${columnWidths[col.id] ?? 100}px`,
                                                                 maxWidth: `${columnWidths[col.id] ?? 100}px`,
-                                                                overflow: "hidden",
-                                                                textOverflow: "ellipsis",
-                                                                whiteSpace: "nowrap",
+                                                                overflow: "visible",
+                                                                textOverflow: "unset",
+                                                                whiteSpace: "normal",
+                                                                wordBreak: "break-word",
                                                             }}
                                                             onClick={col.onCellClick ? () => col.onCellClick(file) : undefined}
                                                         >

@@ -234,7 +234,7 @@ const FileInfoHome = () => {
                         </div>
                     )}
                     {!isLoading && filteredDocs.map((doc, index) => (
-                        <div key={index} className={`${doc._id === "All Document" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/documentManage/${doc._id}`)}>
+                        <div key={index} className={`${doc._id === "All Document" ? "document-card-fi-home-all" : "document-card-fi-home"} ${doc ? "" : "empty-card-fi-home"}`} onClick={() => navigate(`/FrontendDMS/documentManage/${doc._id}/new`)}>
                             {doc && (
                                 <>
                                     <div className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`}>

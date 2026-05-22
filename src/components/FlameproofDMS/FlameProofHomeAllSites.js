@@ -83,7 +83,7 @@ const FlameProofHomeAllSites = () => {
     const closeUpload = (assetNr, id, nav) => {
         setUpload(!upload);
         if (nav) {
-            navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`)
+            navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}/new`)
         }
     };
 
@@ -206,7 +206,7 @@ const FlameProofHomeAllSites = () => {
                         <p className="logo-text-um">EPA Management</p>
                     </div>
 
-                    {canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
+                    {false && canIn(access, "FCMS", ["systemAdmin", "contributor"]) && (
                         <>
                             <div className="button-container-create">
                                 <button className="but-um" onClick={openUpload}>

@@ -2891,12 +2891,15 @@ const CreatePage = () => {
             onBulletChange={handleAimBulletChange}
             onFocus={(index) =>
               setErrors((prev) => {
-                const nextAimErrors = [...(prev.aim || [])];
+                const nextAimErrors = Array.isArray(prev.aim)
+                  ? [...prev.aim]
+                  : [];
+
                 nextAimErrors[index] = false;
 
                 return {
                   ...prev,
-                  aim: nextAimErrors
+                  aim: nextAimErrors,
                 };
               })
             }
@@ -2921,12 +2924,15 @@ const CreatePage = () => {
             onBulletChange={handleScopeBulletChange}
             onFocus={(index) =>
               setErrors((prev) => {
-                const nextScopeErrors = [...(prev.scope || [])];
+                const nextScopeErrors = Array.isArray(prev.scope)
+                  ? [...prev.scope]
+                  : [];
+
                 nextScopeErrors[index] = false;
 
                 return {
                   ...prev,
-                  scope: nextScopeErrors
+                  scope: nextScopeErrors,
                 };
               })
             }

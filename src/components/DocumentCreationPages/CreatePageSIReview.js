@@ -1629,12 +1629,15 @@ const CreatePageSIReview = () => {
             onBulletChange={handleAimBulletChange}
             onFocus={(index) =>
               setErrors((prev) => {
-                const nextAimErrors = Array.isArray(prev.aim) ? [...prev.aim] : [];
+                const nextAimErrors = Array.isArray(prev.aim)
+                  ? [...prev.aim]
+                  : [];
+
                 nextAimErrors[index] = false;
 
                 return {
                   ...prev,
-                  aim: nextAimErrors
+                  aim: nextAimErrors,
                 };
               })
             }

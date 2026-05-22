@@ -30,6 +30,7 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
     const [area, setArea] = useState("");
     const [discipline, setDiscipline] = useState("");
     const [disciplineOptions, setDisciplineOptions] = useState([]);
+    const [occur, setOccur] = useState("");
 
     const handleDurationChange = (e) => {
         const raw = e.target.value;
@@ -331,18 +332,8 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
             return;
         }
 
-        if (!duration || isNaN(parseInt(duration, 10)) || parseInt(duration, 10) <= 0) {
-            toast.warn('Duration (days) is required and must be a positive number.', { autoClose: 2000, closeButton: false });
-            return;
-        }
-
-        if (!repeatEvery || isNaN(parseInt(repeatEvery, 10)) || parseInt(repeatEvery, 10) <= 0) {
-            toast.warn('Repeat Every (days) is required and must be a positive number.', { autoClose: 2000, closeButton: false });
-            return;
-        }
-
-        if (parseInt(duration, 10) > parseInt(repeatEvery, 10)) {
-            toast.warn('Duration cannot be greater than Repeat Every.', { autoClose: 2000, closeButton: false });
+        if (!occur.trim()) {
+            toast.warn('Please select an occurrence.', { autoClose: 2000, closeButton: false });
             return;
         }
 
@@ -357,7 +348,7 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
         }
 
         if (!startDate) {
-            toast.warn('Start date is required.', { autoClose: 2000, closeButton: false });
+            toast.warn('Initial due date is required.', { autoClose: 2000, closeButton: false });
             return;
         }
 
@@ -377,8 +368,7 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
             formData.append('taskTitle', taskTitle);
             formData.append('taskPriority', taskPriority);
             formData.append('comments', comments.trim());
-            formData.append('duration', parseInt(duration, 10));
-            formData.append('repeatEvery', parseInt(repeatEvery, 10));
+            formData.append('occur', occur.trim());
             formData.append('area', area);
             formData.append('discipline', discipline);
             formData.append('startDate', startDate.toDate ? startDate.toDate().toISOString() : new Date(startDate).toISOString());
@@ -628,73 +618,9 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
 
                             <div className="ibra-popup-page-additional-row">
                                 <div className="ibra-popup-page-column-half">
-                                    <div className="cea-popup-page-component-wrapper">
-                                        <div className={`ibra-popup-page-form-group`}>
-                                            <label>Duration (days) <span className="required-field">*</span></label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                step="1"
-                                                className="ibra-popup-page-select"
-                                                value={duration}
-                                                onChange={handleDurationChange}
-                                                onKeyDown={(e) => {
-                                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) e.preventDefault();
-                                                }}
-                                                placeholder="Task Duration in Days"
-                                                style={{ width: "100%", boxSizing: "border-box" }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="ibra-popup-page-column-half">
-                                    <div className="cea-popup-page-component-wrapper">
-                                        <div className={`ibra-popup-page-form-group`}>
-                                            <label>Repeat Every (days) <span className="required-field">*</span></label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                step="1"
-                                                className="ibra-popup-page-select"
-                                                value={repeatEvery}
-                                                onChange={handleRepeatEveryChange}
-                                                onKeyDown={(e) => {
-                                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) e.preventDefault();
-                                                }}
-                                                placeholder="Repeat Task Every X Days"
-                                                style={{ width: "100%", boxSizing: "border-box" }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="ibra-popup-page-additional-row">
-                                <div className="ibra-popup-page-column-half">
-                                    <div className="cea-popup-page-component-wrapper">
-                                        <div className="ibra-popup-page-form-group">
-                                            <label>Responsible Person <span className="required-field">*</span></label>
-                                            <div className="ibra-popup-page-select-container">
-                                                <select
-                                                    className="ibra-popup-page-select"
-                                                    value={responsiblePerson}
-                                                    onChange={(e) => setResponsiblePerson(e.target.value)}
-                                                >
-                                                    <option value="">Select Option</option>
-                                                    {users.map((user) => (
-                                                        <option key={user._id} value={user._id}>
-                                                            {user.username}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="ibra-popup-page-column-half">
                                     <div className="ibra-popup-page-component-wrapper">
                                         <div className="ibra-popup-page-form-group ibra-popup-page-form-group-test">
-                                            <label style={{ fontSize: "15px", marginBottom: "10px" }}>Start Date <span className="required-field">*</span></label>
+                                            <label style={{ fontSize: "15px", marginBottom: "10px" }}>Initial Due Date <span className="required-field">*</span></label>
                                             <div style={{ display: "flex", gap: "10px", width: "calc(100% - 0px)" }}>
                                                 <div style={{ position: "relative", width: "100%" }}>
                                                     <DatePicker
@@ -726,6 +652,54 @@ const AddRepeatingTaskPopup = ({ onClose, onTaskAdded }) => {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className={`ibra-popup-page-form-group`}>
+                                            <label>Occurance <span className="required-field">*</span></label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={occur}
+                                                    onChange={(e) => setOccur(e.target.value)}
+                                                >
+                                                    <option value="">Select Option</option>
+                                                    <option value="Daily">Daily</option>
+                                                    <option value="Weekly">Weekly</option>
+                                                    <option value="Bi-Weekly">Bi-Weekly</option>
+                                                    <option value="Monthly">Monthly</option>
+                                                    <option value="Quarterly">Quarterly</option>
+                                                    <option value="Yearly">Yearly</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="ibra-popup-page-additional-row">
+                                <div className="ibra-popup-page-column-half">
+                                    <div className="cea-popup-page-component-wrapper">
+                                        <div className="ibra-popup-page-form-group">
+                                            <label>Responsible Person <span className="required-field">*</span></label>
+                                            <div className="ibra-popup-page-select-container">
+                                                <select
+                                                    className="ibra-popup-page-select"
+                                                    value={responsiblePerson}
+                                                    onChange={(e) => setResponsiblePerson(e.target.value)}
+                                                >
+                                                    <option value="">Select Option</option>
+                                                    {users.map((user) => (
+                                                        <option key={user._id} value={user._id}>
+                                                            {user.username}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="ibra-popup-page-column-half">
                                 </div>
                             </div>
 

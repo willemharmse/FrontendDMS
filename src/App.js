@@ -304,14 +304,14 @@ function App() {
         <Route path='FrontendDMS/reviewStandard/:fileId/:type' element={<CreatePageStandardsReview />} />
         <Route path='FrontendDMS/reviewSpecial/:fileId/:type' element={<CreatePageSIReview />} />
         <Route path="FrontendDMS/documentManageHome" element={<FileInfoHome />} />
-        <Route path="FrontendDMS/documentManage/:type" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
+        <Route path="FrontendDMS/documentManage/:type/:fileIds" element={isMobile ? <Navigate to="/mobileFI" /> : <FileInfo />} />
         <Route path="FrontendDMS/EPACSHome" element={<EPACSHome />} />
         <Route path="FrontendDMS/flameManageSites" element={<FlameProofAllSites />} />
         <Route path="FrontendDMS/flameTrash" element={<FlameProofTrash />} />
         <Route path="FrontendDMS/flameManageHome/:site" element={<FlameProofHome />} />
         <Route path="FrontendDMS/flameAllMineAsset" element={<FlameProofInfoAll />} />
         <Route path="FrontendDMS/flameManage/:type/:site" element={<FlameProofMain />} />
-        <Route path="FrontendDMS/flameManageSub/:type/:assetId" element={<FlameProofSub />} />
+        <Route path="FrontendDMS/flameManageSub/:type/:assetId/:certIDs" element={<FlameProofSub />} />
         <Route path="FrontendDMS/flameComponents/:id" element={<ManageComponentDates />} />
         <Route path="FrontendDMS/flameVersionHistory/:id/:image/:text" element={<CertificateVersionHistory />} />
         <Route path="FrontendDMS/flameSites/" element={<FCMSSiteAdmin />} />

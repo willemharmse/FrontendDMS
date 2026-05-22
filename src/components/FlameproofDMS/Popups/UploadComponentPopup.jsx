@@ -553,7 +553,7 @@ const UploadComponentPopup = ({ onClose, refresh, assetNumber = "", site = "", a
                                             rangeHover={false}
                                             highlightToday={false}
                                             editable={false}
-                                            placeholder="YYYY-MM-DD"
+                                            placeholder="N/A"
                                             hideIcon={false}
                                             inputClass='ump-input-select-new-3'
                                             minDate={todayString()}

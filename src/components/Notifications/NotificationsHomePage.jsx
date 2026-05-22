@@ -256,7 +256,7 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
                         }
                     }
                 } else if (note.actionLocation === "DMS") {
-                    targetPath = `/FrontendDMS/documentManage/${note.fileType}`;
+                    targetPath = `/FrontendDMS/documentManage/${note.fileType}/${note.actionId}`;
                 } else if (note.actionLocation === "TMS") {
                     if (note.actionType === "draftShared") {
                         if (note.draftType === "Visitor Induction") {

@@ -25,7 +25,7 @@ import MigrateOwnership from "./FileInfo/MigrateOwnership";
 import TopBar from "./Notifications/TopBar";
 
 const FileInfo = () => {
-  const { type } = useParams();
+  const { type, fileIds } = useParams();
   const [files, setFiles] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -101,7 +101,13 @@ const FileInfo = () => {
   const closeBatch = () => { setBatch(false); fetchFiles(); }
 
   const openUpdate = (fileID) => { setUpdateID(fileID); setUpdate(true); };
-  const closeUpdate = () => { setUpdate(false); fetchFiles(); };
+  const closeUpdate = () => {
+    setUpdate(false);
+    setUpdateID(null);
+    fetchFiles();
+
+    navigate(`/FrontendDMS/documentManage/${type}/new`, { replace: true });
+  };
 
   const openRDPopup = () => setIsRDPopupOpen(true);
   const closeRDPopup = () => setIsRDPopupOpen(false);
@@ -627,6 +633,18 @@ const FileInfo = () => {
 
     return uniqueValues;
   };
+
+  useEffect(() => {
+    console.log("fileIDs param changed:", fileIds);
+
+    if (fileIds && fileIds !== "new") {
+      setUpdateID(fileIds);
+      setUpdate(true);
+    } else {
+      setUpdateID(null);
+      setUpdate(false);
+    }
+  }, [fileIds]);
 
   if (error) {
     return <div>Error: {error}</div>;

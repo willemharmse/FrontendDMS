@@ -34,6 +34,9 @@ import DelegateTaskPopup from "./DelegateTaskPopup";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import PopupMenu from "../../../FileInfo/PopupMenu";
 import PopupMenuTasks from "./PopupMenuTasks";
+import { getAutoManualNavigationRoute } from "./getAutoManualNavigationRoute";
+import { getAutoAutoNavigationRoute } from "./getAutoAutoNavigationRoute";
+import TaskDueDatePopup from "./TaskDueDatePopup";
 
 // ─── Route helpers ────────────────────────────────────────────────────────────
 // Returns the correct API base path for any task object based on _taskSource.
@@ -47,7 +50,7 @@ const ALL_COLUMNS = [
     { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "taskType", title: "Type", views: "both", collapsed: false },
-    { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "taskTitle", title: "Title", views: "both", collapsed: false },
     { id: "taskDescription", title: "Description", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "priority", title: "Priority", views: "both", collapsed: false },
@@ -58,11 +61,11 @@ const ALL_COLUMNS = [
     { id: "responsible", class: `task-grey2`, title: "Responsible Person", views: "both", collapsed: true, collapsedFor: "viewer" },
     { id: "dueDate", class: `task-grey2`, title: "Due Date", views: "both", collapsed: false },
     { id: "acceptanceStatus", class: `task-grey1`, title: "Acceptance Status", views: "both", collapsed: true, collapsedFor: "viewer" },
-    { id: "status", class: `task-grey1`, title: "Status", views: "both", collapsed: true, collapsedFor: "viewer" },
+    { id: "status", class: `task-grey1`, title: "Status", views: "both", collapsed: false },
     { id: "userComments", class: `task-grey1`, title: "Responsible Person Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "userAttachments", class: `task-grey1`, title: "Responsible Person Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "completionDate", title: "Completion Date", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "closeOutComments", title: "Close Out Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "action", title: "Action", views: "both", collapsed: false },
 ];
@@ -95,17 +98,17 @@ const DEFAULT_COLUMN_WIDTHS = {
     allocatedDate: 130,
     dueDate: 40,
     completionDate: 140,
-    status: 60,
+    status: 45,
     attachments: 220,
     comments: 200,
     userAttachments: 220,
     userComments: 120,
-    closeStatus: 50,
+    closeStatus: 30,
     closeOutComments: 300,
     allocatedBy: 50,
     category: 50,
-    discipline: 50,
-    area: 50,
+    discipline: 40,
+    area: 40,
     action: 90,
 };
 
@@ -122,16 +125,16 @@ const COLUMN_SIZE_LIMITS = {
     allocatedBy: { min: 50, max: 300 },
     dueDate: { min: 40, max: 260 },
     completionDate: { min: 100, max: 260 },
-    status: { min: 60, max: 260 },
+    status: { min: 45, max: 260 },
     attachments: { min: 180, max: 420 },
     comments: { min: 150, max: 700 },
     userAttachments: { min: 180, max: 420 },
     userComments: { min: 120, max: 700 },
-    closeStatus: { min: 50, max: 260 },
+    closeStatus: { min: 30, max: 260 },
     closeOutComments: { min: 200, max: 700 },
     action: { min: 90, max: 90 },
-    discipline: { min: 50, max: 300 },
-    area: { min: 50, max: 300 },
+    discipline: { min: 40, max: 300 },
+    area: { min: 40, max: 300 },
 };
 
 const getColumnsForView = (view) => {
@@ -267,6 +270,8 @@ const ManualTaskingPage = () => {
     const [acceptTaskPopup, setAcceptTaskPopup] = useState({ open: false, task: null });
     const [delegateTaskPopup, setDelegateTaskPopup] = useState({ open: false, task: null });
     const [hoveredTaskId, setHoveredTaskId] = useState(null);
+    const [dueDateVal, setDueDateVal] = useState(30);
+    const [isTaskDueDatePopupOpen, setIsTaskDueDatePopupOpen] = useState(false);
 
     // ── View switch ──────────────────────────────────────────────────────────
     const switchView = (nextView) => {
@@ -290,6 +295,16 @@ const ManualTaskingPage = () => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) setToken(storedToken);
     }, [navigate]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("highlightTaskDueDates");
+        if (saved && !isNaN(saved) && Number(saved) > 0) {
+            setDueDateVal(Number(saved));
+        } else {
+            localStorage.setItem("highlightTaskDueDates", "30");
+            setDueDateVal(30);
+        }
+    }, []);
 
     useEffect(() => { fetchTasks(); }, [view]);
 
@@ -565,7 +580,7 @@ const ManualTaskingPage = () => {
             return;
         }
         // Auto-auto tasks are always pre-accepted; manual tasks need explicit acceptance
-        if (task._taskSource !== "autoAuto" && task.acceptanceStatus !== "Accepted") {
+        if ((task._taskSource !== "autoAuto" && task._taskSource !== "autoManual") || task.acceptanceStatus !== "Accepted") {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.warn("You can only modify tasks that you have accepted.", { autoClose: 3000, closeButton: false });
@@ -1246,9 +1261,22 @@ const ManualTaskingPage = () => {
         }
     };
 
+    const getDueDateClass = (dueDate) => {
+        if (!dueDate) return "";
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const due = new Date(dueDate);
+        due.setHours(0, 0, 0, 0);
+        const timeDiff = due - today;
+        if (timeDiff < 0) return "review-past";
+        if (timeDiff <= dueDateVal * 24 * 60 * 60 * 1000) return "review-past";
+        return "";
+    };
+
     // ── Cell renderer ────────────────────────────────────────────────────────
     const renderCell = (col, row, index) => {
         const isAutoAuto = row._taskSource === "autoAuto";
+        const isAutoManual = row._taskSource === "autoManual";
 
         switch (col.id) {
             case "nr":
@@ -1264,7 +1292,7 @@ const ManualTaskingPage = () => {
                                 />
                             ) : (
                                 /* Auto-auto tasks in allocator view: no edit button (system-managed) */
-                                !isAutoAuto && (
+                                (!isAutoAuto || !isAutoManual) && (
                                     <button type="button" className="rca-action-btn" title="Modify Allocated Task"
                                         onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
                                         <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
@@ -1279,16 +1307,16 @@ const ManualTaskingPage = () => {
                                 className="rca-action-btn"
                                 title={
                                     // Auto-auto tasks are always accepted; manual need explicit accept
-                                    (!isAutoAuto && row.acceptanceStatus !== "Accepted")
+                                    (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted"
                                         ? "You must accept this task before editing"
                                         : "Modify Task Progress"
                                 }
                                 style={{
-                                    opacity: (!isAutoAuto && row.acceptanceStatus !== "Accepted") ? 0.4 : 1,
-                                    cursor: (!isAutoAuto && row.acceptanceStatus !== "Accepted") ? "not-allowed" : "pointer",
+                                    opacity: (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted" ? 0.4 : 1,
+                                    cursor: (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted" ? "not-allowed" : "pointer",
                                 }}
                                 onClick={() => {
-                                    if (!isAutoAuto && row.acceptanceStatus !== "Accepted") {
+                                    if (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted") {
                                         toast.warn("You must accept this task before editing.", { autoClose: 3000, closeButton: false });
                                         return;
                                     }
@@ -1312,6 +1340,17 @@ const ManualTaskingPage = () => {
                         className="gen-point title-task-clickable"
                         onClick={(e) => {
                             e.stopPropagation();
+
+                            if (row?._taskSource === "autoManual") {
+                                handleAutoManualNavigation(row);
+                                return;
+                            }
+
+                            if (row?._taskSource === "autoAuto") {
+                                handleAutoAutoNavigation(row);
+                                return;
+                            }
+
                             setHoveredTaskId(hoveredTaskId === row._id ? null : row._id);
                         }}
                     >
@@ -1324,6 +1363,7 @@ const ManualTaskingPage = () => {
                                     setHoveredId={setHoveredTaskId}
                                     isOpen={true}
                                     file={row}
+                                    allowed={!isAutoAuto && !isAutoManual}
                                 />
                             )}
                         </div>
@@ -1334,7 +1374,13 @@ const ManualTaskingPage = () => {
                 // null allocatedBy means system-generated → display "System"
                 return (
                     <td key="allocatedBy" className="procCent" style={{ fontSize: "14px" }}>
-                        {(isAutoAuto && <span style={{ color: "#888", fontStyle: "italic" }}>{row.allocatedBy}</span>) || row.allocatedBy}
+                        {(isAutoAuto || isAutoManual) ? (
+                            <span style={{ color: "#888", fontStyle: "italic" }}>
+                                {row.allocatedBy}
+                            </span>
+                        ) : (
+                            row.allocatedBy
+                        )}
                     </td>
                 );
 
@@ -1403,7 +1449,7 @@ const ManualTaskingPage = () => {
                 return <td key="allocatedDate" className="procCent" style={{ fontSize: "14px" }}>{row.allocatedDate || "-"}</td>;
 
             case "dueDate":
-                return <td key="dueDate" className="procCent" style={{ fontSize: "14px" }}>{row.dueDate || "-"}</td>;
+                return <td key="dueDate" className={`procCent ${getDueDateClass(row.dueDate)}`} style={{ fontSize: "14px" }}>{row.dueDate || "-"}</td>;
 
             case "completionDate":
                 return <td key="completionDate" className="procCent" style={{ fontSize: "14px" }}>{row.completionDate || "-"}</td>;
@@ -1426,8 +1472,8 @@ const ManualTaskingPage = () => {
                                 !!row.closeStatus ||
                                 row.status === "Cancelled" ||
                                 // Manual tasks: must be accepted first. Auto-auto: always editable (pre-accepted)
-                                (!isAutoAuto && row.acceptanceStatus !== "Accepted") ||
-                                isAutoAuto
+                                (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted") ||
+                                isAutoAuto || isAutoManual
                             }
                             title={
                                 row.status === "Cancelled"
@@ -1443,7 +1489,7 @@ const ManualTaskingPage = () => {
                                 fontSize: "13px",
                                 fontWeight: "500",
                                 color: getStatusTextColor(row.status),
-                                cursor: (row.closeStatus || row.status === "Cancelled" || (!isAutoAuto && row.acceptanceStatus !== "Accepted"))
+                                cursor: (row.closeStatus || row.status === "Cancelled" || (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted"))
                                     ? "not-allowed"
                                     : "pointer",
                                 outline: "none",
@@ -1609,7 +1655,7 @@ const ManualTaskingPage = () => {
                         {view === "allocator" ? (
                             <>
                                 {/* Job card only for manual tasks */}
-                                {!isAutoAuto && (
+                                {(!isAutoAuto && !isAutoManual) && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1628,7 +1674,7 @@ const ManualTaskingPage = () => {
                         ) : (
                             <>
                                 {/* Accept/delegate only for manual tasks that haven't been accepted */}
-                                {!isAutoAuto && row.acceptanceStatus !== "Accepted" && (
+                                {(!isAutoAuto && !isAutoManual) && row.acceptanceStatus !== "Accepted" && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1640,7 +1686,7 @@ const ManualTaskingPage = () => {
                                     </button>
                                 )}
                                 {/* Job card only for manual tasks */}
-                                {!isAutoAuto && (
+                                {(!isAutoAuto && !isAutoManual) && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1664,6 +1710,22 @@ const ManualTaskingPage = () => {
 
     // ── Render ───────────────────────────────────────────────────────────────
     const pageLabel = view === "allocator" ? "Task Management" : "Update my Tasks";
+
+    const handleAutoManualNavigation = (row) => {
+        const route = getAutoManualNavigationRoute(row);
+
+        if (route) {
+            navigate(route);
+        }
+    };
+
+    const handleAutoAutoNavigation = (row) => {
+        const route = getAutoAutoNavigationRoute(row);
+
+        if (route) {
+            navigate(route);
+        }
+    };
 
     return (
         <div className="risk-control-attributes-container" style={{ userSelect: "none" }}>
@@ -1741,14 +1803,14 @@ const ManualTaskingPage = () => {
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper-new">
                         <div className="control-attributes-pill-bar">
-                            {["My Tasks", "Allocated Tasks"].map((pill) => (
+                            {["My Tasks", "Tasks Assigned"].map((pill) => (
                                 <div
                                     key={pill}
                                     className={`control-attributes-pill ${categoryTab === pill ? "active" : ""}`}
                                     onClick={() => {
                                         let newTab = pill;
                                         if (pill === "My Tasks") newTab = "viewer";
-                                        else if (pill === "Allocated Tasks") newTab = "allocator";
+                                        else if (pill === "Tasks Assigned") newTab = "allocator";
 
                                         switchView(newTab)
                                         setCategoryTab(pill);
@@ -1792,6 +1854,15 @@ const ManualTaskingPage = () => {
                             style={{ cursor: "pointer", color: "gray" }}
                             onClick={handleExportExcel}
                         />
+
+                        <button
+                            className={showResetButton ? `top-right-button-control-att-5-new` : "top-right-button-control-att-4-new"}
+                            title="Highlight Task Due Dates"
+                            onClick={() => setIsTaskDueDatePopupOpen(true)}
+                            style={{ cursor: "pointer", color: "gray", userSelect: "none", background: "none", border: "none", fontSize: "25px" }}
+                        >
+                            <FontAwesomeIcon icon={faClock} />
+                        </button>
 
                         {/* Column selector popup */}
                         {showColumnSelector && (
@@ -1983,6 +2054,14 @@ const ManualTaskingPage = () => {
 
             {/* Allocator popups */}
             {showAddTaskPopup && <AddTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddTaskPopup(false)} />}
+            {isTaskDueDatePopupOpen && (
+                <TaskDueDatePopup
+                    isOpen={isTaskDueDatePopupOpen}
+                    onClose={() => setIsTaskDueDatePopupOpen(false)}
+                    onUpdate={setDueDateVal}
+                    currVal={dueDateVal}
+                />
+            )}
             {showAddRepeatingTaskPopup && <AddRepeatingTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddRepeatingTaskPopup(false)} />}
 
             {deleteTaskPopup.open && (

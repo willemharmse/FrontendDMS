@@ -106,7 +106,7 @@ const FlameProofMain = () => {
   const getInitials = (str = "") => str.trim().split(/[\s\/\-_.()]+/).filter(Boolean).map(w => w[0].toUpperCase()).join("");
   const formatAssetTypeLabel = (assetType = "", isAll = false) => isAll ? assetType : (getInitials(assetType) ? `${assetType}` : assetType);
   const openUpload = () => { setUpload(true); };
-  const closeUpload = (assetNr, id, nav) => { setUpload(!upload); if (nav) { navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`) } };
+  const closeUpload = (assetNr, id, nav) => { setUpload(!upload); if (nav) { navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}/new`) } };
   const openRegister = () => { setRegister(true); };
   const closeRegister = (id, type) => { setRegister(!register); navigate(`/FrontendDMS/flameproofComponents/${type}/${id}`) };
   const exitRegister = () => { setRegister(!register); };

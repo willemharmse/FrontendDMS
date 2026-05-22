@@ -74,6 +74,8 @@ const AddTemplatePopup = ({ onClose, onTaskAdded }) => {
                     taskTitle: taskTitle.trim(),
                     taskPriority,
                     comment: comments.trim(),
+                    discipline: discipline.trim(),
+                    area: area.trim(),
                 },
                 {
                     headers: {

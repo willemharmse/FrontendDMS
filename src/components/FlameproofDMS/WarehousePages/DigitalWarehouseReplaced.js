@@ -111,7 +111,7 @@ const DigitalWarehouseReplaced = () => {
   const closeUpload = (assetNr, id, nav) => {
     setUpload(!upload);
     if (nav) {
-      navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}`)
+      navigate(`/FrontendDMS/flameManageSub/${assetNr}/${id}/new`)
     }
   };
 

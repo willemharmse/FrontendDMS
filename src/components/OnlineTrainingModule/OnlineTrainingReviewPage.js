@@ -50,6 +50,21 @@ const OnlineTrainingReviewPage = () => {
   const [inApproval, setInApproval] = useState(false);
   const [publishType, setPublishType] = useState(false);
 
+  const readOnlyRef = useRef(false);
+
+  const stopAutoSave = () => {
+    if (autoSaveInterval.current) {
+      clearInterval(autoSaveInterval.current);
+      autoSaveInterval.current = null;
+    }
+  };
+
+  const enableReadOnlyImmediately = () => {
+    readOnlyRef.current = true;
+    setReadOnly(true);
+    stopAutoSave();
+  };
+
   const openApproval = () => {
     setApproval(true);
   }
@@ -552,11 +567,25 @@ const OnlineTrainingReviewPage = () => {
 
     fd.append("draft", JSON.stringify(payload));
 
-    await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/modifyPublishedCourse/${loadedIDRef.current}`, {
+    const res = await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/modifyPublishedCourse/${loadedIDRef.current}`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` },
       body: fd
     });
+
+    if (!res.ok) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Failure when saving draft", {
+        closeButton: true,
+        autoClose: 800,
+        style: { textAlign: "center" }
+      });
+
+      return false;
+    }
+
+    return true;
   }
 
   const handlePubClick = () => {
@@ -613,7 +642,15 @@ const OnlineTrainingReviewPage = () => {
     };
 
     setLoading(true);
-    updateData(userIDsRef.current);
+    stopAutoSave();
+
+    const saved = await updateData(userIDsRef.current);
+    if (saved === false) {
+      setLoading(false);
+      return;
+    }
+
+    enableReadOnlyImmediately();
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/approve-publishDoc`, {
@@ -628,15 +665,15 @@ const OnlineTrainingReviewPage = () => {
       if (!response.ok) throw new Error("Failed to generate document");
       const data = await response.json();
 
-      toast.success(`Course Successfully Approved.`, {
+      toast.success(`Course successfully approved. The course is now read-only.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1200,
         style: {
           textAlign: 'center'
         }
       });
 
-      setReadOnly(true);
+      enableReadOnlyImmediately();
       setLoading(false);
 
       if (data.fullyApproved) {
@@ -676,8 +713,13 @@ const OnlineTrainingReviewPage = () => {
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
-      setReadOnly(storedData.readOnly);
-      setInApproval(storedData.statusApproval);
+      setInApproval(Boolean(storedData.statusApproval));
+
+      if (storedData.statusApproval && storedData.readOnly) {
+        enableReadOnlyImmediately();
+      } else {
+        setReadOnly(storedData.readOnly);
+      }
 
       setShowPublishLoader(false);
     } catch (error) {
@@ -726,6 +768,14 @@ const OnlineTrainingReviewPage = () => {
   const userIDRef = useRef(userID);
 
   useEffect(() => {
+    readOnlyRef.current = readOnly;
+
+    if (readOnly) {
+      stopAutoSave();
+    }
+  }, [readOnly]);
+
+  useEffect(() => {
     userIDRef.current = userID;
   }, [userID]);
 
@@ -746,26 +796,23 @@ const OnlineTrainingReviewPage = () => {
   }, [formData]);
 
   useEffect(() => {
-    if (!autoSaveInterval.current && formData.courseTitle.trim() !== "") {
-      console.log("✅ Auto-save interval set");
-
+    if (
+      !readOnlyRef.current &&
+      !autoSaveInterval.current &&
+      formData.courseTitle.trim() !== ""
+    ) {
       autoSaveInterval.current = setInterval(() => {
-        console.log("⏳ Auto-saving...");
         autoSaveDraft();
       }, 120000);
     }
 
     return () => {
-      if (autoSaveInterval.current) {
-        clearInterval(autoSaveInterval.current);
-        autoSaveInterval.current = null;
-        console.log("🧹 Auto-save interval cleared");
-      }
+      stopAutoSave();
     };
-  }, [formData.courseTitle]);
+  }, [formData.courseTitle, readOnly]);
 
   const autoSaveDraft = () => {
-    if (readOnly) return;
+    if (readOnlyRef.current) return;
     if (formData.courseTitle.trim() === "") return;
     if (preview) return;
 
@@ -942,7 +989,13 @@ const OnlineTrainingReviewPage = () => {
     };
 
     setLoading(true);
-    updateData();
+    stopAutoSave();
+
+    const saved = await updateData(userIDsRef.current);
+    if (saved === false) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/start-approval-publishedDoc`, {
@@ -957,7 +1010,7 @@ const OnlineTrainingReviewPage = () => {
       if (!response.ok) throw new Error("Failed to generate document");
       const data = await response.json();
 
-      toast.success(`Course Publishing Approval Started.`, {
+      toast.success(`The approval process has started for this online training course.`, {
         closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
@@ -966,7 +1019,7 @@ const OnlineTrainingReviewPage = () => {
       });
 
       if (!data.currentApprover) {
-        setReadOnly(true)
+        enableReadOnlyImmediately();
       }
 
       setInApproval(data.approvalStatus);

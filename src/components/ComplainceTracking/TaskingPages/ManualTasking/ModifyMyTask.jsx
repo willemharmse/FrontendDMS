@@ -169,9 +169,12 @@ const ModifyMyTask = ({ onClose, data, onSaved }) => {
                 formData.append("userAttachments", a.file, a.name);
             });
 
-            const apiBase = data?._taskSource === "autoAuto"
-                ? `${process.env.REACT_APP_URL}/api/auto-auto-tasks`
-                : `${process.env.REACT_APP_URL}/api/complainceTasks`;
+            const apiBase =
+                data?._taskSource === "autoAuto"
+                    ? `${process.env.REACT_APP_URL}/api/auto-auto-tasks`
+                    : data?._taskSource === "autoManual"
+                        ? `${process.env.REACT_APP_URL}/api/auto-manual-tasks`
+                        : `${process.env.REACT_APP_URL}/api/complainceTasks`;
 
             const response = await axios.put(
                 `${apiBase}/${data._id}/update-my-task`,

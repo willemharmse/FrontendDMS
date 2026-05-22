@@ -25,7 +25,7 @@ import ModifyCertificateDetailsPopup from "./Popups/ModifyCertificateDetailsPopu
 import CertExpiryDatePopup from "./Popups/CertExpiryDatePopup";
 
 const FlameProofSub = () => {
-  const { type, assetId } = useParams();
+  const { type, assetId, certIDs } = useParams();
   const [files, setFiles] = useState([]);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,7 +147,7 @@ const FlameProofSub = () => {
   const openUpload = () => { setUpload(true); };
   const closeUpload = (assetNr, id, nav) => { setUpload(!upload); fetchFiles(); };
   const openUpdate = (fileID) => { setUpdateID(fileID); setUpdate(true); };
-  const closeUpdate = () => { setUpdate(!update); fetchFiles(); };
+  const closeUpdate = () => { setUpdate(!update); navigate(`/FrontendDMS/flameManageSub/${type}/${assetId}/new`, { replace: true }); };
   const openRegister = () => { setRegister(true); };
   const closeRegister = () => { setRegister(!register); };
   const openSortModal = () => setIsSortModalOpen(true);
@@ -615,6 +615,18 @@ const FlameProofSub = () => {
       new Set(current.flatMap(r => getFilterValuesForCell(r, colId)))
     ).sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" }));
   };
+
+  useEffect(() => {
+    console.log("fileIDs param changed:", certIDs);
+
+    if (certIDs && certIDs !== "new") {
+      setUpdateID(certIDs);
+      setUpdate(true);
+    } else {
+      setUpdateID(null);
+      setUpdate(false);
+    }
+  }, [certIDs]);
 
   return (
     <div className="file-info-container">

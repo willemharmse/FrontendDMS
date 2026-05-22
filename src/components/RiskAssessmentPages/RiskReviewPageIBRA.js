@@ -3004,13 +3004,16 @@ const RiskReviewPageIBRA = () => {
                         onChange={handleAimChange}
                         onBulletChange={handleAimBulletChange}
                         onFocus={(index) =>
-                            setErrors(prev => {
-                                const nextAimErrors = [...(prev.aim || [])];
+                            setErrors((prev) => {
+                                const nextAimErrors = Array.isArray(prev.aim)
+                                    ? [...prev.aim]
+                                    : [];
+
                                 nextAimErrors[index] = false;
 
                                 return {
                                     ...prev,
-                                    aim: nextAimErrors
+                                    aim: nextAimErrors,
                                 };
                             })
                         }
