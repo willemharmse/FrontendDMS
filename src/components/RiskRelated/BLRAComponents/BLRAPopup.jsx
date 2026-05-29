@@ -64,6 +64,11 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
     const [showOwnersDropdown, setShowOwnersDropdown] = useState(false);
     const ownersInputRef = useRef(null);
 
+    const [usersList, setUsersList] = useState([]);
+    const [filteredResponsibleMap, setFilteredResponsibleMap] = useState({});
+    const [showResponsibleDropdownId, setShowResponsibleDropdownId] = useState(null);
+    const responsibleInputRefs = useRef({});
+
     const [functionalOwners, setFunctionalOwners] = useState([]);
     const [likelihoodOptions] = useState(['1: Rare', '2. Unlikely', '3. Possible', '4. Likely', '5. Almost Certain']);
     const [helpFO, setHelpFO] = useState(false);
@@ -198,6 +203,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
         setShowMainAreasDropdown(false);
         setShowSubAreasDropdown(false);
         setShowOwnersDropdown(false);
+        setShowResponsibleDropdownId(null);
     };
 
     const [ueOptions, setUEOptions] = useState([]);
@@ -394,6 +400,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
             setShowMainAreasDropdown(false);
             setShowSubAreasDropdown(false);
             setShowOwnersDropdown(false);
+            setShowResponsibleDropdownId(null);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -430,6 +437,25 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
             }
         }
         fetchValues();
+    }, []);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!res.ok) throw new Error(`Failed: ${res.status}`);
+                const data = await res.json();
+                const users = (data.users || [])
+                    .map(u => u.username)
+                    .filter(Boolean)
+                    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+                setUsersList(users);
+            } catch (error) {
+                console.log(error);
+                setUsersList([]);
+            }
+        };
+        fetchUsers();
     }, []);
 
     useEffect(() => {
@@ -670,6 +696,44 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
             if (prev.length === 1) return prev;
             return prev.filter(row => row.id !== id);
         });
+    };
+
+    const handleResponsibleInput = (rowId, value) => {
+        handleRiskTreatmentChange(rowId, 'responsible', value);
+        const matches = usersList.filter(u => u.toLowerCase().includes(value.toLowerCase()));
+        setFilteredResponsibleMap(prev => ({ ...prev, [rowId]: matches }));
+        setShowResponsibleDropdownId(rowId);
+
+        const el = responsibleInputRefs.current[rowId];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const handleResponsibleFocus = (rowId) => {
+        if (readOnly) return;
+        setFilteredResponsibleMap(prev => ({ ...prev, [rowId]: usersList }));
+        setShowResponsibleDropdownId(rowId);
+
+        const el = responsibleInputRefs.current[rowId];
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            setDropdownPosition({
+                top: rect.bottom + window.scrollY + 5,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    const selectResponsibleSuggestion = (rowId, value) => {
+        handleRiskTreatmentChange(rowId, 'responsible', value);
+        setShowResponsibleDropdownId(null);
     };
 
     useEffect(() => {
@@ -1623,11 +1687,14 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
                                                     <div className="ibra-popup-risk-treatment-responsible">
                                                         <input
                                                             type="text"
+                                                            ref={el => responsibleInputRefs.current[row.id] = el}
                                                             className="ibra-popup-page-input-table"
                                                             value={row.responsible}
-                                                            onChange={(e) => handleRiskTreatmentChange(row.id, 'responsible', e.target.value)}
+                                                            onChange={(e) => handleResponsibleInput(row.id, e.target.value)}
+                                                            onFocus={() => handleResponsibleFocus(row.id)}
                                                             placeholder="Insert Responsible Person"
                                                             readOnly={readOnly}
+                                                            autoComplete="off"
                                                         />
                                                     </div>
 
@@ -1859,6 +1926,30 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
                                 onMouseDown={() => selectOwnerSuggestion(term.owner)}
                             >
                                 {term.owner}
+                            </li>
+                        ))}
+                </ul>
+            )}
+
+            {showResponsibleDropdownId !== null && (filteredResponsibleMap[showResponsibleDropdownId] || []).length > 0 && (
+                <ul
+                    className="floating-dropdown"
+                    style={{
+                        position: 'fixed',
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 1000
+                    }}
+                >
+                    {(filteredResponsibleMap[showResponsibleDropdownId] || [])
+                        .filter(Boolean)
+                        .map((username, i) => (
+                            <li
+                                key={i}
+                                onMouseDown={() => selectResponsibleSuggestion(showResponsibleDropdownId, username)}
+                            >
+                                {username}
                             </li>
                         ))}
                 </ul>

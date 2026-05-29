@@ -656,7 +656,7 @@ const DigitalWarehouseRemoved = () => {
 
           <div className="sidebar-logo-dm-fi">
             <img src={`${process.env.PUBLIC_URL}/flameWarehouse2.svg`} alt="Logo" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{(`Components Await Repair`)}</p>
+            <p className="logo-text-dm-fi">{(`Components Awaiting Repair`)}</p>
           </div>
         </div>
       )}
@@ -695,7 +695,7 @@ const DigitalWarehouseRemoved = () => {
 
         <div className="table-flameproof-card">
           <div className="flameproof-table-header-label-wrapper">
-            <label className="risk-control-label">{"Components Await Repair"}</label>
+            <label className="risk-control-label">{"Components Awaiting Repair"}</label>
             <FontAwesomeIcon
               icon={faDownload}
               title="Export to Excel"

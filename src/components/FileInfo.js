@@ -690,7 +690,7 @@ const FileInfo = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type]}`} alt="Logo" className="icon-risk-rm" />
+            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type] || `guidelinesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">
               {isTrashView ? getDeletedTitle() : (type === "Policy" ? "Policies" : `${type}s`)}
             </p>
@@ -835,7 +835,7 @@ const FileInfo = () => {
                   <tr>
                     <td
                       colSpan={
-                        8 +
+                        9 +
                         (type === "All Document" ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)
@@ -855,7 +855,7 @@ const FileInfo = () => {
                   <tr>
                     <td
                       colSpan={
-                        8 +
+                        9 +
                         (type === "All Document" ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)

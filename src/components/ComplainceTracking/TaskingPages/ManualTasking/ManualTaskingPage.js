@@ -47,15 +47,16 @@ const taskApiBase = (task) =>
 
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
+    { id: "allocatedBy", title: "Originator", views: "both", collapsed: false, collapsedFor: "viewer" },
+    { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "taskType", title: "Type", views: "both", collapsed: false },
     { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "taskTitle", title: "Title", views: "both", collapsed: false },
     { id: "taskDescription", title: "Description", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "priority", title: "Priority", views: "both", collapsed: false },
-    { id: "allocatedBy", class: `task-grey2`, title: "Originator", views: "both", collapsed: true, collapsedFor: "viewer" },
-    { id: "allocatedDate", class: `task-grey2`, title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "comments", class: `task-grey2`, title: "Originator Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "attachments", class: `task-grey2`, title: "Originator Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "responsible", class: `task-grey2`, title: "Responsible Person", views: "both", collapsed: true, collapsedFor: "viewer" },
@@ -108,7 +109,8 @@ const DEFAULT_COLUMN_WIDTHS = {
     allocatedBy: 50,
     category: 50,
     discipline: 40,
-    area: 40,
+    area: 30,
+    uniqueID: 80,
     action: 90,
 };
 
@@ -134,7 +136,8 @@ const COLUMN_SIZE_LIMITS = {
     closeOutComments: { min: 200, max: 700 },
     action: { min: 90, max: 90 },
     discipline: { min: 40, max: 300 },
-    area: { min: 40, max: 300 },
+    area: { min: 30, max: 300 },
+    uniqueID: { min: 30, max: 300 },
 };
 
 const getColumnsForView = (view) => {
@@ -207,6 +210,8 @@ const normalizeTask = (task) => ({
     discipline: task?.discipline || "",
     area: task?.area || "",
     acceptanceStatus: task?.acceptanceStatus || "",
+    isTagged: task?.filledManual === false,
+    uniqueID: task?.uniqueID || "",
 });
 
 const ManualTaskingPage = () => {
@@ -580,7 +585,7 @@ const ManualTaskingPage = () => {
             return;
         }
         // Auto-auto tasks are always pre-accepted; manual tasks need explicit acceptance
-        if ((task._taskSource !== "autoAuto" && task._taskSource !== "autoManual") || task.acceptanceStatus !== "Accepted") {
+        if (task.acceptanceStatus !== "Accepted") {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.warn("You can only modify tasks that you have accepted.", { autoClose: 3000, closeButton: false });
@@ -825,6 +830,8 @@ const ManualTaskingPage = () => {
         };
 
         current.sort((a, b) => {
+            if (a.isTagged !== b.isTagged) return a.isTagged ? -1 : 1;
+
             if (!sortConfig?.colId) {
                 const dA = parseDateValue(a?.dueDate), dB = parseDateValue(b?.dueDate);
                 if (dA === null && dB !== null) return 1;
@@ -1393,6 +1400,9 @@ const ManualTaskingPage = () => {
             case "discipline":
                 return <td key="discipline" className="procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
 
+            case "uniqueID":
+                return <td key="uniqueID" className="procCent" style={{ fontSize: "14px" }}>{row.uniqueID || "-"}</td>;
+
             case "area":
                 return <td key="area" className="procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
 
@@ -1655,7 +1665,7 @@ const ManualTaskingPage = () => {
                         {view === "allocator" ? (
                             <>
                                 {/* Job card only for manual tasks */}
-                                {(!isAutoAuto && !isAutoManual) && (
+                                {(!isAutoAuto && !isAutoManual && !row.isTagged) && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1977,7 +1987,10 @@ const ManualTaskingPage = () => {
                                         <tr
                                             key={row._id ?? index}
                                             className="table-scroll-wrapper-attributes-controls"
-                                            style={{ whiteSpace: "pre-wrap" }}
+                                            style={{
+                                                whiteSpace: "pre-wrap",
+                                                backgroundColor: row.isTagged ? "#f2f2f2" : undefined,
+                                            }}
                                         >
                                             {availableColumns
                                                 .filter(col => showColumns.includes(col.id))

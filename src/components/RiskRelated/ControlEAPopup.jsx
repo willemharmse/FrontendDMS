@@ -172,7 +172,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
     const [hierarchyOptions] = useState(['1. Elimination', '2. Substitution', '3. Engineering', '4. Separation', '5. Administration', '6. PPE']);
     const [aimOptions] = useState(['Safety (S)', 'Health (H)', 'Environment (E)', 'Community (C)', 'Legal & Regulatory (L&R)', 'Material Losses (M)', 'Reputation (R)']);
     const [qualityOptions] = useState(['< 30%', '30-59%', '60-90%', '> 90%']);
-    const [posLists, setPosLists] = useState([]);
+    const [usersList, setUsersList] = useState([]);
     const [filteredResponsible, setFilteredResponsible] = useState([]);
     const [showResponsibleDropdown, setShowResponsibleDropdown] = useState(false);
     const responsibleInputRef = useRef(null);
@@ -302,19 +302,22 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
     }, [quality, hierarchy]);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchUsers = async () => {
             try {
-                const res = await axios.get(`${process.env.REACT_APP_URL}/api/riskInfo/stk`);
-                const data = res.data.stakeholders;
-
-                const positions = Array.from(new Set(data.map(d => d.pos))).sort();
-
-                setPosLists(positions);
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/user/`);
+                if (!res.ok) throw new Error(`Failed: ${res.status}`);
+                const data = await res.json();
+                const users = (data.users || [])
+                    .map(u => u.username)
+                    .filter(Boolean)
+                    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+                setUsersList(users);
             } catch (error) {
-                console.log(error)
+                console.log(error);
+                setUsersList([]);
             }
         };
-        fetchData();
+        fetchUsers();
     }, []);
 
     useEffect(() => {
@@ -362,7 +365,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
     const handleResponsibleInput = (value) => {
         closeAllDropdowns();
         setResponsible(value);
-        const matches = posLists
+        const matches = usersList
             .filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
         setFilteredResponsible(matches);
         setShowResponsibleDropdown(true);
@@ -382,7 +385,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
     const handleResponsibleFocus = () => {
         if (readOnly) return;
         closeAllDropdowns();
-        const matches = posLists;
+        const matches = usersList;
         setFilteredResponsible(matches);
         setShowResponsibleDropdown(true);
 

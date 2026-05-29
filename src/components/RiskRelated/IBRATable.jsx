@@ -263,7 +263,9 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
     const filteredRows = useMemo(() => {
         let current = [...rows];
 
-        const COLUMN_ONLY_FILTERS = new Set([
+        // These columns filter items *within* the cell (hide non-matching list items),
+        // but they must ALSO exclude rows that have zero matching items.
+        const CELL_ITEM_FILTERS = new Set([
             "hazards",
             "controls",
             "actions",
@@ -278,9 +280,6 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                     ? filterObj
                     : filterObj?.selected;
                 if (!Array.isArray(selected) || selected.length === 0) continue;
-
-                // These filters are handled inside the cell renderers
-                if (COLUMN_ONLY_FILTERS.has(colId)) continue;
 
                 const cellValues = getFilterValuesForCell(row, colId);
                 const match = cellValues.some(v => selected.includes(v));
@@ -1423,16 +1422,27 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
     const getAvailableOptions = (colId) => {
         let filtered = rows;
 
+        const COLUMN_ONLY_FILTERS = new Set([
+            "hazards",
+            "controls",
+            "actions",
+            "responsible",
+            "dueDate"
+        ]);
+
         for (const [filterColId, selectedValues] of Object.entries(filters)) {
             // Skip the current column to show all potential options for this column
             if (filterColId === colId) continue;
+
+            // These filters only hide items within cells, they never exclude whole rows
+            if (COLUMN_ONLY_FILTERS.has(filterColId)) continue;
 
             const selected = Array.isArray(selectedValues) ? selectedValues : selectedValues?.selected;
             if (!Array.isArray(selected)) continue;
 
             filtered = filtered.filter(row => {
                 const cellValues = getFilterValuesForCell(row, filterColId);
-                return cellValues.every(v => selected.includes(v));
+                return cellValues.some(v => selected.includes(v));
             });
         }
 

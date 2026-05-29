@@ -1,0 +1,150 @@
+/* ── DMSDashboard Stats Section ── */
+
+.dms-dashboard-wrapper {
+    padding: 24px 20px;
+    font-family: Arial, sans-serif;
+}
+
+.dms-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #4a4a4a;
+    margin: 0 0 18px 0;
+}
+
+.dms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+/* ── Base card ── */
+.dms-stat-card {
+    background: linear-gradient(135deg, #001339 0%, #002060 100%);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dms-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Decorative corner highlight */
+.dms-stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 10px 0 60px;
+}
+
+/* ── Variants ── */
+.dms-stat-neutral {
+    background: linear-gradient(135deg, #001339 0%, #002060 100%);
+}
+
+.dms-stat-success {
+    background: linear-gradient(135deg, #002a1a 0%, #005030 100%);
+}
+
+.dms-stat-danger {
+    background: linear-gradient(135deg, #3a0000 0%, #7a0000 100%);
+}
+
+.dms-stat-warn {
+    background: linear-gradient(135deg, #3a1a00 0%, #7a3300 100%);
+}
+
+/* ── Icon circle ── */
+.dms-stat-icon-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.dms-stat-success .dms-stat-icon-circle {
+    background: rgba(80, 220, 140, 0.18);
+    color: #5dc98a;
+}
+
+.dms-stat-danger .dms-stat-icon-circle {
+    background: rgba(255, 80, 80, 0.18);
+    color: #ff7070;
+}
+
+.dms-stat-warn .dms-stat-icon-circle {
+    background: rgba(255, 160, 50, 0.18);
+    color: #ffb347;
+}
+
+/* ── Text ── */
+.dms-stat-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.dms-stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.dms-stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.dms-stat-sublabel {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+}
+
+/* ── Status dot ── */
+.dms-stat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+}
+
+.dms-stat-success .dms-stat-dot {
+    background: #5dc98a;
+}
+
+.dms-stat-danger .dms-stat-dot {
+    background: #ff7070;
+}
+
+.dms-stat-warn .dms-stat-dot {
+    background: #ffb347;
+}

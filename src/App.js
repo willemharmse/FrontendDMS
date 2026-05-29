@@ -205,6 +205,7 @@ import TaskTemplatesPage from './components/ComplainceTracking/TaskingPages/Manu
 import DeletedTaskTemplates from './components/ComplainceTracking/TaskingPages/ManualTasking/DeletedTaskTemplates';
 import SuggestedTaskTemplates from './components/ComplainceTracking/TaskingPages/ManualTasking/SuggestedTaskTemplates';
 import InfoPage from './components/InfoPage';
+import DMSDashboard from './components/DMSDashboard';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -476,6 +477,7 @@ function App() {
         <Route path="FrontendDMS/deletedTaskTemplates" element={<DeletedTaskTemplates />} />
         <Route path="FrontendDMS/suggestedTaskTemplates/:taskID" element={<SuggestedTaskTemplates />} />
         <Route path="FrontendDMS/infoHelp/:id" element={<InfoPage />} />
+        <Route path="FrontendDMS/test123/:id" element={<DMSDashboard />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />
