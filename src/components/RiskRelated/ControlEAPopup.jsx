@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './ControlEAPopup.css';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faCalendarDays, faX } from '@fortawesome/free-solid-svg-icons';
 import 'react-toastify/dist/ReactToastify.css';
 import ControlType from './RiskInfo/ControlType';
 import ControlActivation from './RiskInfo/ControlActivation';
@@ -895,7 +895,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
                                                         <div className="ibra-popup-page-form-group">
                                                             <label style={{ fontSize: "15px" }}>Due Date
                                                             </label>
-                                                            <div style={{ position: "relative" }}>
+                                                            <div className="ibra-popup-risk-treatment-date-wrap">
                                                                 <DatePicker
                                                                     value={dueDate || ""}
                                                                     format="YYYY-MM-DD"
@@ -908,7 +908,7 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
                                                                     placeholder="YYYY-MM-DD"
                                                                     hideIcon={false}
                                                                     inputClass='cea-popup-page-input'
-                                                                    readOnly={readOnly}
+                                                                    disabled={readOnly}
                                                                     onFocus={() => {
                                                                         setErrors(prev => ({
                                                                             ...prev,
@@ -922,10 +922,40 @@ const ControlEAPopup = ({ onClose, onSave, data, onControlRename, readOnly, exis
                                                                     }}
                                                                     onOpenPickNewDate={false}
                                                                 />
-                                                                <FontAwesomeIcon
-                                                                    icon={faCalendarDays}
-                                                                    className="date-input-calendar-icon"
-                                                                />
+
+                                                                {!!dueDate ? (
+                                                                    <>
+                                                                        {!readOnly && (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="ibra-popup-risk-treatment-date-clear-btn"
+                                                                                style={{ right: "7px", top: "20px" }}
+                                                                                title="Clear date"
+                                                                                disabled={readOnly}
+                                                                                onMouseDown={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+                                                                                }}
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+                                                                                    if (readOnly) return;
+                                                                                    setDueDate("");
+                                                                                }}
+                                                                            >
+                                                                                <FontAwesomeIcon icon={faX} />
+                                                                            </button>
+                                                                        )}
+                                                                    </>
+                                                                ) : (
+                                                                    <span
+                                                                        className="ibra-popup-risk-treatment-date-calendar-icon"
+                                                                        style={{ right: "6px", top: "20px" }}
+                                                                        aria-hidden="true"
+                                                                    >
+                                                                        <FontAwesomeIcon icon={faCalendarDays} />
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>

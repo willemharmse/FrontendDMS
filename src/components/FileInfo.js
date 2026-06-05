@@ -351,7 +351,12 @@ const FileInfo = () => {
 
   const getDeletedTitle = () => {
     if (type === "All Document") return "Deleted Documents";
-    return `Deleted ${type === "Policy" ? "Policies" : `${type}s`}`;
+    return `Deleted ${type === "Policy"
+      ? "Policies"
+      : type === "Training"
+        ? "Training"
+        : `${type}s`
+      }`;
   };
 
   const clearSearch = () => setSearchQuery("");
@@ -692,7 +697,13 @@ const FileInfo = () => {
           <div className="sidebar-logo-dm-fi">
             <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type] || `guidelinesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">
-              {isTrashView ? getDeletedTitle() : (type === "Policy" ? "Policies" : `${type}s`)}
+              {isTrashView
+                ? getDeletedTitle()
+                : type === "Policy"
+                  ? "Policies"
+                  : type === "Training"
+                    ? "Training"
+                    : `${type}s`}
             </p>
           </div>
         </div>
@@ -778,7 +789,13 @@ const FileInfo = () => {
         <div className="table-flameproof-card">
           <div className="flameproof-table-header-label-wrapper">
             <label className="risk-control-label">
-              {isTrashView ? getDeletedTitle() : (type === "Policy" ? "Policies" : `${type}s`)}
+              {isTrashView
+                ? getDeletedTitle()
+                : type === "Policy"
+                  ? "Policies"
+                  : type === "Training"
+                    ? "Training"
+                    : `${type}s`}
             </label>
             <button
               className={getFilterBtnClass()} // Calculated class (e.g., ibra4, ibra5, ibra6)

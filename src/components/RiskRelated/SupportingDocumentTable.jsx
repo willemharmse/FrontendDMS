@@ -110,15 +110,6 @@ const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, r
         let runningNewSize = 0;
 
         selected.forEach((file) => {
-            const isPdf =
-                file.type === "application/pdf" ||
-                file.name.toLowerCase().endsWith(".pdf");
-
-            if (!isPdf) {
-                invalidTypeFiles.push(file);
-                return;
-            }
-
             if (file.size > MAX_FILE_SIZE_BYTES) {
                 oversizedFiles.push(file);
                 return;
@@ -288,7 +279,6 @@ const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, r
                         <input
                             type="file"
                             multiple
-                            accept=".pdf,application/pdf"
                             style={{ display: 'none' }}
                             ref={fileInputRef}
                             onChange={handleFileChange}

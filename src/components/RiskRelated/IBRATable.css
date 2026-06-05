@@ -173,9 +173,6 @@ td.ibraSub {
 .ibraCon {
     width: 69px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     color: black !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
@@ -187,8 +184,6 @@ td.ibraCon {
     min-width: 69px;
     max-width: 69px;
     background-color: white !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
 }
 
 .ibraOther {
@@ -306,9 +301,6 @@ td.ibraStatus {
     min-width: 500px;
     max-width: 500px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -319,16 +311,12 @@ td.ibraPI {
     min-width: 500px;
     max-width: 500px;
     background-color: white !important;
-    border: 2px solid #BFBFBF !important;
 }
 
 .ibraRA {
     min-width: 250px;
     max-width: 250px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -370,16 +358,12 @@ td.ibraRA {
     min-width: 370px;
     max-width: 370px;
     background-color: white !important;
-    border: 2px solid #BFBFBF !important;
 }
 
 .ibraDD {
     min-width: 130px;
     max-width: 130px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -390,7 +374,6 @@ td.ibraDD {
     min-width: 130px;
     max-width: 130px;
     background-color: white !important;
-    border: 2px solid #BFBFBF !important;
 }
 
 .ibraDate {

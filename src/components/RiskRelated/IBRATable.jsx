@@ -1495,7 +1495,7 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
 
                 <button
                     className={downloadBtnClass}
-                    title="Download IBRA"
+                    title="Download IBRA Table"
                     onClick={generate}
                 >
                     <FontAwesomeIcon icon={faDownload} className="icon-um-search" />

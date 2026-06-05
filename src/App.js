@@ -206,6 +206,11 @@ import DeletedTaskTemplates from './components/ComplainceTracking/TaskingPages/M
 import SuggestedTaskTemplates from './components/ComplainceTracking/TaskingPages/ManualTasking/SuggestedTaskTemplates';
 import InfoPage from './components/InfoPage';
 import DMSDashboard from './components/DMSDashboard';
+import DMSMainDash from './components/CTSDashboards/DMSMainDash';
+import DDSMainDash from './components/CTSDashboards/DDSMainDash';
+import RMSMainDash from './components/CTSDashboards/RMSMainDash';
+import EPAMSMainDash from './components/CTSDashboards/EPAMSMainDash';
+import CMMainDash from './components/CTSDashboards/CMMainDash';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -477,7 +482,12 @@ function App() {
         <Route path="FrontendDMS/deletedTaskTemplates" element={<DeletedTaskTemplates />} />
         <Route path="FrontendDMS/suggestedTaskTemplates/:taskID" element={<SuggestedTaskTemplates />} />
         <Route path="FrontendDMS/infoHelp/:id" element={<InfoPage />} />
-        <Route path="FrontendDMS/test123/:id" element={<DMSDashboard />} />
+        <Route path="FrontendDMS/mainDash" element={<DMSDashboard />} />
+        <Route path="FrontendDMS/dmsDash" element={<DMSMainDash />} />
+        <Route path="FrontendDMS/ddsDash" element={<DDSMainDash />} />
+        <Route path="FrontendDMS/rmsDash" element={<RMSMainDash />} />
+        <Route path="FrontendDMS/cmsDash" element={<CMMainDash />} />
+        <Route path="FrontendDMS/epamsDash" element={<EPAMSMainDash />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

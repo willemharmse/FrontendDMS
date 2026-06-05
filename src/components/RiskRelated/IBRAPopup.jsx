@@ -1694,7 +1694,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
                                                         />
                                                     </div>
 
-                                                    <div className="ibra-popup-risk-treatment-date">
+                                                    <div className="ibra-popup-risk-treatment-date" style={{ marginRight: readOnly ? "15px" : "0px" }}>
                                                         <div className="ibra-popup-risk-treatment-date-wrap">
                                                             <DatePicker
                                                                 value={row.dueDate || null}
@@ -1718,28 +1718,32 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
                                                             />
 
                                                             {!!row.dueDate ? (
-                                                                <button
-                                                                    type="button"
-                                                                    className="ibra-popup-risk-treatment-date-clear-btn"
-                                                                    title="Clear date"
-                                                                    disabled={readOnly}
-                                                                    onMouseDown={(e) => {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-                                                                    }}
-                                                                    onClick={(e) => {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-                                                                        if (readOnly) return;
-                                                                        handleRiskTreatmentDateChange(row.id, "");
-                                                                    }}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faX} />
-                                                                </button>
+                                                                <>
+                                                                    {!readOnly && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="ibra-popup-risk-treatment-date-clear-btn"
+                                                                            title="Clear date"
+                                                                            disabled={readOnly}
+                                                                            onMouseDown={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                            }}
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                if (readOnly) return;
+                                                                                handleRiskTreatmentDateChange(row.id, "");
+                                                                            }}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faX} />
+                                                                        </button>
+                                                                    )}
+                                                                </>
                                                             ) : (
                                                                 <span
                                                                     className="ibra-popup-risk-treatment-date-calendar-icon"
-                                                                    aria-hidden="false"
+                                                                    aria-hidden="true"
                                                                 >
                                                                     <FontAwesomeIcon icon={faCalendarDays} />
                                                                 </span>

@@ -242,9 +242,6 @@ td.ibraCon {
     min-width: 500px;
     max-width: 500px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;
@@ -255,7 +252,6 @@ td.ibraPI {
     min-width: 500px;
     max-width: 500px;
     background-color: white !important;
-    border: 2px solid #BFBFBF !important;
 }
 
 .ibraRA {
@@ -306,16 +302,12 @@ td.ibraRA {
     min-width: 370px;
     max-width: 370px;
     background-color: white !important;
-    border: 2px solid #BFBFBF !important;
 }
 
 .ibraDD {
     min-width: 130px;
     max-width: 130px;
     background-color: #BBBBBB !important;
-    border-left: solid 2px #BBBBBB !important;
-    border-right: solid 2px #BBBBBB !important;
-    border-top: solid 2px #BBBBBB !important;
     word-wrap: break-word !important;
     /* Ensures long words break */
     white-space: normal !important;

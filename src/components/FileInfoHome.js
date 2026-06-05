@@ -240,7 +240,13 @@ const FileInfoHome = () => {
                                     <div className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`}>
                                         <img src={`${process.env.PUBLIC_URL}/${iconMap[doc._id]}` || `${process.env.PUBLIC_URL}/guidelinesDMS.svg`} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
-                                    <h3 className="document-title-fi-home">{doc._id === "Policy" ? "Policie" : doc._id}s</h3>
+                                    <h3 className="document-title-fi-home">
+                                        {doc._id === "Policy"
+                                            ? "Policies"
+                                            : doc._id === "Training"
+                                                ? "Training"
+                                                : `${doc._id}s`}
+                                    </h3>
                                     <p className="document-info-fi-home">Documents: {doc.totalCount}</p>
                                     <p className="document-info-fi-home">Reviews Overdue: {doc.overdueCount}</p>
                                 </>

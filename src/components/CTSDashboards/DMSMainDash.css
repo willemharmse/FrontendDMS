@@ -1,0 +1,721 @@
+/* ════════════════════════════════════════════════
+   DMS MAIN DASHBOARD — mdash- namespace
+   ════════════════════════════════════════════════ */
+
+/* ── Shell ── */
+.mdash-shell {
+    color: #002060;
+    font-family: Arial !important;
+    padding: 16px 18px 32px;
+    overflow-y: auto;
+    max-height: calc(100% - 80px);
+}
+
+/* ── Header ── */
+.mdash-header {
+    align-items: flex-start;
+    font-family: Arial !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.mdash-header-title {
+    color: #002060;
+    font-size: 26px;
+    font-family: Arial !important;
+    font-weight: bold;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    margin: 0 0 5px;
+    text-transform: uppercase;
+}
+
+.mdash-header-sub {
+    color: #002060;
+    font-family: Arial !important;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.mdash-header-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ── Buttons ── */
+.mdash-btn {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #dbe3f0;
+    border-radius: 8px;
+    color: #002060;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 13px;
+    transition: background 140ms, border-color 140ms, box-shadow 140ms;
+    white-space: nowrap;
+}
+
+.mdash-btn-nc {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #dbe3f0;
+    border-radius: 8px;
+    color: #002060;
+    cursor: default;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 13px;
+    transition: background 140ms, border-color 140ms, box-shadow 140ms;
+    white-space: nowrap;
+}
+
+.mdash-btn:hover {
+    background: #f7faff;
+    border-color: #c3d0e6;
+    box-shadow: 0 4px 12px rgba(20, 42, 85, 0.07);
+}
+
+.mdash-btn--primary {
+    background: #002060;
+    border-color: #002060;
+    color: #ffffff;
+}
+
+.mdash-btn--primary:hover {
+    background: #002060;
+    border-color: #002060;
+    box-shadow: 0 4px 12px rgba(15, 84, 201, 0.28);
+}
+
+/* ── Summary cards ── */
+.mdash-summary-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-bottom: 14px;
+}
+
+.mdash-summary-card {
+    background: #ffffff;
+    border: 1px solid #e0e7f1;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(20, 42, 85, 0.05);
+    padding: 16px 16px 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mdash-summary-label {
+    color: black;
+    font-size: 10.5px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+}
+
+.mdash-summary-value {
+    color: #002060;
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.mdash-summary-sub {
+    color: #7EAC89;
+    display: block;
+    font-size: 11.5px;
+    font-weight: bold;
+}
+
+.mdash-card--green .mdash-summary-value {
+    color: #7EAC89;
+}
+
+.mdash-card--green .mdash-summary-sub {
+    color: #7EAC89;
+}
+
+.mdash-card--orange .mdash-summary-value,
+.mdash-card--orange .mdash-summary-sub {
+    color: #FFC000;
+}
+
+.mdash-card--grey {
+    color: #595959;
+}
+
+.mdash-card--red .mdash-summary-value,
+.mdash-card--red .mdash-summary-sub {
+    color: #CB6F6F;
+}
+
+.mdash-card--blue .mdash-summary-value,
+.mdash-card--blue .mdash-summary-sub {
+    color: #002060;
+}
+
+/* ── Grid layouts ── */
+.mdash-grid {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mdash-grid--3col {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* ── Panel ── */
+.mdash-panel {
+    background: #ffffff;
+    border: 1px solid #e1e8f2;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(20, 42, 85, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+    overflow: hidden;
+    padding: 16px 16px 12px;
+}
+
+.mdash-panel--full {
+    margin-bottom: 12px;
+    min-height: auto;
+}
+
+.mdash-panel-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.mdash-panel-header h3 {
+    color: #002060;
+    font-size: 13.5px;
+    font-weight: bold;
+    letter-spacing: 0.035em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* ── Donut chart ── */
+.mdash-status-layout {
+    align-items: center;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 2fr 1fr;
+    flex: 1;
+}
+
+.mdash-donut-svg {
+    display: block;
+    width: auto;
+    height: auto;
+    overflow: visible;
+}
+
+.mdash-donut--green {
+    stroke: #7EAC89;
+    fill: none;
+}
+
+.mdash-donut--orange {
+    stroke: #FFC000;
+    fill: none;
+}
+
+.mdash-donut--red {
+    stroke: #CB6F6F;
+    fill: none;
+}
+
+/* ── Legend ── */
+.mdash-legend-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mdash-legend-row {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 10px 1fr auto;
+}
+
+.mdash-legend-text {
+    color: black;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mdash-legend-count {
+    color: black;
+    font-size: 11.5px;
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.mdash-legend-dot {
+    border-radius: 999px;
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    flex-shrink: 0;
+}
+
+.mdash-legend-dot--green {
+    background: #7EAC89;
+}
+
+.mdash-legend-dot--orange {
+    background: #FFC000;
+}
+
+.mdash-legend-dot--red {
+    background: #CB6F6F;
+}
+
+/* ── Inline legend (trend / drilldown) ── */
+.mdash-inline-legend {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: black;
+}
+
+.mdash-inline-legend--right {
+    justify-content: flex-end;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.mdash-inline-legend-item {
+    align-items: center;
+    display: inline-flex;
+    gap: 5px;
+    font-size: 13px;
+}
+
+.mdash-inline-legend-item--right {
+    margin-left: auto;
+    color: black;
+    font-size: 13px;
+}
+
+/* ── Bar chart ── */
+.mdash-chart-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+
+.mdash-bar-svg {
+    display: block;
+    min-width: 220px;
+    width: 100%;
+    height: auto;
+}
+
+.mdash-chart-gridline {
+    stroke: #e7eef7;
+    stroke-width: 0.2;
+}
+
+.mdash-axis-text {
+    fill: black;
+    font-family: Arial !important;
+    font-size: 4px;
+    font-weight: 600;
+}
+
+.mdash-axis-text-trend {
+    fill: black;
+    font-family: Arial !important;
+    font-size: 4px;
+    font-weight: 600;
+}
+
+.mdash-bar {
+    fill: #595959;
+}
+
+.mdash-bar-value {
+    fill: #595959;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+/* ── Trend line chart ── */
+.mdash-trend-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+    min-width: 240px;
+    max-width: 100%;
+}
+
+.mdash-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 0.5;
+}
+
+.mdash-line--green {
+    stroke: #7EAC89;
+}
+
+.mdash-line--orange {
+    stroke: #FFC000;
+}
+
+.mdash-line--grey {
+    stroke: #595959;
+}
+
+.mdash-line--red {
+    stroke: #CB6F6F;
+}
+
+.mdash-dot--green {
+    fill: #7EAC89;
+    stroke: none;
+}
+
+.mdash-dot--orange {
+    fill: #FFC000;
+    stroke: none;
+}
+
+.mdash-dot--grey {
+    fill: #595959;
+    stroke: none;
+}
+
+.mdash-dot--red {
+    fill: #CB6F6F;
+    stroke: none;
+}
+
+/* ── Tables ── */
+.mdash-table-scroll {
+    overflow-x: auto;
+    flex: 1;
+}
+
+.mdash-table {
+    border-collapse: collapse;
+    color: black;
+    font-size: 13px;
+    font-family: Arial !important;
+    font-weight: normal;
+    line-height: 1.3;
+    width: 100%;
+    min-width: 100%;
+}
+
+.mdash-table thead th {
+    background: rgb(243, 243, 243);
+    color: black;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    padding: 7px 8px;
+    user-select: none;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mdash-table td {
+    border-bottom: 1px solid #e7edf5;
+    padding: 7px 8px;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.mdash-table tbody tr:hover {
+    background: transparent;
+    user-select: none;
+    cursor: default;
+}
+
+.mdash-table--drilldown {
+    min-width: 560px;
+}
+
+.mdash-drilldown-row td:first-child {
+    align-items: center;
+    gap: 8px;
+}
+
+.mdash-row-icon {
+    font-size: 14px;
+}
+
+.mdash-drilldown-footer td {
+    background: rgb(243, 243, 243);
+    border-bottom: none;
+    border-top: 2px solid #e7edf5;
+    font-weight: bold;
+    color: black;
+}
+
+.mdash-alert-text {
+    background-color: #CB6F6F;
+    text-align: center;
+    color: white;
+}
+
+.mdash-warn-text {
+    background-color: #FFC000;
+    text-align: center;
+    color: black;
+}
+
+.mdash-good-text {
+    background-color: #7EAC89;
+    text-align: center;
+    color: white;
+}
+
+/* ── Drilldown grid ── */
+.mdash-drilldown-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+
+/* ── Stacked bar chart ── */
+.mdash-stacked-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.mdash-stacked-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+}
+
+.mdash-stacked-row {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 120px 1fr 42px;
+}
+
+.mdash-stacked-label {
+    color: black;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: right;
+    white-space: wrap;
+}
+
+.mdash-stacked-bar {
+    border-radius: 0px;
+    display: flex;
+    height: 22px;
+    overflow: hidden;
+}
+
+.mdash-seg {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: normal;
+    color: #ffffff;
+    min-width: 0;
+    overflow: hidden;
+    transition: width 500ms ease;
+}
+
+.mdash-seg span {
+    padding: 0 3px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.mdash-seg--valid {
+    background: #7EAC89;
+}
+
+.mdash-seg--expiring {
+    background: #FFC000;
+    color: black;
+}
+
+.mdash-seg--expired {
+    background: #CB6F6F;
+}
+
+.mdash-stacked-pct {
+    color: black;
+    font-size: 13px;
+    font-weight: normal;
+    text-align: right;
+}
+
+.mdash-stacked-axis-labels {
+    color: black;
+    display: flex;
+    font-size: 13px;
+    font-weight: normal;
+    justify-content: space-between;
+    margin-left: 128px;
+    padding-top: 4px;
+}
+
+/* ── Note ── */
+.mdash-note {
+    align-items: center;
+    background: #f7fbff;
+    border: 1px solid #dfe9f6;
+    border-radius: 13px;
+    color: #002060;
+    display: flex;
+    font-size: 11.5px;
+    font-weight: 600;
+    gap: 9px;
+    padding: 11px 14px;
+}
+
+.mdash-note svg {
+    color: black;
+    flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════ */
+
+/* Large-ish tablets */
+@media (max-width: 1300px) {
+    .mdash-summary-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .mdash-grid--3col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mdash-drilldown-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+    .mdash-shell {
+        padding: 12px 12px 24px;
+    }
+
+    .mdash-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mdash-header-actions {
+        justify-content: flex-start;
+    }
+
+    .mdash-summary-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .mdash-grid--3col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mdash-status-layout {
+        grid-template-columns: 110px 1fr;
+    }
+
+    .mdash-stacked-row {
+        grid-template-columns: 90px 1fr 38px;
+    }
+
+    .mdash-stacked-axis-labels {
+        margin-left: 98px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 620px) {
+    .mdash-summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mdash-header-title {
+        font-size: 20px;
+    }
+
+    .mdash-status-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .mdash-donut-svg {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .mdash-drilldown-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mdash-stacked-row {
+        grid-template-columns: 70px 1fr 34px;
+    }
+
+    .mdash-stacked-label {
+        font-size: 9.5px;
+    }
+
+    .mdash-stacked-axis-labels {
+        margin-left: 78px;
+    }
+}
+
+@media (max-width: 420px) {
+    .mdash-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

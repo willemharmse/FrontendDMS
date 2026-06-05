@@ -323,7 +323,7 @@
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
-    min-height: 102px;
+    min-height: 50px;
     field-sizing: content;
 }
 
@@ -464,12 +464,15 @@
     position: relative;
     width: calc(100% - 20px);
     padding: 10px;
-    resize: vertical;
+    resize: none;
+    field-sizing: content;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
+    word-break: break-all;
+    white-space: pre-wrap;
 }
 
 .scope-risk-label {
@@ -497,7 +500,7 @@
 
 .aim-textarea-risk-scope {
     width: calc(100% - 20px);
-    min-height: 200px;
+    min-height: 50px;
     resize: vertical;
     padding: 10px;
     border: 1px solid #ccc;
@@ -514,7 +517,7 @@
 
 .aim-textarea-risk-scope-2 {
     width: calc(100% - 20px);
-    min-height: 100px;
+    min-height: 50px;
     resize: vertical;
     padding: 10px;
     border: 1px solid #ccc;
