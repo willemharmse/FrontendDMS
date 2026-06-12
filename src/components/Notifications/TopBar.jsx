@@ -4,13 +4,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowCircleRight, faArrowLeft, faArrowRight, faArrowRotateLeft, faArrowRotateRight, faArrowsRotate, faBell, faCircleUser, faGroupArrowsRotate, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
+import InfoMenu from "./InfoMenu";
 
-const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor = false, student = false, showInfo = false, type }) => {
+const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor = false, training = true, student = false, showInfo = false, type }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [count, setCount] = useState(""); // Placeholder for unread notifications count
     const [profilePic, setProfilePic] = useState(null);
+    const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
 
     useEffect(() => {
         // Load from sessionStorage on mount
@@ -55,7 +57,7 @@ const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor
                     icon={faInfoCircle}
                     title="Info"
                     style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/FrontendDMS/infoHelp/${type}`)}
+                    onClick={() => setIsInfoMenuOpen(!isInfoMenuOpen)}
                 />
             </div>)}
             <div className="burger-menu-icon-um-home">
@@ -82,6 +84,15 @@ const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor
                     <FontAwesomeIcon icon={faCircleUser} />
                 )}
             </div>
+            {isInfoMenuOpen && (
+                <InfoMenu
+                    isOpen={isInfoMenuOpen}
+                    setIsOpen={setIsInfoMenuOpen}
+                    onProductPresentation={() => navigate(`/FrontendDMS/infoHelp/${type}`)}
+                    onProductTraining={() => navigate(`/FrontendDMS/infoTraining/${type}`)}
+                    trainingEnabled={training}
+                />
+            )}
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
             {(isMenuOpen && menu === "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} admin={"admin"} reset={true} setReset={setReset} isProfile={isProfile} />)}
             {(isMenuOpen && menu != "Admin") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} reset={true} setReset={setReset} isProfile={isProfile} visitor={visitor} student={student} />)}

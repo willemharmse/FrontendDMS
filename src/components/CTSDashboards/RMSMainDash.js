@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,12 +6,9 @@ import {
     faCaretRight,
     faArrowLeft,
     faDownload,
-    faFilter,
     faCalendarAlt,
-    faChevronRight,
     faInfoCircle,
-    faGear,
-    faGears,
+    faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
 import TopBarDD from "../Notifications/TopBarDD";
@@ -19,124 +16,30 @@ import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import "./DDSMainDash.css";
 
-const DMS_META = {
-    dataAsAt: "03 June 2026",
-};
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
 
-const DMS_SUMMARY_CARDS = [
-    {
-        id: "total",
-        label: "TOTAL DOCUMENTS IN DEVELOPMENT",
-        value: 202,
-        sub: "▲ 49 vs last month",
-        subColorClass: "mdash-sub--red",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-    {
-        id: "approving",
-        label: "IN APPROVAL",
-        value: 90,
-        sub: "▲ 51 vs last month",
-        subColorClass: "mdash-sub--red",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-    {
-        id: "reviewing",
-        label: "IN REVIEW",
-        value: 102,
-        sub: "- vs last month",
-        subColorClass: "mdash-sub--grey",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-    {
-        id: "pending",
-        label: "PENDING SIGN-OFF",
-        value: 10,
-        sub: "- vs last month",
-        subColorClass: "mdash-sub--grey",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-    {
-        id: "under",
-        label: "Under Periodic Review",
-        value: 10,
-        sub: "▼ 2 vs last month",
-        subColorClass: "mdash-sub--green",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-    {
-        id: "turnAround",
-        label: "AVERAGE TURN AROUND TIME",
-        value: "10 Days",
-        sub: "",
-        subColorClass: "mdash-sub--green",
-        colorClass: "mdash-card--grey",
-        showInfo: true,
-    },
-];
-
-const DMS_CATEGORIES = [
-    { name: "", count: 110 },
-    { name: "", count: 110 },
-    { name: "", count: 100 },
-];
-
-const DMS_EXPIRING_BUCKETS = [
-    { label: "BLRA", value: 100, class: "new1-colour" },
-    { label: "IBRA", value: 60, class: "new2-colour" },
-    { label: "JRA", value: 42, class: "new3-colour" },
-];
-
-const DMS_STATUS_OVERVIEW = {
-    underReview: { count: 10, pct: 4.96 },
-    approval: { count: 96, pct: 47.52 },
-    review: { count: 96, pct: 47.52 },
-};
-
-const DMS_TREND_MONTHS = ["Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026", "Jun 2026"];
-const DMS_TREND_SERIES = {
-    underReview: [0, 5, 6, 6, 12, 10],
-    approval: [20, 30, 35, 40, 39, 90],
-    review: [15, 30, 60, 70, 102, 102],
-};
-
-const DDS_APPROVAL_DOCS = [
-    { name: "CPS L9 Operational Transition & Handover BLRA", type: "BLRA", expiresOn: "03 Jun 2026", daysLeft: 14, owner: "T. Govender" },
-    { name: "Perform UAT and Scenario Testing JRA", type: "JRA", expiresOn: "01 Jun 2026", daysLeft: 12, owner: "R. Singh" },
-    { name: "Install CPS L9 Components JRA", type: "JRA", expiresOn: "29 May 2026", daysLeft: 9, owner: "L. Mokoena" },
-    { name: "CPS L9 Operational Transition & Handover IBRA", type: "IBRA", expiresOn: "27 May 2026", daysLeft: 7, owner: "P. Naidoo" },
-    { name: "Surface CPS L9 Implementation IBRA", type: "IBRA", expiresOn: "25 May 2026", daysLeft: 5, owner: "S. Johnson" },
-];
-
-const fmt = (n) => n.toLocaleString("en-ZA");
+const fmt = (n) => (n ?? 0).toLocaleString("en-ZA");
 
 const donutArc = (pct, offset) => {
-    const c = 2 * Math.PI * 45; // circumference at r=45
+    const c = 2 * Math.PI * 45;
     return { dash: (pct / 100) * c, offset: -(offset / 100) * c };
 };
 
-const linePoint = (val, min, max, svgH, svgPadT, svgPadB, idx, total, svgW, padL, padR) => {
-    const x = padL + (idx / (total - 1)) * (svgW - padL - padR);
-    const y = svgPadT + (1 - (val - min) / (max - min)) * (svgH - svgPadT - svgPadB);
-    return { x, y };
-};
+// ─────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────
 
 const DonutChart = ({ data }) => {
-    const { underReview, approval, review } = data;
-    const total = underReview.pct + approval.pct + review.pct;
+    const { inReview, inApproval, pendingSignOff } = data;
+    const total = (inReview?.pct ?? 0) + (inApproval?.pct ?? 0) + (pendingSignOff?.pct ?? 0) || 100;
     let offset = 0;
-
     const segments = [
-        { key: "underReview", pct: underReview.pct, cls: "mdash-donut--new1" },
-        { key: "approval", pct: approval.pct, cls: "mdash-donut--new2" },
-        { key: "review", pct: review.pct, cls: "mdash-donut--new3" },
+        { key: "inReview", pct: inReview?.pct ?? 0, cls: "mdash-donut--new2" },
+        { key: "inApproval", pct: inApproval?.pct ?? 0, cls: "mdash-donut--new3" },
+        { key: "pendingSignOff", pct: pendingSignOff?.pct ?? 0, cls: "mdash-donut--new1" },
     ];
-
     return (
         <svg className="mdash-donut-svg" viewBox="0 0 120 120">
             <circle cx="60" cy="60" r="45" fill="none" stroke="#eff3f8" strokeWidth="22" />
@@ -163,62 +66,18 @@ const DonutChart = ({ data }) => {
     );
 };
 
-const TrendChart = ({ months, series }) => {
-    const allVals = [...series.underReview, ...series.approval, ...series.review];
-    const minV = Math.min(...allVals);
-    const maxV = Math.max(...allVals);
-    const svgW = 400, svgH = 140, padL = 30, padR = 30, padT = 12, padB = 24;
-
-    const pts = (arr) => arr.map((v, i) => linePoint(v, minV, maxV, svgH, padT, padB, i, months.length, svgW, padL, padR));
-    const polyline = (arr) => pts(arr).map((p) => `${p.x},${p.y}`).join(" ");
-
-    const yTicks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
-    return (
-        <svg className="mdash-trend-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            {yTicks.map((t) => {
-                const y = padT + (1 - (t - minV) / (maxV - minV)) * (svgH - padT - padB);
-                if (y < padT || y > svgH - padB) return null;
-                return (
-                    <g key={t}>
-                        <line x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />
-                        <text x={padL - 4} y={y + 1.25} textAnchor="end" className="mdash-axis-text-trend">{t}</text>
-                    </g>
-                );
-            })}
-            {months.map((m, i) => {
-                const x = padL + (i / (months.length - 1)) * (svgW - padL - padR);
-                return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
-            })}
-            <polyline points={polyline(series.approval)} className="mdash-line mdash-line--new3" />
-            <polyline points={polyline(series.review)} className="mdash-line mdash-line--new2" />
-            <polyline points={polyline(series.underReview)} className="mdash-line mdash-line--new1" />
-            {pts(series.approval).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--new3" />)}
-            {pts(series.review).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--new2" />)}
-            {pts(series.underReview).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--new1" />)}
-        </svg>
-    );
-};
-
 const BarChart = ({ data }) => {
-    const maxVal = Math.max(...data.map((d) => d.value));
-    const svgH = 120;
-    const barW = 36;
-    const gap = 20;
-    const padL = 10;
-    const padB = 20;
-    const padT = 20;
+    const maxVal = Math.max(...data.map((d) => d.value), 1);
+    const svgH = 120, barW = 36, gap = 20, padL = 10, padB = 20, padT = 20;
     const totalW = padL + data.length * (barW + gap) - gap + 10;
-
     return (
         <svg className="mdash-bar-svg" viewBox={`0 0 ${totalW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            {/* grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
                 const y = padT + (1 - frac) * (svgH - padT - padB);
                 return <line key={i} x1={padL} x2={totalW - 4} y1={y} y2={y} className="mdash-chart-gridline" />;
             })}
             {data.map((d, i) => {
-                const barH = ((d.value / maxVal) * (svgH - padT - padB));
+                const barH = (d.value / maxVal) * (svgH - padT - padB);
                 const x = padL + i * (barW + gap);
                 const y = padT + (svgH - padT - padB) - barH;
                 return (
@@ -233,10 +92,273 @@ const BarChart = ({ data }) => {
     );
 };
 
+// ─────────────────────────────────────────────
+// TrendChart
+// Right-aligns data so sparse ranges end at the right edge,
+// matching the DMS dashboard behaviour.
+// ─────────────────────────────────────────────
+
+const linePoint = (val, min, max, svgH, svgPadT, svgPadB, slotIdx, totalSlots, svgW, padL, padR) => {
+    const x = totalSlots <= 1 ? svgW - padR : padL + (slotIdx / (totalSlots - 1)) * (svgW - padL - padR);
+    const range = max - min || 1;
+    const y = svgPadT + (1 - (val - min) / range) * (svgH - svgPadT - svgPadB);
+    return { x, y };
+};
+
+const TrendChart = ({ months, series, totalSlots }) => {
+    const slots = totalSlots || months.length;
+    const offset = slots - months.length;
+
+    const allReal = [
+        ...series.inReview,
+        ...series.inApproval,
+        ...series.pendingSignOff,
+    ].filter(v => v !== null && v !== undefined);
+
+    const minV = allReal.length ? Math.min(...allReal) : 0;
+    const maxV = allReal.length ? Math.max(...allReal, 1) : 1;
+    const svgW = 400, svgH = 140, padL = 30, padR = 30, padT = 12, padB = 24;
+
+    const pt = (val, dataIdx) => {
+        const slotIdx = dataIdx + offset;
+        return linePoint(val, minV, maxV, svgH, padT, padB, slotIdx, slots, svgW, padL, padR);
+    };
+
+    const buildPath = (arr) => {
+        const segments = [];
+        let seg = [];
+        arr.forEach((v, i) => {
+            if (v !== null && v !== undefined) {
+                seg.push(pt(v, i));
+            } else {
+                if (seg.length > 1) segments.push(seg);
+                seg = [];
+            }
+        });
+        if (seg.length > 1) segments.push(seg);
+        return segments;
+    };
+
+    const yTicks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+    const renderSeries = (arr, lineCls, dotCls) => (
+        <>
+            {buildPath(arr).map((seg, si) => (
+                <polyline key={si} points={seg.map(p => `${p.x},${p.y}`).join(" ")} className={`mdash-line ${lineCls}`} />
+            ))}
+            {arr.map((v, i) => (v !== null && v !== undefined)
+                ? <circle key={i} cx={pt(v, i).x} cy={pt(v, i).y} r="1.25" className={dotCls} />
+                : null
+            )}
+        </>
+    );
+
+    return (
+        <svg className="mdash-trend-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
+            {yTicks.map((t) => {
+                if (maxV === minV) return null;
+                const y = padT + (1 - (t - minV) / (maxV - minV)) * (svgH - padT - padB);
+                if (y < padT || y > svgH - padB) return null;
+                return (
+                    <g key={t}>
+                        <line x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />
+                        <text x={padL - 4} y={y + 1.25} textAnchor="end" className="mdash-axis-text-trend">{t}</text>
+                    </g>
+                );
+            })}
+            {months.map((m, i) => {
+                const slotIdx = i + offset;
+                const x = slots <= 1 ? svgW - padR : padL + (slotIdx / (slots - 1)) * (svgW - padL - padR);
+                return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
+            })}
+            {renderSeries(series.inApproval, "mdash-line--new3", "mdash-dot--new3")}
+            {renderSeries(series.inReview, "mdash-line--new2", "mdash-dot--new2")}
+            {renderSeries(series.pendingSignOff, "mdash-line--new1", "mdash-dot--new1")}
+        </svg>
+    );
+};
+
+// ─────────────────────────────────────────────
+// Reusable workflow table
+// ─────────────────────────────────────────────
+
+const WorkflowTable = ({ rows, col3Label, col3Key, col4Label, col4Key, col4Class, scrollStyle }) => (
+    <div className="mdash-table-scroll" style={scrollStyle}>
+        <table className="mdash-table mdash-table--dds-workflow">
+            <colgroup>
+                <col style={{ width: "42%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "22%" }} />
+                <col style={{ width: "16%" }} />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Document</th>
+                    <th style={{ textAlign: "center" }}>Type</th>
+                    <th style={{ textAlign: "center" }}>{col3Label}</th>
+                    <th style={{ textAlign: "center" }}>{col4Label}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} style={{ textAlign: "center", color: "#888", fontStyle: "italic", padding: "16px" }}>
+                            No documents
+                        </td>
+                    </tr>
+                ) : (
+                    rows.map((doc, idx) => (
+                        <tr key={`${doc.name}-${idx}`}>
+                            <td className="mdash-td--wrap">{doc.name}</td>
+                            <td style={{ textAlign: "center" }}>{doc.docType}</td>
+                            <td style={{ textAlign: "center" }}>{doc[col3Key]}</td>
+                            <td
+                                className={col4Class ? col4Class(doc) : ""}
+                                style={{ textAlign: "center" }}
+                            >
+                                {doc[col4Key]}
+                            </td>
+                        </tr>
+                    ))
+                )}
+            </tbody>
+        </table>
+    </div>
+);
+
+const daysClass = (val) => {
+    if (val === 'N/A' || val == null) return "";
+    const n = Number(val);
+    if (n >= 14) return "mdash-alert-text";
+    if (n >= 7) return "mdash-warn-text";
+    return "";
+};
+
+// ─────────────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────────────
+
 const RMSMainDash = () => {
     const navigate = useNavigate();
     const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [dash, setDash] = useState(null);
+    const [trendRange, setTrendRange] = useState(6);
+
+    useEffect(() => {
+        const fetchDash = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-rms`, {
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error || "Failed");
+                setDash(data);
+            } catch (err) {
+                console.error("RMS dashboard fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDash();
+    }, []);
+
+    if (loading || !dash) {
+        return (
+            <div
+                className="dc-info-container"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+                <div className="draft-loading-vertical" aria-live="polite">
+                    <FontAwesomeIcon icon={faSpinner} className="draft-spinner-large draft-spinner-animate" />
+                    <span className="draft-loading-text">Loading dashboard…</span>
+                </div>
+            </div>
+        );
+    }
+
+    const s = dash.summary;
+
+    const availableMonths = dash.trend.months.length;
+    const effectiveTrendRange = Math.min(trendRange, availableMonths);
+
+    const trendOptions = availableMonths === 1
+        ? [1]
+        : Array.from({ length: Math.min(availableMonths, 12) - 1 }, (_, i) => i + 2);
+
+    const TABLE_FIXED_HEIGHT = { maxHeight: 220, minHeight: 220, overflowY: "auto" };
+
+    const buildDelta = (delta, direction) => {
+        const abs = Math.abs(delta);
+        if (delta === 0) return { label: `0 vs last month`, cls: direction === "neutral" ? "mdash-card--grey" : "mdash-card--black" };
+        const arrow = delta > 0 ? "▲" : "▼";
+        const label = `${arrow} ${abs} vs last month`;
+        let cls;
+        if (direction === "neutral") {
+            cls = "mdash-card--grey";
+        } else if (direction === "positive-good") {
+            cls = delta > 0 ? "mdash-card--green" : "mdash-card--red";
+        } else { // positive-bad
+            cls = delta > 0 ? "mdash-card--red" : "mdash-card--green";
+        }
+        return { label, cls };
+    };
+
+    const totalDelta = buildDelta(s.vsTotalInDev, "neutral");
+    const approvalDelta = buildDelta(s.vsInApproval, "positive-bad");
+    const reviewDelta = buildDelta(s.vsInReview, "positive-bad");
+    const pendingDelta = buildDelta(s.vsPendingSignOff, "positive-bad");
+    const periodicDelta = buildDelta(s.vsUnderPeriodicReview, "positive-bad");
+
+    const summaryCards = [
+        {
+            id: "total",
+            label: "TOTAL DOCUMENTS IN DEVELOPMENT",
+            value: s.totalInDev,
+            sub: totalDelta.label,
+            subColorClass: totalDelta.cls,
+        },
+        {
+            id: "approving",
+            label: "IN APPROVAL",
+            value: s.inApproval,
+            sub: approvalDelta.label,
+            subColorClass: approvalDelta.cls,
+        },
+        {
+            id: "reviewing",
+            label: "IN REVIEW",
+            value: s.inReview,
+            sub: reviewDelta.label,
+            subColorClass: reviewDelta.cls,
+        },
+        {
+            id: "pending",
+            label: "PENDING SIGN-OFF",
+            value: s.pendingSignOff,
+            sub: pendingDelta.label,
+            subColorClass: pendingDelta.cls,
+        },
+        {
+            id: "under",
+            label: "UNDER PERIODIC REVIEW",
+            value: s.underPeriodicReview,
+            sub: periodicDelta.label,
+            subColorClass: periodicDelta.cls,
+        },
+        {
+            id: "turnAround",
+            label: "AVERAGE TURN AROUND TIME",
+            value: "10 Days",
+            sub: "",
+            subColorClass: "mdash-card--grey",
+            noFmt: true,
+        },
+    ];
+
+    const statusOverview = dash.statusOverview;
 
     return (
         <div className="dc-info-container">
@@ -269,6 +391,8 @@ const RMSMainDash = () => {
                 </div>
 
                 <div className="mddsdash-shell">
+
+                    {/* ── Header ── */}
                     <div className="mdash-header">
                         <div>
                             <h1 className="mdash-header-title">RISK MANAGEMENT SYSTEM</h1>
@@ -276,13 +400,9 @@ const RMSMainDash = () => {
                         <div className="mdash-header-actions">
                             <button className="mdash-btn-nc">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
-                                Data as at: {DMS_META.dataAsAt}
+                                Data as at: {dash.dataAsAt}
                             </button>
-                            {false && (<button className="mdash-btn">
-                                <FontAwesomeIcon icon={faFilter} />
-                                Filters
-                            </button>)}
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => navigate('/FrontendDMS/cmsDash')}>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => navigate('/cmsDash')}>
                                 Control Management Dashboard
                             </button>
                             <button className="mdash-btn mdash-btn--primary">
@@ -292,36 +412,36 @@ const RMSMainDash = () => {
                         </div>
                     </div>
 
+                    {/* ── Summary Cards ── */}
                     <div className="mddsash-summary-grid">
-                        {DMS_SUMMARY_CARDS.map((card) => (
-                            <div key={card.id} className={`mddsash-summary-card ${card.colorClass}`} style={{ position: "relative" }}>
-                                {card.showInfo && (
-                                    <FontAwesomeIcon
-                                        icon={faInfoCircle}
-                                        style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px" }}
-                                    />
-                                )}
+                        {summaryCards.map((card) => (
+                            <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px" }}
+                                />
                                 <p className="mddsash-summary-label">{card.label}</p>
-                                {card.value !== -1 && <strong className="mddsash-summary-value">{fmt(card.value)}</strong>}
+                                <strong className="mddsash-summary-value">{card.noFmt ? card.value : fmt(card.value)}</strong>
                                 <span className={`mddsash-summary-sub ${card.subColorClass}`}>{card.sub}</span>
                             </div>
                         ))}
                     </div>
 
+                    {/* ── Row 1: Status Overview | Bar Chart ── */}
                     <div className="mdash-grid mdash-grid--3col">
 
-                        {/* Status Overview */}
+                        {/* Status Overview Donut */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>DOCUMENT STATUS OVERVIEW</h3>
                             </div>
                             <div className="mddsash-status-layout">
-                                <DonutChart data={DMS_STATUS_OVERVIEW} />
+                                <DonutChart data={statusOverview} />
                                 <div className="mdash-legend-stack">
                                     {[
-                                        { label: "In Review", count: DMS_STATUS_OVERVIEW.review.count, pct: DMS_STATUS_OVERVIEW.review.pct, cls: "new2" },
-                                        { label: "In Approval", count: DMS_STATUS_OVERVIEW.approval.count, pct: DMS_STATUS_OVERVIEW.approval.pct, cls: "new3" },
-                                        { label: "Pending Sign-Off", count: DMS_STATUS_OVERVIEW.underReview.count, pct: DMS_STATUS_OVERVIEW.underReview.pct, cls: "new1" },
+                                        { label: "In Review", ...statusOverview.inReview, cls: "new2" },
+                                        { label: "In Approval", ...statusOverview.inApproval, cls: "new3" },
+                                        { label: "Pending Sign-Off", ...statusOverview.pendingSignOff, cls: "new1" },
                                     ].map((item) => (
                                         <div key={item.label} className="mdash-legend-row">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
@@ -333,191 +453,134 @@ const RMSMainDash = () => {
                             </div>
                         </div>
 
+                        {/* Bar Chart: By Doc Type */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>DOCUMENTS IN DEVELOPEMENT BY TYPE</h3>
+                                <h3>DOCUMENTS IN DEVELOPMENT BY TYPE</h3>
                             </div>
                             <div className="mdash-chart-scroll">
-                                <BarChart data={DMS_EXPIRING_BUCKETS} />
+                                <BarChart data={dash.byDocType} />
                             </div>
                         </div>
                     </div>
 
+                    {/* ── Row 2: Four workflow tables ── */}
                     <div className="mdash-grid mddsash-grid--3col">
+
+                        {/* Under Periodic Review */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>UNDER PERIODIC REVIEW</h3>
                                 <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
-                            <div className="mdash-table-scroll">
-                                <table className="mdash-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Type</th>
-                                            <th style={{ textAlign: "center" }}>Date Initiated</th>
-                                            <th style={{ textAlign: "center" }}>Days in Progress</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {DDS_APPROVAL_DOCS.map((doc) => (
-                                            <tr key={doc.name}>
-                                                <td>{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.expiresOn}</td><td
-                                                    className={
-                                                        doc.daysLeft < 7
-                                                            ? ""
-                                                            : doc.daysLeft < 10
-                                                                ? "mdash-warn-text"   // orange
-                                                                : "mdash-alert-text"  // red
-                                                    }
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <WorkflowTable
+                                rows={dash.periodicReviewRows}
+                                col3Label="Date Initiated"
+                                col3Key="dateInitiated"
+                                col4Label="Days in Progress"
+                                col4Key="daysInProgress"
+                                col4Class={(row) => daysClass(row.daysInProgress)}
+                                scrollStyle={TABLE_FIXED_HEIGHT}
+                            />
                         </div>
+
+                        {/* Pending Sign-Off */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING SIGN-OFF</h3>
                                 <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
-                            <div className="mdash-table-scroll">
-                                <table className="mdash-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Type</th>
-                                            <th style={{ textAlign: "center" }}>Date Initiated</th>
-                                            <th style={{ textAlign: "center" }}>Days in Progress</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {DDS_APPROVAL_DOCS.map((doc) => (
-                                            <tr key={doc.name}>
-                                                <td>{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.expiresOn}</td><td
-                                                    className={
-                                                        doc.daysLeft < 7
-                                                            ? ""
-                                                            : doc.daysLeft < 10
-                                                                ? "mdash-warn-text"   // orange
-                                                                : "mdash-alert-text"  // red
-                                                    }
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <WorkflowTable
+                                rows={dash.pendingSignOffRows}
+                                col3Label="Date Published"
+                                col3Key="datePublished"
+                                col4Label="Days Waiting"
+                                col4Key="daysWaiting"
+                                col4Class={(row) => daysClass(row.daysWaiting)}
+                                scrollStyle={TABLE_FIXED_HEIGHT}
+                            />
                         </div>
+
+                        {/* Pending Approval */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING APPROVAL</h3>
                                 <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
-                            <div className="mdash-table-scroll">
-                                <table className="mdash-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Type</th>
-                                            <th style={{ textAlign: "center" }}>Date Initiated</th>
-                                            <th style={{ textAlign: "center" }}>Days in Progress</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {DDS_APPROVAL_DOCS.map((doc) => (
-                                            <tr key={doc.name}>
-                                                <td>{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.expiresOn}</td><td
-                                                    className={
-                                                        doc.daysLeft < 7
-                                                            ? ""
-                                                            : doc.daysLeft < 10
-                                                                ? "mdash-warn-text"   // orange
-                                                                : "mdash-alert-text"  // red
-                                                    }
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <WorkflowTable
+                                rows={dash.inApprovalRows}
+                                col3Label="Date Initiated"
+                                col3Key="dateInitiated"
+                                col4Label="Days in Progress"
+                                col4Key="daysInProgress"
+                                col4Class={(row) => daysClass(row.daysInProgress)}
+                                scrollStyle={TABLE_FIXED_HEIGHT}
+                            />
                         </div>
+
+                        {/* Pending Review */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING REVIEW</h3>
                                 <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
-                            <div className="mdash-table-scroll">
-                                <table className="mdash-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Type</th>
-                                            <th style={{ textAlign: "center" }}>Date Initiated</th>
-                                            <th style={{ textAlign: "center" }}>Days in Progress</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {DDS_APPROVAL_DOCS.map((doc) => (
-                                            <tr key={doc.name}>
-                                                <td>{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.expiresOn}</td><td
-                                                    className={
-                                                        doc.daysLeft < 7
-                                                            ? ""
-                                                            : doc.daysLeft < 10
-                                                                ? "mdash-warn-text"   // orange
-                                                                : "mdash-alert-text"  // red
-                                                    }
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <WorkflowTable
+                                rows={dash.inReviewRows}
+                                col3Label="Date Initiated"
+                                col3Key="dateInitiated"
+                                col4Label="Days in Progress"
+                                col4Key="daysInProgress"
+                                col4Class={(row) => daysClass(row.daysInProgress)}
+                                scrollStyle={TABLE_FIXED_HEIGHT}
+                            />
                         </div>
                     </div>
 
+                    {/* ── Trend: Documents Over Time ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
-                            <h3>DOCUMENTS OVER TIME (LAST 6 MONTHS)</h3>
-                            <div className="mdash-inline-legend">
-                                {[
-                                    { label: "In Review", cls: "new2" },
-                                    { label: "In Approval", cls: "new3" },
-                                    { label: "Pending Sign-Off", cls: "new1" },
-                                ].map((item) => (
-                                    <span key={item.label} className="mdash-inline-legend-item">
-                                        <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
-                                        {item.label}
-                                    </span>
-                                ))}
+                            <h3>
+                                DOCUMENTS OVER TIME (LAST {effectiveTrendRange} {effectiveTrendRange === 1 ? "MONTH" : "MONTHS"})
+                            </h3>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                <div className="mdash-inline-legend" style={{ marginBottom: 0 }}>
+                                    {[
+                                        { label: "In Review", cls: "new2" },
+                                        { label: "In Approval", cls: "new3" },
+                                        { label: "Pending Sign-Off", cls: "new1" },
+                                    ].map((item) => (
+                                        <span key={item.label} className="mdash-inline-legend-item">
+                                            <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
+                                            {item.label}
+                                        </span>
+                                    ))}
+                                </div>
+                                <select
+                                    className="mdash-trend-select"
+                                    value={effectiveTrendRange}
+                                    onChange={(e) => setTrendRange(Number(e.target.value))}
+                                >
+                                    {trendOptions.map((n) => (
+                                        <option key={n} value={n}>
+                                            {n} {n === 1 ? "Month" : "Months"}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <div className="mdash-chart-scroll">
-                            <TrendChart months={DMS_TREND_MONTHS} series={DMS_TREND_SERIES} />
+                            <TrendChart
+                                months={dash.trend.months.slice(-effectiveTrendRange)}
+                                series={{
+                                    inReview: dash.trend.inReview.slice(-effectiveTrendRange),
+                                    inApproval: dash.trend.inApproval.slice(-effectiveTrendRange),
+                                    pendingSignOff: dash.trend.pendingSignOff.slice(-effectiveTrendRange),
+                                }}
+                                totalSlots={effectiveTrendRange}
+                            />
                         </div>
                     </div>
+
                 </div>
             </div>
             <ToastContainer />

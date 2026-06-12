@@ -211,6 +211,7 @@ import DDSMainDash from './components/CTSDashboards/DDSMainDash';
 import RMSMainDash from './components/CTSDashboards/RMSMainDash';
 import EPAMSMainDash from './components/CTSDashboards/EPAMSMainDash';
 import CMMainDash from './components/CTSDashboards/CMMainDash';
+import TrainingInfoPage from './components/TrainingInfoPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -488,6 +489,7 @@ function App() {
         <Route path="FrontendDMS/rmsDash" element={<RMSMainDash />} />
         <Route path="FrontendDMS/cmsDash" element={<CMMainDash />} />
         <Route path="FrontendDMS/epamsDash" element={<EPAMSMainDash />} />
+        <Route path="FrontendDMS/infoTraining/:id" element={<TrainingInfoPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

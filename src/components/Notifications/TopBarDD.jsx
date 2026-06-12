@@ -5,11 +5,13 @@ import { faArrowLeft, faBell, faCircleUser, faCircleExclamation, faHome, faArrow
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
+import InfoMenu from "./InfoMenu";
 
 const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOfflineDraft, risk = false, showInfo = false, type }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
     const [count, setCount] = useState(""); // Placeholder for unread notifications count
     const [profilePic, setProfilePic] = useState(null);
 
@@ -56,7 +58,7 @@ const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOffline
                     icon={faInfoCircle}
                     title="Info"
                     style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/FrontendDMS/infoHelp/${type}`)}
+                    onClick={() => setIsInfoMenuOpen(!isInfoMenuOpen)}
                 />
             </div>)}
             <div className="burger-menu-icon-create-page-2">
@@ -85,6 +87,14 @@ const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOffline
             </div>
 
             {showNotifications && (<Notifications setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
+            {isInfoMenuOpen && (
+                <InfoMenu
+                    isOpen={isInfoMenuOpen}
+                    setIsOpen={setIsInfoMenuOpen}
+                    onProductPresentation={() => navigate(`/FrontendDMS/infoHelp/${type}`)}
+                    onProductTraining={() => navigate(`/FrontendDMS/infoTraining/${type}`)}
+                />
+            )}
             {(isMenuOpen && menu != "1") && (<BurgerMenuFI isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
             {(isMenuOpen && menu === "1") && (<BurgerMenu access={access} canIn={canIn} isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} risk={risk} />)}
         </div>

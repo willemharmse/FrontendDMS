@@ -606,7 +606,7 @@ const ModifyAllocatedTaskPopup = ({ onClose, onTaskUpdated, task }) => {
 
                             <div className="cea-popup-page-component-wrapper">
                                 <div className="ibra-popup-page-form-group">
-                                    <label style={{ fontSize: "15px" }}>Supporting Information</label>
+                                    <label style={{ fontSize: "15px" }}>Upload Supporting Information</label>
 
                                     <input
                                         ref={attachmentInputRef}

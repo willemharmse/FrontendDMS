@@ -1126,6 +1126,7 @@ const FileInfo = () => {
         </div>
       )}
 
+      {rename && (<RenameDocument documentName={documentRenameName} isOpen={rename} onClose={closeRename} fileID={updateID} />)}
       {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {isRestoreModalOpen && (<RestoreDocumentPopup closeModal={closeRestoreModal} restoreFile={restoreFile} selectedFileName={selectedFileName} loading={loading} />)}

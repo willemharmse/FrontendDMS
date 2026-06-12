@@ -177,6 +177,22 @@ const UploadPopup = ({ onClose }) => {
 
             })
         } catch (error) {
+            toast.error("Could not upload file. Please try again or contact an administrator.", {
+                closeButton: false,
+                autoClose: 800,
+                style: {
+                    textAlign: 'center'
+                }
+
+            })
+            toast.error(error.message, {
+                closeButton: false,
+                autoClose: 82200,
+                style: {
+                    textAlign: 'center'
+                }
+
+            })
             setError(error.message);
             setSuccessMessage('');
             setLoading(false);

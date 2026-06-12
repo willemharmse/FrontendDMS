@@ -22,6 +22,9 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
         }
     }, [isOpen]);
 
+    // Check if the file is a PDF (case-insensitive to catch .PDF as well)
+    const isPdf = file?.fileName?.toLowerCase().endsWith(".pdf");
+
     return (
         <div className="popup-menu-container-FI">
             {isOpen && (
@@ -36,9 +39,13 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
                             <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
                         </ul>
                     )}
-                    <ul>
-                        <li onClick={() => handlePreview(file._id)}>Preview</li>
-                    </ul>
+
+                    {/* Only show the Preview option if the file is NOT a PDF */}
+                    {isPdf && (
+                        <ul>
+                            <li onClick={() => handlePreview(file._id)}>Preview</li>
+                        </ul>
+                    )}
 
                     {isActionAvailable && (
                         <ul>

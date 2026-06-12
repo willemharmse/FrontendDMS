@@ -7,8 +7,9 @@
     color: #002060;
     font-family: Arial !important;
     padding: 16px 18px 32px;
+    padding-bottom: 0px;
     overflow-y: auto;
-    max-height: calc(100% - 80px);
+    max-height: calc(100% - 65px);
 }
 
 .mddsash-summary-grid {
@@ -76,6 +77,30 @@
 .mdash-card--red .mddsash-summary-value,
 .mdash-card--red .mddsash-summary-sub {
     color: #CB6F6F;
+}
+
+/* Sub-text colour classes applied to .mddsash-summary-sub — mirrors DMS mdash-card-- pattern */
+.mdash-card--grey .mddsash-summary-sub,
+.mddsash-summary-card .mdash-card--grey {
+    color: #595959;
+}
+
+.mddsash-summary-card .mdash-card--red,
+.mdash-card--red .mddsash-summary-sub {
+    color: #CB6F6F;
+}
+
+/* Used directly as subColorClass on the span itself */
+span.mdash-card--grey {
+    color: #595959 !important;
+}
+
+span.mdash-card--green {
+    color: #7EAC89 !important;
+}
+
+span.mdash-card--red {
+    color: #CB6F6F !important;
 }
 
 .mdash-card--blue .mddsash-summary-value,
@@ -212,6 +237,29 @@
     fill: black;
     font-size: 8px;
     font-weight: 600;
+}
+
+/* ── DDS workflow tables (In Review, In Approval, Pending Sign-Off, Periodic Review) ── */
+.mdash-table--dds-workflow {
+    min-width: 480px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.mdash-table--dds-workflow thead th,
+.mdash-table--dds-workflow tbody td {
+    vertical-align: middle;
+}
+
+/* Document name cell: wraps, other cells stay on one line */
+.mdash-table--dds-workflow tbody td:first-child {
+    white-space: normal;
+    word-break: break-word;
+    min-width: 0;
+}
+
+.mdash-table--dds-workflow tbody td:not(:first-child) {
+    white-space: nowrap;
 }
 
 /* ════════════════════════════════════════════════

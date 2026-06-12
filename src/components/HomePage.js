@@ -11,6 +11,7 @@ import BurgerMenuFI from "./FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications/Notifications";
 import NotificationsHomePage from "./Notifications/NotificationsHomePage";
 import BurgerMenuHomePage from "./FileInfo/BurgerMenuHomePage";
+import InfoBurgerMenuHomePage from "./FileInfo/InfoBurgerMenuHomePage";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const HomePage = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [startIndex, setStartIndex] = useState(0);
   const [animDir, setAnimDir] = useState(null);
+  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
 
   useEffect(() => {
     // Load from sessionStorage on mount
@@ -110,7 +112,7 @@ const HomePage = () => {
     <div className="homepage-container" style={{ userSelect: "none" }}>
       <div className="nl-floating-pill">
         <div className="burger-menu-icon-um notifications-bell-wrapper">
-          <FontAwesomeIcon icon={faInfoCircle} onClick={() => navigate(`/FrontendDMS/infoHelp/PRODUCT`)} title="Info" />
+          <FontAwesomeIcon icon={faInfoCircle} onClick={() => setIsInfoMenuOpen(!isInfoMenuOpen)} title="Info" />
         </div>
         <div className="burger-menu-icon-um notifications-bell-wrapper">
           <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
@@ -208,6 +210,11 @@ const HomePage = () => {
       <ToastContainer />
       {showNotifications && (<NotificationsHomePage setClose={setShowNotifications} getCount={fetchNotificationCount} />)}
       {(isMenuOpen) && (<BurgerMenuHomePage isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />)}
+      {(isInfoMenuOpen) && (<InfoBurgerMenuHomePage
+        isOpen={isInfoMenuOpen} setIsOpen={setIsInfoMenuOpen}
+        onProductPresentation={() => navigate(`/FrontendDMS/infoHelp/PRODUCT`)}
+        onProductTraining={() => navigate(`/FrontendDMS/infoTraining/PRODUCT`)}
+      />)}
     </div>
   );
 };

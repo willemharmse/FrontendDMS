@@ -7,8 +7,9 @@
     color: #002060;
     font-family: Arial !important;
     padding: 16px 18px 32px;
+    padding-bottom: 0px;
     overflow-y: auto;
-    max-height: calc(100% - 80px);
+    max-height: calc(100% - 65px);
 }
 
 /* ── Header ── */
@@ -160,7 +161,19 @@
 }
 
 .mdash-card--grey {
-    color: #595959;
+    color: #595959 !important;
+}
+
+.mdash-card--green {
+    color: #7EAC89 !important;
+}
+
+.mdash-card--black {
+    color: black !important;
+}
+
+.mdash-card--red {
+    color: #CB6F6F !important;
 }
 
 .mdash-card--red .mdash-summary-value,
@@ -365,12 +378,46 @@
 
 .mdash-bar {
     fill: #595959;
+    /* default fallback — overridden by bucket classes */
+}
+
+.mdash-bar--bucket0 {
+    fill: #FFC000;
+}
+
+.mdash-bar--bucket1 {
+    fill: #FFD444;
+}
+
+.mdash-bar--bucket2 {
+    fill: #FFE866;
+}
+
+.mdash-bar--bucket3 {
+    fill: #FFFF89;
 }
 
 .mdash-bar-value {
     fill: #595959;
     font-size: 9px;
     font-weight: 600;
+}
+
+/* Value labels coloured to match their bar */
+.mdash-bar-value--bucket0 {
+    fill: black;
+}
+
+.mdash-bar-value--bucket1 {
+    fill: black;
+}
+
+.mdash-bar-value--bucket2 {
+    fill: black;
+}
+
+.mdash-bar-value--bucket3 {
+    fill: black;
 }
 
 /* ── Trend line chart ── */
@@ -469,6 +516,13 @@
     background: transparent;
     user-select: none;
     cursor: default;
+}
+
+/* Allow the document title column to wrap in fixed-height scrollable tables */
+.mdash-td--wrap {
+    white-space: normal !important;
+    word-break: break-word;
+    min-width: 0;
 }
 
 .mdash-table--drilldown {
@@ -623,6 +677,38 @@
     flex-shrink: 0;
 }
 
+/* ── Trend range dropdown ── */
+.mdash-trend-select {
+    font-family: Arial;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23002060'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    border: 1px solid #dbe3f0;
+    border-radius: 8px;
+    color: #002060;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    min-height: 34px;
+    padding: 0 30px 0 13px;
+    transition: background 140ms, border-color 140ms, box-shadow 140ms;
+    white-space: nowrap;
+    outline: none;
+}
+
+.mdash-trend-select:hover {
+    box-shadow: 0 4px 12px rgba(20, 42, 85, 0.07);
+}
+
+.mdash-trend-select:focus {
+    border-color: #002060;
+    box-shadow: 0 0 0 2px rgba(0, 32, 96, 0.12);
+}
+
 /* ════════════════════════════════════════════════
    RESPONSIVE
    ════════════════════════════════════════════════ */
@@ -718,4 +804,27 @@
     .mdash-summary-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.mdash-trend-select--pdf {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    box-sizing: border-box;
+    line-height: 34px;
+}
+
+.mdash-table-header--green {
+    background-color: #7EAC89 !important;
+    color: white !important;
+}
+
+.mdash-table-header--red {
+    background-color: #CB6F6F !important;
+    color: white !important;
+}
+
+.mdash-table-header--orange {
+    background-color: #FFC000 !important;
+    color: black !important;
 }
