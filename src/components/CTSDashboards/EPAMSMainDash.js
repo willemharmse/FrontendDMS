@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,78 +6,251 @@ import {
     faCaretRight,
     faArrowLeft,
     faDownload,
-    faFilter,
     faCalendarAlt,
-    faChevronRight,
-    faInfoCircle,
+    faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
 import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
+import { exportDashboardPDF } from "./exportDashboardPDF";
 import "./DMSMainDash.css";
 
 // ─────────────────────────────────────────────
-// MOCK DATA — swap these consts for API fetches
+// Helpers
 // ─────────────────────────────────────────────
 
-const DMS_META = {
-    dataAsAt: "03 June 2026",
+const fmt = (n) => (n ?? 0).toLocaleString("en-ZA");
+
+// Donut arc builder
+const donutArc = (pct, offset) => {
+    const c = 2 * Math.PI * 45;
+    return { dash: (pct / 100) * c, offset: -(offset / 100) * c };
 };
 
-const DMS_SUMMARY_CARDS = [
-    {
-        id: "bodies",
-        label: "ORGANISATION COMPLIANCE",
-        value: "90%",
-        sub: "▲ 5% vs last month",
-        subColorClass: "mdash-sub--green",
-        colorClass: "mdash-card--grey",
-    },
-    {
-        id: "total",
-        label: "TOTAL COMPONENT CERTIFICATES",
-        value: 150,
-        sub: "▲ 5 vs last month",
-        subColorClass: "mdash-sub--green",
-        colorClass: "mdash-card--grey",
-    },
-    {
-        id: "valid",
-        label: "VALID COMPONENT CERTIFICATES",
-        value: 100,
-        sub: "67% of total",
-        colorClass: "mdash-card--grey",
-    },
-    {
-        id: "expiring",
-        label: "EXPIRING COMPONENT CERTIFICATES",
-        value: 30,
-        sub: "20% of total",
-        colorClass: "mdash-card--orange",
-    },
-    {
-        id: "invalid",
-        label: "INVALID COMPONENT CERTIFICATES",
-        value: 20,
-        sub: "13% of total",
-        colorClass: "mdash-card--red",
-    },
-    {
-        id: "sites",
-        label: "OUTSTANDING COMPONENT CERTIFICATES",
-        value: 12,
-        sub: "Certificates Required",
-        colorClass: "mdash-card--red",
-    },
-];
+// Line chart point mapper
+const linePoint = (val, min, max, svgH, svgPadT, svgPadB, idx, total, svgW, padL, padR) => {
+    const x = total <= 1 ? svgW - padR : padL + (idx / (total - 1)) * (svgW - padL - padR);
+    const range = max - min || 1;
+    const y = svgPadT + (1 - (val - min) / range) * (svgH - svgPadT - svgPadB);
+    return { x, y };
+};
 
-const DMS_HORIZ_BAR_DATA = [
-    { label: "Organisation", value: 80, class: "new-bar1" },
-    { label: "Site", value: 70, class: "new-bar2" },
-    { label: "Asset", value: 50, class: "new-bar3" },
-    { label: "Area", value: 40, class: "new-bar4" }
-];
+// ─────────────────────────────────────────────
+// Sub-text helpers — identical pattern to DMS
+// ─────────────────────────────────────────────
+
+/**
+ * direction: "neutral"       → always grey (total, compliance stays grey)
+ * direction: "positive-good" → up=green, down=red (valid)
+ * direction: "positive-bad"  → up=red,   down=green (expiring/invalid)
+ */
+const buildDelta = (delta, direction) => {
+    const abs = Math.abs(delta);
+    if (delta === 0) return { label: `0 vs last month`, cls: "mdash-card--grey" };
+    const arrow = delta > 0 ? "▲" : "▼";
+    const label = `${arrow} ${fmt(abs)} vs last month`;
+    let cls;
+    if (direction === "neutral") {
+        cls = "mdash-card--grey";
+    } else if (direction === "positive-good") {
+        cls = delta > 0 ? "mdash-card--green" : "mdash-card--red";
+    } else {
+        cls = delta > 0 ? "mdash-card--red" : "mdash-card--green";
+    }
+    return { label, cls };
+};
+
+/** Percentage-of-total sub (used by valid/expiring/invalid/outstanding). */
+const pctSub = (count, total) => {
+    const p = total > 0 ? Math.round((count / total) * 100) : 0;
+    return `${p}% of total`;
+};
+
+// ─────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────
+
+const DonutChart = ({ data }) => {
+    const { valid, expiring, invalid } = data;
+    const c = 2 * Math.PI * 45;
+
+    const totalCount = (valid?.count ?? 0) + (expiring?.count ?? 0) + (invalid?.count ?? 0) || 1;
+
+    // Calculate real percentages from counts, enforce minimum 2% arc for non-zero segments
+    const raw = [
+        { key: "valid", count: valid?.count ?? 0, cls: "mdash-donut--green" },
+        { key: "expiring", count: expiring?.count ?? 0, cls: "mdash-donut--orange" },
+        { key: "invalid", count: invalid?.count ?? 0, cls: "mdash-donut--red" },
+    ].map(s => ({
+        ...s,
+        pct: s.count > 0 ? Math.max((s.count / totalCount) * 100, 2) : 0,
+    }));
+
+    // Normalise back to 100 after applying minimums
+    const pctSum = raw.reduce((a, s) => a + s.pct, 0);
+    const segments = raw.map(s => ({ ...s, pct: (s.pct / pctSum) * 100 }));
+
+    let offset = 0;
+    return (
+        <svg className="mdash-donut-svg" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#eff3f8" strokeWidth="22" />
+            {segments.map((s) => {
+                const dash = (s.pct / 100) * c;
+                const dashOff = -(offset / 100) * c;
+                const el = (
+                    <circle
+                        key={s.key}
+                        cx="60" cy="60" r="45"
+                        fill="none"
+                        strokeWidth="22"
+                        strokeLinecap="butt"
+                        strokeDasharray={`${dash} ${c - dash}`}
+                        strokeDashoffset={dashOff}
+                        className={s.cls}
+                        style={{ transform: "rotate(-90deg)", transformOrigin: "60px 60px" }}
+                    />
+                );
+                offset += s.pct;
+                return el;
+            })}
+            <circle cx="60" cy="60" r="34" fill="white" />
+        </svg>
+    );
+};
+
+/**
+ * ComplianceBarChart
+ * ──────────────────
+ * ViewBox width grows with the number of bars so every bar is full-sized.
+ * When there are more than 4 bars the bar width shrinks to fit everything
+ * within a proportional canvas so bars stay visible.
+ * Gridlines (every 20%) are drawn as light lines — no numbers on the lines.
+ */
+const ComplianceBarChart = ({ data }) => {
+    const svgH = 180;
+    const BASE_BAR_W = 36;
+    const BASE_GAP = 24;
+    const padL = 6;
+    const padR = 6;
+    const padB = 24;
+    const padT = 18;
+    const chartH = svgH - padT - padB;
+
+    const n = data.length || 1;
+
+    // For ≤4 bars: natural size. For >4 bars: shrink bar+gap proportionally.
+    const MAX_NATURAL_BARS = 4;
+    const scale = n > MAX_NATURAL_BARS ? MAX_NATURAL_BARS / n : 1;
+    const barW = BASE_BAR_W * scale;
+    const gap = BASE_GAP * scale;
+
+    // Total SVG width matches exactly the content needed
+    const svgW = padL + n * (barW + gap) - gap + padR;
+
+    const yOf = (pct) => padT + (1 - pct / 100) * chartH;
+
+    const barCls = (val) => {
+        if (val >= 100) return "cbar-bar--compliant";
+        if (val >= 80) return "cbar-bar--monitor";
+        if (val >= 60) return "cbar-bar--attention";
+        return "cbar-bar--high-attention";
+    };
+
+    const fontSize = Math.max(4.5, 7 * scale);
+
+    if (!data || data.length === 0) {
+        return (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: svgH, color: "#595959", fontSize: 12 }}>
+                No data available
+            </div>
+        );
+    }
+
+    return (
+        <svg
+            className="cbar-svg"
+            viewBox={`0 0 ${svgW} ${svgH}`}
+            preserveAspectRatio="xMidYMid meet"
+        >
+            {/* Gridlines at every 20% — light lines, no text */}
+            {[0, 20, 40, 60, 80, 100].map((pct) => {
+                const y = yOf(pct);
+                return (
+                    <line
+                        key={pct}
+                        x1={padL} x2={svgW - padR}
+                        y1={y} y2={y}
+                        className="cbar-gridline"
+                    />
+                );
+            })}
+
+            {data.map((d, i) => {
+                const x = padL + i * (barW + gap);
+                const barH = (d.value / 100) * chartH;
+                const y = yOf(d.value);
+                return (
+                    <g key={d.label}>
+                        <rect
+                            x={x} y={y}
+                            width={barW} height={barH}
+                            className={`cbar-bar ${barCls(d.value)}`}
+                        />
+                        <text
+                            x={x + barW / 2} y={y - 3.5}
+                            textAnchor="middle"
+                            className="cbar-bar-value"
+                            style={{ fontSize }}
+                        >
+                            {d.value}%
+                        </text>
+                        <text
+                            x={x + barW / 2} y={svgH - 6}
+                            textAnchor="middle"
+                            className="cbar-axis-text"
+                            style={{ fontSize }}
+                        >
+                            {d.label}
+                        </text>
+                    </g>
+                );
+            })}
+        </svg>
+    );
+};
+
+const BarChart = ({ data }) => {
+    const maxVal = Math.max(...data.map((d) => d.value), 1);
+    const svgH = 160;
+    const barW = 36;
+    const gap = 20;
+    const padL = 10;
+    const padB = 20;
+    const padT = 20;
+    const totalW = padL + data.length * (barW + gap) - gap + 10;
+
+    return (
+        <svg className="mdash-bar-svg" viewBox={`0 0 ${totalW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
+            {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
+                const y = padT + (1 - frac) * (svgH - padT - padB);
+                return <line key={i} x1={padL} x2={totalW - 4} y1={y} y2={y} className="mdash-chart-gridline" />;
+            })}
+            {data.map((d, i) => {
+                const barH = ((d.value / maxVal) * (svgH - padT - padB));
+                const x = padL + i * (barW + gap);
+                const y = padT + (svgH - padT - padB) - barH;
+                return (
+                    <g key={d.label}>
+                        <rect x={x} y={y} width={barW} height={barH} rx="0" className="mdash-bar" />
+                        <text x={x + barW / 2} y={y - 5} textAnchor="middle" className="mdash-bar-value">{d.value}</text>
+                        <text x={x + barW / 2} y={svgH - 6} textAnchor="middle" className="mdash-axis-text">{d.label}</text>
+                    </g>
+                );
+            })}
+        </svg>
+    );
+};
 
 const HorizBarChart = ({ data }) => {
     const svgW = 500;
@@ -89,7 +262,7 @@ const HorizBarChart = ({ data }) => {
     const padB = 8;
     const svgH = padT + data.length * rowH + padB;
     const chartW = svgW - padL - padR;
-    const maxVal = Math.max(...data.map((d) => d.value));
+    const maxVal = Math.max(...data.map((d) => d.value), 1);
 
     return (
         <svg
@@ -125,239 +298,109 @@ const HorizBarChart = ({ data }) => {
     );
 };
 
-const DMS_STATUS_OVERVIEW = {
-    valid: { count: 100, pct: 67 },
-    expiring: { count: 30, pct: 20 },
-    expired: { count: 20, pct: 13 },
+const niceStep = (rawStep) => {
+    const power = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const fraction = rawStep / power;
+
+    if (fraction <= 1) return 1 * power;
+    if (fraction <= 2) return 2 * power;
+    if (fraction <= 5) return 5 * power;
+    return 10 * power;
 };
 
-// Expiring soon bar chart — days buckets
-const DMS_EXPIRING_BUCKETS = [
-    { label: "0–30 Days", value: 11 },
-    { label: "31–60 Days", value: 9 },
-    { label: "61–90 Days", value: 6 },
-    { label: "90+ Days", value: 4 },
-];
+const getNiceTicks = (min, max, tickCount = 5, forceZero = true) => {
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return { ticks: [0, 1], min: 0, max: 1 };
+    }
 
-const SITE_EXPIRING_BUCKETS = [
-    { label: "Site 1", value: 70 },
-    { label: "Site 2", value: 50 },
-    { label: "Site 3", value: 30 },
-    { label: "Site 4", value: 20 },
-];
+    if (forceZero) {
+        min = Math.min(0, min);
+    }
 
-const ASSET_EXPIRING_BUCKETS = [
-    { label: "CM1", value: 100 },
-    { label: "FB2", value: 70 },
-    { label: "T3", value: 50 },
-    { label: "SC4", value: 30 },
-];
+    if (min === max) {
+        const pad = min === 0 ? 1 : Math.abs(min * 0.1);
+        min -= pad;
+        max += pad;
+    }
 
-const AREA_EXPIRING_BUCKETS = [
-    { label: "Section 1", value: 100 },
-    { label: "Section 2", value: 80 },
-    { label: "Section 3", value: 40 },
-    { label: "Section 4", value: 20 },
-];
+    const rawStep = (max - min) / Math.max(1, tickCount - 1);
+    const step = niceStep(rawStep);
 
-const WAREHOUSE_EXPIRING_BUCKETS = [
-    { label: "Continuous Miner", value: 40 },
-    { label: "Feeder Breaker", value: 18 },
-    { label: "Tractor", value: 15 },
-    { label: "Shuttle Car", value: 10 },
-];
+    const niceMin = Math.floor(min / step) * step;
+    const niceMax = Math.ceil(max / step) * step;
 
-// Line chart — last 6 months
-const DMS_TREND_MONTHS = ["Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026", "Jun 2026"];
-const DMS_TREND_SERIES = {
-    valid: [60, 68, 75, 82, 90, 100],
-    expiring: [10, 14, 18, 22, 26, 30],
-    expired: [0, 5, 8, 12, 16, 20],
+    const ticks = [];
+    for (let value = niceMin; value <= niceMax + step * 0.5; value += step) {
+        ticks.push(Number(value.toFixed(10)));
+    }
+
+    return {
+        ticks,
+        min: niceMin,
+        max: niceMax,
+    };
 };
 
-// Top 5 categories
-const DMS_CATEGORIES = [
-    { name: "DMPR MCOP Guidelines", count: 12 },
-    { name: "Procedures", count: 8 },
-    { name: "Policies", count: 7 },
-    { name: "Risk Assessments", count: 6 },
-    { name: "Standards", count: 6 },
-];
+/**
+ * TrendChart — matches DMS implementation exactly.
+ * totalSlots = chosen range; months.length may be smaller.
+ * Data is right-aligned into the slots.
+ */
+const TrendChart = ({ months, series, totalSlots }) => {
+    const slots = totalSlots || months.length;
+    const offset = slots - months.length;
 
-// Invalid (expired) certificates — 5 rows matching the previous table count
-const EPA_INVALID_CERTS = [
-    { component: "Master Component", site: "Site 1", assetType: "Continuous Miner", assetNo: "CM1", expiredOn: "02 May 2026" },
-    { component: "Component 1", site: "Site 2", assetType: "Feeder Breaker", assetNo: "FB2", expiredOn: "08 May 2026" },
-    { component: "Component 2", site: "Site 3", assetType: "Tractor", assetNo: "T3", expiredOn: "12 May 2026" },
-    { component: "Component 3", site: "Site 4", assetType: "Shuttle Car", assetNo: "SC4", expiredOn: "18 May 2026" },
-    { component: "Component 4", site: "Site 1", assetType: "Continuous Miner", assetNo: "CM5", expiredOn: "25 May 2026" },
-];
+    const allReal = [
+        ...(series.valid ?? []),
+        ...(series.expiring ?? []),
+        ...(series.invalid ?? []),
+    ].filter(v => v !== null);
+    const rawMinV = allReal.length ? Math.min(...allReal) : 0;
+    const rawMaxV = allReal.length ? Math.max(...allReal) : 1;
 
-// Expiring soon certificates — 5 rows matching the previous table count
-const EPA_EXPIRING_CERTS = [
-    { component: "Component 5", site: "Site 2", assetType: "Feeder Breaker", assetNo: "FB6", expiresOn: "10 Jun 2026", daysLeft: 2 },
-    { component: "Component 6", site: "Site 3", assetType: "Tractor", assetNo: "T7", expiresOn: "12 Jun 2026", daysLeft: 4 },
-    { component: "Component 7", site: "Site 4", assetType: "Shuttle Car", assetNo: "SC8", expiresOn: "15 Jun 2026", daysLeft: 7 },
-    { component: "Component 8", site: "Site 1", assetType: "Continuous Miner", assetNo: "CM9", expiresOn: "20 Jun 2026", daysLeft: 12 },
-    { component: "Component 9", site: "Site 2", assetType: "Feeder Breaker", assetNo: "FB10", expiresOn: "28 Jun 2026", daysLeft: 20 },
-];
-
-// Certificates by Site
-const EPA_SITE_ROWS = [
-    { type: "Site 1", total: 42, valid: 28, expiring: 9, expired: 5, pctInvalid: 12 },
-    { type: "Site 2", total: 38, valid: 26, expiring: 8, expired: 4, pctInvalid: 11 },
-    { type: "Site 3", total: 35, valid: 24, expiring: 7, expired: 4, pctInvalid: 11 },
-    { type: "Site 4", total: 35, valid: 22, expiring: 6, expired: 7, pctInvalid: 20 },
-];
-
-// Certificates by Asset Type
-const EPA_ASSET_TYPE_ROWS = [
-    { type: "Continuous Miner", total: 45, valid: 30, expiring: 9, expired: 6, pctInvalid: 13 },
-    { type: "Feeder Breaker", total: 38, valid: 26, expiring: 8, expired: 4, pctInvalid: 11 },
-    { type: "Tractor", total: 37, valid: 25, expiring: 7, expired: 5, pctInvalid: 14 },
-    { type: "Shuttle Car", total: 30, valid: 19, expiring: 6, expired: 5, pctInvalid: 17 },
-];
-
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-
-const fmt = (n) => n.toLocaleString("en-ZA");
-
-// Donut arc builder
-const donutArc = (pct, offset) => {
-    const c = 2 * Math.PI * 45; // circumference at r=45
-    return { dash: (pct / 100) * c, offset: -(offset / 100) * c };
-};
-
-// Line chart point mapper
-const linePoint = (val, min, max, svgH, svgPadT, svgPadB, idx, total, svgW, padL, padR) => {
-    const x = padL + (idx / (total - 1)) * (svgW - padL - padR);
-    const y = svgPadT + (1 - (val - min) / (max - min)) * (svgH - svgPadT - svgPadB);
-    return { x, y };
-};
-
-// ─────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────
-
-const DonutChart = ({ data }) => {
-    const { valid, expiring, expired } = data;
-    const total = valid.pct + expiring.pct + expired.pct;
-    let offset = 0;
-
-    const segments = [
-        { key: "valid", pct: valid.pct, cls: "mdash-donut--green" },
-        { key: "expiring", pct: expiring.pct, cls: "mdash-donut--orange" },
-        { key: "expired", pct: expired.pct, cls: "mdash-donut--red" },
-    ];
-
-    return (
-        <svg className="mdash-donut-svg" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="45" fill="none" stroke="#eff3f8" strokeWidth="22" />
-            {segments.map((s) => {
-                const { dash, offset: dashOff } = donutArc(s.pct, offset);
-                const c = 2 * Math.PI * 45;
-                const el = (
-                    <circle
-                        key={s.key}
-                        cx="60" cy="60" r="45"
-                        fill="none"
-                        strokeWidth="22"
-                        strokeDasharray={`${dash} ${c - dash}`}
-                        strokeDashoffset={dashOff}
-                        className={s.cls}
-                        style={{ transform: "rotate(-90deg)", transformOrigin: "60px 60px" }}
-                    />
-                );
-                offset += s.pct;
-                return el;
-            })}
-            <circle cx="60" cy="60" r="34" fill="white" />
-        </svg>
-    );
-};
-
-const BarChart = ({ data }) => {
-    const maxVal = Math.max(...data.map((d) => d.value));
-    const svgH = 160;
-    const barW = 36;
-    const gap = 20;
-    const padL = 10;
-    const padB = 20;
-    const padT = 20;
-    const totalW = padL + data.length * (barW + gap) - gap + 10;
-
-    return (
-        <svg className="mdash-bar-svg" viewBox={`0 0 ${totalW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            {/* grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-                const y = padT + (1 - frac) * (svgH - padT - padB);
-                return <line key={i} x1={padL} x2={totalW - 4} y1={y} y2={y} className="mdash-chart-gridline" />;
-            })}
-            {data.map((d, i) => {
-                const barH = ((d.value / maxVal) * (svgH - padT - padB));
-                const x = padL + i * (barW + gap);
-                const y = padT + (svgH - padT - padB) - barH;
-                return (
-                    <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="0" className="mdash-bar" />
-                        <text x={x + barW / 2} y={y - 5} textAnchor="middle" className="mdash-bar-value">{d.value}</text>
-                        <text x={x + barW / 2} y={svgH - 6} textAnchor="middle" className="mdash-axis-text">{d.label}</text>
-                    </g>
-                );
-            })}
-        </svg>
-    );
-};
-
-const BarChartPercent = ({ data }) => {
-    const maxVal = Math.max(...data.map((d) => d.value));
-    const svgH = 160;
-    const barW = 36;
-    const gap = 20;
-    const padL = 10;
-    const padB = 20;
-    const padT = 20;
-    const totalW = padL + data.length * (barW + gap) - gap + 10;
-
-    return (
-        <svg className="mdash-bar-svg" viewBox={`0 0 ${totalW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            {/* grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-                const y = padT + (1 - frac) * (svgH - padT - padB);
-                return <line key={i} x1={padL} x2={totalW - 4} y1={y} y2={y} className="mdash-chart-gridline" />;
-            })}
-            {data.map((d, i) => {
-                const barH = ((d.value / maxVal) * (svgH - padT - padB));
-                const x = padL + i * (barW + gap);
-                const y = padT + (svgH - padT - padB) - barH;
-                return (
-                    <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="0" className="mdash-bar" />
-                        <text x={x + barW / 2} y={y - 5} textAnchor="middle" className="mdash-bar-value">{d.value}%</text>
-                        <text x={x + barW / 2} y={svgH - 6} textAnchor="middle" className="mdash-axis-text">{d.label}</text>
-                    </g>
-                );
-            })}
-        </svg>
-    );
-};
-
-const TrendChart = ({ months, series }) => {
-    const allVals = [...series.expiring, ...series.expired, ...series.valid];
-    const minV = Math.min(...allVals);
-    const maxV = Math.max(...allVals);
+    const {
+        ticks: yTicks,
+        min: minV,
+        max: maxV,
+    } = getNiceTicks(rawMinV, rawMaxV, 5, true);
     const svgW = 400, svgH = 120, padL = 30, padR = 30, padT = 12, padB = 24;
 
-    const pts = (arr) => arr.map((v, i) => linePoint(v, minV, maxV, svgH, padT, padB, i, months.length, svgW, padL, padR));
-    const polyline = (arr) => pts(arr).map((p) => `${p.x},${p.y}`).join(" ");
+    const pt = (val, dataIdx) => {
+        const slotIdx = dataIdx + offset;
+        return linePoint(val, minV, maxV, svgH, padT, padB, slotIdx, slots, svgW, padL, padR);
+    };
 
-    const yTicks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    const buildPath = (arr) => {
+        const segments = [];
+        let seg = [];
+        (arr ?? []).forEach((v, i) => {
+            if (v !== null) {
+                seg.push(pt(v, i));
+            } else {
+                if (seg.length > 1) segments.push(seg);
+                seg = [];
+            }
+        });
+        if (seg.length > 1) segments.push(seg);
+        return segments;
+    };
+
+    const renderSeries = (arr, lineCls, dotCls) => (
+        <>
+            {buildPath(arr).map((seg, si) => (
+                <polyline key={si} points={seg.map(p => `${p.x},${p.y}`).join(' ')} className={`mdash-line ${lineCls}`} />
+            ))}
+            {(arr ?? []).map((v, i) => v !== null
+                ? <circle key={i} cx={pt(v, i).x} cy={pt(v, i).y} r="1.25" className={dotCls} />
+                : null
+            )}
+        </>
+    );
 
     return (
         <svg className="mdash-trend-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
             {yTicks.map((t) => {
+                if (maxV === minV) return null;
                 const y = padT + (1 - (t - minV) / (maxV - minV)) * (svgH - padT - padB);
                 if (y < padT || y > svgH - padB) return null;
                 return (
@@ -368,15 +411,13 @@ const TrendChart = ({ months, series }) => {
                 );
             })}
             {months.map((m, i) => {
-                const x = padL + (i / (months.length - 1)) * (svgW - padL - padR);
+                const slotIdx = i + offset;
+                const x = slots <= 1 ? svgW - padR : padL + (slotIdx / (slots - 1)) * (svgW - padL - padR);
                 return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
             })}
-            <polyline points={polyline(series.expiring)} className="mdash-line mdash-line--orange" />
-            <polyline points={polyline(series.expired)} className="mdash-line mdash-line--red" />
-            <polyline points={polyline(series.valid)} className="mdash-line mdash-line--green" />
-            {pts(series.expiring).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--orange" />)}
-            {pts(series.expired).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--red" />)}
-            {pts(series.valid).map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.25" className="mdash-dot--green" />)}
+            {renderSeries(series.expiring, "mdash-line--orange", "mdash-dot--orange")}
+            {renderSeries(series.invalid, "mdash-line--red", "mdash-dot--red")}
+            {renderSeries(series.valid, "mdash-line--green", "mdash-dot--green")}
         </svg>
     );
 };
@@ -385,10 +426,10 @@ const StackedBarChart = ({ rows }) => {
     return (
         <div className="mdash-stacked-wrap">
             {rows.map((row) => {
-                const total = row.valid + row.expiring + row.expired;
-                const vPct = (row.valid / total) * 100;
-                const ePct = (row.expiring / total) * 100;
-                const xPct = (row.expired / total) * 100;
+                const total = (row.valid ?? 0) + (row.expiring ?? 0) + (row.expired ?? 0);
+                const vPct = total > 0 ? ((row.valid ?? 0) / total) * 100 : 0;
+                const ePct = total > 0 ? ((row.expiring ?? 0) / total) * 100 : 0;
+                const xPct = total > 0 ? ((row.expired ?? 0) / total) * 100 : 0;
                 return (
                     <div key={row.type} className="mdash-stacked-row">
                         <span className="mdash-stacked-label">{row.type}</span>
@@ -403,13 +444,24 @@ const StackedBarChart = ({ rows }) => {
                                 {xPct > 5 && <span>{row.expired}</span>}
                             </div>
                         </div>
-                        <span className="mdash-stacked-pct">{row.pctExpired}%</span>
+                        <span className="mdash-stacked-pct">{row.pctInvalid ?? 0}%</span>
                     </div>
                 );
             })}
         </div>
     );
 };
+
+// ─────────────────────────────────────────────
+// Empty table state
+// ─────────────────────────────────────────────
+const NoValues = ({ colSpan }) => (
+    <tr>
+        <td colSpan={colSpan} style={{ textAlign: "center", color: "#595959", padding: "16px 0", fontStyle: "italic" }}>
+            No values
+        </td>
+    </tr>
+);
 
 // ─────────────────────────────────────────────
 // Main Component
@@ -420,25 +472,177 @@ const EPAMSMainDash = () => {
     const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
-    const siteTotals = EPA_SITE_ROWS.reduce(
+    // ── Data state ──
+    const [dashData, setDashData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // ── Trendline window selection ──
+    const [trendWindow, setTrendWindow] = useState(6);
+
+    useEffect(() => {
+        const fetchDash = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-epams`, {
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error || "Failed");
+                setDashData(data);
+                console.log(data);
+            } catch (err) {
+                console.error("[EPAMS dashboard] fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDash();
+    }, []);
+
+    if (loading || !dashData) {
+        return (
+            <div
+                className="dc-info-container"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+                <div className="draft-loading-vertical" aria-live="polite">
+                    <FontAwesomeIcon
+                        icon={faSpinner}
+                        className="draft-spinner-large draft-spinner-animate"
+                    />
+                    <span className="draft-loading-text">
+                        Loading dashboard…
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    // ── Derived values from API response ──
+    const d = dashData;
+
+    const totalCerts = d.totalCerts ?? 0;
+    const validCerts = d.validCerts ?? 0;
+    const expiringCerts = d.expiringCerts ?? 0;
+    const invalidCerts = d.invalidCerts ?? 0;
+    const outstandingCerts = d.outstandingCerts ?? 0;
+    const orgCompliance = d.orgCompliance ?? 0;
+
+    const vsTotalCerts = d.vsTotalCerts ?? 0;
+    const vsOrgCompliance = d.vsOrgCompliance ?? 0;
+
+    // ── Delta helpers — same pattern as DMS ──
+    const complianceDelta = buildDelta(vsOrgCompliance, "neutral");   // grey always
+    const totalDelta = buildDelta(vsTotalCerts, "neutral");   // grey always
+
+    const certStatusOverview = d.certStatusOverview ?? {
+        valid: { count: 0, pct: 0 },
+        expiring: { count: 0, pct: 0 },
+        invalid: { count: 0, pct: 0 },
+    };
+
+    const siteRows = d.siteRows ?? [];
+    const areaRows = d.areaRows ?? [];
+    const assetTypeRows = d.assetTypeRows ?? [];
+    const invalidRows = d.invalidRows ?? [];
+    const expiringRows = d.expiringRows ?? [];
+    const outstandingRows = d.outstandingRows ?? [];
+
+    const compliancePerSite = d.compliancePerSite ?? [];
+    const expiringBuckets = d.expiringBuckets ?? [];
+    const warehousePerAssetType = d.warehousePerAssetType ?? [];
+
+    // ── Trendline slicing ──
+    const rawTrend = d.trend ?? [];
+    const slicedTrend = rawTrend.slice(-trendWindow);
+    const trendMonths = slicedTrend.map((t) => t.label);
+    const trendSeries = {
+        valid: slicedTrend.map((t) => t.valid),
+        expiring: slicedTrend.map((t) => t.expiring),
+        invalid: slicedTrend.map((t) => t.invalid),
+    };
+
+    // ── Site totals ──
+    const siteTotals = siteRows.reduce(
         (acc, r) => ({
-            total: acc.total + r.total,
-            valid: acc.valid + r.valid,
-            expiring: acc.expiring + r.expiring,
-            expired: acc.expired + r.expired,
+            total: acc.total + (r.total ?? 0),
+            valid: acc.valid + (r.valid ?? 0),
+            expiring: acc.expiring + (r.expiring ?? 0),
+            expired: acc.expired + (r.expired ?? 0),
         }),
         { total: 0, valid: 0, expiring: 0, expired: 0 }
     );
 
-    const assetTotals = EPA_ASSET_TYPE_ROWS.reduce(
+    // ── Asset type totals ──
+    const assetTotals = assetTypeRows.reduce(
         (acc, r) => ({
-            total: acc.total + r.total,
-            valid: acc.valid + r.valid,
-            expiring: acc.expiring + r.expiring,
-            expired: acc.expired + r.expired,
+            total: acc.total + (r.total ?? 0),
+            valid: acc.valid + (r.valid ?? 0),
+            expiring: acc.expiring + (r.expiring ?? 0),
+            expired: acc.expired + (r.expired ?? 0),
         }),
         { total: 0, valid: 0, expiring: 0, expired: 0 }
     );
+
+    // ── Summary cards ──
+    const summaryCards = [
+        {
+            id: "compliance",
+            label: "ORGANISATION COMPLIANCE",
+            value: `${orgCompliance}%`,
+            sub: complianceDelta.label,
+            subColorClass: "mdash-card--grey",   // always grey, per spec
+            colorClass: "mdash-card--grey",
+            skipFmt: true,
+        },
+        {
+            id: "total",
+            label: "TOTAL COMPONENT CERTIFICATES",
+            value: totalCerts,
+            sub: totalDelta.label,
+            subColorClass: "mdash-sub--grey",    // always grey
+            colorClass: "mdash-card--grey",
+        },
+        {
+            id: "valid",
+            label: "VALID COMPONENT CERTIFICATES",
+            value: validCerts,
+            sub: pctSub(validCerts, totalCerts),
+            subColorClass: "mdash-sub--green",   // always green
+            colorClass: "mdash-card--grey",
+        },
+        {
+            id: "expiring",
+            label: "EXPIRING COMPONENT CERTIFICATES",
+            value: expiringCerts,
+            sub: pctSub(expiringCerts, totalCerts),
+            subColorClass: "mdash-sub--grey",
+            colorClass: "mdash-card--orange",
+        },
+        {
+            id: "invalid",
+            label: "INVALID COMPONENT CERTIFICATES",
+            value: invalidCerts,
+            sub: pctSub(invalidCerts, totalCerts),
+            subColorClass: "mdash-sub--grey",
+            colorClass: "mdash-card--red",
+        },
+        {
+            id: "outstanding",
+            label: "OUTSTANDING COMPONENT CERTIFICATES",
+            value: outstandingCerts,
+            sub: "Certificates Required",
+            subColorClass: "mdash-sub--grey",
+            colorClass: "mdash-card--red",
+        },
+    ];
+
+    // ── Warehouse horiz-bar data ──
+    const horizBarData = warehousePerAssetType.slice(0, 8).map((item, i) => ({
+        label: item.label,
+        value: item.value,
+        class: `new-bar${(i % 5) + 1}`,
+    }));
 
     return (
         <div className="dc-info-container">
@@ -480,13 +684,12 @@ const EPAMSMainDash = () => {
                         <div className="mdash-header-actions">
                             <button className="mdash-btn-nc">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
-                                Data as at: {DMS_META.dataAsAt}
+                                Data as at: {d.dataAsAt ?? "—"}
                             </button>
-                            {false && (<button className="mdash-btn">
-                                <FontAwesomeIcon icon={faFilter} />
-                                Filters
-                            </button>)}
-                            <button className="mdash-btn mdash-btn--primary">
+                            <button className="mdash-btn mdash-btn--primary2" onClick={() => navigate('/FrontendDMS/dwDash')}>
+                                Digital Warehouse Dashboard
+                            </button>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(d.dataAsAt, "EPAMS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>
@@ -495,16 +698,18 @@ const EPAMSMainDash = () => {
 
                     {/* ── Summary Cards ── */}
                     <div className="mdash-summary-grid">
-                        {DMS_SUMMARY_CARDS.map((card) => (
+                        {summaryCards.map((card) => (
                             <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
                                 <p className="mdash-summary-label">{card.label}</p>
-                                {card.value !== -1 && <strong className="mdash-summary-value">{fmt(card.value)}</strong>}
+                                <strong className="mdash-summary-value">
+                                    {card.skipFmt ? card.value : fmt(card.value)}
+                                </strong>
                                 <span className={`mdash-summary-sub ${card.subColorClass}`}>{card.sub}</span>
                             </div>
                         ))}
                     </div>
 
-                    {/* ── Row 1: Status | Bar | Trend ── */}
+                    {/* ── Row 1: Status Overview | Compliance per Site ── */}
                     <div className="mdash-grid mdash-grid--3col">
 
                         {/* Status Overview */}
@@ -513,12 +718,12 @@ const EPAMSMainDash = () => {
                                 <h3>COMPONENTS CERTIFICATE STATUS OVERVIEW</h3>
                             </div>
                             <div className="mdash-status-layout">
-                                <DonutChart data={DMS_STATUS_OVERVIEW} />
+                                <DonutChart data={certStatusOverview} />
                                 <div className="mdash-legend-stack">
                                     {[
-                                        { label: "Valid", count: DMS_STATUS_OVERVIEW.valid.count, pct: DMS_STATUS_OVERVIEW.valid.pct, cls: "green" },
-                                        { label: "Expiring Soon", count: DMS_STATUS_OVERVIEW.expiring.count, pct: DMS_STATUS_OVERVIEW.expiring.pct, cls: "orange" },
-                                        { label: "Expired", count: DMS_STATUS_OVERVIEW.expired.count, pct: DMS_STATUS_OVERVIEW.expired.pct, cls: "red" },
+                                        { label: "Valid", count: certStatusOverview.valid?.count ?? 0, pct: certStatusOverview.valid?.pct ?? 0, cls: "green" },
+                                        { label: "Expiring Soon", count: certStatusOverview.expiring?.count ?? 0, pct: certStatusOverview.expiring?.pct ?? 0, cls: "orange" },
+                                        { label: "Expired", count: certStatusOverview.invalid?.count ?? 0, pct: certStatusOverview.invalid?.pct ?? 0, cls: "red" },
                                     ].map((item) => (
                                         <div key={item.label} className="mdash-legend-row">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
@@ -530,81 +735,19 @@ const EPAMSMainDash = () => {
                             </div>
                         </div>
 
-                        {/* Expiring Soon Bar */}
-                        <div className="mdash-panel">
-                            <div className="mdash-panel-header">
-                                <h3>EXPIRING SOON BY TIME PERIOD</h3>
-                            </div>
-                            <div className="mdash-chart-scroll">
-                                <BarChart data={DMS_EXPIRING_BUCKETS} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mdash-grid mdash-grid--3col">
+                        {/* Compliance per Site */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>COMPLIANCE STATUS PER SITE</h3>
                             </div>
                             <div className="mdash-chart-scroll">
-                                <BarChartPercent data={SITE_EXPIRING_BUCKETS} />
-                            </div>
-                        </div>
-
-                        <div className="mdash-panel">
-                            <div className="mdash-panel-header">
-                                <h3>COMPLIANCE STATUS PER AREA</h3>
-                            </div>
-                            <div className="mdash-chart-scroll">
-                                <BarChartPercent data={AREA_EXPIRING_BUCKETS} />
+                                <ComplianceBarChart data={compliancePerSite} />
                             </div>
                         </div>
                     </div>
 
+                    {/* ── Row 2: Invalid Certs | Expiring Certs ── */}
                     <div className="mdash-grid mdash-grid--3col">
-                        <div className="mdash-panel">
-                            <div className="mdash-panel-header">
-                                <h3>COMPLIANCE STATUS PER ASSET</h3>
-                            </div>
-                            <div className="mdash-chart-scroll">
-                                <BarChartPercent data={ASSET_EXPIRING_BUCKETS} />
-                            </div>
-                        </div>
-
-                        <div className="mdash-panel">
-                            <div className="mdash-panel-header">
-                                <h3>VALID DIGITAL WAREHOUSE COMPONENTS PER ASSET TYPE</h3>
-                            </div>
-                            <div className="mdash-chart-scroll">
-                                <BarChart data={WAREHOUSE_EXPIRING_BUCKETS} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── Row 2: Categories | Expired | Expiring Docs ── */}
-                    <div className="mdash-grid mdash-grid--3col">
-
-                        {/* Top Categories */}
-                        {false && (<div className="mdash-panel">
-                            <div className="mdash-panel-header">
-                                <h3>EXPIRED DOCUMENTS BY DOCUMENT TYPE</h3>
-                            </div>
-                            <table className="mdash-table">
-                                <thead>
-                                    <tr>
-                                        <th>Type</th>
-                                        <th style={{ textAlign: "right" }}>Documents</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {DMS_CATEGORIES.map((cat) => (
-                                        <tr key={cat.name}>
-                                            <td>{cat.name}</td>
-                                            <td style={{ textAlign: "right" }}>{fmt(cat.count)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>)}
 
                         {/* Invalid Certificates */}
                         <div className="mdash-panel">
@@ -623,15 +766,18 @@ const EPAMSMainDash = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {EPA_INVALID_CERTS.map((cert, i) => (
-                                            <tr key={i}>
-                                                <td>{cert.component}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.site}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.assetType}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.assetNo}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-alert-text">{cert.expiredOn}</td>
-                                            </tr>
-                                        ))}
+                                        {invalidRows.length === 0
+                                            ? <NoValues colSpan={5} />
+                                            : invalidRows.map((cert, i) => (
+                                                <tr key={i}>
+                                                    <td>{cert.component}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.site}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.assetType}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.assetNr}</td>
+                                                    <td style={{ textAlign: "center" }} className="mdash-alert-text">{cert.expiredOn}</td>
+                                                </tr>
+                                            ))
+                                        }
                                     </tbody>
                                 </table>
                             </div>
@@ -655,16 +801,19 @@ const EPAMSMainDash = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {EPA_EXPIRING_CERTS.map((cert, i) => (
-                                            <tr key={i}>
-                                                <td>{cert.component}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.site}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.assetType}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.assetNo}</td>
-                                                <td style={{ textAlign: "center" }}>{cert.expiresOn}</td>
-                                                <td style={{ textAlign: "center" }} className={cert.daysLeft <= 7 ? "mdash-alert-text" : "mdash-warn-text"}>{cert.daysLeft}</td>
-                                            </tr>
-                                        ))}
+                                        {expiringRows.length === 0
+                                            ? <NoValues colSpan={6} />
+                                            : expiringRows.map((cert, i) => (
+                                                <tr key={i}>
+                                                    <td>{cert.component}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.site}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.assetType}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.assetNr}</td>
+                                                    <td style={{ textAlign: "center" }}>{cert.expiresOn}</td>
+                                                    <td style={{ textAlign: "center" }} className={cert.daysLeft <= 7 ? "mdash-alert-text" : "mdash-warn-text"}>{cert.daysLeft}</td>
+                                                </tr>
+                                            ))
+                                        }
                                     </tbody>
                                 </table>
                             </div>
@@ -694,42 +843,49 @@ const EPAMSMainDash = () => {
                                     <thead>
                                         <tr>
                                             <th style={{ width: "40%" }}>Site</th>
-                                            <th style={{ textAlign: "center", width: "15%" }}>Total Certificates</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Valid</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Expiring Soon</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Invalid</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Valid</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Expiring Soon</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Invalid</th>
                                             <th style={{ textAlign: "center", width: "9%" }}>% Invalid</th>
+                                            <th style={{ textAlign: "center", width: "15%" }}>Total Certificates</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {EPA_SITE_ROWS.map((row) => (
-                                            <tr key={row.type} className="mdash-drilldown-row">
-                                                <td>{row.type}</td>
-                                                <td style={{ textAlign: "center" }}>{fmt(row.total)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-good-text">{fmt(row.valid)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(row.expiring)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(row.expired)}</td>
-                                                <td style={{ textAlign: "center" }}>{row.pctInvalid}%</td>
-                                            </tr>
-                                        ))}
+                                        {siteRows.length === 0
+                                            ? <NoValues colSpan={6} />
+                                            : siteRows.map((row) => (
+                                                <tr key={row.type} className="mdash-drilldown-row">
+                                                    <td>{row.type}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.valid)}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.expiring)}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.expired)}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.pctInvalid}%</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.total)}</td>
+                                                </tr>
+                                            ))
+                                        }
                                     </tbody>
-                                    <tfoot>
-                                        <tr className="mdash-drilldown-footer">
-                                            <td>Total</td>
-                                            <td style={{ textAlign: "center" }}>{fmt(siteTotals.total)}</td>
-                                            <td style={{ textAlign: "center" }}>{fmt(siteTotals.valid)}</td>
-                                            <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(siteTotals.expiring)}</td>
-                                            <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(siteTotals.expired)}</td>
-                                            <td style={{ textAlign: "center" }}>13%</td>
-                                        </tr>
-                                    </tfoot>
+                                    {siteRows.length > 0 && (
+                                        <tfoot>
+                                            <tr className="mdash-drilldown-footer">
+                                                <td>Total</td>
+                                                <td style={{ textAlign: "center" }}>{fmt(siteTotals.valid)}</td>
+                                                <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(siteTotals.expiring)}</td>
+                                                <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(siteTotals.expired)}</td>
+                                                <td style={{ textAlign: "center" }}>
+                                                    {siteTotals.total > 0 ? Math.round((siteTotals.expired / siteTotals.total) * 100) : 0}%
+                                                </td>
+                                                <td style={{ textAlign: "center" }}>{fmt(siteTotals.total)}</td>
+                                            </tr>
+                                        </tfoot>
+                                    )}
                                 </table>
                             </div>
                             <div className="mdash-stacked-side">
                                 <div className="mdash-inline-legend mdash-inline-legend--right">
                                     <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Invalid</span>
                                 </div>
-                                <StackedBarChart rows={EPA_SITE_ROWS} />
+                                <StackedBarChart rows={siteRows} />
                                 <div className="mdash-stacked-axis-labels">
                                     {["0%", "25%", "50%", "75%", "100%"].map((l) => (
                                         <span key={l}>{l}</span>
@@ -762,42 +918,49 @@ const EPAMSMainDash = () => {
                                     <thead>
                                         <tr>
                                             <th style={{ width: "40%" }}>Asset Type</th>
-                                            <th style={{ textAlign: "center", width: "15%" }}>Total Certificates</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Valid</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Expiring Soon</th>
-                                            <th style={{ textAlign: "center", width: "12%" }}>Invalid</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Valid</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Expiring Soon</th>
+                                            <th style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Invalid</th>
                                             <th style={{ textAlign: "center", width: "9%" }}>% Invalid</th>
+                                            <th style={{ textAlign: "center", width: "15%" }}>Total Certificates</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {EPA_ASSET_TYPE_ROWS.map((row) => (
-                                            <tr key={row.type} className="mdash-drilldown-row">
-                                                <td>{row.type}</td>
-                                                <td style={{ textAlign: "center" }}>{fmt(row.total)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-good-text">{fmt(row.valid)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(row.expiring)}</td>
-                                                <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(row.expired)}</td>
-                                                <td style={{ textAlign: "center" }}>{row.pctInvalid}%</td>
-                                            </tr>
-                                        ))}
+                                        {assetTypeRows.length === 0
+                                            ? <NoValues colSpan={6} />
+                                            : assetTypeRows.map((row) => (
+                                                <tr key={row.type} className="mdash-drilldown-row">
+                                                    <td>{row.type}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.valid)}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.expiring)}</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.expired)}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.pctInvalid}%</td>
+                                                    <td style={{ textAlign: "center" }}>{fmt(row.total)}</td>
+                                                </tr>
+                                            ))
+                                        }
                                     </tbody>
-                                    <tfoot>
-                                        <tr className="mdash-drilldown-footer">
-                                            <td>Total</td>
-                                            <td style={{ textAlign: "center" }}>{fmt(assetTotals.total)}</td>
-                                            <td style={{ textAlign: "center" }}>{fmt(assetTotals.valid)}</td>
-                                            <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(assetTotals.expiring)}</td>
-                                            <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(assetTotals.expired)}</td>
-                                            <td style={{ textAlign: "center" }}>14%</td>
-                                        </tr>
-                                    </tfoot>
+                                    {assetTypeRows.length > 0 && (
+                                        <tfoot>
+                                            <tr className="mdash-drilldown-footer">
+                                                <td>Total</td>
+                                                <td style={{ textAlign: "center" }}>{fmt(assetTotals.valid)}</td>
+                                                <td style={{ textAlign: "center" }} className="mdash-warn-text">{fmt(assetTotals.expiring)}</td>
+                                                <td style={{ textAlign: "center" }} className="mdash-alert-text">{fmt(assetTotals.expired)}</td>
+                                                <td style={{ textAlign: "center" }}>
+                                                    {assetTotals.total > 0 ? Math.round((assetTotals.expired / assetTotals.total) * 100) : 0}%
+                                                </td>
+                                                <td style={{ textAlign: "center" }}>{fmt(assetTotals.total)}</td>
+                                            </tr>
+                                        </tfoot>
+                                    )}
                                 </table>
                             </div>
                             <div className="mdash-stacked-side">
                                 <div className="mdash-inline-legend mdash-inline-legend--right">
                                     <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Invalid</span>
                                 </div>
-                                <StackedBarChart rows={EPA_ASSET_TYPE_ROWS} />
+                                <StackedBarChart rows={assetTypeRows} />
                                 <div className="mdash-stacked-axis-labels">
                                     {["0%", "25%", "50%", "75%", "100%"].map((l) => (
                                         <span key={l}>{l}</span>
@@ -807,24 +970,40 @@ const EPAMSMainDash = () => {
                         </div>
                     </div>
 
+                    {/* ── Certificates Over Time (Trendline) ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
-                            <h3>DOCUMENTS OVER TIME (LAST 6 MONTHS)</h3>
-                            <div className="mdash-inline-legend">
-                                {[
-                                    { label: "Valid", cls: "green" },
-                                    { label: "Expiring Soon", cls: "orange" },
-                                    { label: "Expired", cls: "red" },
-                                ].map((item) => (
-                                    <span key={item.label} className="mdash-inline-legend-item">
-                                        <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
-                                        {item.label}
-                                    </span>
-                                ))}
+                            <h3>CERTIFICATES OVER TIME (LAST {trendWindow} {trendWindow === 1 ? "MONTH" : "MONTHS"})</h3>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                <div className="mdash-inline-legend" style={{ marginBottom: 0 }}>
+                                    {[
+                                        { label: "Valid", cls: "green" },
+                                        { label: "Expiring Soon", cls: "orange" },
+                                        { label: "Expired", cls: "red" },
+                                    ].map((item) => (
+                                        <span key={item.label} className="mdash-inline-legend-item">
+                                            <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
+                                            {item.label}
+                                        </span>
+                                    ))}
+                                </div>
+                                <select
+                                    className="mdash-trend-select"
+                                    value={trendWindow}
+                                    onChange={(e) => setTrendWindow(Number(e.target.value))}
+                                >
+                                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                                        <option key={n} value={n}>{n} Months</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <div className="mdash-chart-scroll">
-                            <TrendChart months={DMS_TREND_MONTHS} series={DMS_TREND_SERIES} />
+                            <TrendChart
+                                months={trendMonths}
+                                series={trendSeries}
+                                totalSlots={trendWindow}
+                            />
                         </div>
                     </div>
                 </div>

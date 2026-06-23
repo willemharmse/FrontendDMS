@@ -14,6 +14,7 @@ import TopBar from "../Notifications/TopBar";
 import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
+import { exportDashboardPDF } from "./exportDashboardPDF";
 import "./DDSMainDash.css";
 
 // ─────────────────────────────────────────────
@@ -402,10 +403,10 @@ const RMSMainDash = () => {
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Data as at: {dash.dataAsAt}
                             </button>
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => navigate('/cmsDash')}>
+                            <button className="mdash-btn mdash-btn--primary2" onClick={() => navigate('/FrontendDMS/cmsDash')}>
                                 Control Management Dashboard
                             </button>
-                            <button className="mdash-btn mdash-btn--primary">
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "RMS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>

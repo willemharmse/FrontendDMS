@@ -40,23 +40,24 @@ const linePoint = (val, min, max, svgH, svgPadT, svgPadB, idx, total, svgW, padL
 // ─────────────────────────────────────────────
 
 const DonutChart = ({ data }) => {
-    const { valid, expiring, expired } = data;
-    const total = valid.pct + expiring.pct + expired.pct || 100;
+    const { critical, high, medium, low, uncategorized } = data;
     let offset = 0;
     const segments = [
-        { key: "valid", pct: valid.pct, cls: "mdash-donut--green" },
-        { key: "expiring", pct: expiring.pct, cls: "mdash-donut--orange" },
-        { key: "expired", pct: expired.pct, cls: "mdash-donut--red" },
+        { key: "critical", pct: critical.pct, cls: "mdash-donut--red" },
+        { key: "high", pct: high.pct, cls: "mdash-donut--orange" },
+        { key: "medium", pct: medium.pct, cls: "mdash-donut--yellow" },
+        { key: "low", pct: low.pct, cls: "mdash-donut--green" },
+        { key: "uncategorized", pct: uncategorized.pct, cls: "mdash-donut--grey" },
     ];
     return (
         <svg className="mdash-donut-svg" viewBox="0 0 120 120">
             <circle cx="60" cy="60" r="45" fill="none" stroke="#eff3f8" strokeWidth="22" />
             {segments.map((s) => {
-                const { dash, offset: dashOff } = donutArc(s.pct, offset);
+                const { dash: dashLen, offset: dashOff } = donutArc(s.pct, offset);
                 const c = 2 * Math.PI * 45;
                 const el = (
                     <circle key={s.key} cx="60" cy="60" r="45" fill="none" strokeWidth="22"
-                        strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={dashOff}
+                        strokeDasharray={`${dashLen} ${c - dashLen}`} strokeDashoffset={dashOff}
                         className={s.cls}
                         style={{ transform: "rotate(-90deg)", transformOrigin: "60px 60px" }}
                     />
@@ -69,39 +70,84 @@ const DonutChart = ({ data }) => {
     );
 };
 
-// Colour ramp for bars: index 0 = yellow (due-for-review), then progressively lighter oranges
-const BAR_COLOUR_CLASSES = [
-    "mdash-bar--bucket0",
-    "mdash-bar--bucket1",
-    "mdash-bar--bucket2",
-    "mdash-bar--bucket3",
-];
-
+// Bar chart — mirrors DWMainDash: expects { label, value, class } per item
 const BarChart = ({ data }) => {
+    const n = data.length;
+    const svgW = Math.max(320, Math.min(520, n * 52));
+    const svgH = 205;
+    const padL = 10, padR = 10, padB = 26, padT = 18;
+    const chartW = svgW - padL - padR;
     const maxVal = Math.max(...data.map((d) => d.value), 1);
-    const svgH = 160, barW = 36, gap = 20, padL = 10, padB = 20, padT = 20;
-    const totalW = padL + data.length * (barW + gap) - gap + 10;
+    const slotW = chartW / n;
+    const barW = Math.min(Math.floor(slotW * 0.60), 48);
     return (
-        <svg className="mdash-bar-svg" viewBox={`0 0 ${totalW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
+        <svg
+            viewBox={`0 0 ${svgW} ${svgH}`}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ display: "block", width: "100%", height: "auto", minWidth: 220 }}
+        >
             {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
                 const y = padT + (1 - frac) * (svgH - padT - padB);
-                return <line key={i} x1={padL} x2={totalW - 4} y1={y} y2={y} className="mdash-chart-gridline" />;
+                return <line key={i} x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />;
             })}
             {data.map((d, i) => {
                 const barH = (d.value / maxVal) * (svgH - padT - padB);
-                const x = padL + i * (barW + gap);
+                const slotCentreX = padL + i * slotW + slotW / 2;
+                const x = slotCentreX - barW / 2;
                 const y = padT + (svgH - padT - padB) - barH;
-                const colourCls = BAR_COLOUR_CLASSES[Math.min(i, BAR_COLOUR_CLASSES.length - 1)];
                 return (
                     <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="0" className={`mdash-bar ${colourCls}`} />
-                        <text x={x + barW / 2} y={y - 5} textAnchor="middle" className={`mdash-bar-value mdash-bar-value--bucket${Math.min(i, BAR_COLOUR_CLASSES.length - 1)}`}>{d.value}</text>
-                        <text x={x + barW / 2} y={svgH - 6} textAnchor="middle" className="mdash-axis-text">{d.label}</text>
+                        <rect x={x} y={y} width={barW} height={barH} rx="2" className={`mddsash-bar ${d.class}`} />
+                        <text x={slotCentreX} y={y - 4} textAnchor="middle" className="mddsash-bar-value">{d.value}</text>
+                        <text x={slotCentreX} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
                     </g>
                 );
             })}
         </svg>
     );
+};
+
+const niceStep = (rawStep) => {
+    const power = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const fraction = rawStep / power;
+
+    if (fraction <= 1) return 1 * power;
+    if (fraction <= 2) return 2 * power;
+    if (fraction <= 5) return 5 * power;
+    return 10 * power;
+};
+
+const getNiceTicks = (min, max, tickCount = 5, forceZero = true) => {
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return { ticks: [0, 1], min: 0, max: 1 };
+    }
+
+    if (forceZero) {
+        min = Math.min(0, min);
+    }
+
+    if (min === max) {
+        const pad = min === 0 ? 1 : Math.abs(min * 0.1);
+        min -= pad;
+        max += pad;
+    }
+
+    const rawStep = (max - min) / Math.max(1, tickCount - 1);
+    const step = niceStep(rawStep);
+
+    const niceMin = Math.floor(min / step) * step;
+    const niceMax = Math.ceil(max / step) * step;
+
+    const ticks = [];
+    for (let value = niceMin; value <= niceMax + step * 0.5; value += step) {
+        ticks.push(Number(value.toFixed(10)));
+    }
+
+    return {
+        ticks,
+        min: niceMin,
+        max: niceMax,
+    };
 };
 
 // TrendChart — right-aligns data so sparse ranges end at the right edge
@@ -112,14 +158,18 @@ const TrendChart = ({ months, series, totalSlots }) => {
     const slots = totalSlots || months.length;
     const offset = slots - months.length; // how many empty slots on the left
 
-    // Collect only real values to determine scale
     const allReal = [
-        ...series.valid,
-        ...series.expiring,
-        ...series.expired,
+        ...(series.overdue ?? []),
+        ...(series.open ?? []),
     ].filter(v => v !== null);
-    const minV = allReal.length ? Math.min(...allReal) : 0;
-    const maxV = allReal.length ? Math.max(...allReal, 1) : 1;
+    const rawMinV = allReal.length ? Math.min(...allReal) : 0;
+    const rawMaxV = allReal.length ? Math.max(...allReal) : 1;
+
+    const {
+        ticks: yTicks,
+        min: minV,
+        max: maxV,
+    } = getNiceTicks(rawMinV, rawMaxV, 5, true);
     const svgW = 400, svgH = 120, padL = 30, padR = 30, padT = 12, padB = 24;
 
     // Map a data index (0..months.length-1) to an x position using the full `slots` span
@@ -143,8 +193,6 @@ const TrendChart = ({ months, series, totalSlots }) => {
         if (seg.length > 1) segments.push(seg);
         return segments;
     };
-
-    const yTicks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
     const renderSeries = (arr, lineCls, dotCls) => (
         <>
@@ -176,9 +224,8 @@ const TrendChart = ({ months, series, totalSlots }) => {
                 const x = slots <= 1 ? svgW - padR : padL + (slotIdx / (slots - 1)) * (svgW - padL - padR);
                 return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
             })}
-            {renderSeries(series.expiring, "mdash-line--orange", "mdash-dot--orange")}
-            {renderSeries(series.expired, "mdash-line--red", "mdash-dot--red")}
-            {renderSeries(series.valid, "mdash-line--green", "mdash-dot--green")}
+            {renderSeries(series.overdue, "mdash-line--red", "mdash-dot--red")}
+            {renderSeries(series.open, "mdash-line--grey", "mdash-dot--grey")}
         </svg>
     );
 };
@@ -209,7 +256,7 @@ const StackedBarChart = ({ rows }) => (
 // Main Component
 // ─────────────────────────────────────────────
 
-const DMSMainDash = () => {
+const CTSMainDash = () => {
     const navigate = useNavigate();
     const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -234,6 +281,8 @@ const DMSMainDash = () => {
     const DEFAULT_SORT = { colId: null, direction: "asc" };
     const [expiredFilters, setExpiredFilters] = useState({});
     const [expiredSort, setExpiredSort] = useState(DEFAULT_SORT);
+    const [expiringSoonFilters, setExpiringSoonFilters] = useState({});
+    const [expiringSoonSort, setExpiringSoonSort] = useState(DEFAULT_SORT);
     const [typeFilters, setTypeFilters] = useState({});
     const [typeSort, setTypeSort] = useState(DEFAULT_SORT);
     const [discFilters, setDiscFilters] = useState({});
@@ -287,8 +336,8 @@ const DMSMainDash = () => {
     const openExcelFilterPopup = (tableId, colId, e) => {
         const th = e.target.closest("th");
         const rect = th.getBoundingClientRect();
-        const filtersMap = tableId === "expired" ? expiredFilters : tableId === "byType" ? typeFilters : discFilters;
-        const rowsMap = tableId === "expired" ? (dash?.recentlyExpired || []) : tableId === "byType" ? (dash?.byType || []) : (dash?.byDiscipline || []);
+        const filtersMap = tableId === "expired" ? expiredFilters : tableId === "expiringSoon" ? expiringSoonFilters : tableId === "byType" ? typeFilters : discFilters;
+        const rowsMap = tableId === "expired" ? (dash?.recentlyExpired || []) : tableId === "expiringSoon" ? (dash?.expiringSoon || []) : tableId === "byType" ? (dash?.byType || []) : (dash?.byDiscipline || []);
         const values = getAvailableOptions(rowsMap, filtersMap, colId);
         const existing = filtersMap[colId];
         const initialSelected = new Set(Array.isArray(existing) ? existing : values);
@@ -308,7 +357,7 @@ const DMSMainDash = () => {
     };
 
     const toggleSort = (tableId, colId, direction) => {
-        const setter = tableId === "expired" ? setExpiredSort : tableId === "byType" ? setTypeSort : setDiscSort;
+        const setter = tableId === "expired" ? setExpiredSort : tableId === "expiringSoon" ? setExpiringSoonSort : tableId === "byType" ? setTypeSort : setDiscSort;
         setter(prev =>
             prev.colId === colId && prev.direction === direction
                 ? DEFAULT_SORT
@@ -363,16 +412,20 @@ const DMSMainDash = () => {
         const filtersMap =
             tableId === "expired"
                 ? expiredFilters
-                : tableId === "byType"
-                    ? typeFilters
-                    : discFilters;
+                : tableId === "expiringSoon"
+                    ? expiringSoonFilters
+                    : tableId === "byType"
+                        ? typeFilters
+                        : discFilters;
 
         const sortMap =
             tableId === "expired"
                 ? expiredSort
-                : tableId === "byType"
-                    ? typeSort
-                    : discSort;
+                : tableId === "expiringSoon"
+                    ? expiringSoonSort
+                    : tableId === "byType"
+                        ? typeSort
+                        : discSort;
 
         const isFiltered = Array.isArray(filtersMap[colId]);
         const isSorted = sortMap.colId === colId;
@@ -402,23 +455,33 @@ const DMSMainDash = () => {
     };
 
     useEffect(() => {
-        const fetchDash = async () => {
+        const controller = new AbortController();
+        (async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-dms`, {
-                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-cts`, {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                if (!res.ok) throw new Error(data?.error || "Failed");
                 setDash(data);
             } catch (err) {
-                console.error("DMS dashboard fetch error:", err);
+                if (err.name !== "AbortError") {
+                    console.error("CTS dashboard fetch failed:", err);
+                }
             } finally {
                 setLoading(false);
             }
-        };
-        fetchDash();
+        })();
+        return () => controller.abort();
     }, []);
+
+    // Clamp trendRange to the number of months actually returned by the backend
+    useEffect(() => {
+        if (dash?.trend?.months?.length) {
+            setTrendRange((prev) => Math.min(prev, dash.trend.months.length));
+        }
+    }, [dash]);
 
     if (loading || !dash) {
         return (
@@ -446,9 +509,20 @@ const DMSMainDash = () => {
     const s = dash.summary;
 
     // ── Filtered / sorted data ────────────────────────────────────────────
+    const normalizeUncategorized = (rows) =>
+        rows.map(r => ({ ...r, type: (!r.type || r.type === '—') ? 'Uncategorised' : r.type }));
+
+    const sortUncategorizedFirst = (rows) =>
+        [...rows].sort((a, b) => {
+            if (a.type === 'Uncategorised') return -1;
+            if (b.type === 'Uncategorised') return 1;
+            return 0;
+        });
+
     const filteredExpired = applyFiltersAndSort(dash.recentlyExpired, expiredFilters, expiredSort);
-    const filteredByType = applyFiltersAndSort(dash.byType, typeFilters, typeSort);
-    const filteredByDisc = applyFiltersAndSort(dash.byDiscipline, discFilters, discSort);
+    const filteredExpiringSoon = applyFiltersAndSort(dash.expiringSoon, expiringSoonFilters, expiringSoonSort);
+    const filteredByType = sortUncategorizedFirst(normalizeUncategorized(applyFiltersAndSort(dash.byType, typeFilters, typeSort)));
+    const filteredByDisc = sortUncategorizedFirst(normalizeUncategorized(applyFiltersAndSort(dash.byDiscipline, discFilters, discSort)));
 
     // ── Delta helper ──────────────────────────────────────────────────────
     // direction: "positive-good"  → up=green, down=red  (valid)
@@ -471,66 +545,51 @@ const DMSMainDash = () => {
     };
 
     const totalDelta = buildDelta(s.vsLastMonth, "neutral");
-    const validDelta = buildDelta(s.vsValidLastMonth, "positive-good");
+    const overdueDelta = buildDelta(s.vsExpiredLastMonth, "positive-bad");
     const expiringDelta = buildDelta(s.vsExpiringSoon, "positive-bad");
-    const expiredDelta = buildDelta(s.vsExpiredLastMonth, "positive-bad");
-    const ownersDelta = buildDelta(s.vsOwnersLastMonth, "neutral");
+    const closeoutDelta = buildDelta(s.vsValidLastMonth, "positive-bad");
 
     const summaryCards = [
         {
-            id: "total",
-            label: "TOTAL DOCUMENTS",
+            id: "open",
+            label: "OPEN TASKS",
             value: s.total,
             sub: totalDelta.label,
-            subColorClass: "mdash-sub--grey",
+            subColorClass: totalDelta.cls,
             colorClass: "mdash-card--grey",
         },
         {
-            id: "valid",
-            label: "VALID DOCUMENTS",
-            value: s.valid,
-            sub: validDelta.label,
-            subColorClass: validDelta.cls,
+            id: "overdue",
+            label: "OVERDUE TASKS",
+            value: s.expired,
+            sub: overdueDelta.label,
+            subColorClass: overdueDelta.cls,
             colorClass: "mdash-card--grey",
         },
         {
-            id: "expiring",
-            label: "DUE FOR REVIEW DOCUMENTS",
+            id: "due",
+            label: "TASKS DUE THIS WEEK",
             value: s.expiringSoon,
             sub: expiringDelta.label,
             subColorClass: expiringDelta.cls,
-            colorClass: "mdash-card--orange",
-        },
-        {
-            id: "expired",
-            label: "REVIEW OVERDUE DOCUMENTS",
-            value: s.expired,
-            sub: expiredDelta.label,
-            subColorClass: expiredDelta.cls,
-            colorClass: "mdash-card--red",
-        },
-        {
-            id: "owners",
-            label: "DOCUMENT OWNERS",
-            value: s.uniqueOwners,
-            sub: ownersDelta.label,
-            subColorClass: "mdash-card--grey",
-            colorClass: "mdash-card--blue",
-        },
-        {
-            id: "upload",
-            label: "LATEST UPLOAD DATE",
-            value: s.latestUploadDate,
-            sub: "",
             colorClass: "mdash-card--grey",
-            noFmt: true,
+        },
+        {
+            id: "closeout",
+            label: "TASKS REQUIRING CLOSE OUT",
+            value: s.valid,
+            sub: closeoutDelta.label,
+            subColorClass: closeoutDelta.cls,
+            colorClass: "mdash-card--grey",
         },
     ];
 
     const statusOverview = {
-        valid: { count: s.valid, pct: s.pctValid },
-        expiring: { count: s.expiringSoon, pct: s.pctExpiring },
-        expired: { count: s.expired, pct: s.pctExpired },
+        critical: { count: s.critical, pct: s.pctCritical },
+        high: { count: s.high, pct: s.pctHigh },
+        medium: { count: s.medium, pct: s.pctMedium },
+        low: { count: s.low, pct: s.pctLow },
+        uncategorized: { count: s.uncategorized ?? 0, pct: s.pctUncategorized ?? 0 },
     };
 
     // Drilldown totals
@@ -562,7 +621,7 @@ const DMSMainDash = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">DMS Dashboard</p>
+                        <p className="logo-text-um">CTS Dashboard</p>
                     </div>
                 </div>
             )}
@@ -588,14 +647,14 @@ const DMSMainDash = () => {
                     {/* ── Header ── */}
                     <div className="mdash-header">
                         <div>
-                            <h1 className="mdash-header-title">DOCUMENT MANAGEMENT SYSTEM</h1>
+                            <h1 className="mdash-header-title">COMPLIANCE TRACKING SYSTEM</h1>
                         </div>
                         <div className="mdash-header-actions">
                             <button className="mdash-btn-nc">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Data as at: {dash.dataAsAt}
                             </button>
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "DMS")}>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "CTS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>
@@ -603,7 +662,7 @@ const DMSMainDash = () => {
                     </div>
 
                     {/* ── Summary Cards ── */}
-                    <div className="mdash-summary-grid">
+                    <div className="mdxmash-summary-grid">
                         {summaryCards.map((card) => (
                             <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
                                 <p className="mdash-summary-label">{card.label}</p>
@@ -623,16 +682,18 @@ const DMSMainDash = () => {
                         {/* Status Overview */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>DOCUMENT STATUS OVERVIEW</h3>
+                                <h3>OUTSTANDING TASKS BY PRIORITY</h3>
                             </div>
                             <div className="mdash-status-layout">
                                 <DonutChart data={statusOverview} />
                                 <div className="mdash-legend-stack">
                                     {[
-                                        { label: "Valid", ...statusOverview.valid, cls: "green" },
-                                        { label: "Due For Review", ...statusOverview.expiring, cls: "orange" },
-                                        { label: "Review Overdue", ...statusOverview.expired, cls: "red" },
-                                    ].map((item) => (
+                                        { label: "Critical", ...statusOverview.critical, cls: "red" },
+                                        { label: "High", ...statusOverview.high, cls: "orange" },
+                                        { label: "Medium", ...statusOverview.medium, cls: "yellow" },
+                                        { label: "Low", ...statusOverview.low, cls: "green" },
+                                        { label: "Uncategorised", ...statusOverview.uncategorized, cls: "grey" },
+                                    ].filter((item) => item.label !== "Uncategorised" || item.count > 0).map((item) => (
                                         <div key={item.label} className="mdash-legend-row">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
                                             <span className="mdash-legend-text">{item.label}</span>
@@ -646,11 +707,9 @@ const DMSMainDash = () => {
                         {/* Due For Review Bar */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>DUE FOR REVIEW BY TIME PERIOD</h3>
+                                <h3>TASKS BY TASK TYPE</h3>
                             </div>
-                            <div className="mdash-chart-scroll">
-                                <BarChart data={dash.expiringBuckets} />
-                            </div>
+                            <BarChart data={dash.expiringBuckets} />
                         </div>
                     </div>
 
@@ -660,22 +719,24 @@ const DMSMainDash = () => {
                         {/* Recently Review Overdue — fixed height, scrollable, latest first */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>REVIEW OVERDUE DOCUMENTS</h3>
+                                <h3>OVERDUE TASKS</h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
                                 <table className="mdash-table">
                                     <colgroup>
-                                        <col style={{ width: "42%" }} />
-                                        <col style={{ width: "20%" }} />
+                                        <col style={{ width: "30%" }} />
+                                        <col style={{ width: "18%" }} />
+                                        <col style={{ width: "18%" }} />
                                         <col style={{ width: "22%" }} />
-                                        <col style={{ width: "16%" }} />
+                                        <col style={{ width: "15%" }} />
                                     </colgroup>
                                     <thead>
                                         <tr>
-                                            <FilterTh tableId="expired" colId="name">Document</FilterTh>
+                                            <FilterTh tableId="expired" colId="name">Title</FilterTh>
                                             <FilterTh tableId="expired" colId="type" style={{ textAlign: "center" }}>Type</FilterTh>
-                                            <FilterTh tableId="expired" colId="expiredOn" style={{ textAlign: "center" }}>Review Date</FilterTh>
-                                            <FilterTh tableId="expired" colId="owner" style={{ textAlign: "center" }}>Owner</FilterTh>
+                                            <FilterTh tableId="expired" colId="area" style={{ textAlign: "center" }}>Area</FilterTh>
+                                            <FilterTh tableId="expired" colId="dueDate" style={{ textAlign: "center" }}>Due Date</FilterTh>
+                                            <FilterTh tableId="expired" colId="daysLeft" style={{ textAlign: "center" }}>Days Overdue</FilterTh>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -683,8 +744,14 @@ const DMSMainDash = () => {
                                             <tr key={i}>
                                                 <td className="mdash-td--wrap">{doc.name}</td>
                                                 <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td className="mdash-alert-text">{doc.expiredOn}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.owner}</td>
+                                                <td style={{ textAlign: "center" }} >{doc.area}</td>
+                                                <td style={{ textAlign: "center" }}>{doc.dueDate}</td>
+                                                <td
+                                                    className="mdash-alert-text"
+                                                    style={{ textAlign: "center" }}
+                                                >
+                                                    {doc.daysLeft}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -695,45 +762,45 @@ const DMSMainDash = () => {
                         {/* Due For Review — fixed height, scrollable, closest first */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>DUE FOR REVIEW DOCUMENTS</h3>
+                                <h3>TASKS DUE SOON</h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
                                 <table className="mdash-table">
                                     <colgroup>
-                                        <col style={{ width: "38%" }} />
+                                        <col style={{ width: "30%" }} />
                                         <col style={{ width: "18%" }} />
-                                        <col style={{ width: "20%" }} />
-                                        <col style={{ width: "10%" }} />
-                                        <col style={{ width: "14%" }} />
+                                        <col style={{ width: "18%" }} />
+                                        <col style={{ width: "22%" }} />
+                                        <col style={{ width: "15%" }} />
                                     </colgroup>
                                     <thead>
                                         <tr>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Type</th>
-                                            <th style={{ textAlign: "center" }}>Review Date</th>
-                                            <th style={{ textAlign: "center" }}>Days Left</th>
-                                            <th style={{ textAlign: "center" }}>Owner</th>
+                                            <FilterTh tableId="expiringSoon" colId="name">Title</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="type" style={{ textAlign: "center" }}>Type</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="area" style={{ textAlign: "center" }}>Area</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="dueDate" style={{ textAlign: "center" }}>Due Date</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="daysLeft" style={{ textAlign: "center" }}>Days Left</FilterTh>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {dash.expiringSoon.map((doc, i) => (
+                                        {filteredExpiringSoon.map((doc, i) => (
                                             <tr key={i}>
                                                 <td className="mdash-td--wrap">{doc.name}</td>
                                                 <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.expiresOn}</td>
+                                                <td style={{ textAlign: "center" }}>{doc.area}</td>
+                                                <td style={{ textAlign: "center" }}>{doc.dueDate}</td>
                                                 <td
                                                     className={
                                                         doc.daysLeft <= 7
-                                                            ? "mdash-alert-text"
-                                                            : doc.daysLeft > 30
-                                                                ? "mdash-good-text"
-                                                                : "mdash-warn-text"
+                                                            ? "mdash-warn-text"
+                                                            : doc.daysLeft > 7 && doc.daysLeft <= 15
+                                                                ? "mdash-alr-text"
+                                                                : ""
                                                     }
                                                     style={{ textAlign: "center" }}
                                                 >
                                                     {doc.daysLeft}
                                                 </td>
-                                                <td style={{ textAlign: "center" }}>{doc.owner}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -745,9 +812,9 @@ const DMSMainDash = () => {
                     {/* ── Drilldown: By Document Type ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
-                            <h3>DOCUMENTS BY DOCUMENT TYPE</h3>
+                            <h3>TASKS BY DISCIPLINE</h3>
                             <div className="mdash-inline-legend">
-                                {[{ label: "Valid", cls: "green" }, { label: "Due For Review", cls: "orange" }, { label: "Review Overdue", cls: "red" }].map((item) => (
+                                {[{ label: "Closed Out", cls: "green" }, { label: "Due Soon", cls: "orange" }, { label: "Overdue", cls: "red" }].map((item) => (
                                     <span key={item.label} className="mdash-inline-legend-item">
                                         <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
                                         {item.label}
@@ -760,11 +827,11 @@ const DMSMainDash = () => {
                                 <table className="mdash-table mdash-table--drilldown">
                                     <thead>
                                         <tr>
-                                            <FilterTh tableId="byType" colId="type" style={{ width: "40%" }}>Document Type</FilterTh>
-                                            <FilterTh tableId="byType" colId="valid" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Valid</FilterTh>
-                                            <FilterTh tableId="byType" colId="expiring" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Due For Review</FilterTh>
-                                            <FilterTh tableId="byType" colId="expired" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Review Overdue</FilterTh>
-                                            <FilterTh tableId="byType" colId="pctExpired" style={{ textAlign: "center", width: "12%" }}>% Review Overdue</FilterTh>
+                                            <FilterTh tableId="byType" colId="type" style={{ width: "40%" }}>Discipline</FilterTh>
+                                            <FilterTh tableId="byType" colId="valid" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Closed Out</FilterTh>
+                                            <FilterTh tableId="byType" colId="expiring" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Due Soon</FilterTh>
+                                            <FilterTh tableId="byType" colId="expired" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Overdue</FilterTh>
+                                            <FilterTh tableId="byType" colId="pctExpired" style={{ textAlign: "center", width: "12%" }}>% Overdue</FilterTh>
                                             <FilterTh tableId="byType" colId="total" style={{ textAlign: "center", width: "12%" }}>Total</FilterTh>
                                         </tr>
                                     </thead>
@@ -794,7 +861,7 @@ const DMSMainDash = () => {
                             </div>
                             <div className="mdash-stacked-side">
                                 <div className="mdash-inline-legend mdash-inline-legend--right">
-                                    <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Review Overdue</span>
+                                    <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Overdue</span>
                                 </div>
                                 <StackedBarChart rows={filteredByType} />
                                 <div className="mdash-stacked-axis-labels">
@@ -807,9 +874,9 @@ const DMSMainDash = () => {
                     {/* ── Drilldown: By Discipline ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
-                            <h3>DOCUMENTS BY DISCIPLINE</h3>
+                            <h3>TASKS BY AREA</h3>
                             <div className="mdash-inline-legend">
-                                {[{ label: "Valid", cls: "green" }, { label: "Due For Review", cls: "orange" }, { label: "Review Overdue", cls: "red" }].map((item) => (
+                                {[{ label: "Closed Out", cls: "green" }, { label: "Due Soon", cls: "orange" }, { label: "Overdue", cls: "red" }].map((item) => (
                                     <span key={item.label} className="mdash-inline-legend-item">
                                         <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
                                         {item.label}
@@ -822,11 +889,11 @@ const DMSMainDash = () => {
                                 <table className="mdash-table mdash-table--drilldown">
                                     <thead>
                                         <tr>
-                                            <FilterTh tableId="byDisc" colId="type" style={{ width: "40%" }}>Discipline</FilterTh>
-                                            <FilterTh tableId="byDisc" colId="valid" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Valid</FilterTh>
-                                            <FilterTh tableId="byDisc" colId="expiring" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Due For Review</FilterTh>
-                                            <FilterTh tableId="byDisc" colId="expired" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Review Overdue</FilterTh>
-                                            <FilterTh tableId="byDisc" colId="pctExpired" style={{ textAlign: "center", width: "12%" }}>% Review Overdue</FilterTh>
+                                            <FilterTh tableId="byDisc" colId="type" style={{ width: "40%" }}>Area</FilterTh>
+                                            <FilterTh tableId="byDisc" colId="valid" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--green">Closed Out</FilterTh>
+                                            <FilterTh tableId="byDisc" colId="expiring" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--orange">Due Soon</FilterTh>
+                                            <FilterTh tableId="byDisc" colId="expired" style={{ textAlign: "center", width: "12%" }} className="mdash-table-header--red">Overdue</FilterTh>
+                                            <FilterTh tableId="byDisc" colId="pctExpired" style={{ textAlign: "center", width: "12%" }}>% Overdue</FilterTh>
                                             <FilterTh tableId="byDisc" colId="total" style={{ textAlign: "center", width: "12%" }}>Total</FilterTh>
                                         </tr>
                                     </thead>
@@ -858,7 +925,7 @@ const DMSMainDash = () => {
                             </div>
                             <div className="mdash-stacked-side">
                                 <div className="mdash-inline-legend mdash-inline-legend--right">
-                                    <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Review Overdue</span>
+                                    <span className="mdash-inline-legend-item mdash-inline-legend-item--right">% Overdue</span>
                                 </div>
                                 <StackedBarChart rows={filteredByDisc} />
                                 <div className="mdash-stacked-axis-labels">
@@ -871,10 +938,10 @@ const DMSMainDash = () => {
                     {/* ── Trend: Historical ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
-                            <h3>DOCUMENTS OVER TIME (LAST {trendRange} {trendRange === 1 ? "MONTH" : "MONTHS"})</h3>
+                            <h3>TASKS OVER TIME (LAST {trendRange} {trendRange === 1 ? "MONTH" : "MONTHS"})</h3>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                                 <div className="mdash-inline-legend" style={{ marginBottom: 0 }}>
-                                    {[{ label: "Valid", cls: "green" }, { label: "Due For Review", cls: "orange" }, { label: "Review Overdue", cls: "red" }].map((item) => (
+                                    {[{ label: "Overdue Tasks", cls: "red" }, { label: "Open Tasks", cls: "grey" }].map((item) => (
                                         <span key={item.label} className="mdash-inline-legend-item">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
                                             {item.label}
@@ -883,12 +950,15 @@ const DMSMainDash = () => {
                                 </div>
                                 <select
                                     className="mdash-trend-select"
-                                    value={trendRange}
+                                    value={Math.min(trendRange, dash.trend.months.length)}
                                     onChange={(e) => setTrendRange(Number(e.target.value))}
                                 >
-                                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                                        <option key={n} value={n}>{n} Months</option>
-                                    ))}
+                                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                        .filter((n) => n <= dash.trend.months.length)
+                                        .map((n) => (
+                                            <option key={n} value={n}>{n} Months</option>
+                                        ))
+                                    }
                                 </select>
                             </div>
                         </div>
@@ -896,9 +966,8 @@ const DMSMainDash = () => {
                             <TrendChart
                                 months={dash.trend.months.slice(-trendRange)}
                                 series={{
-                                    valid: dash.trend.valid.slice(-trendRange),
-                                    expiring: dash.trend.expiring.slice(-trendRange),
-                                    expired: dash.trend.expired.slice(-trendRange),
+                                    overdue: dash.trend.overdue.slice(-trendRange),
+                                    open: dash.trend.open.slice(-trendRange),
                                 }}
                                 totalSlots={trendRange}
                             />
@@ -912,10 +981,10 @@ const DMSMainDash = () => {
             {/* ── Excel filter popup ─────────────────────────────────────── */}
             {excelFilter.open && (() => {
                 const { tableId, colId } = excelFilter;
-                const filtersMap = tableId === "expired" ? expiredFilters : tableId === "byType" ? typeFilters : discFilters;
-                const setFiltersMap = tableId === "expired" ? setExpiredFilters : tableId === "byType" ? setTypeFilters : setDiscFilters;
-                const sortMap = tableId === "expired" ? expiredSort : tableId === "byType" ? typeSort : discSort;
-                const rowsMap = tableId === "expired" ? dash.recentlyExpired : tableId === "byType" ? dash.byType : dash.byDiscipline;
+                const filtersMap = tableId === "expired" ? expiredFilters : tableId === "expiringSoon" ? expiringSoonFilters : tableId === "byType" ? typeFilters : discFilters;
+                const setFiltersMap = tableId === "expired" ? setExpiredFilters : tableId === "expiringSoon" ? setExpiringSoonFilters : tableId === "byType" ? setTypeFilters : setDiscFilters;
+                const sortMap = tableId === "expired" ? expiredSort : tableId === "expiringSoon" ? expiringSoonSort : tableId === "byType" ? typeSort : discSort;
+                const rowsMap = tableId === "expired" ? dash.recentlyExpired : tableId === "expiringSoon" ? dash.expiringSoon : tableId === "byType" ? dash.byType : dash.byDiscipline;
 
                 const allValues = getAvailableOptions(rowsMap, filtersMap, colId);
                 const visibleValues = allValues.filter(v =>
@@ -1047,4 +1116,4 @@ const DMSMainDash = () => {
     );
 };
 
-export default DMSMainDash;
+export default CTSMainDash;

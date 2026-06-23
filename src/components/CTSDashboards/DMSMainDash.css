@@ -104,6 +104,18 @@
     box-shadow: 0 4px 12px rgba(15, 84, 201, 0.28);
 }
 
+.mdash-btn--primary2 {
+    background: #002060;
+    border-color: #002060;
+    color: #ffffff;
+}
+
+.mdash-btn--primary2:hover {
+    background: #002060;
+    border-color: #002060;
+    box-shadow: 0 4px 12px rgba(15, 84, 201, 0.28);
+}
+
 /* ── Summary cards ── */
 .mdash-summary-grid {
     display: grid;
@@ -262,6 +274,11 @@
     fill: none;
 }
 
+.mdash-donut--yellow {
+    stroke: #FFFF89;
+    fill: none;
+}
+
 /* ── Legend ── */
 .mdash-legend-stack {
     display: flex;
@@ -308,6 +325,14 @@
 
 .mdash-legend-dot--red {
     background: #CB6F6F;
+}
+
+.mdash-legend-dot--yellow {
+    background: #FFFF89;
+}
+
+.mdash-legend-dot--grey {
+    background: #595959;
 }
 
 /* ── Inline legend (trend / drilldown) ── */
@@ -562,6 +587,12 @@
     background-color: #7EAC89;
     text-align: center;
     color: white;
+}
+
+.mdash-alr-text {
+    background-color: #FFFF89;
+    text-align: center;
+    color: black;
 }
 
 /* ── Drilldown grid ── */

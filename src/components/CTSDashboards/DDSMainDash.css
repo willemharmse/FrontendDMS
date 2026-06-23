@@ -489,3 +489,198 @@ span.mdash-card--red {
     text-align: center;
     color: white;
 }
+
+/* ════════════════════════════════════════════════
+   COMPLIANCE BAR CHART — cbar- namespace
+   Fixed 0–100 % Y-axis with dashed threshold lines.
+   Fully isolated; zero bleed to any other chart.
+   ════════════════════════════════════════════════ */
+
+.cbar-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 200px;
+}
+
+/* ── Background zone: High Attention (< 60 %) ── */
+.cbar-zone--high-attention {
+    fill: rgba(203, 111, 111, 0.08);
+}
+
+/* ── Grid lines (light; drawn at every 20 %) ── */
+.cbar-gridline {
+    stroke: #e7eef7;
+    stroke-width: 0.3;
+}
+
+/* ── Y-axis tick labels ── */
+.cbar-axis-label {
+    fill: #595959;
+    font-family: Arial !important;
+    font-size: 6px;
+    font-weight: 600;
+}
+
+/* ── X-axis category labels ── */
+.cbar-axis-text {
+    fill: black;
+    font-family: Arial !important;
+    font-size: 6px;
+    font-weight: 600;
+}
+
+/* ── Value labels above each bar ── */
+.cbar-bar-value {
+    fill: black;
+    font-family: Arial !important;
+    font-size: 7px;
+    font-weight: 700;
+}
+
+/* ── Bars — coloured by compliance level ── */
+.cbar-bar {}
+
+.cbar-bar--compliant {
+    fill: #7EAC89;
+    /* green  — 100 % */
+}
+
+.cbar-bar--monitor {
+    fill: #FFFF89;
+    /* green  — 80–99 % (still healthy, just not perfect) */
+    opacity: 0.75;
+}
+
+.cbar-bar--attention {
+    fill: #FFC000;
+    /* amber  — 60–79 % */
+}
+
+.cbar-bar--high-attention {
+    fill: #CB6F6F;
+    /* amber  — 60–79 % */
+}
+
+/* ── Threshold dashed lines ── */
+.cbar-threshold {
+    fill: none;
+    stroke-width: 0.5;
+    stroke-dasharray: 4 3;
+}
+
+.cbar-threshold--compliant {
+    stroke: #7EAC89;
+}
+
+.cbar-threshold--monitor {
+    stroke: #FFC000;
+}
+
+.cbar-threshold--attention {
+    stroke: #CB6F6F;
+}
+
+/* ── Threshold label text (sits just above its line) ── */
+.cbar-threshold-label {
+    font-family: Arial !important;
+    font-size: 5.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.cbar-threshold--compliant-label {
+    fill: #7EAC89;
+}
+
+.cbar-threshold--monitor-label {
+    fill: #FFC000;
+}
+
+.cbar-threshold--attention-label {
+    fill: #CB6F6F;
+}
+
+.cbar-legend-line {
+    display: inline-block;
+    width: 22px;
+    height: 0;
+    border-top: 2px dashed currentColor;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.cbar-legend-line--compliant {
+    color: #7EAC89;
+}
+
+.cbar-legend-line--monitor {
+    color: #FFC000;
+}
+
+.cbar-legend-line--attention {
+    color: #CB6F6F;
+}
+
+/* ════════════════════════════════════════════════
+   DIGITAL WAREHOUSE — trend line series colours
+   ════════════════════════════════════════════════ */
+
+/* Valid components — green */
+.mdash-line--trend-valid {
+    stroke: #7EAC89;
+    stroke-width: 0.5;
+    fill: none;
+}
+
+.mdash-dot--trend-valid {
+    fill: #7EAC89;
+    stroke: none;
+}
+
+/* Invalid components — red */
+.mdash-line--trend-invalid {
+    stroke: #CB6F6F;
+    stroke-width: 0.5;
+    fill: none;
+}
+
+.mdash-dot--trend-invalid {
+    fill: #CB6F6F;
+    stroke: none;
+}
+
+/* Components in repair — yellow/amber */
+.mdash-line--trend-inrepair {
+    stroke: #FFC000;
+    stroke-width: 0.5;
+    fill: none;
+}
+
+.mdash-dot--trend-inrepair {
+    fill: #FFC000;
+    stroke: none;
+}
+
+span.mdash-card--black,
+.mddsash-summary-card .mdash-card--black {
+    color: black !important;
+}
+
+.dw-repair-days--yellow {
+    background-color: #FFFF89;
+    color: black;
+    text-align: center;
+}
+
+.dw-repair-days--orange {
+    background-color: #FFC000;
+    color: black;
+    text-align: center;
+}
+
+.dw-repair-days--red {
+    background-color: #CB6F6F;
+    color: white;
+    text-align: center;
+}

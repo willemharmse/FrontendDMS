@@ -424,7 +424,7 @@ const DDSMainDash = () => {
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Data as at: {dash.dataAsAt}
                             </button>
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt)}>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "DDS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>

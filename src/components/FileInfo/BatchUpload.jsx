@@ -91,7 +91,9 @@ const BatchUpload = ({ onClose }) => {
             })
         } catch (error) {
             setLoading(false);
+            console.log(error)
             if (error.response?.data?.details) {
+                console.log(error.response.data.details)
                 setErrors(error.response.data.details); // Set errors from backend
                 createErrorFile(error.response.data.details); // Generate download
             }

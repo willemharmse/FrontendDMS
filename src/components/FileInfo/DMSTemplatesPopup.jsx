@@ -20,13 +20,36 @@ const DMSTemplatesPopup = ({ onClose }) => {
         }
     }, []);
 
-    const downloadTemplateCert = () => {
-        const link = document.createElement('a');
-        link.href = `${process.env.PUBLIC_URL}/TAU5 - Site Document List V0.2 (11.09.2025).xlsx`; // Adjust path as needed
-        link.setAttribute('download', 'Site Document List V0.2 (11.09.2025).xlsx');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const downloadTemplateCert = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem("token");
+            const response = await axios.get(
+                `${process.env.REACT_APP_URL}/api/exportDMSTemplate/download-dms-template`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    responseType: "blob",
+                }
+            );
+
+            const fileName =
+                response.headers["x-export-filename"] ||
+                "Site Document List.xlsx";
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Failed to download DMS template:", err);
+            toast.error("Failed to download template. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const formatDate = (dateString) => {
@@ -50,8 +73,13 @@ const DMSTemplatesPopup = ({ onClose }) => {
                         className="top-right-button-rsi"
                         title="Download Template"
                         onClick={() => downloadTemplateCert()}
+                        disabled={loading}
                     >
-                        <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                        <FontAwesomeIcon
+                            icon={loading ? faSpinner : faDownload}
+                            className="icon-um-search"
+                            spin={loading}
+                        />
                     </button>
                     <div className="import-si-file-text">Batch Upload Documents</div>
                     <div className="import-si-label">Version</div>

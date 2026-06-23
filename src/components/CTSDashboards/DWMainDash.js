@@ -22,54 +22,50 @@ import "./DDSMainDash.css";
 
 const fmt = (n) => (n ?? 0).toLocaleString("en-ZA");
 
-const getCategoryClass = (q) => {
-    switch (q) {
-        case "<30%": return "category-low";
-        case "30-59%": return "category-medium";
-        case "60-90%": return "category-high";
-        case ">90%": return "category-complete";
-        default: return "";
-    }
-};
+
 
 // ─────────────────────────────────────────────
 // Sub-components
 // ─────────────────────────────────────────────
 
-// Single shared bar chart component. Both charts use an identical fixed viewBox
-// width so their aspect ratio — and therefore their rendered height — is always
-// the same, regardless of how many bars each chart contains.
-const FIXED_SVG_W = 380;
-
+// Bar chart — grey bars, dynamic width based on bar count (supports up to 10)
 const BarChart = ({ data }) => {
-    const maxVal = Math.max(...data.map((d) => d.value), 1);
-    const svgH = 215;
+    const n = data.length;
+    // Aspect ratio widens naturally: fewer bars → wider bars, more bars → narrower
+    // Fixed viewBox height 200, width scales with bar count (min 320, max 520)
+    const svgW = Math.max(320, Math.min(520, n * 52));
+    const svgH = 180;
     const padL = 10;
     const padR = 10;
-    const padB = 20;
-    const padT = 20;
-    const chartW = FIXED_SVG_W - padL - padR;
-    const n = data.length;
-    // Bars fill the fixed canvas evenly: 55 % of each slot is bar, 45 % is gap
+    const padB = 26;
+    const padT = 18;
+    const chartW = svgW - padL - padR;
+    const maxVal = Math.max(...data.map((d) => d.value), 1);
+
+    // Bar width fills ~60 % of each slot; gap fills the rest
     const slotW = chartW / n;
-    const barW = Math.floor(slotW * 0.55);
-    const gap = slotW - barW;
+    const barW = Math.min(Math.floor(slotW * 0.60), 48);
 
     return (
-        <svg className="mdash-bar-svg" viewBox={`0 0 ${FIXED_SVG_W} ${svgH}`} preserveAspectRatio="xMidYMid meet">
+        <svg
+            viewBox={`0 0 ${svgW} ${svgH}`}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ display: "block", width: "100%", height: "auto", minWidth: 220 }}
+        >
             {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
                 const y = padT + (1 - frac) * (svgH - padT - padB);
-                return <line key={i} x1={padL} x2={FIXED_SVG_W - padR} y1={y} y2={y} className="mdash-chart-gridline" />;
+                return <line key={i} x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />;
             })}
             {data.map((d, i) => {
                 const barH = (d.value / maxVal) * (svgH - padT - padB);
-                const x = padL + i * slotW + (slotW - barW) / 2; // centre bar in its slot
+                const slotCentreX = padL + i * slotW + slotW / 2;
+                const x = slotCentreX - barW / 2;
                 const y = padT + (svgH - padT - padB) - barH;
                 return (
                     <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="0" className={`mdash-bar ${d.class}`} />
-                        <text x={x + barW / 2} y={y - 5} textAnchor="middle" className="mdash-bar-value">{d.value}</text>
-                        <text x={x + barW / 2} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
+                        <rect x={x} y={y} width={barW} height={barH} rx="2" className={`mddsash-bar ${d.class}`} />
+                        <text x={slotCentreX} y={y - 4} textAnchor="middle" className="mddsash-bar-value">{d.value}</text>
+                        <text x={slotCentreX} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
                     </g>
                 );
             })}
@@ -77,7 +73,7 @@ const BarChart = ({ data }) => {
     );
 };
 
-// Trend line chart
+// Trend line chart — 3 series: valid (green), invalid (red), in-repair (yellow)
 const linePoint = (val, min, max, svgH, svgPadT, svgPadB, slotIdx, totalSlots, svgW, padL, padR) => {
     const x = totalSlots <= 1 ? svgW - padR : padL + (slotIdx / (totalSlots - 1)) * (svgW - padL - padR);
     const range = max - min || 1;
@@ -89,7 +85,7 @@ const TrendChart = ({ months, series, totalSlots }) => {
     const slots = totalSlots || months.length;
     const offset = slots - months.length;
 
-    const allReal = [...series.added, ...series.updated].filter(v => v !== null && v !== undefined);
+    const allReal = [...series.valid, ...series.invalid, ...series.inRepair].filter(v => v !== null && v !== undefined);
     const minV = allReal.length ? Math.min(...allReal) : 0;
     const maxV = allReal.length ? Math.max(...allReal, 1) : 1;
     const svgW = 400, svgH = 140, padL = 30, padR = 30, padT = 12, padB = 24;
@@ -110,7 +106,6 @@ const TrendChart = ({ months, series, totalSlots }) => {
         return segments;
     };
 
-    // Dynamic y-axis ticks: ~5 clean round numbers spanning [0, maxV]
     const rawStep = maxV / 4;
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
     const niceStep = Math.ceil(rawStep / magnitude) * magnitude || 1;
@@ -146,20 +141,21 @@ const TrendChart = ({ months, series, totalSlots }) => {
                 const x = slots <= 1 ? svgW - padR : padL + (slotIdx / (slots - 1)) * (svgW - padL - padR);
                 return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
             })}
-            {renderSeries(series.added, "mdash-line--new5", "mdash-dot--new5")}
-            {renderSeries(series.updated, "mdash-line--new4", "mdash-dot--new4")}
+            {/* valid = green, invalid = red, inRepair = yellow */}
+            {renderSeries(series.valid, "mdash-line--trend-valid", "mdash-dot--trend-valid")}
+            {renderSeries(series.invalid, "mdash-line--trend-invalid", "mdash-dot--trend-invalid")}
+            {renderSeries(series.inRepair, "mdash-line--trend-inrepair", "mdash-dot--trend-inrepair")}
         </svg>
     );
 };
 
-// Fixed-height scrollable table (matches DDS pattern)
 const TABLE_FIXED_HEIGHT = { maxHeight: 220, minHeight: 80, overflowY: "auto" };
 
 // ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
 
-const CMMainDash = () => {
+const DWMainDash = () => {
     const navigate = useNavigate();
     const access = getCurrentUser();
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -171,14 +167,14 @@ const CMMainDash = () => {
         const fetchDash = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-cmm`, {
+                const res = await fetch(`${process.env.REACT_APP_URL}/api/dashboard/dashboard-dw`, {
                     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data?.error || "Failed");
                 setDash(data);
             } catch (err) {
-                console.error("CMM dashboard fetch error:", err);
+                console.error("DW dashboard fetch error:", err);
             } finally {
                 setLoading(false);
             }
@@ -197,41 +193,87 @@ const CMMainDash = () => {
         );
     }
 
-    const s = dash.summary;
-    const availableMonths = dash.trend.months.length;
+    const availableMonths = dash.trend.months.length;  // always 12 from the API
     const effectiveTrendRange = Math.min(trendRange, availableMonths);
-    const trendOptions = availableMonths === 1
+    const trendOptions = availableMonths <= 1
         ? [1]
-        : Array.from({ length: Math.min(availableMonths, 12) - 1 }, (_, i) => i + 2);
+        : Array.from({ length: availableMonths }, (_, i) => i + 1);
+
+    const buildDelta = (delta, direction = "positive-good") => {
+        const value = Number(delta ?? 0);
+        const abs = Math.abs(value);
+
+        if (value === 0) {
+            return {
+                label: "0 vs last month",
+                cls: "mdash-card--black",
+            };
+        }
+
+        const arrow = value > 0 ? "▲" : "▼";
+
+        let cls;
+
+        if (direction === "positive-bad") {
+            cls = value > 0 ? "mdash-card--red" : "mdash-card--green";
+        } else {
+            cls = value > 0 ? "mdash-card--green" : "mdash-card--red";
+        }
+
+
+        if (direction === "neutral") {
+            cls = "mdsah-card--black"
+        }
+
+        return {
+            label: `${arrow} ${fmt(abs)} vs last month`,
+            cls,
+        };
+    };
+
+    const repairDaysClass = (days) => {
+        const value = Number(days ?? 0);
+
+        if (value > 60) return "dw-repair-days--red";
+        if (value >= 20) return "dw-repair-days--orange";
+        if (value >= 10) return "dw-repair-days--yellow";
+
+        return "";
+    };
+
+    const totalDelta = buildDelta(dash.summary.vsTotalComponents, "neutral");
+    const validDelta = buildDelta(dash.summary.vsValidComponents, "positive-good");
+    const invalidDelta = buildDelta(dash.summary.vsInValidComponents, "positive-bad");
+    const repairDelta = buildDelta(dash.summary.vsComponentsInRepair, "positive-bad");
 
     const summaryCards = [
         {
             id: "total",
-            label: "TOTAL CONTROLS IN SYSTEM",
-            value: s.total,
-            sub: s.deltaTotal.label,
-            subColorClass: s.deltaTotal.cls,
+            label: "NUMBER OF COMPONENTS",
+            value: dash.summary.totalComponents,
+            sub: totalDelta.label,
+            subColorClass: totalDelta.cls,
         },
         {
-            id: "critical",
-            label: "CRITICAL CONTROLS",
-            value: s.critical,
-            sub: s.deltaCritical.label,
-            subColorClass: s.deltaCritical.cls,
+            id: "valid",
+            label: "NUMBER OF VALID COMPONENTS",
+            value: dash.summary.validComponents,
+            sub: validDelta.label,
+            subColorClass: validDelta.cls,
         },
         {
-            id: "concern",
-            label: "CONTROLS OF CONCERN",
-            value: s.concern,
-            sub: s.deltaConcern.label,
-            subColorClass: s.deltaConcern.cls,
+            id: "invalid",
+            label: "NUMBER OF INVALID COMPONENTS",
+            value: dash.summary.invalidComponents,
+            sub: invalidDelta.label,
+            subColorClass: invalidDelta.cls
         },
         {
-            id: "monitor",
-            label: "CONTROLS TO MONITOR",
-            value: s.monitor,
-            sub: s.deltaMonitor.label,
-            subColorClass: s.deltaMonitor.cls,
+            id: "repair",
+            label: "COMPONENTS IN REPAIR",
+            value: dash.summary.componentsInRepair,
+            sub: repairDelta.label,
+            subColorClass: repairDelta.cls,
         },
     ];
 
@@ -244,7 +286,7 @@ const CMMainDash = () => {
                     </div>
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
-                        <p className="logo-text-um">Control Management Dashboard</p>
+                        <p className="logo-text-um">Digital Warehouse Dashboard</p>
                     </div>
                 </div>
             )}
@@ -270,14 +312,14 @@ const CMMainDash = () => {
                     {/* ── Header ── */}
                     <div className="mdash-header">
                         <div>
-                            <h1 className="mdash-header-title">RISK MANAGEMENT SYSTEM (CONTROL MANAGEMENT)</h1>
+                            <h1 className="mdash-header-title">EPA MANAGEMENT SYSTEM (DIGITAL WAREHOUSE)</h1>
                         </div>
                         <div className="mdash-header-actions">
                             <button className="mdash-btn-nc">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Data as at: {dash.dataAsAt}
                             </button>
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "CMM")}>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "DWS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>
@@ -289,64 +331,71 @@ const CMMainDash = () => {
                         {summaryCards.map((card) => (
                             <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
                                 <p className="mddsash-summary-label">{card.label}</p>
-                                <strong className="mddsash-summary-value">{fmt(card.value)}</strong>
-                                <span className={`mddsash-summary-sub ${card.subColorClass}`}>{card.sub}</span>
+                                {card.value !== null && (
+                                    <strong className="mddsash-summary-value">
+                                        {fmt(card.value)}
+                                    </strong>
+                                )}
+                                {card.sub && (
+                                    <span className={`mddsash-summary-sub ${card.subColorClass}`}>{card.sub}</span>
+                                )}
                             </div>
                         ))}
                     </div>
 
-                    {/* ── Row 1: Controls by Hierarchy | Controls by Quality ── */}
+                    {/* ── Row 1: Valid Components per Asset Type | Valid Components by Certification Body ── */}
                     <div className="mdash-grid mddsash-grid--3col">
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>CONTROLS BY HIERARCHY</h3>
+                                <h3>VALID COMPONENTS PER ASSET TYPE</h3>
                             </div>
-                            <BarChart data={dash.byHierarchy} />
+                            <BarChart data={dash.byAssetType} />
                         </div>
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>CONTROLS BY QUALITY RATING</h3>
+                                <h3>VALID COMPONENTS BY CERTIFICATION BODY</h3>
                             </div>
-                            <BarChart data={dash.byQuality} />
+                            <BarChart data={dash.byCertBody} />
                         </div>
                     </div>
 
-                    {/* ── Row 2: Critical Controls table | Control Attention table ── */}
+                    {/* ── Row 2: Valid Components table | Components in Repair table ── */}
                     <div className="mdash-grid mddsash-grid--3col">
 
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>CRITICAL CONTROLS</h3>
+                                <h3>VALID COMPONENTS</h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
                                 <table className="mdash-table">
                                     <colgroup>
-                                        <col style={{ width: "55%" }} />
+                                        <col style={{ width: "42%" }} />
+                                        <col style={{ width: "19%" }} />
                                         <col style={{ width: "20%" }} />
-                                        <col style={{ width: "25%" }} />
+                                        <col style={{ width: "19%" }} />
                                     </colgroup>
                                     <thead>
                                         <tr>
-                                            <th>Control</th>
-                                            <th style={{ textAlign: "center" }}>Category</th>
-                                            <th style={{ textAlign: "center" }}>Control Quality</th>
+                                            <th>Component</th>
+                                            <th style={{ textAlign: "center" }}>Site</th>
+                                            <th style={{ textAlign: "center" }}>Asset Type</th>
+                                            <th style={{ textAlign: "center" }}>Certification Body</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {dash.criticalRows.length === 0 ? (
+                                        {dash.validRows.length === 0 ? (
                                             <tr>
                                                 <td colSpan={3} style={{ textAlign: "center", color: "#888", fontStyle: "italic", padding: "16px" }}>
-                                                    No critical controls
+                                                    No valid components
                                                 </td>
                                             </tr>
                                         ) : (
-                                            dash.criticalRows.map((doc, idx) => (
-                                                <tr key={`crit-${idx}`}>
-                                                    <td className="mdash-td--wrap">{doc.name}</td>
-                                                    <td style={{ textAlign: "center" }}>{doc.category}</td>
-                                                    <td style={{ textAlign: "center" }} className={getCategoryClass(doc.quality)}>
-                                                        {doc.quality}
-                                                    </td>
+                                            dash.validRows.map((row, idx) => (
+                                                <tr key={`valid-${idx}`}>
+                                                    <td className="mdash-td--wrap">{row.component}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.site}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.assetType}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.certBody}</td>
                                                 </tr>
                                             ))
                                         )}
@@ -357,39 +406,45 @@ const CMMainDash = () => {
 
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>CONTROL ATTENTION OVERVIEW</h3>
+                                <h3>COMPONENTS IN REPAIR</h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
                                 <table className="mdash-table">
                                     <colgroup>
-                                        <col style={{ width: "44%" }} />
+                                        <col style={{ width: "34%" }} />
+                                        <col style={{ width: "17%" }} />
                                         <col style={{ width: "16%" }} />
                                         <col style={{ width: "16%" }} />
-                                        <col style={{ width: "24%" }} />
+                                        <col style={{ width: "17%" }} />
                                     </colgroup>
                                     <thead>
                                         <tr>
-                                            <th>Control</th>
-                                            <th style={{ textAlign: "center" }}>Category</th>
-                                            <th style={{ textAlign: "center" }}>Critical</th>
-                                            <th style={{ textAlign: "center" }}>Control Quality</th>
+                                            <th>Component</th>
+                                            <th style={{ textAlign: "center" }}>Site</th>
+                                            <th style={{ textAlign: "center" }}>Asset Type</th>
+                                            <th style={{ textAlign: "center" }}>Asset</th>
+                                            <th style={{ textAlign: "center" }}>Days in Repair</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {dash.attentionRows.length === 0 ? (
+                                        {dash.repairRows.length === 0 ? (
                                             <tr>
                                                 <td colSpan={4} style={{ textAlign: "center", color: "#888", fontStyle: "italic", padding: "16px" }}>
-                                                    No controls requiring attention
+                                                    No components in repair
                                                 </td>
                                             </tr>
                                         ) : (
-                                            dash.attentionRows.map((doc, idx) => (
-                                                <tr key={`att-${idx}`}>
-                                                    <td className="mdash-td--wrap">{doc.name}</td>
-                                                    <td style={{ textAlign: "center" }}>{doc.category}</td>
-                                                    <td style={{ textAlign: "center" }}>{doc.critical}</td>
-                                                    <td style={{ textAlign: "center" }} className={getCategoryClass(doc.quality)}>
-                                                        {doc.quality}
+                                            dash.repairRows.map((row, idx) => (
+                                                <tr key={`repair-${idx}`}>
+                                                    <td className="mdash-td--wrap">{row.component}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.site}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.assetType}</td>
+                                                    <td style={{ textAlign: "center" }}>{row.asset}</td>
+                                                    <td
+                                                        style={{ textAlign: "center" }}
+                                                        className={repairDaysClass(row.daysInRepair)}
+                                                    >
+                                                        {row.daysInRepair}
                                                     </td>
                                                 </tr>
                                             ))
@@ -400,20 +455,24 @@ const CMMainDash = () => {
                         </div>
                     </div>
 
-                    {/* ── Trend: Controls Over Time ── */}
+                    {/* ── Trend: Components Over Time ── */}
                     <div className="mdash-panel mdash-panel--full">
                         <div className="mdash-panel-header">
                             <h3>
-                                CONTROLS OVER TIME (LAST {effectiveTrendRange} {effectiveTrendRange === 1 ? "MONTH" : "MONTHS"})
+                                COMPONENTS OVER TIME (LAST {effectiveTrendRange} {effectiveTrendRange === 1 ? "MONTH" : "MONTHS"})
                             </h3>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                                 <div className="mdash-inline-legend" style={{ marginBottom: 0 }}>
                                     {[
-                                        { label: "Controls Added", cls: "new5" },
-                                        { label: "Controls Updated", cls: "new4" },
+                                        { label: "Valid Components", dotStyle: { background: "#7EAC89" } },
+                                        { label: "Invalid Components", dotStyle: { background: "#CB6F6F" } },
+                                        { label: "Components in Repair", dotStyle: { background: "#FFC000" } },
                                     ].map((item) => (
                                         <span key={item.label} className="mdash-inline-legend-item">
-                                            <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
+                                            <span
+                                                className="mdash-legend-dot"
+                                                style={{ ...item.dotStyle, display: "inline-block", width: 10, height: 10, borderRadius: "50%", marginRight: 4 }}
+                                            />
                                             {item.label}
                                         </span>
                                     ))}
@@ -435,8 +494,9 @@ const CMMainDash = () => {
                             <TrendChart
                                 months={dash.trend.months.slice(-effectiveTrendRange)}
                                 series={{
-                                    added: dash.trend.added.slice(-effectiveTrendRange),
-                                    updated: dash.trend.updated.slice(-effectiveTrendRange),
+                                    valid: dash.trend.valid.slice(-effectiveTrendRange),
+                                    invalid: dash.trend.invalid.slice(-effectiveTrendRange),
+                                    inRepair: dash.trend.inRepair.slice(-effectiveTrendRange),
                                 }}
                                 totalSlots={effectiveTrendRange}
                             />
@@ -450,4 +510,4 @@ const CMMainDash = () => {
     );
 };
 
-export default CMMainDash;
+export default DWMainDash;

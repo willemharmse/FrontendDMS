@@ -19,7 +19,7 @@ import jsPDF from "jspdf";
 /**
  * @param {string} dataAsAt  — date label shown in the PDF footer (e.g. "2025-06-01")
  */
-export async function exportDashboardPDF(dataAsAt = "") {
+export async function exportDashboardPDF(dataAsAt = "", type = "") {
     // ── 1. Locate the shell ──────────────────────────────────────────────────
     const shell = document.querySelector(".mdash-shell") || document.querySelector(".mddsdash-shell");
     if (!shell) {
@@ -193,7 +193,7 @@ export async function exportDashboardPDF(dataAsAt = "") {
 
         // ── 6. Save ──────────────────────────────────────────────────────────
         const dateStr = dataAsAt.replace(/\//g, "-") || new Date().toISOString().slice(0, 10);
-        pdf.save(`DMS Dashboard Report ${dateStr}.pdf`);
+        pdf.save(`${type} Dashboard Report ${dateStr}.pdf`);
 
     } finally {
         // ── 7. Restore the shell exactly as it was ───────────────────────────

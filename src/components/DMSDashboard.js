@@ -365,7 +365,7 @@ const DMSDashboard = () => {
                             </div>
 
                             {/* 6. Compliance Tracking */}
-                            <div className="dms-ops-card" onClick={() => navigate('/FrontendDMS/constructionHelp')}>
+                            <div className="dms-ops-card" onClick={() => navigate('/FrontendDMS/ctsDash')}>
                                 <div className="dms-ops-card-header">
                                     <div style={{ width: "100%" }}>
                                         <p className="dms-ops-card-title">Compliance Tracking</p>
