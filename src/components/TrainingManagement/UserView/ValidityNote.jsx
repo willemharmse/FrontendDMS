@@ -24,7 +24,7 @@ const ValidityNote = ({ setClose }) => {
                         <br />
                         <br />
                         <strong>N/A (-): </strong><br />
-                        No certificate availalbe.
+                        No certificate available.
                     </span>
                 </div>
             </div>
