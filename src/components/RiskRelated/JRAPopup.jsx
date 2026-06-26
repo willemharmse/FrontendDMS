@@ -1202,13 +1202,24 @@ const JRAPopup = ({ onClose, data, onSubmit, nr, formData, readOnly = false }) =
                                                                         value={step.hazards[0]?.hazard}
                                                                         onChange={(e) => handleHazardChange(si, 0, e.target.value)}
                                                                     >
-                                                                        <option value={""} hidden>Select Hazard</option>
-                                                                        <option value={"Work Execution"} hidden>Work Execution</option>
-                                                                        {sourceData.map((hazard, index) => (
-                                                                            <option key={index} value={hazard.term} style={{ color: "black" }}>
-                                                                                {hazard.term}
-                                                                            </option>
-                                                                        ))}
+                                                                        <option value="" hidden>Select Hazard</option>
+                                                                        <option value="Work Execution" hidden>Work Execution</option>
+
+                                                                        {[...sourceData]
+                                                                            .sort((a, b) => {
+                                                                                const aIsOther = a.term?.trim().toLowerCase() === "other";
+                                                                                const bIsOther = b.term?.trim().toLowerCase() === "other";
+
+                                                                                if (aIsOther && !bIsOther) return 1;
+                                                                                if (!aIsOther && bIsOther) return -1;
+
+                                                                                return a.term.localeCompare(b.term, undefined, { sensitivity: "base" });
+                                                                            })
+                                                                            .map((hazard, index) => (
+                                                                                <option key={index} value={hazard.term} style={{ color: "black" }}>
+                                                                                    {hazard.term}
+                                                                                </option>
+                                                                            ))}
                                                                     </select>
                                                                 </div>
                                                             </div>

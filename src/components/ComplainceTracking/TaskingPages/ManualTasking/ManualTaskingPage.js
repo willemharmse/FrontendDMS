@@ -47,11 +47,11 @@ const taskApiBase = (task) =>
 
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
+    { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "allocatedBy", title: "Originator", views: "both", collapsed: false, collapsedFor: "viewer" },
     { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
-    { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "taskType", title: "Type", views: "both", collapsed: false },
     { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "taskTitle", title: "Title", views: "both", collapsed: false },
@@ -80,12 +80,18 @@ const PRIORITY_OPTIONS = [
     { value: "Low", color: "#FFFFEE", textColor: "#000000" },
 ];
 
+const getStatusDisplay = (status) => {
+    if (status === "Completed") return "Submitted";
+    return status || "-";
+};
+
 const STATUS_OPTIONS = [
-    { value: "25% Completed", color: "#FFC000" },
-    { value: "50% Completed", color: "#FFFF00" },
-    { value: "75% Completed", color: "#FFFFCC" },
-    { value: "Completed", color: "#7EAC87" },
-    { value: "Cancelled", color: "#CB6F6F" },
+    { value: "25% Completed", label: "25% Completed", color: "#FFC000" },
+    { value: "50% Completed", label: "50% Completed", color: "#FFFF00" },
+    { value: "75% Completed", label: "75% Completed", color: "#FFFFCC" },
+    { value: "Completed", label: "Submitted", color: "#7EAC87" },
+    //{ value: "Completed", label: "Completed", color: "#7EAC87" },
+    { value: "Cancelled", label: "Cancelled", color: "#CB6F6F" },
 ];
 
 const DEFAULT_COLUMN_WIDTHS = {
@@ -281,7 +287,9 @@ const ManualTaskingPage = () => {
     // ── View switch ──────────────────────────────────────────────────────────
     const switchView = (nextView) => {
         setView(nextView);
-        setShowColumns(getDefaultShowColumns(nextView));
+        // closedOut uses viewer-style columns
+        const colView = nextView === "closedOut" ? "viewer" : nextView;
+        setShowColumns(getDefaultShowColumns(colView));
         setActiveExcelFilters({});
         setSortConfig(DEFAULT_SORT);
         setSearchQuery("");
@@ -292,7 +300,7 @@ const ManualTaskingPage = () => {
     };
 
     // ── Columns available for current view ───────────────────────────────────
-    const availableColumns = useMemo(() => getColumnsForView(view), [view]);
+    const availableColumns = useMemo(() => getColumnsForView(view === "closedOut" ? "viewer" : view), [view]);
     const allColumnIds = useMemo(() => availableColumns.map(c => c.id), [availableColumns]);
 
     // ── Fetch ────────────────────────────────────────────────────────────────
@@ -324,7 +332,8 @@ const ManualTaskingPage = () => {
 
         try {
             if (view === "allocator") {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/complainceTasks/all`, {
+                // /all/open — allocated tasks excluding closed-out ones
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/complainceTasks/all/open`, {
                     headers: { Authorization: `Bearer ${storedToken}` },
                 });
 
@@ -344,9 +353,32 @@ const ManualTaskingPage = () => {
                 );
 
                 setTasks(normalised);
+            } else if (view === "closedOut") {
+                // /closed — tasks (responsible or allocator) that are closed out
+                const response = await axios.get(`${process.env.REACT_APP_URL}/api/complainceTasks/closed`, {
+                    headers: { Authorization: `Bearer ${storedToken}` },
+                });
+
+                const raw = response.data?.tasks ?? [];
+                const normalised = raw.map(t => ({
+                    ...normalizeTask(t),
+                    _isAllocator: t._isAllocator || false,
+                    _isResponsible: t._isResponsible || false,
+                }));
+
+                normalised.sort((a, b) =>
+                    (a.dueDate || "").localeCompare(b.dueDate || "") ||
+                    (a.taskDescription || "").localeCompare(
+                        b.taskDescription || "",
+                        undefined,
+                        { sensitivity: "base" }
+                    )
+                );
+
+                setTasks(normalised);
             } else {
-                // ── viewer: the /my route now returns both manual + auto-auto ──
-                const response = await axios.get(`${process.env.REACT_APP_URL}/api/complainceTasks/my`, {
+                // ── viewer: /my/open excludes closed-out tasks ──
+                const response = await axios.get(`${process.env.REACT_APP_URL}/api/complainceTasks/my/open`, {
                     headers: { Authorization: `Bearer ${storedToken}` },
                 });
 
@@ -763,8 +795,8 @@ const ManualTaskingPage = () => {
     // ── Filter / Sort ────────────────────────────────────────────────────────
     const getFilterValuesForCell = (row, colId, index) => {
         if (colId === "nr") return [String(index + 1)];
-        if (colId === "status") return [row.status ? String(row.status).trim() : "-"];
-        if (colId === "closeStatus") return [row.closeStatus ? "Closed" : "Open"];
+        if (colId === "status") return [getStatusDisplay(row.status)];
+        if (colId === "closeStatus") return [row.closeStatus ? "Completed" : "Open"];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
         if (colId === "userAttachments") return [Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? "Has Attachments" : "No Attachments"];
         // allocatedBy: null becomes "System" for filtering
@@ -830,6 +862,14 @@ const ManualTaskingPage = () => {
         };
 
         current.sort((a, b) => {
+            const hasActiveColumnSort = !!sortConfig?.colId;
+
+            // Only keep closed tasks at the bottom in the default sort.
+            // Do not override Excel column sorting.
+            if (!hasActiveColumnSort && Boolean(a.closeStatus) !== Boolean(b.closeStatus)) {
+                return Boolean(a.closeStatus) ? 1 : -1;
+            }
+
             if (a.isTagged !== b.isTagged) return a.isTagged ? -1 : 1;
 
             if (!sortConfig?.colId) {
@@ -839,24 +879,38 @@ const ManualTaskingPage = () => {
                 if (dA !== null && dB !== null && dA !== dB) return dA - dB;
                 return compareText(normalize(a?.taskDescription), normalize(b?.taskDescription));
             }
+
             const { colId, direction } = sortConfig;
             const dir = direction === "desc" ? -1 : 1;
+
             if (["allocatedDate", "dueDate", "completionDate"].includes(colId)) {
                 const vA = parseDateValue(a?.[colId]), vB = parseDateValue(b?.[colId]);
                 if (vA === null && vB !== null) return 1;
                 if (vA !== null && vB === null) return -1;
                 if (vA !== null && vB !== null && vA !== vB) return (vA - vB) * dir;
             } else {
-                const vA = normalize(a?.[colId]), vB = normalize(b?.[colId]);
+                const vA =
+                    colId === "closeStatus"
+                        ? a.closeStatus ? "Completed" : "Open"
+                        : normalize(a?.[colId]);
+
+                const vB =
+                    colId === "closeStatus"
+                        ? b.closeStatus ? "Completed" : "Open"
+                        : normalize(b?.[colId]);
+
                 if (vA === "(Blanks)" && vB !== "(Blanks)") return 1;
                 if (vA !== "(Blanks)" && vB === "(Blanks)") return -1;
+
                 const r = compareText(vA, vB) * dir;
                 if (r !== 0) return r;
             }
+
             const dA = parseDateValue(a?.dueDate), dB = parseDateValue(b?.dueDate);
             if (dA === null && dB !== null) return 1;
             if (dA !== null && dB === null) return -1;
             if (dA !== null && dB !== null && dA !== dB) return dA - dB;
+
             return compareText(normalize(a?.taskDescription), normalize(b?.taskDescription));
         });
 
@@ -970,7 +1024,7 @@ const ManualTaskingPage = () => {
         if (!wrapper) return;
         const ww = wrapper.getBoundingClientRect().width;
         if (!ww) return;
-        const defaultCols = getDefaultShowColumns(view);
+        const defaultCols = getDefaultShowColumns(view === "closedOut" ? "viewer" : view);
         setShowColumns(defaultCols);
         const visibleCols = defaultCols.filter(id => typeof initialColumnWidths[id] === "number");
         if (!visibleCols.length) return;
@@ -1210,9 +1264,12 @@ const ManualTaskingPage = () => {
                 exportHeaders.forEach((hdr) => {
                     let val = "";
                     if (hdr.id === "nr") val = String(rowIdx + 1);
-                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Closed" : "Open";
+                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Completed" : "Open";
                     else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
                     else if (hdr.id === "userAttachments") val = Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? row.userAttachments.join("\n") : "No files";
+                    else if (hdr.id === "status") {
+                        val = getStatusDisplay(row.status);
+                    }
                     else val = String(row[hdr.id] ?? "-");
                     // Estimate lines: count newlines + rough word-wrap estimate based on col width
                     const colWidthChars = (hdr.meta.width || 18) * 1.2; // approximate chars per line
@@ -1230,7 +1287,7 @@ const ManualTaskingPage = () => {
                     if (hdr.id === "nr") {
                         value = rowIdx + 1;
                     } else if (hdr.id === "closeStatus") {
-                        value = row.closeStatus ? "Closed" : "Open";
+                        value = row.closeStatus ? "Completed" : "Open";
                     } else if (hdr.id === "attachments") {
                         const a = row.attachments;
                         value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
@@ -1268,8 +1325,9 @@ const ManualTaskingPage = () => {
         }
     };
 
-    const getDueDateClass = (dueDate) => {
+    const getDueDateClass = (dueDate, closeStatus) => {
         if (!dueDate) return "";
+        if (closeStatus) return "";
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const due = new Date(dueDate);
@@ -1336,8 +1394,11 @@ const ManualTaskingPage = () => {
                     )}
                 </td>;
 
+            case "uniqueID":
+                return <td key="uniqueID" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.uniqueID || "-"}</td>;
+
             case "taskType":
-                return <td key="taskType" className="procCent" style={{ fontSize: "14px" }}>{row.taskType || "-"}</td>;
+                return <td key="taskType" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.taskType || "-"}</td>;
 
             case "taskTitle":
                 return (
@@ -1380,7 +1441,7 @@ const ManualTaskingPage = () => {
             case "allocatedBy":
                 // null allocatedBy means system-generated → display "System"
                 return (
-                    <td key="allocatedBy" className="procCent" style={{ fontSize: "14px" }}>
+                    <td key="allocatedBy" className="backGrey procCent" style={{ fontSize: "14px" }}>
                         {(isAutoAuto || isAutoManual) ? (
                             <span style={{ color: "#888", fontStyle: "italic" }}>
                                 {row.allocatedBy}
@@ -1395,16 +1456,13 @@ const ManualTaskingPage = () => {
                 return <td key="taskDescription" style={{ fontSize: "14px" }}>{row.taskDescription || "-"}</td>;
 
             case "category":
-                return <td key="category" className="procCent" style={{ fontSize: "14px" }}>{row.category || "-"}</td>;
+                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.category || "-"}</td>;
 
             case "discipline":
-                return <td key="discipline" className="procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
-
-            case "uniqueID":
-                return <td key="uniqueID" className="procCent" style={{ fontSize: "14px" }}>{row.uniqueID || "-"}</td>;
+                return <td key="discipline" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
 
             case "area":
-                return <td key="area" className="procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
+                return <td key="area" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
 
             case "priority":
                 return (
@@ -1456,10 +1514,10 @@ const ManualTaskingPage = () => {
             }
 
             case "allocatedDate":
-                return <td key="allocatedDate" className="procCent" style={{ fontSize: "14px" }}>{row.allocatedDate || "-"}</td>;
+                return <td key="allocatedDate" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.allocatedDate || "-"}</td>;
 
             case "dueDate":
-                return <td key="dueDate" className={`procCent ${getDueDateClass(row.dueDate)}`} style={{ fontSize: "14px" }}>{row.dueDate || "-"}</td>;
+                return <td key="dueDate" className={`procCent ${getDueDateClass(row.dueDate, row.closeStatus)}`} style={{ fontSize: "14px" }}>{row.dueDate || "-"}</td>;
 
             case "completionDate":
                 return <td key="completionDate" className="procCent" style={{ fontSize: "14px" }}>{row.completionDate || "-"}</td>;
@@ -1469,7 +1527,7 @@ const ManualTaskingPage = () => {
                 if (view === "allocator") {
                     return (
                         <td key="status" className="procCent" style={{ fontSize: "14px", backgroundColor: getStatusColor(row.status), color: getStatusTextColor(row.status), fontWeight: "500" }}>
-                            {row.status || "-"}
+                            {getStatusDisplay(row.status)}
                         </td>
                     );
                 }
@@ -1509,8 +1567,8 @@ const ManualTaskingPage = () => {
                             onChange={(e) => handleStatusChange(row._id, e.target.value)}
                         >
                             <option value="" style={{ color: "black" }}>Not Started</option>
-                            {STATUS_OPTIONS.map(opt => (
-                                <option key={opt.value} value={opt.value} style={{ color: "black" }}>{opt.value}</option>
+                            {STATUS_OPTIONS.filter(opt => opt.value !== "Cancelled").map(opt => (
+                                <option key={opt.value} value={opt.value} style={{ color: "black" }}>{opt.label}</option>
                             ))}
                         </select>
                     </td>
@@ -1575,6 +1633,46 @@ const ManualTaskingPage = () => {
                 const isReopening = reopeningTaskIds.has(row._id);
                 const isCancelled = row.status === "Cancelled";
 
+                // In closedOut view: check if user can reopen
+                // _isAllocator is set by the /closed endpoint; if not present, fall back to view
+                const canReopen = view === "closedOut"
+                    ? (row._isAllocator === true)
+                    : view === "allocator";
+
+                // ── Closed-out view — show reopen control or read-only badge ─────────────
+                if (view === "closedOut") {
+                    if (!canReopen) {
+                        // Responsible-only user: read-only closed badge
+                        return (
+                            <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
+                                <span style={{
+                                    display: "inline-block",
+                                    padding: "2px 10px",
+                                    borderRadius: "12px",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    backgroundColor: "#7EAC87",
+                                    color: "#fff",
+                                }}>
+                                    Completed
+                                </span>
+                            </td>
+                        );
+                    }
+                    // Allocator (or both): interactive reopen checkbox
+                    return (
+                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
+                            <input type="checkbox" className="checkbox-inp-abbr"
+                                checked={true}
+                                disabled={isReopening}
+                                title="Click to reopen this task"
+                                style={{ cursor: isReopening ? "not-allowed" : "pointer", opacity: isReopening ? 0.4 : 1 }}
+                                onChange={() => { openReopenTaskPopup(row); }}
+                            />
+                        </td>
+                    );
+                }
+
                 // ── Viewer (responsible person) on a MANUAL task → read-only badge ──
                 if (view === "viewer") {
                     return (
@@ -1588,7 +1686,7 @@ const ManualTaskingPage = () => {
                                 backgroundColor: isAlreadyClosed ? "#7EAC87" : "#f0f0f0",
                                 color: isAlreadyClosed ? "#fff" : "#555",
                             }}>
-                                {isAlreadyClosed ? "Closed" : "Open"}
+                                {isAlreadyClosed ? "Completed" : "Open"}
                             </span>
                         </td>
                     );
@@ -1681,6 +1779,21 @@ const ManualTaskingPage = () => {
                                     <FontAwesomeIcon icon={faTrash} />
                                 </button>
                             </>
+                        ) : view === "closedOut" ? (
+                            <>
+                                {/* In closed-out view: job card for manual allocators/both; nothing for responsible-only */}
+                                {(!isAutoAuto && !isAutoManual && !row.isTagged && row._isAllocator) && (
+                                    <button
+                                        type="button"
+                                        className="rca-action-btn"
+                                        title="Download Job Card"
+                                        style={{ marginLeft: "5px" }}
+                                        onClick={() => handleDownloadJobCard(row)}
+                                    >
+                                        <FontAwesomeIcon icon={faFilePdf} />
+                                    </button>
+                                )}
+                            </>
                         ) : (
                             <>
                                 {/* Accept/delegate only for manual tasks that haven't been accepted */}
@@ -1719,7 +1832,7 @@ const ManualTaskingPage = () => {
     };
 
     // ── Render ───────────────────────────────────────────────────────────────
-    const pageLabel = view === "allocator" ? "Task Management" : "Update my Tasks";
+    const pageLabel = view === "allocator" ? "Task Management" : view === "closedOut" ? "Closed Out Tasks" : "Update my Tasks";
 
     const handleAutoManualNavigation = (row) => {
         const route = getAutoManualNavigationRoute(row);
@@ -1813,16 +1926,17 @@ const ManualTaskingPage = () => {
                 <div className="table-container-risk-control-attributes">
                     <div className="risk-control-label-wrapper-new">
                         <div className="control-attributes-pill-bar">
-                            {["My Tasks", "Tasks Assigned"].map((pill) => (
+                            {["My Tasks", "Tasks Assigned", "Closed Out Tasks"].map((pill) => (
                                 <div
                                     key={pill}
                                     className={`control-attributes-pill ${categoryTab === pill ? "active" : ""}`}
                                     onClick={() => {
-                                        let newTab = pill;
-                                        if (pill === "My Tasks") newTab = "viewer";
-                                        else if (pill === "Tasks Assigned") newTab = "allocator";
+                                        let newView = pill;
+                                        if (pill === "My Tasks") newView = "viewer";
+                                        else if (pill === "Tasks Assigned") newView = "allocator";
+                                        else if (pill === "Closed Out Tasks") newView = "closedOut";
 
-                                        switchView(newTab)
+                                        switchView(newView)
                                         setCategoryTab(pill);
                                     }}
                                 >

@@ -34,7 +34,7 @@ const PopupMenu = ({ isOpen, setHoveredFileId, handlePreview, openDownloadModal,
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    {isActionAvailable && (
+                    {false && isActionAvailable && (
                         <ul>
                             <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
                         </ul>

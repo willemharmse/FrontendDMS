@@ -946,6 +946,16 @@ const FileInfo = () => {
                       <td className="col">{formatDate(file.uploadDate)}</td>
                       {canIn(access, "DMS", ["systemAdmin"]) && (
                         <td className={isTrashView ? "col-act trashed" : "col-act"}>
+
+                          {(!isTrashView) && (
+                            <button
+                              className={"delete-button-fi col-but-res"}
+                              onClick={() => openDownloadModal(file._id, file.fileName)}
+                            >
+                              <FontAwesomeIcon icon={faDownload} title="Download Document" />
+                            </button>
+                          )}
+
                           <button
                             className={isTrashView ? "delete-button-fi col-but trashed-color" : "delete-button-fi col-but"}
                             onClick={() => openModal(file._id, file.fileName)}

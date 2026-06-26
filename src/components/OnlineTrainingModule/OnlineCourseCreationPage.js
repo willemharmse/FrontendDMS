@@ -23,6 +23,7 @@ import OnlineTrainingCoursePreviewPage from "./OnlineTrainingCoursePreviewPage";
 import SaveAsOnlineTrainingPopup from "./SaveAsOnlineTrainingPopup";
 import OTCourseAssessment from "./OTCourseAssessment";
 import CourseResourceTable from "./CourseResourceTable";
+import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 
 const OnlineCourseCreationPage = () => {
   const id = useParams().id || '';
@@ -58,6 +59,9 @@ const OnlineCourseCreationPage = () => {
   const [isPublisher, setIsPublisher] = useState(false);
 
   const readOnlyRef = useRef(false);
+  const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
+  const [saveConfirmTrigger, setSaveConfirmTrigger] = useState("back");
+  const pendingActionRef = useRef(null);
 
   const stopAutoSave = () => {
     if (autoSaveInterval.current) {
@@ -1196,6 +1200,55 @@ const OnlineCourseCreationPage = () => {
     setPreview(true);
   }
 
+  const requiresSavePrompt = () => !readOnlyRef.current && !!loadedIDRef.current;
+
+  const openSaveConfirm = (triggerType, action) => {
+    setSaveConfirmTrigger(triggerType);
+    pendingActionRef.current = action;
+    setIsSaveConfirmOpen(true);
+  };
+
+  const handleBack = () => {
+    if (!requiresSavePrompt()) { navigate("/FrontendDMS/onlineTrainingHome"); return; }
+    openSaveConfirm("back", () => navigate("/FrontendDMS/onlineTrainingHome"));
+  };
+
+  const handleHomeNav = () => {
+    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
+  };
+
+  const handleConfirmSave = async () => {
+    if (loadedIDRef.current) {
+      await updateData(userIDsRef.current);
+    } else {
+      await saveData();
+    }
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("Draft has been saved.", {
+      closeButton: true,
+      autoClose: 1200,
+      style: { textAlign: "center" }
+    });
+    setTimeout(() => {
+      setIsSaveConfirmOpen(false);
+      if (pendingActionRef.current) pendingActionRef.current();
+      pendingActionRef.current = null;
+    }, 1500);
+  };
+
+  const handleDiscard = () => {
+    setIsSaveConfirmOpen(false);
+    if (pendingActionRef.current) pendingActionRef.current();
+    pendingActionRef.current = null;
+  };
+
+  const handleCancelSave = () => {
+    setIsSaveConfirmOpen(false);
+    pendingActionRef.current = null;
+  };
+
   return (
     <div className="file-create-container">
       {isSidebarVisible && (
@@ -1204,7 +1257,7 @@ const OnlineCourseCreationPage = () => {
             <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
-            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={handleHomeNav} title="Home" />
             <p className="logo-text-um" onClick={() => console.log(formData)}>Training Management</p>
           </div>
 
@@ -1261,7 +1314,7 @@ const OnlineCourseCreationPage = () => {
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate("/FrontendDMS/onlineTrainingHome")} title="Back" />
+              <FontAwesomeIcon icon={faArrowLeft} onClick={handleBack} title="Back" />
             </div>
 
             {!readOnly && (
@@ -1306,7 +1359,7 @@ const OnlineCourseCreationPage = () => {
 
           <div className="spacer"></div>
 
-          <TopBarDD refreshable={false} canIn={canIn} access={access} menu={"1"} create={true} />
+          <TopBarDD refreshable={false} canIn={canIn} access={access} menu={"1"} create={true} onHome={handleHomeNav} />
         </div>
 
         <div className={`scrollable-box`}>
@@ -1455,6 +1508,16 @@ const OnlineCourseCreationPage = () => {
         {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       </div>
       <ToastContainer />
+      {isSaveConfirmOpen && (
+        <SaveConfirmationPopup
+          setIsSaveModalOpen={setIsSaveConfirmOpen}
+          onConfirmSave={handleConfirmSave}
+          onDiscard={handleDiscard}
+          onCancel={handleCancelSave}
+          draftTitle={formData.courseTitle}
+          triggerType={saveConfirmTrigger}
+        />
+      )}
     </div>
   );
 };

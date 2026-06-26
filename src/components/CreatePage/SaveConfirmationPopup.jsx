@@ -1,19 +1,42 @@
 import React from "react";
 
+const TRIGGER_CONFIG = {
+    back: {
+        title: "Save Draft",
+        message: "Do you want to save this draft before going back?",
+    },
+    home: {
+        title: "Save Draft",
+        message: "Do you want to save this draft before going to the home page?",
+    },
+    refresh: {
+        title: "Save Draft",
+        message: "Do you want to save this draft before refreshing the page?",
+    },
+    close: {
+        title: "Save Draft",
+        message: "Do you want to save this draft before closing the application?",
+    },
+};
+
 const SaveConfirmationPopup = ({
     setIsSaveModalOpen,
     onConfirmSave,
     onDiscard,
-    draftTitle
+    onCancel,
+    draftTitle,
+    triggerType = "back",
 }) => {
+    const config = TRIGGER_CONFIG[triggerType] || TRIGGER_CONFIG.back;
+
     return (
         <div className="delete-popup-overlay-um">
             <div className="delete-popup-content-um">
                 <div className="delete-file-header-um">
-                    <h2 className="delete-file-title-um">Save Draft</h2>
+                    <h2 className="delete-file-title-um">{config.title}</h2>
                     <button
                         className="delete-file-close-um"
-                        onClick={onDiscard}
+                        onClick={onCancel}
                         title="Close Popup"
                     >
                         ×
@@ -22,7 +45,7 @@ const SaveConfirmationPopup = ({
 
                 <div className="delete-file-group-um">
                     <div className="delete-file-text-um">
-                        Do you want to save this draft before leaving?
+                        {config.message}
                     </div>
                     <div>
                         <strong>{draftTitle || "Untitled Draft"}</strong>

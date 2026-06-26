@@ -314,8 +314,7 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
         // Do NOT use an artificial map.
         if (colId === "nr") {
             // Re-number visible rows sequentially
-            current.forEach((r, i) => (r.nr = i + 1));
-            return current;
+            return current.map((r, i) => ({ ...r, nr: i + 1 }));
         }
 
         // Otherwise, apply active sort direction for other columns
@@ -362,9 +361,7 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
             }) * dir;
         });
 
-        current.forEach((r, i) => (r.nr = i + 1));
-
-        return current;
+        return current.map((r, i) => ({ ...r, nr: i + 1 }));
     }, [rows, filters, showFlagged, sortConfig]);
 
     function openFilterPopup(colId, e) {
@@ -1524,7 +1521,7 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                             </div>
 
                             <div className="column-checkbox-container">
-                                {availableColumns.map(column => (
+                                {availableColumns.filter(column => !["actions", "responsible", "dueDate"].includes(column.id)).map(column => (
                                     <div className="column-checkbox-item" key={column.id}>
                                         <label>
                                             <input

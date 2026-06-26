@@ -1368,9 +1368,20 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
                                                         disabled={readOnly}
                                                         style={{ color: riskSource === "" ? "#838383ff" : "black" }}
                                                     >
-                                                        <option className={"ibra-select-styling"} value="">Select Hazard Classification / Energy Release</option>
+                                                        <option className="ibra-select-styling" value="">
+                                                            Select Hazard Classification / Energy Release
+                                                        </option>
+
                                                         {[...riskSources]
-                                                            .sort((a, b) => a.term.localeCompare(b.term, undefined, { sensitivity: "base" }))
+                                                            .sort((a, b) => {
+                                                                const aIsOther = a.term?.toLowerCase() === "other";
+                                                                const bIsOther = b.term?.toLowerCase() === "other";
+
+                                                                if (aIsOther && !bIsOther) return 1;
+                                                                if (!aIsOther && bIsOther) return -1;
+
+                                                                return a.term.localeCompare(b.term, undefined, { sensitivity: "base" });
+                                                            })
                                                             .map((term, index) => (
                                                                 <option className="ibra-select-styling" key={index} value={term.term}>
                                                                     {term.term}

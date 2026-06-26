@@ -23,6 +23,13 @@ import { exportDashboardPDF } from "./exportDashboardPDF";
 
 const fmt = (n) => (n ?? 0).toLocaleString("en-ZA");
 
+const completionStatusClass = (pct) => {
+    if (pct < 60) return "category-low";
+    if (pct < 70) return "category-medium";
+    if (pct <= 80) return "category-high";
+    return "category-complete";
+};
+
 const donutArc = (pct, offset) => {
     const c = 2 * Math.PI * 45;
     return { dash: (pct / 100) * c, offset: -(offset / 100) * c };
@@ -64,188 +71,6 @@ const DonutChart = ({ segments }) => {
     );
 };
 
-// Bar chart — mirrors DWMainDash: expects { label, value, class } per item
-const BarChart = ({ data }) => {
-    const n = data.length;
-    const svgW = Math.max(320, Math.min(520, n * 52));
-    const svgH = 205;
-    const padL = 10, padR = 10, padB = 26, padT = 18;
-    const chartW = svgW - padL - padR;
-    const maxVal = Math.max(...data.map((d) => d.value), 1);
-    const slotW = chartW / n;
-    const barW = Math.min(Math.floor(slotW * 0.60), 48);
-    return (
-        <svg
-            viewBox={`0 0 ${svgW} ${svgH}`}
-            preserveAspectRatio="xMidYMid meet"
-            style={{ display: "block", width: "100%", height: "auto", minWidth: 220 }}
-        >
-            {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => {
-                const y = padT + (1 - frac) * (svgH - padT - padB);
-                return <line key={i} x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />;
-            })}
-            {data.map((d, i) => {
-                const barH = (d.value / maxVal) * (svgH - padT - padB);
-                const slotCentreX = padL + i * slotW + slotW / 2;
-                const x = slotCentreX - barW / 2;
-                const y = padT + (svgH - padT - padB) - barH;
-                return (
-                    <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="2" className={`mddsash-bar ${d.class}`} />
-                        <text x={slotCentreX} y={y - 4} textAnchor="middle" className="mddsash-bar-value">{d.value}</text>
-                        <text x={slotCentreX} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
-                    </g>
-                );
-            })}
-        </svg>
-    );
-};
-
-const niceStep = (rawStep) => {
-    const power = Math.pow(10, Math.floor(Math.log10(rawStep)));
-    const fraction = rawStep / power;
-
-    if (fraction <= 1) return 1 * power;
-    if (fraction <= 2) return 2 * power;
-    if (fraction <= 5) return 5 * power;
-    return 10 * power;
-};
-
-const getNiceTicks = (min, max, tickCount = 5, forceZero = true) => {
-    if (!Number.isFinite(min) || !Number.isFinite(max)) {
-        return { ticks: [0, 1], min: 0, max: 1 };
-    }
-
-    if (forceZero) {
-        min = Math.min(0, min);
-    }
-
-    if (min === max) {
-        const pad = min === 0 ? 1 : Math.abs(min * 0.1);
-        min -= pad;
-        max += pad;
-    }
-
-    const rawStep = (max - min) / Math.max(1, tickCount - 1);
-    const step = niceStep(rawStep);
-
-    const niceMin = Math.floor(min / step) * step;
-    const niceMax = Math.ceil(max / step) * step;
-
-    const ticks = [];
-    for (let value = niceMin; value <= niceMax + step * 0.5; value += step) {
-        ticks.push(Number(value.toFixed(10)));
-    }
-
-    return {
-        ticks,
-        min: niceMin,
-        max: niceMax,
-    };
-};
-
-// TrendChart — right-aligns data so sparse ranges end at the right edge
-const TrendChart = ({ months, series, totalSlots }) => {
-    // totalSlots = the chosen range (1/2/3/6/12); months.length may be smaller
-    // if the system has fewer months of data. We always render `slots` positions
-    // spaced evenly, and the actual data is right-aligned into those slots.
-    const slots = totalSlots || months.length;
-    const offset = slots - months.length; // how many empty slots on the left
-
-    const allReal = [
-        ...(series.overdue ?? []),
-        ...(series.open ?? []),
-    ].filter(v => v !== null);
-    const rawMinV = allReal.length ? Math.min(...allReal) : 0;
-    const rawMaxV = allReal.length ? Math.max(...allReal) : 1;
-
-    const {
-        ticks: yTicks,
-        min: minV,
-        max: maxV,
-    } = getNiceTicks(rawMinV, rawMaxV, 5, true);
-    const svgW = 400, svgH = 120, padL = 30, padR = 30, padT = 12, padB = 24;
-
-    // Map a data index (0..months.length-1) to an x position using the full `slots` span
-    const pt = (val, dataIdx) => {
-        const slotIdx = dataIdx + offset;
-        return linePoint(val, minV, maxV, svgH, padT, padB, slotIdx, slots, svgW, padL, padR);
-    };
-
-    // Build polyline segments through consecutive non-null points
-    const buildPath = (arr) => {
-        const segments = [];
-        let seg = [];
-        arr.forEach((v, i) => {
-            if (v !== null) {
-                seg.push(pt(v, i));
-            } else {
-                if (seg.length > 1) segments.push(seg);
-                seg = [];
-            }
-        });
-        if (seg.length > 1) segments.push(seg);
-        return segments;
-    };
-
-    const renderSeries = (arr, lineCls, dotCls) => (
-        <>
-            {buildPath(arr).map((seg, si) => (
-                <polyline key={si} points={seg.map(p => `${p.x},${p.y}`).join(' ')} className={`mdash-line ${lineCls}`} />
-            ))}
-            {arr.map((v, i) => v !== null
-                ? <circle key={i} cx={pt(v, i).x} cy={pt(v, i).y} r="1.25" className={dotCls} />
-                : null
-            )}
-        </>
-    );
-
-    return (
-        <svg className="mdash-trend-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            {yTicks.map((t) => {
-                if (maxV === minV) return null;
-                const y = padT + (1 - (t - minV) / (maxV - minV)) * (svgH - padT - padB);
-                if (y < padT || y > svgH - padB) return null;
-                return (
-                    <g key={t}>
-                        <line x1={padL} x2={svgW - padR} y1={y} y2={y} className="mdash-chart-gridline" />
-                        <text x={padL - 4} y={y + 1.25} textAnchor="end" className="mdash-axis-text-trend">{t}</text>
-                    </g>
-                );
-            })}
-            {months.map((m, i) => {
-                const slotIdx = i + offset;
-                const x = slots <= 1 ? svgW - padR : padL + (slotIdx / (slots - 1)) * (svgW - padL - padR);
-                return <text key={m} x={x} y={svgH - 4} textAnchor="middle" className="mdash-axis-text-trend">{m}</text>;
-            })}
-            {renderSeries(series.overdue, "mdash-line--red", "mdash-dot--red")}
-            {renderSeries(series.open, "mdash-line--grey", "mdash-dot--grey")}
-        </svg>
-    );
-};
-
-const StackedBarChart = ({ rows }) => (
-    <div className="mdash-stacked-wrap">
-        {rows.map((row) => {
-            const total = row.valid + row.expiring + row.expired || 1;
-            const vPct = (row.valid / total) * 100;
-            const ePct = (row.expiring / total) * 100;
-            const xPct = (row.expired / total) * 100;
-            return (
-                <div key={row.type} className="mdash-stacked-row">
-                    <span className="mdash-stacked-label">{row.type}</span>
-                    <div className="mdash-stacked-bar">
-                        <div className="mdash-seg mdash-seg--valid" style={{ width: `${vPct}%` }}>{vPct > 8 && <span>{row.valid}</span>}</div>
-                        <div className="mdash-seg mdash-seg--expiring" style={{ width: `${ePct}%` }}>{ePct > 5 && <span>{row.expiring}</span>}</div>
-                        <div className="mdash-seg mdash-seg--expired" style={{ width: `${xPct}%` }}>{xPct > 5 && <span>{row.expired}</span>}</div>
-                    </div>
-                    <span className="mdash-stacked-pct">{row.pctExpired}%</span>
-                </div>
-            );
-        })}
-    </div>
-);
-
 // ─────────────────────────────────────────────
 // Fake / Mock Data (stands in for the backend response)
 // ─────────────────────────────────────────────
@@ -275,7 +100,7 @@ const getMockDashboardData = () => {
         visitorInductionsCompleted: 212,
         vsVisitorInductionsCompleted: 18,
         visitorInductionsInvalid: 9,
-        vsVisitorInductionsInvalid: -3,
+        vsVisitorInductionsInvalid: 3,
 
         // Courses & students
         coursesAvailable: 27,
@@ -307,14 +132,9 @@ const getMockDashboardData = () => {
     ];
 
     const expiringSoon = [
-        { name: "Lift shaft inspection", type: "Inspection", area: "Structural", dueDate: "2026-06-21", daysLeft: 2 },
-        { name: "Cladding RFI clarification", type: "RFI", area: "Architectural", dueDate: "2026-06-23", daysLeft: 4 },
-        { name: "Site welfare safety audit", type: "Safety Audit", area: "Civil", dueDate: "2026-06-26", daysLeft: 7 },
-        { name: "Switchgear submittal review", type: "Submittal", area: "Electrical", dueDate: "2026-06-29", daysLeft: 10 },
-        { name: "Painting punch list - block B", type: "Punch List", area: "Finishes", dueDate: "2026-07-03", daysLeft: 14 },
-        { name: "Drainage works permit", type: "Permit", area: "Civil", dueDate: "2026-07-06", daysLeft: 17 },
-        { name: "Ductwork pressure test inspection", type: "Inspection", area: "MEP", dueDate: "2026-07-10", daysLeft: 21 },
-        { name: "Glazing installation RFI", type: "RFI", area: "Architectural", dueDate: "2026-07-14", daysLeft: 25 },
+        { name: "ComplianceHub: Product Overview Q3 2026", students: 800, status: 90 },
+        { name: "ComplianceHub Overview: Understanding the System Suite", students: 400, status: 70 },
+        { name: "CS101", students: 500, status: 50 },
     ];
 
     const byType = [
@@ -645,11 +465,6 @@ const TMSMainDash = () => {
         return { label, cls };
     };
 
-    const totalDelta = buildDelta(s.vsLastMonth, "neutral");
-    const overdueDelta = buildDelta(s.vsExpiredLastMonth, "positive-bad");
-    const expiringDelta = buildDelta(s.vsExpiringSoon, "positive-bad");
-    const closeoutDelta = buildDelta(s.vsValidLastMonth, "positive-bad");
-
     const viOpenDelta = buildDelta(s.vsVisitorInductionsOpen, "neutral");
     const viCompletedDelta = buildDelta(s.vsVisitorInductionsCompleted, "positive-good");
     const viInvalidDelta = buildDelta(s.vsVisitorInductionsInvalid, "positive-bad");
@@ -658,43 +473,8 @@ const TMSMainDash = () => {
     const studentsDelta = buildDelta(s.vsRegisteredStudents, "neutral");
     const completedSuccessfullyDelta = buildDelta(s.vsCompletedSuccessfully, "positive-good");
 
+    // ── Default summary tiles: visitor induction + online training, side by side ──
     const summaryCards = [
-        {
-            id: "open",
-            label: "OPEN TASKS",
-            value: s.total,
-            sub: totalDelta.label,
-            subColorClass: totalDelta.cls,
-            colorClass: "mdash-card--grey",
-        },
-        {
-            id: "overdue",
-            label: "OVERDUE TASKS",
-            value: s.expired,
-            sub: overdueDelta.label,
-            subColorClass: overdueDelta.cls,
-            colorClass: "mdash-card--grey",
-        },
-        {
-            id: "due",
-            label: "TASKS DUE THIS WEEK",
-            value: s.expiringSoon,
-            sub: expiringDelta.label,
-            subColorClass: expiringDelta.cls,
-            colorClass: "mdash-card--grey",
-        },
-        {
-            id: "closeout",
-            label: "TASKS REQUIRING CLOSE OUT",
-            value: s.valid,
-            sub: closeoutDelta.label,
-            subColorClass: closeoutDelta.cls,
-            colorClass: "mdash-card--grey",
-        },
-    ];
-
-    // ── Visitor induction summary tiles ──
-    const visitorInductionCards = [
         {
             id: "vi-open",
             label: "OPEN VISITOR INDUCTIONS",
@@ -719,10 +499,6 @@ const TMSMainDash = () => {
             subColorClass: viInvalidDelta.cls,
             colorClass: "mdash-card--grey",
         },
-    ];
-
-    // ── Courses / students summary tiles ──
-    const trainingCards = [
         {
             id: "courses-available",
             label: "COURSES AVAILABLE IN THE SYSTEM",
@@ -747,19 +523,6 @@ const TMSMainDash = () => {
             subColorClass: completedSuccessfullyDelta.cls,
             colorClass: "mdash-card--grey",
         },
-    ];
-
-    const statusOverview = {
-        critical: { count: s.critical, pct: s.pctCritical },
-        high: { count: s.high, pct: s.pctHigh },
-        medium: { count: s.medium, pct: s.pctMedium },
-        low: { count: s.low, pct: s.pctLow },
-    };
-    const prioritySegments = [
-        { key: "critical", pct: statusOverview.critical.pct, cls: "mdash-donut--red" },
-        { key: "high", pct: statusOverview.high.pct, cls: "mdash-donut--orange" },
-        { key: "medium", pct: statusOverview.medium.pct, cls: "mdash-donut--yellow" },
-        { key: "low", pct: statusOverview.low.pct, cls: "mdash-donut--green" },
     ];
 
     // Students/visitors assessment outcomes — passed, failed, not yet attempted.
@@ -802,7 +565,7 @@ const TMSMainDash = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate("/home")} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">CTS Dashboard</p>
                     </div>
                 </div>
@@ -829,55 +592,23 @@ const TMSMainDash = () => {
                     {/* ── Header ── */}
                     <div className="mdash-header">
                         <div>
-                            <h1 className="mdash-header-title">COMPLIANCE TRACKING SYSTEM</h1>
+                            <h1 className="mdash-header-title">TRAINING MANAGEMENT SYSTEM</h1>
                         </div>
                         <div className="mdash-header-actions">
                             <button className="mdash-btn-nc">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Data as at: {dash.dataAsAt}
                             </button>
-                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "CTS")}>
+                            <button className="mdash-btn mdash-btn--primary" onClick={() => exportDashboardPDF(dash.dataAsAt, "TMS")}>
                                 <FontAwesomeIcon icon={faDownload} />
                                 Export Report
                             </button>
                         </div>
                     </div>
 
-                    {/* ── Summary Cards ── */}
+                    {/* ── Summary Cards (Visitor Inductions + Online Training) ── */}
                     <div className="mdash-summary-grid">
                         {summaryCards.map((card) => (
-                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
-                                <p className="mdash-summary-label">{card.label}</p>
-                                <strong className="mdash-summary-value">
-                                    {card.noFmt ? card.value : fmt(card.value)}
-                                </strong>
-                                {card.sub && (
-                                    <span className={`mdash-summary-sub ${card.subColorClass || ""}`}>{card.sub}</span>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* ── Visitor Induction Summary Cards ── */}
-                    <h2 style={{ fontSize: 14, fontWeight: 600, color: "#444", margin: "4px 0 0" }}>Visitor Inductions</h2>
-                    <div className="mdash-summary-grid">
-                        {visitorInductionCards.map((card) => (
-                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
-                                <p className="mdash-summary-label">{card.label}</p>
-                                <strong className="mdash-summary-value">
-                                    {card.noFmt ? card.value : fmt(card.value)}
-                                </strong>
-                                {card.sub && (
-                                    <span className={`mdash-summary-sub ${card.subColorClass || ""}`}>{card.sub}</span>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* ── Courses & Students Summary Cards ── */}
-                    <h2 style={{ fontSize: 14, fontWeight: 600, color: "#444", margin: "4px 0 0" }}>Courses &amp; Students</h2>
-                    <div className="mdash-summary-grid">
-                        {trainingCards.map((card) => (
                             <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
                                 <p className="mdash-summary-label">{card.label}</p>
                                 <strong className="mdash-summary-value">
@@ -896,16 +627,15 @@ const TMSMainDash = () => {
                         {/* Status Overview */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>OUTSTANDING TASKS BY PRIORITY</h3>
+                                <h3>VISITOR INDUCTIONS OVERVIEW</h3>
                             </div>
                             <div className="mdash-status-layout">
-                                <DonutChart segments={prioritySegments} />
+                                <DonutChart segments={assessmentSegments} />
                                 <div className="mdash-legend-stack">
                                     {[
-                                        { label: "Critical", ...statusOverview.critical, cls: "red" },
-                                        { label: "High", ...statusOverview.high, cls: "orange" },
-                                        { label: "Medium", ...statusOverview.medium, cls: "yellow" },
-                                        { label: "Low", ...statusOverview.low, cls: "green" },
+                                        { label: "Passed", ...assessmentOverview.passed, cls: "green" },
+                                        { label: "Not Completed", ...assessmentOverview.failed, cls: "red" },
+                                        { label: "Not Attempted", ...assessmentOverview.notAttempted, cls: "orange" },
                                     ].map((item) => (
                                         <div key={item.label} className="mdash-legend-row">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
@@ -919,7 +649,7 @@ const TMSMainDash = () => {
 
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>ASSESSMENT RESULTS OVERVIEW</h3>
+                                <h3>ONLINE TRAINING OVERVIEW</h3>
                             </div>
                             <div className="mdash-status-layout">
                                 <DonutChart segments={assessmentSegments} />
@@ -942,100 +672,50 @@ const TMSMainDash = () => {
 
 
                     {/* ── Row 2: Review Overdue table | Due For Review table ── */}
-                    <div className="mdash-grid mdash-grid--3col">
+                    {true && (<div className="mdash-grid mdash-grid--3col">
 
                         {/* Recently Review Overdue — fixed height, scrollable, latest first */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>OVERDUE TASKS</h3>
+                                <h3></h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
-                                <table className="mdash-table">
-                                    <colgroup>
-                                        <col style={{ width: "30%" }} />
-                                        <col style={{ width: "18%" }} />
-                                        <col style={{ width: "18%" }} />
-                                        <col style={{ width: "22%" }} />
-                                        <col style={{ width: "15%" }} />
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <FilterTh tableId="expired" colId="name">Title</FilterTh>
-                                            <FilterTh tableId="expired" colId="type" style={{ textAlign: "center" }}>Type</FilterTh>
-                                            <FilterTh tableId="expired" colId="area" style={{ textAlign: "center" }}>Area</FilterTh>
-                                            <FilterTh tableId="expired" colId="dueDate" style={{ textAlign: "center" }}>Due Date</FilterTh>
-                                            <FilterTh tableId="expired" colId="daysLeft" style={{ textAlign: "center" }}>Days Overdue</FilterTh>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredExpired.map((doc, i) => (
-                                            <tr key={i}>
-                                                <td className="mdash-td--wrap">{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }} >{doc.area}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.dueDate}</td>
-                                                <td
-                                                    className="mdash-alert-text"
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+
                             </div>
                         </div>
 
                         {/* Due For Review — fixed height, scrollable, closest first */}
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
-                                <h3>TASKS DUE SOON</h3>
+                                <h3>COURSE COMPLETION</h3>
                             </div>
                             <div className="mdash-table-scroll" style={TABLE_FIXED_HEIGHT}>
                                 <table className="mdash-table">
                                     <colgroup>
-                                        <col style={{ width: "30%" }} />
-                                        <col style={{ width: "18%" }} />
-                                        <col style={{ width: "18%" }} />
-                                        <col style={{ width: "22%" }} />
+                                        <col style={{ width: "70%" }} />
+                                        <col style={{ width: "15%" }} />
                                         <col style={{ width: "15%" }} />
                                     </colgroup>
                                     <thead>
                                         <tr>
                                             <FilterTh tableId="expiringSoon" colId="name">Title</FilterTh>
-                                            <FilterTh tableId="expiringSoon" colId="type" style={{ textAlign: "center" }}>Type</FilterTh>
-                                            <FilterTh tableId="expiringSoon" colId="area" style={{ textAlign: "center" }}>Area</FilterTh>
-                                            <FilterTh tableId="expiringSoon" colId="dueDate" style={{ textAlign: "center" }}>Due Date</FilterTh>
-                                            <FilterTh tableId="expiringSoon" colId="daysLeft" style={{ textAlign: "center" }}>Days Left</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="type" style={{ textAlign: "center" }}>Total Students</FilterTh>
+                                            <FilterTh tableId="expiringSoon" colId="area" style={{ textAlign: "center" }}>Completion Status</FilterTh>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredExpiringSoon.map((doc, i) => (
                                             <tr key={i}>
                                                 <td className="mdash-td--wrap">{doc.name}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.type}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.area}</td>
-                                                <td style={{ textAlign: "center" }}>{doc.dueDate}</td>
-                                                <td
-                                                    className={
-                                                        doc.daysLeft <= 7
-                                                            ? "mdash-warn-text"
-                                                            : doc.daysLeft > 7 && doc.daysLeft <= 15
-                                                                ? "mdash-alr-text"
-                                                                : ""
-                                                    }
-                                                    style={{ textAlign: "center" }}
-                                                >
-                                                    {doc.daysLeft}
-                                                </td>
+                                                <td style={{ textAlign: "center" }}>{doc.students}</td>
+                                                <td className={completionStatusClass(doc.status)}>{doc.status}%</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div>)}
                 </div>
             </div>
             <ToastContainer />

@@ -1255,11 +1255,11 @@ const PublishedOnlineTrainingPreviewPage = ({ draftID, closeModal }) => {
                                                         <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 6, textAlign: "left", color: "black" }}>
                                                             Course Objectives:
                                                         </div>
-                                                        <ul style={{ marginTop: 0, fontSize: 22, color: "black", textAlign: "left" }}>
+                                                        <ul className="intro-objectives-list" style={{ marginTop: 0, fontSize: 22, color: "black", textAlign: "left", lineHeight: 1.45 }}>
                                                             {currentSlide.objectives
                                                                 .split(/\r?\n/)
                                                                 .filter(Boolean)
-                                                                .map((line, i) => <li key={i} style={{ marginBottom: 6 }}>{line}</li>)}
+                                                                .map((line, i) => <li key={i} className="intro-objectives-item" style={{ marginBottom: 6 }}>{line}</li>)}
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -1268,7 +1268,8 @@ const PublishedOnlineTrainingPreviewPage = ({ draftID, closeModal }) => {
                                                     <div className="inductionView-module-course-content">
                                                         <div className="slide-title-row">
                                                             <div className="slide-title-left">
-                                                                {`${currentSlide._moduleIndex + 1}.${currentSlide._topicIndex + 1} ${currentSlide._topicTitle}`}
+                                                                {`${currentSlide._moduleIndex + 1}.${currentSlide._slideIndex + 1} ${currentSlide.title || currentSlide._topicTitle || "Untitled Slide"
+                                                                    }`}
                                                             </div>
                                                             <div className="slide-title-right">
                                                                 {(() => {

@@ -16,6 +16,7 @@ import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import "./DDSMainDash.css";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -258,6 +259,19 @@ const DDSMainDash = () => {
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
 
+    // ── Info popup states — one per info button ──────────────────────────────
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoApproving, setInfoApproving] = useState(false);
+    const [infoReviewing, setInfoReviewing] = useState(false);
+    const [infoPending, setInfoPending] = useState(false);
+    const [infoUnder, setInfoUnder] = useState(false);
+    const [infoTurnAround, setInfoTurnAround] = useState(false);
+    const [infoPeriodicReview, setInfoPeriodicReview] = useState(false);
+    const [infoPendingSignOff, setInfoPendingSignOff] = useState(false);
+    const [infoPendingApproval, setInfoPendingApproval] = useState(false);
+    const [infoPendingReview, setInfoPendingReview] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
+
     useEffect(() => {
         const fetchDash = async () => {
             try {
@@ -341,6 +355,7 @@ const DDSMainDash = () => {
             value: s.totalInDev,
             sub: totalDelta.label,
             subColorClass: totalDelta.cls,
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "approving",
@@ -348,6 +363,7 @@ const DDSMainDash = () => {
             value: s.inApproval,
             sub: approvalDelta.label,
             subColorClass: approvalDelta.cls,
+            onInfo: () => setInfoApproving(true),
         },
         {
             id: "reviewing",
@@ -355,6 +371,7 @@ const DDSMainDash = () => {
             value: s.inReview,
             sub: reviewDelta.label,
             subColorClass: reviewDelta.cls,
+            onInfo: () => setInfoReviewing(true),
         },
         {
             id: "pending",
@@ -362,6 +379,7 @@ const DDSMainDash = () => {
             value: s.pendingSignOff,
             sub: pendingDelta.label,
             subColorClass: pendingDelta.cls,
+            onInfo: () => setInfoPending(true),
         },
         {
             id: "under",
@@ -369,6 +387,7 @@ const DDSMainDash = () => {
             value: s.underPeriodicReview,
             sub: periodicDelta.label,
             subColorClass: periodicDelta.cls,
+            onInfo: () => setInfoUnder(true),
         },
         {
             id: "turnAround",
@@ -377,6 +396,7 @@ const DDSMainDash = () => {
             sub: "",
             subColorClass: "mdash-card--grey",
             noFmt: true,
+            onInfo: () => setInfoTurnAround(true),
         },
     ];
 
@@ -437,7 +457,8 @@ const DDSMainDash = () => {
                             <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
                                 <FontAwesomeIcon
                                     icon={faInfoCircle}
-                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px" }}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
                                 />
                                 <p className="mddsash-summary-label">{card.label}</p>
                                 <strong className="mddsash-summary-value">{card.noFmt ? card.value : fmt(card.value)}</strong>
@@ -490,7 +511,7 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>UNDER PERIODIC REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
+                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPeriodicReview(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.periodicReviewRows}
@@ -507,7 +528,7 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING SIGN-OFF</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
+                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingSignOff(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.pendingSignOffRows}
@@ -524,7 +545,7 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING APPROVAL</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
+                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingApproval(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inApprovalRows}
@@ -541,7 +562,7 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
+                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingReview(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inReviewRows}
@@ -603,6 +624,19 @@ const DDSMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoTotal && <InfoPopupDash title="Total Documents in Development" setClose={() => setInfoTotal(false)} />}
+            {infoApproving && <InfoPopupDash title="In Approval" setClose={() => setInfoApproving(false)} />}
+            {infoReviewing && <InfoPopupDash title="In Review" setClose={() => setInfoReviewing(false)} />}
+            {infoPending && <InfoPopupDash title="Pending Sign-Off" setClose={() => setInfoPending(false)} />}
+            {infoUnder && <InfoPopupDash title="Under Periodic Review" setClose={() => setInfoUnder(false)} />}
+            {infoTurnAround && <InfoPopupDash title="Average Turn Around Time" setClose={() => setInfoTurnAround(false)} />}
+            {infoPeriodicReview && <InfoPopupDash title="Under Periodic Review" setClose={() => setInfoPeriodicReview(false)} />}
+            {infoPendingSignOff && <InfoPopupDash title="Pending Sign-Off" setClose={() => setInfoPendingSignOff(false)} />}
+            {infoPendingApproval && <InfoPopupDash title="Pending Approval" setClose={() => setInfoPendingApproval(false)} />}
+            {infoPendingReview && <InfoPopupDash title="Pending Review" setClose={() => setInfoPendingReview(false)} />}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );
 };

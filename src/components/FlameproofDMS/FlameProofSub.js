@@ -759,8 +759,9 @@ const FlameProofSub = () => {
                         {isTrashView && (<button className={"delete-button-fi col-but-res trashed-color"} onClick={() => restoreFile(file._id)}><FontAwesomeIcon icon={faRotate} title="Restore Document" /></button>)}
                         {!file.isPlaceholder && (
                           <>
-                            {!isTrashView && (<button className={`delete-button-fi col-but-res col-but ${isTrashView ? "trashed-color" : ""}`} onClick={(e) => { e.stopPropagation(); openModify(file); }}><FontAwesomeIcon icon={faEdit} title="Modify Component" /></button>)}
-                            <button className={`delete-button-fi col-but ${isTrashView ? "trashed-color" : ""}`} onClick={(e) => { e.stopPropagation(); openModal(file._id, file.fileName); }}><FontAwesomeIcon icon={faTrash} title="Delete Document" /></button>
+                            {!isTrashView && (<button style={{ width: "33%" }} className={`delete-button-fi col-but-res col-but ${isTrashView ? "trashed-color" : ""}`} onClick={(e) => { e.stopPropagation(); openModify(file); }}><FontAwesomeIcon icon={faEdit} title="Modify Component" /></button>)}
+                            {!isTrashView && (<button style={{ width: "33%" }} className={`delete-button-fi col-but-res col-but ${isTrashView ? "trashed-color" : ""}`} onClick={(e) => { e.stopPropagation(); openDownloadModal(file._id, file.fileName); }}><FontAwesomeIcon icon={faDownload} title="Download Document" /></button>)}
+                            <button style={{ width: isTrashView ? "50%" : "33%" }} className={`delete-button-fi col-but ${isTrashView ? "trashed-color" : ""}`} onClick={(e) => { e.stopPropagation(); openModal(file._id, file.fileName); }}><FontAwesomeIcon icon={faTrash} title="Delete Document" /></button>
                           </>
                         )}
                       </td>

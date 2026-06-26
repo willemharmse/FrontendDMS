@@ -190,7 +190,7 @@ const DMSDashboard = () => {
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
                     </div>
                     <div className="spacer"></div>
-                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} showInfo={true} type={"RMS"} />
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} risk={true} showInfo={false} type={"RMS"} />
                 </div>
 
                 <div className="dms-dashboard-wrapper">

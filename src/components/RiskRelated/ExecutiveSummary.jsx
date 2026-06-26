@@ -572,7 +572,7 @@ const ExecutiveSummary = ({
                                                 <ul className="exec-summary-notes-list">
                                                     {priorityEvents.length > 0 ? (
                                                         priorityEvents.map((event, index) => (
-                                                            <li key={`pue-${index}`}>{event}</li>
+                                                            <li key={`pue-${index}`}>{event}.</li>
                                                         ))
                                                     ) : (
                                                         <li>No priority events identified.</li>
@@ -586,7 +586,7 @@ const ExecutiveSummary = ({
                                                 <ul className="exec-summary-notes-list">
                                                     {materialEvents.length > 0 ? (
                                                         materialEvents.map((event, index) => (
-                                                            <li key={`mue-${index}`}>{event}</li>
+                                                            <li key={`mue-${index}`}>{event}.</li>
                                                         ))
                                                     ) : (
                                                         <li>No material events identified.</li>

@@ -7,16 +7,38 @@ import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import InfoMenu from "./InfoMenu";
 
-const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOfflineDraft, risk = false, showInfo = false, type }) => {
+/**
+ * TopBarDD
+ *
+ * Optional intercept props (only used on create/edit pages — ignored by all
+ * other consumers so behaviour is completely isolated):
+ *   onHome     – called instead of navigate('/home') when the home icon is clicked
+ *   onRefresh  – called instead of window.location.reload() when the refresh icon is clicked
+ *
+ * When these props are not provided the component works exactly as before.
+ */
+const TopBarDD = ({
+    refreshable = true,
+    access,
+    canIn,
+    menu,
+    create,
+    loadOfflineDraft,
+    risk = false,
+    showInfo = false,
+    type,
+    // Intercept callbacks — optional, only supplied by create/edit pages
+    onHome,
+    onRefresh,
+}) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
-    const [count, setCount] = useState(""); // Placeholder for unread notifications count
+    const [count, setCount] = useState("");
     const [profilePic, setProfilePic] = useState(null);
 
     useEffect(() => {
-        // Load from sessionStorage on mount
         const cached = sessionStorage.getItem('profilePic');
         setProfilePic(cached || null);
     }, []);
@@ -43,30 +65,50 @@ const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOffline
         fetchNotificationCount();
     }, []);
 
+    const handleHomeClick = () => {
+        if (onHome) {
+            onHome();
+        } else {
+            navigate("/FrontendDMS/home");
+        }
+    };
+
+    const handleRefreshClick = () => {
+        if (onRefresh) {
+            onRefresh();
+        } else {
+            window.location.reload();
+        }
+    };
+
     return (
         <div className="icons-container-create-page">
-            {refreshable && (<div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon
-                    icon={faArrowsRotate}
-                    title="Refresh Page"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => window.location.reload()}
-                />
-            </div>)}
-            {showInfo && (<div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon
-                    icon={faInfoCircle}
-                    title="Info"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setIsInfoMenuOpen(!isInfoMenuOpen)}
-                />
-            </div>)}
+            {refreshable && (
+                <div className="burger-menu-icon-create-page-2">
+                    <FontAwesomeIcon
+                        icon={faArrowsRotate}
+                        title="Refresh Page"
+                        style={{ cursor: "pointer" }}
+                        onClick={handleRefreshClick}
+                    />
+                </div>
+            )}
+            {showInfo && (
+                <div className="burger-menu-icon-create-page-2">
+                    <FontAwesomeIcon
+                        icon={faInfoCircle}
+                        title="Info"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setIsInfoMenuOpen(!isInfoMenuOpen)}
+                    />
+                </div>
+            )}
             <div className="burger-menu-icon-create-page-2">
-                <FontAwesomeIcon onClick={() => navigate("/FrontendDMS/home")} icon={faHome} title="Home" />
+                <FontAwesomeIcon onClick={handleHomeClick} icon={faHome} title="Home" />
             </div>
             <div className="burger-menu-icon-um notifications-bell-wrapper">
                 <FontAwesomeIcon icon={faBell} onClick={() => setShowNotifications(!showNotifications)} title="Notifications" />
-                {count != 0 && <div className="notifications-badge"></div>} {/* Replace with unread count from backend later */}
+                {count != 0 && <div className="notifications-badge"></div>}
             </div>
             <div className="burger-menu-icon-create-page-3" onClick={() => setIsMenuOpen(!isMenuOpen)} title="Menu" style={{ cursor: "pointer" }}>
                 {profilePic ? (
@@ -74,9 +116,9 @@ const TopBarDD = ({ refreshable = true, access, canIn, menu, create, loadOffline
                         src={profilePic}
                         alt="Profile"
                         style={{
-                            width: "28px",          // match icon size
+                            width: "28px",
                             height: "28px",
-                            borderRadius: "50%",    // circle
+                            borderRadius: "50%",
                             objectFit: "cover",
                             display: "block"
                         }}

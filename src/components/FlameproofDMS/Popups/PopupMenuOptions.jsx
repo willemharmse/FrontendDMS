@@ -30,9 +30,9 @@ const PopupMenuOptions = ({ isOpen, setHoveredFileId, openDownloadModal, file, c
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    <ul>
+                    {false && (<ul>
                         <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
-                    </ul>
+                    </ul>)}
                     <ul>
                         <li onClick={() => openReplace(file.asset.assetType, file.component, file._id)}>Fetch from Digital Warehouse</li>
                     </ul>

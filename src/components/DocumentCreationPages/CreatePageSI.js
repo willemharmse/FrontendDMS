@@ -70,6 +70,8 @@ const CreatePageSI = () => {
   const [inApproval, setInApproval] = useState(false);
   const [isDuplicateName, setIsDuplicateName] = useState(false);
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
+  const [saveConfirmTrigger, setSaveConfirmTrigger] = useState("back");
+  const pendingActionRef = useRef(null);
   const [isViewer, setIsViewer] = useState(false);
   const [isPublisher, setIsPublisher] = useState(false);
 
@@ -1763,17 +1765,28 @@ const CreatePageSI = () => {
     }
   };
 
-  const handleBack = () => {
-    if (readOnly) {
-      navigate(-1);
-      return;
-    }
-    if (loadedIDRef.current) {
-      setIsSaveConfirmOpen(true);
-      return;
-    }
+  // ── Navigation guard helpers ────────────────────────────────────────────
+  const openSaveConfirm = (triggerType, action) => {
+    setSaveConfirmTrigger(triggerType);
+    pendingActionRef.current = action;
+    setIsSaveConfirmOpen(true);
+  };
 
-    navigate(-1);
+  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+
+  const handleBack = () => {
+    if (!requiresSavePrompt()) { navigate(-1); return; }
+    openSaveConfirm("back", () => navigate(-1));
+  };
+
+  const handleHomeNav = () => {
+    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
+  };
+
+  const handleRefreshNav = () => {
+    if (!requiresSavePrompt()) { window.location.reload(); return; }
+    openSaveConfirm("refresh", () => window.location.reload());
   };
 
   const handleBackSaveConfirm = async () => {
@@ -1790,28 +1803,33 @@ const CreatePageSI = () => {
       return;
     }
 
-    if (result) {
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Draft has been saved.", {
-        closeButton: true,
-        autoClose: 1200,
-        style: { textAlign: "center" }
-      });
-    }
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("Draft has been saved.", {
+      closeButton: true,
+      autoClose: 1200,
+      style: { textAlign: "center" }
+    });
 
     await releaseLock();
 
     setTimeout(() => {
       setIsSaveConfirmOpen(false);
-      navigate(-1);
+      if (pendingActionRef.current) pendingActionRef.current();
+      pendingActionRef.current = null;
     }, 1500);
   };
 
   const handleBackDiscard = async () => {
     await releaseLock();
     setIsSaveConfirmOpen(false);
-    navigate(-1);
+    if (pendingActionRef.current) pendingActionRef.current();
+    pendingActionRef.current = null;
+  };
+
+  const handleCancelSave = async () => {
+    setIsSaveConfirmOpen(false);
+    pendingActionRef.current = null;
   };
 
   return (
@@ -1822,7 +1840,7 @@ const CreatePageSI = () => {
             <FontAwesomeIcon icon={faCaretLeft} />
           </div>
           <div className="sidebar-logo-um">
-            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+            <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={handleHomeNav} title="Home" />
             <p className="logo-text-um">Document Development</p>
           </div>
 
@@ -1940,7 +1958,7 @@ const CreatePageSI = () => {
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD refreshable={false} canIn={canIn} access={access} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} />
+          <TopBarDD refreshable={true} canIn={canIn} access={access} menu={"1"} create={true} loadOfflineDraft={loadOfflineData} onHome={handleHomeNav} refreshable={false} />
         </div>
 
         {(isViewer && readOnly) && (<div className="input-row">
@@ -2233,7 +2251,9 @@ const CreatePageSI = () => {
           setIsSaveModalOpen={setIsSaveConfirmOpen}
           onConfirmSave={handleBackSaveConfirm}
           onDiscard={handleBackDiscard}
+          onCancel={handleCancelSave}
           draftTitle={formData.title}
+          triggerType={saveConfirmTrigger}
         />
       )}
     </div>

@@ -571,8 +571,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
         const colId = sortConfig?.colId || "nr";
 
         if (colId === "nr") {
-            current.forEach((r, i) => (r.nr = i + 1));
-            return current;
+            return current.map((r, i) => ({ ...r, nr: i + 1 }));
         }
 
         const dir = sortConfig?.direction === "desc" ? -1 : 1;
@@ -613,8 +612,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
             }) * dir;
         });
 
-        current.forEach((r, i) => (r.nr = i + 1));
-        return current;
+        return current.map((r, i) => ({ ...r, nr: i + 1 }));
     }, [formData.jra, filters, showFlagged, sortConfig]);
 
     const insertBodyRow = (rowId, insertAtIndex) => {
