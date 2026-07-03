@@ -256,7 +256,7 @@ const VersionHistory = () => {
 
                     <div className="table-containerversion-history-file-info">
                         <table className="version-history-file-info-table">
-                            <thead className="version-history-file-info-head">
+                            <thead className="version-history-file-info-head" style={{ fontSize: "14px" }}>
                                 <tr>
                                     <th className="version-history-file-th">Nr</th>
                                     <th className="version-history-file-th">Name</th>

@@ -809,7 +809,7 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
                                 style={{ marginLeft: "20px" }}
                                 onClick={handleOpenSuggestionPopup}
                             >
-                                Suggest Template
+                                Suggest Task Template
                             </button>
                         </div>
                     </div>

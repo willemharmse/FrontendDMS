@@ -65,6 +65,30 @@ const FileInfo = () => {
   const [migrate, setMigrate] = useState(false);
   const [isSwitchingView, setIsSwitchingView] = useState(false);
 
+  const toPlural = (type) => {
+    const pluralMap = {
+      "All Document": "All Documents",
+      "DMPR MCOP Guideline": "DMPR MCOP Guidelines",
+      "General": "General",
+      "Guideline": "Guidelines",
+      "Instruction": "Instructions",
+      "Log and Register": "Logs and Registers",
+      "Manual and User Guide": "Manuals and User Guides",
+      "Permit": "Permits",
+      "Policy": "Policies",
+      "Procedure": "Procedures",
+      "Project Management Artifact": "Project Management Artifacts",
+      "Report": "Reports",
+      "Risk Assessment": "Risk Assessments",
+      "Specification": "Specifications",
+      "Standard": "Standards",
+      "Training and Assessment Document": "Training and Assessment Documents",
+      "Work Order": "Work Orders"
+    };
+
+    return pluralMap[type] || `${type}s`;
+  };
+
   // --- EXCEL FILTER & SORT STATE ---
   const DEFAULT_SORT = { colId: null, direction: null };
   const [sortConfig, setSortConfig] = useState(DEFAULT_SORT);
@@ -180,13 +204,17 @@ const FileInfo = () => {
     const th = e.target.closest("th");
     const rect = th.getBoundingClientRect();
 
-    // Build unique values
-    const values = Array.from(
-      new Set((files || []).flatMap(r => getFilterValuesForCell(r, colId)))
-    ).sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" }));
+    // Build values from the same filtered option source used inside the popup.
+    // This prevents Owner from getting a stale/full list after Discipline/Type/Status filters.
+    const values = getAvailableOptions(colId);
 
     const existing = columnFilters?.[colId];
-    const initialSelected = new Set(existing && Array.isArray(existing) ? existing : values);
+
+    const initialSelected = new Set(
+      existing && Array.isArray(existing)
+        ? existing.filter(v => values.includes(v))
+        : values
+    );
 
     setExcelSelected(initialSelected);
     setExcelSearch("");
@@ -351,12 +379,7 @@ const FileInfo = () => {
 
   const getDeletedTitle = () => {
     if (type === "All Document") return "Deleted Documents";
-    return `Deleted ${type === "Policy"
-      ? "Policies"
-      : type === "Training"
-        ? "Training"
-        : `${type}s`
-      }`;
+    return `Deleted ${toPlural(type)}`;
   };
 
   const clearSearch = () => setSearchQuery("");
@@ -439,21 +462,25 @@ const FileInfo = () => {
     else if (timeDiff <= reviewDateVal * 24 * 60 * 60 * 1000) return "review-soon";
     return "review-ongoing";
   };
-
+  /*
+    const iconMap = {
+      "All Document": "allDocumentsDMS.svg",
+      Audit: "auditsDMSInverted.svg",
+      Guideline: "guidelinesDMSInverted.svg",
+      "DMPR MCOP Guideline": "guidelinesDMSInverted.svg",
+      "Industry Document": "guidelinesDMSInverted.svg",
+      MCOP: "guidelinesDMSInverted.svg",
+      Policy: "policiesDMSInverted.svg",
+      Procedure: "proceduresDMSInverted.svg",
+      "Risk Assessment": "riskAssessmentDMSInverted.svg",
+      "Special Instruction": "guidelinesDMSInverted.svg",
+      Standard: "standardsDMSInverted.svg",
+      Training: "guidelinesDMSInverted.svg",
+      Permit: "permitsDMSInverted.svg"
+    }
+  */
   const iconMap = {
     "All Document": "allDocumentsDMS.svg",
-    Audit: "auditsDMSInverted.svg",
-    Guideline: "guidelinesDMSInverted.svg",
-    "DMPR MCOP Guideline": "guidelinesDMSInverted.svg",
-    "Industry Document": "guidelinesDMSInverted.svg",
-    MCOP: "guidelinesDMSInverted.svg",
-    Policy: "policiesDMSInverted.svg",
-    Procedure: "proceduresDMSInverted.svg",
-    "Risk Assessment": "riskAssessmentDMSInverted.svg",
-    "Special Instruction": "guidelinesDMSInverted.svg",
-    Standard: "standardsDMSInverted.svg",
-    Training: "guidelinesDMSInverted.svg",
-    Permit: "permitsDMSInverted.svg"
   }
 
   const getStatusClass = (status) => {
@@ -695,15 +722,9 @@ const FileInfo = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type] || `guidelinesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
+            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type] || `policiesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">
-              {isTrashView
-                ? getDeletedTitle()
-                : type === "Policy"
-                  ? "Policies"
-                  : type === "Training"
-                    ? "Training"
-                    : `${type}s`}
+              {isTrashView ? getDeletedTitle() : toPlural(type)}
             </p>
           </div>
         </div>
@@ -857,7 +878,7 @@ const FileInfo = () => {
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)
                       }
-                      className="col"
+                      className="col-fi"
                       style={{
                         textAlign: "center",
                         padding: "18px",
@@ -877,7 +898,7 @@ const FileInfo = () => {
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)
                       }
-                      className="col"
+                      className="col-fi"
                       style={{
                         textAlign: "center",
                         padding: "18px",
@@ -891,8 +912,8 @@ const FileInfo = () => {
                 ) : (
                   filteredFiles.map((file, index) => (
                     <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
-                      <td className="col">{index + 1}</td>
-                      <td className="col">{file.discipline}</td>
+                      <td className="col-fi">{index + 1}</td>
+                      <td className="col-fi">{file.discipline}</td>
                       <td
                         onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}
                         className="file-name-cell"
@@ -914,11 +935,11 @@ const FileInfo = () => {
                           />
                         )}
                       </td>
-                      {type === "All Document" && (<td className="col">{file.documentType}</td>)}
+                      {type === "All Document" && (<td className="col-fi">{file.documentType}</td>)}
                       {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
                         <td className={`col ${getStatusClass(file.status)}`}>{formatStatus(file.status)}</td>
                       )}
-                      <td className="col">
+                      <td className="col-fi">
                         {Array.isArray(file.owner)
                           ? file.owner[0]
                           : typeof file.owner === "string"
@@ -933,17 +954,17 @@ const FileInfo = () => {
                             : "No Owners"}
                       </td>
 
-                      <td className="col">{file.departmentHead}</td>
-                      <td className="col">{file.docID}</td>
+                      <td className="col-fi">{file.departmentHead}</td>
+                      <td className="col-fi">{file.docID}</td>
                       <td className={`col ${getReviewClass(file.reviewDate)}`}>{formatDate(file.reviewDate)}</td>
-                      <td className="col">
+                      <td className="col-fi">
                         {file.userID?.username
                           ? (file.userID.username === "Willem"
                             ? file.userID.username + " Harmse"
                             : file.userID.username)
                           : ""}
                       </td>
-                      <td className="col">{formatDate(file.uploadDate)}</td>
+                      <td className="col-fi">{formatDate(file.uploadDate)}</td>
                       {canIn(access, "DMS", ["systemAdmin"]) && (
                         <td className={isTrashView ? "col-act trashed" : "col-act"}>
 
@@ -1061,6 +1082,7 @@ const FileInfo = () => {
 
             const onOk = () => {
               let finalSelection = new Set(excelSelected);
+
               if (excelSearch.trim() !== "") {
                 const visibleSet = new Set(visibleValues);
                 finalSelection = new Set(
@@ -1068,22 +1090,31 @@ const FileInfo = () => {
                 );
               }
 
-              const selectedArr = Array.from(finalSelection);
-              const isTotalReset = allValues.length > 0 &&
+              const selectedArr = Array.from(finalSelection).filter(v => allValues.includes(v));
+
+              const isTotalReset =
+                allValues.length > 0 &&
                 allValues.length === selectedArr.length &&
-                selectedArr.every(v => finalSelection.has(v));
+                allValues.every(v => selectedArr.includes(v));
 
               setColumnFilters(prev => {
                 const next = { ...prev };
-                if (isTotalReset) {
+
+                if (isTotalReset || selectedArr.length === 0) {
                   delete next[colId];
                 } else {
                   next[colId] = selectedArr;
                 }
+
                 return next;
               });
 
-              setExcelFilter({ open: false, colId: null, anchorRect: null, pos: { top: 0, left: 0, width: 0 } });
+              setExcelFilter({
+                open: false,
+                colId: null,
+                anchorRect: null,
+                pos: { top: 0, left: 0, width: 0 }
+              });
             };
 
             const onCancel = () => {

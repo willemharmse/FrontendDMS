@@ -85,6 +85,13 @@ const getStatusDisplay = (status) => {
     return status || "-";
 };
 
+const getCategoryDisplay = (category) => {
+    if (category === "Auto-Auto") return "System Generated"; // ← replace empty string with the new display value
+    if (category === "Auto-Manual") return "User Triggered"; // ← replace empty string with the new display value
+    if (category === "Manual") return "User Created"; // ← replace empty string with the new display value
+    return category || "-";
+};
+
 const STATUS_OPTIONS = [
     { value: "25% Completed", label: "25% Completed", color: "#FFC000" },
     { value: "50% Completed", label: "50% Completed", color: "#FFFF00" },
@@ -1456,7 +1463,7 @@ const WorkManagement = () => {
                 return <td key="taskDescription" style={{ fontSize: "14px" }}>{row.taskDescription || "-"}</td>;
 
             case "category":
-                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.category || "-"}</td>;
+                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{getCategoryDisplay(row.category)}</td>;
 
             case "discipline":
                 return <td key="discipline" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;

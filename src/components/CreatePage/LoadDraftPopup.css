@@ -103,6 +103,7 @@
 
 .load-draft-td {
     cursor: pointer;
+    font-size: 14px !important;
 }
 
 .delete-button-load-draft {

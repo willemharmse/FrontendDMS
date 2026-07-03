@@ -157,7 +157,7 @@ const VersionHistoryAssets = () => {
                     </div>
                     <div className="table-container-file-flameproof-all-assets">
                         <table className="version-history-file-info-table">
-                            <thead className="version-history-file-info-head">
+                            <thead className="version-history-file-info-head" style={{ fontSize: "14px" }}>
                                 <tr>
                                     <th className="version-history-file-th">Nr</th>
                                     <th className="version-history-file-th">Change Made</th>
@@ -169,7 +169,7 @@ const VersionHistoryAssets = () => {
                                 {filteredActivity && filteredActivity.length > 0 ? (
                                     filteredActivity.map((act, index) => (
                                         <tr
-                                            key={act.id || act._id || index}
+                                            key={act.id || act._id || index} style={{ fontSize: "14px" }}
                                             className="file-info-row-height version-history-file-info-tr"
                                         >
                                             {/* Nr */}

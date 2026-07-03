@@ -151,6 +151,7 @@
 
 .gen-point {
     cursor: pointer;
+    font-size: 14px !important;
 }
 
 .cent-values-gen {

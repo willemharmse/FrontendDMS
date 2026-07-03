@@ -487,14 +487,22 @@ const RiskDocumentsIBRA = () => {
             title: "Action",
             thClass: "gen-th ibraGenType",
             tdClass: "cent-values-gen gen-point",
-            td: (file) => (
-                <button
-                    className={"delete-button-fi col-but"}
-                    onClick={(e) => { e.stopPropagation(); fileDelete(file._id, file.formData.title); }}
-                >
-                    <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                </button>
-            )
+            td: (f) => (
+                <div className="action-buttons-fi">
+                    <button
+                        className="download-button-fi col-but-res"
+                        onClick={() => downloadFile(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faDownload} title="Download" />
+                    </button>
+                    <button
+                        className="delete-button-fi col-but"
+                        onClick={() => fileDelete(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faTrash} title="Delete" />
+                    </button>
+                </div>
+            ),
         }
     ];
 

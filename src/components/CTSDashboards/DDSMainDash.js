@@ -17,6 +17,7 @@ import { ToastContainer } from "react-toastify";
 import "./DDSMainDash.css";
 import { exportDashboardPDF } from "./exportDashboardPDF";
 import InfoPopupDash from "./InfoPopupDash";
+import InfoPopupDashCreate from "./InfoPopupDashCreate";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -266,10 +267,6 @@ const DDSMainDash = () => {
     const [infoPending, setInfoPending] = useState(false);
     const [infoUnder, setInfoUnder] = useState(false);
     const [infoTurnAround, setInfoTurnAround] = useState(false);
-    const [infoPeriodicReview, setInfoPeriodicReview] = useState(false);
-    const [infoPendingSignOff, setInfoPendingSignOff] = useState(false);
-    const [infoPendingApproval, setInfoPendingApproval] = useState(false);
-    const [infoPendingReview, setInfoPendingReview] = useState(false);
     // ─────────────────────────────────────────────────────────────────────────
 
     useEffect(() => {
@@ -511,7 +508,6 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>UNDER PERIODIC REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPeriodicReview(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.periodicReviewRows}
@@ -528,7 +524,6 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING SIGN-OFF</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingSignOff(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.pendingSignOffRows}
@@ -545,7 +540,6 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING APPROVAL</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingApproval(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inApprovalRows}
@@ -562,7 +556,6 @@ const DDSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px", cursor: "pointer" }} onClick={() => setInfoPendingReview(true)} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inReviewRows}
@@ -626,16 +619,59 @@ const DDSMainDash = () => {
             <ToastContainer />
 
             {/* ── Info Popups — one per info button ───────────────────────────────── */}
-            {infoTotal && <InfoPopupDash title="Total Documents in Development" setClose={() => setInfoTotal(false)} />}
-            {infoApproving && <InfoPopupDash title="In Approval" setClose={() => setInfoApproving(false)} />}
-            {infoReviewing && <InfoPopupDash title="In Review" setClose={() => setInfoReviewing(false)} />}
-            {infoPending && <InfoPopupDash title="Pending Sign-Off" setClose={() => setInfoPending(false)} />}
-            {infoUnder && <InfoPopupDash title="Under Periodic Review" setClose={() => setInfoUnder(false)} />}
-            {infoTurnAround && <InfoPopupDash title="Average Turn Around Time" setClose={() => setInfoTurnAround(false)} />}
-            {infoPeriodicReview && <InfoPopupDash title="Under Periodic Review" setClose={() => setInfoPeriodicReview(false)} />}
-            {infoPendingSignOff && <InfoPopupDash title="Pending Sign-Off" setClose={() => setInfoPendingSignOff(false)} />}
-            {infoPendingApproval && <InfoPopupDash title="Pending Approval" setClose={() => setInfoPendingApproval(false)} />}
-            {infoPendingReview && <InfoPopupDash title="Pending Review" setClose={() => setInfoPendingReview(false)} />}
+            {infoTotal && (
+                <InfoPopupDashCreate
+                    title="Total Documents in Development"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoApproving && (
+                <InfoPopupDashCreate
+                    title="In Approval"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoApproving(false)}
+                />
+            )}
+
+            {infoReviewing && (
+                <InfoPopupDashCreate
+                    title="In Review"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoReviewing(false)}
+                />
+            )}
+
+            {infoPending && (
+                <InfoPopupDashCreate
+                    title="Pending Sign-Off"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoPending(false)}
+                />
+            )}
+
+            {infoUnder && (
+                <InfoPopupDashCreate
+                    title="Under Periodic Review"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoUnder(false)}
+                />
+            )}
+
+            {infoTurnAround && (
+                <InfoPopupDashCreate
+                    title="Average Turn Around Time"
+                    systemType="DDS"
+                    documentType="documents"
+                    setClose={() => setInfoTurnAround(false)}
+                />
+            )}
             {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );

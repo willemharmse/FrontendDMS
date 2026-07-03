@@ -738,7 +738,7 @@ const TaskTemplatesPage = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/templateManagement1.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Manage Templates"}</p>
+                        <p className="logo-text-dm-fi">{"Task Templates"}</p>
                     </div>
                 </div>
             )}
@@ -782,7 +782,7 @@ const TaskTemplatesPage = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Manage Templates"}</label>
+                        <label className="risk-control-label">{"Task Templates"}</label>
 
                         <FontAwesomeIcon
                             icon={faColumns}
@@ -877,7 +877,7 @@ const TaskTemplatesPage = () => {
                                         <col key={col.id} style={{ width: `${columnWidths[col.id] ?? 100}px`, minWidth: `${(COLUMN_SIZE_LIMITS[col.id]?.min ?? 40)}px` }} />
                                     ))}
                                 </colgroup>
-                                <thead className="gen-head">
+                                <thead className="gen-head" style={{ fontSize: "14px" }}>
                                     <tr>
                                         {visibleColumns.map(col => {
                                             const isAction = col.id === "action";
@@ -939,7 +939,7 @@ const TaskTemplatesPage = () => {
                                         <tr><td colSpan={visibleColumns.length} className="cent-values-gen">No Templates Found.</td></tr>
                                     ) : (
                                         processedFiles.map((file, index) => (
-                                            <tr key={file._id} className={`file-info-row-height gen-tr`}>
+                                            <tr key={file._id} className={`file-info-row-height gen-tr`} style={{ fontSize: "14px" }}>
                                                 {visibleColumns.map(col => {
                                                     return (
                                                         <td

@@ -143,12 +143,16 @@
 .fileinfo-title-filter {
     cursor: pointer;
     position: relative;
+    font-family: Arial !important;
+    font-size: 14px !important;
     /* Keeps it positioned as part of the flow */
 }
 
 .fileinfo-title-filter-1 {
     cursor: default;
     position: relative;
+    font-family: Arial !important;
+    font-size: 14px !important;
     /* Keeps it positioned as part of the flow */
 }
 

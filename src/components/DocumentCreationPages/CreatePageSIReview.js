@@ -25,6 +25,7 @@ import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 import DatePicker from "react-multi-date-picker";
 import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopup";
 import PurposeBackgroundComponent from "../CreatePage/PurposeBackgroundComponent";
+import SavingInProgress from "./SavingInProgress";
 
 const CreatePageSIReview = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const CreatePageSIReview = () => {
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
   const [errors, setErrors] = useState([]);
   const loadedIDRef = useRef('');
   const [loadingAimIndex, setLoadingAimIndex] = useState(null);
@@ -560,21 +562,12 @@ const CreatePageSIReview = () => {
     }
   };
 
-  const handleSave = () => {
-    if (formData.title !== "") {
-      saveData(fileID);
-
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Draft has been successfully saved", {
-        closeButton: false,
-        autoClose: 1500, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
-    }
-    else {
+  // handleSave: this is the ONLY place a save toast should be shown from.
+  // saveData() is called from lots of other places (autosave, save-before-navigate,
+  // etc.) where we intentionally do NOT want a toast, so the success/failure
+  // messaging lives here, not inside saveData.
+  const handleSave = async () => {
+    if (formData.title === "") {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
@@ -583,6 +576,34 @@ const CreatePageSIReview = () => {
           textAlign: 'center'
         }
       })
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const result = await saveData(fileID);
+
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      if (result?.ok) {
+        toast.success("Draft has been successfully saved", {
+          closeButton: false,
+          autoClose: 1500, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      } else {
+        toast.error("Failed to save draft. Please try again.", {
+          closeButton: false,
+          autoClose: 2000,
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -634,8 +655,15 @@ const CreatePageSIReview = () => {
         body: JSON.stringify(dataToStore),
       });
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || 'Failed to save review file');
+      }
+
+      return { ok: true };
     } catch (error) {
       console.error('Error saving data:', error);
+      return { ok: false, error };
     }
   };
 
@@ -1741,6 +1769,9 @@ const CreatePageSIReview = () => {
       {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
       {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       <ToastContainer />
+      {isSaving && (
+        <SavingInProgress />
+      )}
     </div>
   );
 };

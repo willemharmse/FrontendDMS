@@ -7,6 +7,7 @@ import {
     faArrowLeft,
     faDownload,
     faCalendarAlt,
+    faInfoCircle,
     faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
@@ -14,7 +15,9 @@ import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 import "./DDSMainDash.css";
+import InfoPopupDashWare from "./InfoPopupDashWare";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -63,7 +66,7 @@ const BarChart = ({ data }) => {
                 const y = padT + (svgH - padT - padB) - barH;
                 return (
                     <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="2" className={`mddsash-bar ${d.class}`} />
+                        <rect x={x} y={y} width={barW} height={barH} rx="0" className={`mddsash-bar ${d.class}`} />
                         <text x={slotCentreX} y={y - 4} textAnchor="middle" className="mddsash-bar-value">{d.value}</text>
                         <text x={slotCentreX} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
                     </g>
@@ -163,6 +166,13 @@ const DWMainDash = () => {
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
 
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoValid, setInfoValid] = useState(false);
+    const [infoInvalid, setInfoInvalid] = useState(false);
+    const [infoRepair, setInfoRepair] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
+
     useEffect(() => {
         const fetchDash = async () => {
             try {
@@ -253,6 +263,7 @@ const DWMainDash = () => {
             value: dash.summary.totalComponents,
             sub: totalDelta.label,
             subColorClass: totalDelta.cls,
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "valid",
@@ -260,13 +271,15 @@ const DWMainDash = () => {
             value: dash.summary.validComponents,
             sub: validDelta.label,
             subColorClass: validDelta.cls,
+            onInfo: () => setInfoValid(true),
         },
         {
             id: "invalid",
             label: "NUMBER OF INVALID COMPONENTS",
             value: dash.summary.invalidComponents,
             sub: invalidDelta.label,
-            subColorClass: invalidDelta.cls
+            subColorClass: invalidDelta.cls,
+            onInfo: () => setInfoInvalid(true),
         },
         {
             id: "repair",
@@ -274,6 +287,7 @@ const DWMainDash = () => {
             value: dash.summary.componentsInRepair,
             sub: repairDelta.label,
             subColorClass: repairDelta.cls,
+            onInfo: () => setInfoRepair(true),
         },
     ];
 
@@ -330,6 +344,11 @@ const DWMainDash = () => {
                     <div className="mdxmash-summary-grid">
                         {summaryCards.map((card) => (
                             <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
+                                />
                                 <p className="mddsash-summary-label">{card.label}</p>
                                 {card.value !== null && (
                                     <strong className="mddsash-summary-value">
@@ -506,6 +525,40 @@ const DWMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoTotal && (
+                <InfoPopupDashWare
+                    type="totalComponents"
+                    title="Number of Components"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoValid && (
+                <InfoPopupDashWare
+                    type="validComponents"
+                    title="Number of Valid Components"
+                    setClose={() => setInfoValid(false)}
+                />
+            )}
+
+            {infoInvalid && (
+                <InfoPopupDashWare
+                    type="invalidComponents"
+                    title="Number of Invalid Components"
+                    setClose={() => setInfoInvalid(false)}
+                />
+            )}
+
+            {infoRepair && (
+                <InfoPopupDashWare
+                    type="componentsInRepair"
+                    title="Components in Repair"
+                    setClose={() => setInfoRepair(false)}
+                />
+            )}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );
 };

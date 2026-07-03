@@ -15,7 +15,9 @@ import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 import "./DDSMainDash.css";
+import InfoPopupDashCreate from "./InfoPopupDashCreate";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -247,6 +249,15 @@ const RMSMainDash = () => {
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
 
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoApproving, setInfoApproving] = useState(false);
+    const [infoReviewing, setInfoReviewing] = useState(false);
+    const [infoPending, setInfoPending] = useState(false);
+    const [infoUnder, setInfoUnder] = useState(false);
+    const [infoTurnAround, setInfoTurnAround] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
+
     useEffect(() => {
         const fetchDash = async () => {
             try {
@@ -320,6 +331,7 @@ const RMSMainDash = () => {
             value: s.totalInDev,
             sub: totalDelta.label,
             subColorClass: totalDelta.cls,
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "approving",
@@ -327,6 +339,7 @@ const RMSMainDash = () => {
             value: s.inApproval,
             sub: approvalDelta.label,
             subColorClass: approvalDelta.cls,
+            onInfo: () => setInfoApproving(true),
         },
         {
             id: "reviewing",
@@ -334,6 +347,7 @@ const RMSMainDash = () => {
             value: s.inReview,
             sub: reviewDelta.label,
             subColorClass: reviewDelta.cls,
+            onInfo: () => setInfoReviewing(true),
         },
         {
             id: "pending",
@@ -341,6 +355,7 @@ const RMSMainDash = () => {
             value: s.pendingSignOff,
             sub: pendingDelta.label,
             subColorClass: pendingDelta.cls,
+            onInfo: () => setInfoPending(true),
         },
         {
             id: "under",
@@ -348,6 +363,7 @@ const RMSMainDash = () => {
             value: s.underPeriodicReview,
             sub: periodicDelta.label,
             subColorClass: periodicDelta.cls,
+            onInfo: () => setInfoUnder(true),
         },
         {
             id: "turnAround",
@@ -356,6 +372,7 @@ const RMSMainDash = () => {
             sub: "",
             subColorClass: "mdash-card--grey",
             noFmt: true,
+            onInfo: () => setInfoTurnAround(true),
         },
     ];
 
@@ -419,7 +436,8 @@ const RMSMainDash = () => {
                             <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
                                 <FontAwesomeIcon
                                     icon={faInfoCircle}
-                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px" }}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
                                 />
                                 <p className="mddsash-summary-label">{card.label}</p>
                                 <strong className="mddsash-summary-value">{card.noFmt ? card.value : fmt(card.value)}</strong>
@@ -472,7 +490,6 @@ const RMSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>UNDER PERIODIC REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
                             <WorkflowTable
                                 rows={dash.periodicReviewRows}
@@ -489,7 +506,6 @@ const RMSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING SIGN-OFF</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
                             <WorkflowTable
                                 rows={dash.pendingSignOffRows}
@@ -506,7 +522,6 @@ const RMSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING APPROVAL</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inApprovalRows}
@@ -523,7 +538,6 @@ const RMSMainDash = () => {
                         <div className="mdash-panel">
                             <div className="mdash-panel-header">
                                 <h3>PENDING REVIEW</h3>
-                                <FontAwesomeIcon icon={faInfoCircle} style={{ color: "gray", fontSize: "16px", marginRight: "5px" }} />
                             </div>
                             <WorkflowTable
                                 rows={dash.inReviewRows}
@@ -585,6 +599,62 @@ const RMSMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoTotal && (
+                <InfoPopupDashCreate
+                    title="Total Risk Assessments in Development"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoApproving && (
+                <InfoPopupDashCreate
+                    title="In Approval"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoApproving(false)}
+                />
+            )}
+
+            {infoReviewing && (
+                <InfoPopupDashCreate
+                    title="In Review"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoReviewing(false)}
+                />
+            )}
+
+            {infoPending && (
+                <InfoPopupDashCreate
+                    title="Pending Sign-Off"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoPending(false)}
+                />
+            )}
+
+            {infoUnder && (
+                <InfoPopupDashCreate
+                    title="Under Periodic Review"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoUnder(false)}
+                />
+            )}
+
+            {infoTurnAround && (
+                <InfoPopupDashCreate
+                    title="Average Turn Around Time"
+                    systemType="RMS"
+                    documentType="risk assessments"
+                    setClose={() => setInfoTurnAround(false)}
+                />
+            )}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );
 };

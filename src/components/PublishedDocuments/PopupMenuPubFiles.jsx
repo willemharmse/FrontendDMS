@@ -59,9 +59,9 @@ const PopupMenuPubFiles = ({ isOpen, setHoveredFileId, openDownloadModal, file, 
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    <ul>
+                    {false && (<ul>
                         <li onClick={() => openDownloadModal(file._id, file.fileName)}>Download</li>
-                    </ul>
+                    </ul>)}
                     {type !== "dont" && (
                         <ul>
                             <li onClick={() => navigate(route)}>Review</li>

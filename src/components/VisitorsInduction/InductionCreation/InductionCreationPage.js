@@ -28,6 +28,7 @@ import LoadDraftIndcutionPopup from "./LoadDraftIndcutionPopup";
 import InductionPreviewPage from "./InductionPreviewPage";
 import ApproversPopup from "./ApproversPopup";
 import SaveConfirmationPopup from "../../CreatePage/SaveConfirmationPopup";
+import SavingInProgress from "../../DocumentCreationPages/SavingInProgress";
 
 const InductionCreationPage = () => {
   const id = useParams().id || '';
@@ -42,6 +43,7 @@ const InductionCreationPage = () => {
   const [titleSet, setTitleSet] = useState(false);
   const [userID, setUserID] = useState('');
   const [userIDs, setUserIDs] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   const autoSaveInterval = useRef(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -444,36 +446,12 @@ const InductionCreationPage = () => {
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
 
-  const handleSave = () => {
-    if (formData.courseTitle !== "") {
-      if (loadedIDRef.current === '') {
-        saveData();
-
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("Draft has been successfully saved", {
-          closeButton: true,
-          autoClose: 1500, // 1.5 seconds
-          style: {
-            textAlign: 'center'
-          }
-        });
-      }
-      else if (loadedIDRef.current !== '') {
-        updateData(userIDsRef.current);
-
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("Draft has been successfully updated", {
-          closeButton: true,
-          autoClose: 1500, // 1.5 seconds
-          style: {
-            textAlign: 'center'
-          }
-        });
-      }
-    }
-    else {
+  // handleSave: this is the ONLY place a save/update toast should be shown from.
+  // saveData()/updateData() are called from lots of other places (autosave,
+  // save-before-navigate, etc.) where we intentionally do NOT want a toast, so
+  // the success/failure messaging lives here, not inside saveData/updateData.
+  const handleSave = async () => {
+    if (formData.courseTitle === "") {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
@@ -483,6 +461,63 @@ const InductionCreationPage = () => {
           textAlign: 'center'
         }
       });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      if (loadedIDRef.current === '') {
+        const newId = await saveData();
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        if (newId) {
+          toast.success("Draft has been successfully saved", {
+            closeButton: true,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+              textAlign: 'center'
+            }
+          });
+        } else {
+          toast.error("Failed to save draft. Please try again.", {
+            closeButton: true,
+            autoClose: 2000,
+            style: {
+              textAlign: 'center'
+            }
+          });
+        }
+      } else {
+        const updated = await updateData(userIDsRef.current);
+
+        // updateData() already shows its own error toast internally on
+        // failure, so we only need to handle the success case here.
+        if (updated) {
+          toast.dismiss();
+          toast.clearWaitingQueue();
+          toast.success("Draft has been successfully updated", {
+            closeButton: true,
+            autoClose: 1500, // 1.5 seconds
+            style: {
+              textAlign: 'center'
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Failed to save draft. Please try again.", {
+        closeButton: true,
+        autoClose: 2000,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1547,6 +1582,9 @@ const InductionCreationPage = () => {
         {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       </div>
       <ToastContainer />
+      {isSaving && (
+        <SavingInProgress />
+      )}
       {isSaveConfirmOpen && (
         <SaveConfirmationPopup
           setIsSaveModalOpen={setIsSaveConfirmOpen}

@@ -140,7 +140,28 @@ const GeneratedFileInfo = () => {
         { id: "firstPublishedDate", title: "First Published Date", thClass: "gen-th ibraGenPD", tdClass: "cent-values-gen gen-point", td: (f) => formatDate(f.datePublished) },
         { id: "lastReviewedBy", title: "Last Reviewed By", thClass: "gen-th ibraGenRB", tdClass: "cent-values-gen gen-point", td: (f) => f.reviewer?.username || "N/A" },
         { id: "lastReviewDate", title: "Last Review Date", thClass: "gen-th ibraGenRD", tdClass: "cent-values-gen gen-point", td: (f) => f.dateReviewed ? formatDate(f.dateReviewed) : "N/A" },
-        { id: "action", title: "Action", thClass: "gen-th ibraGenType", tdClass: "cent-values-gen gen-point", td: (f) => (<button className="delete-button-fi col-but" onClick={() => fileDelete(f._id, f.formData.title)}><FontAwesomeIcon icon={faTrash} title="Delete" /></button>) }
+        {
+            id: "action",
+            title: "Action",
+            thClass: "gen-th ibraGenType",
+            tdClass: "cent-values-gen gen-point",
+            td: (f) => (
+                <div className="action-buttons-fi">
+                    <button
+                        className="download-button-fi col-but-res"
+                        onClick={() => downloadFile(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faDownload} title="Download" />
+                    </button>
+                    <button
+                        className="delete-button-fi col-but"
+                        onClick={() => fileDelete(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faTrash} title="Delete" />
+                    </button>
+                </div>
+            ),
+        }
     ];
 
     const [showColumns, setShowColumns] = useState(allColumns.map(c => c.id));

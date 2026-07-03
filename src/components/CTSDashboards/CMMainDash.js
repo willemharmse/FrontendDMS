@@ -7,6 +7,7 @@ import {
     faArrowLeft,
     faDownload,
     faCalendarAlt,
+    faInfoCircle,
     faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
@@ -14,7 +15,9 @@ import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 import "./DDSMainDash.css";
+import InfoPopupDashControl from "./InfoPopupDashControl";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -167,6 +170,13 @@ const CMMainDash = () => {
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
 
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoCritical, setInfoCritical] = useState(false);
+    const [infoConcern, setInfoConcern] = useState(false);
+    const [infoMonitor, setInfoMonitor] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
+
     useEffect(() => {
         const fetchDash = async () => {
             try {
@@ -211,6 +221,7 @@ const CMMainDash = () => {
             value: s.total,
             sub: s.deltaTotal.label,
             subColorClass: s.deltaTotal.cls,
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "critical",
@@ -218,6 +229,7 @@ const CMMainDash = () => {
             value: s.critical,
             sub: s.deltaCritical.label,
             subColorClass: s.deltaCritical.cls,
+            onInfo: () => setInfoCritical(true),
         },
         {
             id: "concern",
@@ -225,6 +237,7 @@ const CMMainDash = () => {
             value: s.concern,
             sub: s.deltaConcern.label,
             subColorClass: s.deltaConcern.cls,
+            onInfo: () => setInfoConcern(true),
         },
         {
             id: "monitor",
@@ -232,6 +245,7 @@ const CMMainDash = () => {
             value: s.monitor,
             sub: s.deltaMonitor.label,
             subColorClass: s.deltaMonitor.cls,
+            onInfo: () => setInfoMonitor(true),
         },
     ];
 
@@ -288,6 +302,11 @@ const CMMainDash = () => {
                     <div className="mdxmash-summary-grid">
                         {summaryCards.map((card) => (
                             <div key={card.id} className="mddsash-summary-card mdash-card--grey" style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
+                                />
                                 <p className="mddsash-summary-label">{card.label}</p>
                                 <strong className="mddsash-summary-value">{fmt(card.value)}</strong>
                                 <span className={`mddsash-summary-sub ${card.subColorClass}`}>{card.sub}</span>
@@ -446,6 +465,40 @@ const CMMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoTotal && (
+                <InfoPopupDashControl
+                    type="totalControls"
+                    title="Total Controls in System"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoCritical && (
+                <InfoPopupDashControl
+                    type="criticalControls"
+                    title="Critical Controls"
+                    setClose={() => setInfoCritical(false)}
+                />
+            )}
+
+            {infoConcern && (
+                <InfoPopupDashControl
+                    type="controlsOfConcern"
+                    title="Controls of Concern"
+                    setClose={() => setInfoConcern(false)}
+                />
+            )}
+
+            {infoMonitor && (
+                <InfoPopupDashControl
+                    type="controlsToMonitor"
+                    title="Controls to Monitor"
+                    setClose={() => setInfoMonitor(false)}
+                />
+            )}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );
 };

@@ -430,7 +430,7 @@ const DeletedTMSDraftsPage = () => {
                             </div>
                         ) : (
                             <table className="gen-table">
-                                <thead className="gen-head trashed">
+                                <thead className="gen-head trashed" style={{ fontSize: "14px" }}>
                                     <tr>
                                         <th className="gen-th ibraGenNr" style={{ width: "5%" }}>Nr</th>
                                         <th className="gen-th ibraGenFN" style={{ width: "30%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("name", e)}>
@@ -462,7 +462,7 @@ const DeletedTMSDraftsPage = () => {
                                             .map((item, index) => (
                                                 <tr
                                                     key={item._id}
-                                                    style={{ fontSize: "15px" }}
+                                                    style={{ fontSize: "14px" }}
                                                     className="load-draft-td"
                                                 >
                                                     <td style={{ fontFamily: "Arial", textAlign: "center" }}>

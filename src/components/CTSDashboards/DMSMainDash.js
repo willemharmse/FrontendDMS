@@ -8,6 +8,7 @@ import {
     faDownload,
     faCalendarAlt,
     faFilter,
+    faInfoCircle,
     faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
@@ -16,6 +17,7 @@ import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import "./DMSMainDash.css";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -216,6 +218,15 @@ const DMSMainDash = () => {
     const [loading, setLoading] = useState(true);
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
+
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoValid, setInfoValid] = useState(false);
+    const [infoExpiring, setInfoExpiring] = useState(false);
+    const [infoExpired, setInfoExpired] = useState(false);
+    const [infoOwners, setInfoOwners] = useState(false);
+    const [infoUpload, setInfoUpload] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
 
     // ── Excel-style filter state ──────────────────────────────────────────
     const BLANK = "(Blanks)";
@@ -484,6 +495,7 @@ const DMSMainDash = () => {
             sub: totalDelta.label,
             subColorClass: "mdash-sub--grey",
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "valid",
@@ -492,6 +504,7 @@ const DMSMainDash = () => {
             sub: validDelta.label,
             subColorClass: validDelta.cls,
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoValid(true),
         },
         {
             id: "expiring",
@@ -500,6 +513,7 @@ const DMSMainDash = () => {
             sub: expiringDelta.label,
             subColorClass: expiringDelta.cls,
             colorClass: "mdash-card--orange",
+            onInfo: () => setInfoExpiring(true),
         },
         {
             id: "expired",
@@ -508,6 +522,7 @@ const DMSMainDash = () => {
             sub: expiredDelta.label,
             subColorClass: expiredDelta.cls,
             colorClass: "mdash-card--red",
+            onInfo: () => setInfoExpired(true),
         },
         {
             id: "owners",
@@ -516,6 +531,7 @@ const DMSMainDash = () => {
             sub: ownersDelta.label,
             subColorClass: "mdash-card--grey",
             colorClass: "mdash-card--blue",
+            onInfo: () => setInfoOwners(true),
         },
         {
             id: "upload",
@@ -524,6 +540,7 @@ const DMSMainDash = () => {
             sub: "",
             colorClass: "mdash-card--grey",
             noFmt: true,
+            onInfo: () => setInfoUpload(true),
         },
     ];
 
@@ -605,7 +622,12 @@ const DMSMainDash = () => {
                     {/* ── Summary Cards ── */}
                     <div className="mdash-summary-grid">
                         {summaryCards.map((card) => (
-                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
+                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`} style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
+                                />
                                 <p className="mdash-summary-label">{card.label}</p>
                                 <strong className="mdash-summary-value">
                                     {card.noFmt ? card.value : fmt(card.value)}
@@ -908,6 +930,54 @@ const DMSMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {infoTotal && (
+                <InfoPopupDash
+                    type="total"
+                    title="Total Documents"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoValid && (
+                <InfoPopupDash
+                    type="valid"
+                    title="Valid Documents"
+                    setClose={() => setInfoValid(false)}
+                />
+            )}
+
+            {infoExpiring && (
+                <InfoPopupDash
+                    type="expiring"
+                    title="Due for Review Documents"
+                    setClose={() => setInfoExpiring(false)}
+                />
+            )}
+
+            {infoExpired && (
+                <InfoPopupDash
+                    type="expired"
+                    title="Review Overdue Documents"
+                    setClose={() => setInfoExpired(false)}
+                />
+            )}
+
+            {infoOwners && (
+                <InfoPopupDash
+                    type="owners"
+                    title="Document Owners"
+                    setClose={() => setInfoOwners(false)}
+                />
+            )}
+
+            {infoUpload && (
+                <InfoPopupDash
+                    type="upload"
+                    title="Latest Upload Date"
+                    setClose={() => setInfoUpload(false)}
+                />
+            )}
 
             {/* ── Excel filter popup ─────────────────────────────────────── */}
             {excelFilter.open && (() => {

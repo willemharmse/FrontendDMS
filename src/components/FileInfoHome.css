@@ -9,10 +9,27 @@
     padding: 16px;
     width: calc(100% - 40px);
     /* Adjust based on your design */
-    height: 90vh;
     margin: auto;
     overflow-y: auto;
     position: relative;
+}
+
+.scrollable-box-fi-new-home {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    padding: 16px;
+    width: 100%;
+    margin: 0;
+
+    height: calc(100vh - 90px);
+    max-height: calc(100vh - 90px);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    box-sizing: border-box;
+    align-content: start;
 }
 
 /* Document card */

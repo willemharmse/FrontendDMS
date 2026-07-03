@@ -32,6 +32,8 @@ import DuplicateName from "../Popups/DuplicateName";
 import AimBulletComponent from "../CreatePage/AimBulletComponent";
 import ScopeBulletComponent from "../CreatePage/ScopeBulletComponent";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
+import SavingInProgress from "./SavingInProgress";
+import PublishingInProgress from "./PublishingInProgress";
 
 const CreatePageStandards = () => {
   const navigate = useNavigate();
@@ -79,6 +81,8 @@ const CreatePageStandards = () => {
   const pendingActionRef = useRef(null);
   const [isViewer, setIsViewer] = useState(false);
   const [isPublisher, setIsPublisher] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
+  const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
 
   const SHARE_ROLES = ["collaborator", "viewer", "publisher"];
   const ALL_ALLOWED_ROLES = ["owner", ...SHARE_ROLES];
@@ -273,6 +277,10 @@ const CreatePageStandards = () => {
   const openLoadPopup = () => setLoadPopupOpen(true);
   const closeLoadPopup = () => setLoadPopupOpen(false);
 
+  // handleSave: this is the ONLY place a save/update toast should be shown from.
+  // saveData()/updateData() are called from lots of other places (autosave,
+  // save-before-navigate, etc.) where we intentionally do NOT want a toast, so
+  // the success/failure messaging lives here, not inside saveData/updateData.
   const handleSave = async () => {
     if (formData.title.trim() === "") {
       toast.dismiss();
@@ -285,43 +293,62 @@ const CreatePageStandards = () => {
       return;
     }
 
-    if (loadedIDRef.current === '') {
-      const result = await saveData();
+    setIsSaving(true);
+    try {
+      if (loadedIDRef.current === '') {
+        const result = await saveData();
 
-      if (result?.duplicate) {
-        setIsDuplicateName(true);
+        if (result?.duplicate) {
+          setIsDuplicateName(true);
+          toast.dismiss();
+          toast.clearWaitingQueue();
+          toast.warn("A draft with this name already exists. Please enter a new draft name.", {
+            closeButton: true,
+            autoClose: 2000,
+            style: { textAlign: 'center' }
+          });
+          return;
+        }
+
         toast.dismiss();
         toast.clearWaitingQueue();
-        toast.warn("A draft with this name already exists. Please enter a new draft name.", {
+        if (result?.ok) {
+          toast.success("Draft has been successfully saved", {
+            closeButton: true,
+            autoClose: 1500,
+            style: { textAlign: 'center' }
+          });
+        } else {
+          toast.error("Failed to save draft. Please try again.", {
+            closeButton: true,
+            autoClose: 2000,
+            style: { textAlign: 'center' }
+          });
+        }
+
+        return;
+      }
+
+      const result = await updateData(userIDsRef.current);
+
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      if (result?.ok) {
+        toast.success("Draft has been successfully updated", {
+          closeButton: true,
+          autoClose: 800,
+          style: { textAlign: 'center' }
+        });
+      } else {
+        toast.error("Failed to update draft. Please try again.", {
           closeButton: true,
           autoClose: 2000,
           style: { textAlign: 'center' }
         });
-        return;
       }
-
-      if (result?.ok) {
-        toast.dismiss();
-        toast.clearWaitingQueue();
-        toast.success("Draft has been successfully saved", {
-          closeButton: true,
-          autoClose: 1500,
-          style: { textAlign: 'center' }
-        });
-      }
-
-      return;
+    } finally {
+      setIsSaving(false);
     }
-
-    await updateData(userIDsRef.current);
-
-    toast.dismiss();
-    toast.clearWaitingQueue();
-    toast.success("Draft has been successfully updated", {
-      closeButton: true,
-      autoClose: 800,
-      style: { textAlign: 'center' }
-    });
   };
 
   const saveDraftName = async (newTitle) => {
@@ -576,11 +603,11 @@ const CreatePageStandards = () => {
       localStorage.removeItem("draftData");
 
       console.log(result.message);
-      return result;
+      return { ok: true, ...result };
     } catch (error) {
       console.error('Error saving data:', error);
       saveDataOffline(loadedIDRef.current);
-      return null;
+      return { ok: false, error };
     }
   };
 
@@ -616,7 +643,7 @@ const CreatePageStandards = () => {
     setGeneratePopup(false);
   }
 
-  const handlePubClick = () => {
+  const handlePubClick = async () => {
     const newErrors = validateForm();
     setErrors(newErrors);
 
@@ -643,7 +670,12 @@ const CreatePageStandards = () => {
         }
       });
     } else {
-      handlePublishApprovalFlow();
+      setIsPublishing(true);
+      try {
+        await handlePublishApprovalFlow();
+      } finally {
+        setIsPublishing(false);
+      }
     }
   };
 
@@ -2541,6 +2573,12 @@ const CreatePageStandards = () => {
           draftTitle={formData.title}
           triggerType={saveConfirmTrigger}
         />
+      )}
+      {isSaving && (
+        <SavingInProgress />
+      )}
+      {isPublishing && (
+        <PublishingInProgress />
       )}
     </div>
   );

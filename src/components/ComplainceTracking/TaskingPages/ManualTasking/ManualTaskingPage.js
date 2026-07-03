@@ -22,6 +22,8 @@ import TopBar from "../../../Notifications/TopBar";
 import { canIn, getCurrentUser } from "../../../../utils/auth";
 import { ToastContainer, toast } from "react-toastify";
 import AddTaskPopup from "./AddTaskPopup";
+import AddSubTaskPopup from "./AddSubTaskPopup";
+import ViewSubTasksPopup from "./ViewSubTasksPopup";
 import AddRepeatingTaskPopup from "./AddRepeatingTaskPopup";
 import DeleteAllocatedTask from "./DeleteAllocatedTask";
 import CloseAllocatedTask from "./CloseAllocatedTask";
@@ -47,6 +49,7 @@ const taskApiBase = (task) =>
 
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
+    { id: "allocationType", title: "Task Category", views: "closedOut", collapsed: false },
     { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "allocatedBy", title: "Originator", views: "both", collapsed: false, collapsedFor: "viewer" },
     { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
@@ -85,6 +88,14 @@ const getStatusDisplay = (status) => {
     return status || "-";
 };
 
+// AATCD-change here
+const getCategoryDisplay = (category) => {
+    if (category === "Auto-Auto") return "System Generated"; // ← replace empty string with the new display value
+    if (category === "Auto-Manual") return "User Triggered"; // ← replace empty string with the new display value
+    if (category === "Manual") return "User Created"; // ← replace empty string with the new display value
+    return category || "-";
+};
+
 const STATUS_OPTIONS = [
     { value: "25% Completed", label: "25% Completed", color: "#FFC000" },
     { value: "50% Completed", label: "50% Completed", color: "#FFFF00" },
@@ -112,6 +123,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     userComments: 120,
     closeStatus: 30,
     closeOutComments: 300,
+    allocationType: 40,
     allocatedBy: 50,
     category: 50,
     discipline: 40,
@@ -140,6 +152,7 @@ const COLUMN_SIZE_LIMITS = {
     userComments: { min: 120, max: 700 },
     closeStatus: { min: 30, max: 260 },
     closeOutComments: { min: 200, max: 700 },
+    allocationType: { min: 4, max: 260 },
     action: { min: 90, max: 90 },
     discipline: { min: 40, max: 300 },
     area: { min: 30, max: 300 },
@@ -249,6 +262,9 @@ const ManualTaskingPage = () => {
     const excelPopupRef = useRef(null);
 
     const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+    const [showAddSubTaskPopup, setShowAddSubTaskPopup] = useState(false);
+    const [subTaskParent, setSubTaskParent] = useState(null);
+    const [viewSubTasksPopup, setViewSubTasksPopup] = useState({ open: false, parentTask: null, subtasks: [] });
     const [showAddRepeatingTaskPopup, setShowAddRepeatingTaskPopup] = useState(false);
     const [deleteTaskPopup, setDeleteTaskPopup] = useState({ open: false, task: null, taskName: "" });
     const [closeTaskPopup, setCloseTaskPopup] = useState({ open: false, task: null, taskName: "" });
@@ -289,7 +305,9 @@ const ManualTaskingPage = () => {
         setView(nextView);
         // closedOut uses viewer-style columns
         const colView = nextView === "closedOut" ? "viewer" : nextView;
-        setShowColumns(getDefaultShowColumns(colView));
+        const defaultShowColumns = getDefaultShowColumns(colView);
+        if (nextView === "closedOut") defaultShowColumns.push("allocationType");
+        setShowColumns(defaultShowColumns);
         setActiveExcelFilters({});
         setSortConfig(DEFAULT_SORT);
         setSearchQuery("");
@@ -300,7 +318,12 @@ const ManualTaskingPage = () => {
     };
 
     // ── Columns available for current view ───────────────────────────────────
-    const availableColumns = useMemo(() => getColumnsForView(view === "closedOut" ? "viewer" : view), [view]);
+    const availableColumns = useMemo(() => {
+        return ALL_COLUMNS.filter(col => {
+            if (view === "closedOut") return col.views === "both" || col.views === "viewer" || col.views === "closedOut";
+            return col.views === "both" || col.views === view;
+        });
+    }, [view]);
     const allColumnIds = useMemo(() => availableColumns.map(c => c.id), [availableColumns]);
 
     // ── Fetch ────────────────────────────────────────────────────────────────
@@ -496,6 +519,28 @@ const ManualTaskingPage = () => {
     const openReopenTaskPopup = (task) => setReopenTaskPopup({ open: true, task, taskName: task?.taskTitle || "" });
     const closeReopenTaskPopup = () => setReopenTaskPopup({ open: false, task: null, taskName: "" });
 
+    // ── Sub-task popups ─────────────────────────────────────────────────────
+    const openAddSubTaskPopup = (task) => {
+        // On "My Tasks" (viewer), a manual task must be accepted before sub tasks can be added.
+        if (view === "viewer" && task?.acceptanceStatus !== "Accepted") {
+            toast.warn("You must accept this task before adding a sub task.", { autoClose: 3000, closeButton: false });
+            return;
+        }
+        setSubTaskParent(task);
+        setShowAddSubTaskPopup(true);
+    };
+    const closeAddSubTaskPopup = () => {
+        setShowAddSubTaskPopup(false);
+        setSubTaskParent(null);
+    };
+
+    const openViewSubTasksPopup = (task, subtasks) => {
+        setViewSubTasksPopup({ open: true, parentTask: task, subtasks: subtasks || [] });
+    };
+    const closeViewSubTasksPopup = () => {
+        setViewSubTasksPopup({ open: false, parentTask: null, subtasks: [] });
+    };
+
     const handleDeleteTask = async () => {
         const storedToken = localStorage.getItem("token");
         const task = deleteTaskPopup?.task;
@@ -535,7 +580,7 @@ const ManualTaskingPage = () => {
         } catch (error) {
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.error("Failed to delete task", { autoClose: 3000, closeButton: false });
+            toast.error(error.message || "Failed to delete task", { autoClose: 3000, closeButton: false });
         }
     };
 
@@ -797,6 +842,7 @@ const ManualTaskingPage = () => {
         if (colId === "nr") return [String(index + 1)];
         if (colId === "status") return [getStatusDisplay(row.status)];
         if (colId === "closeStatus") return [row.closeStatus ? "Completed" : "Open"];
+        if (colId === "allocationType") return [row._isAllocator ? "Tasks Assigned" : "My Tasks"];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
         if (colId === "userAttachments") return [Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? "Has Attachments" : "No Attachments"];
         // allocatedBy: null becomes "System" for filtering
@@ -892,12 +938,16 @@ const ManualTaskingPage = () => {
                 const vA =
                     colId === "closeStatus"
                         ? a.closeStatus ? "Completed" : "Open"
-                        : normalize(a?.[colId]);
+                        : colId === "allocationType"
+                            ? (a._isAllocator ? "Tasks Assigned" : "My Tasks")
+                            : normalize(a?.[colId]);
 
                 const vB =
                     colId === "closeStatus"
                         ? b.closeStatus ? "Completed" : "Open"
-                        : normalize(b?.[colId]);
+                        : colId === "allocationType"
+                            ? (b._isAllocator ? "Tasks Assigned" : "My Tasks")
+                            : normalize(b?.[colId]);
 
                 if (vA === "(Blanks)" && vB !== "(Blanks)") return 1;
                 if (vA !== "(Blanks)" && vB === "(Blanks)") return -1;
@@ -1025,6 +1075,7 @@ const ManualTaskingPage = () => {
         const ww = wrapper.getBoundingClientRect().width;
         if (!ww) return;
         const defaultCols = getDefaultShowColumns(view === "closedOut" ? "viewer" : view);
+        if (view === "closedOut" && !defaultCols.includes("allocationType")) defaultCols.push("allocationType");
         setShowColumns(defaultCols);
         const visibleCols = defaultCols.filter(id => typeof initialColumnWidths[id] === "number");
         if (!visibleCols.length) return;
@@ -1129,6 +1180,7 @@ const ManualTaskingPage = () => {
             completionDate: { width: 18, centre: true, headerGroup: "navy" },
             closeStatus: { width: 16, centre: true, headerGroup: "navy" },
             closeOutComments: { width: 35, centre: false, headerGroup: "navy" },
+            allocationType: { width: 20, centre: true, headerGroup: "navy" },
         };
 
         const HEADER_BORDER = {
@@ -1265,6 +1317,7 @@ const ManualTaskingPage = () => {
                     let val = "";
                     if (hdr.id === "nr") val = String(rowIdx + 1);
                     else if (hdr.id === "closeStatus") val = row.closeStatus ? "Completed" : "Open";
+                    else if (hdr.id === "allocationType") val = row._isAllocator ? "Tasks Assigned" : "My Tasks";
                     else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
                     else if (hdr.id === "userAttachments") val = Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? row.userAttachments.join("\n") : "No files";
                     else if (hdr.id === "status") {
@@ -1288,6 +1341,8 @@ const ManualTaskingPage = () => {
                         value = rowIdx + 1;
                     } else if (hdr.id === "closeStatus") {
                         value = row.closeStatus ? "Completed" : "Open";
+                    } else if (hdr.id === "allocationType") {
+                        value = row._isAllocator ? "Tasks Assigned" : "My Tasks";
                     } else if (hdr.id === "attachments") {
                         const a = row.attachments;
                         value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
@@ -1423,7 +1478,26 @@ const ManualTaskingPage = () => {
                         }}
                     >
                         <div className="popup-anchor">
-                            <span>{row.taskTitle || "-"}</span>
+                            <span>
+                                {(() => {
+                                    const title = row.taskTitle || "-";
+
+                                    if (row.isSubTask) {
+                                        const colonIndex = title.indexOf(":");
+
+                                        if (colonIndex !== -1) {
+                                            return (
+                                                <>
+                                                    <strong>{title.slice(0, colonIndex + 1)}</strong>
+                                                    {title.slice(colonIndex + 1)}
+                                                </>
+                                            );
+                                        }
+                                    }
+
+                                    return title;
+                                })()}
+                            </span>
 
                             {(hoveredTaskId === row._id) && (
                                 <PopupMenuTasks
@@ -1431,7 +1505,10 @@ const ManualTaskingPage = () => {
                                     setHoveredId={setHoveredTaskId}
                                     isOpen={true}
                                     file={row}
+                                    view={view}
                                     allowed={!isAutoAuto && !isAutoManual}
+                                    onAddSubTask={openAddSubTaskPopup}
+                                    onViewSubtasks={openViewSubTasksPopup}
                                 />
                             )}
                         </div>
@@ -1456,7 +1533,7 @@ const ManualTaskingPage = () => {
                 return <td key="taskDescription" style={{ fontSize: "14px" }}>{row.taskDescription || "-"}</td>;
 
             case "category":
-                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.category || "-"}</td>;
+                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{getCategoryDisplay(row.category)}</td>;
 
             case "discipline":
                 return <td key="discipline" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
@@ -1660,14 +1737,27 @@ const ManualTaskingPage = () => {
                         );
                     }
                     // Allocator (or both): interactive reopen checkbox
+                    // A sub-task cannot be reopened while its main task is still closed out.
+                    const isBlockedByParent = !!row.isSubTask && !!row._parentTaskClosed;
+
                     return (
                         <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
                             <input type="checkbox" className="checkbox-inp-abbr"
                                 checked={true}
-                                disabled={isReopening}
-                                title="Click to reopen this task"
-                                style={{ cursor: isReopening ? "not-allowed" : "pointer", opacity: isReopening ? 0.4 : 1 }}
-                                onChange={() => { openReopenTaskPopup(row); }}
+                                disabled={isReopening || isBlockedByParent}
+                                title={
+                                    isBlockedByParent
+                                        ? "Main task has been closed out"
+                                        : "Click to reopen this task"
+                                }
+                                style={{
+                                    cursor: (isReopening || isBlockedByParent) ? "not-allowed" : "pointer",
+                                    opacity: (isReopening || isBlockedByParent) ? 0.4 : 1,
+                                }}
+                                onChange={() => {
+                                    if (isBlockedByParent) return;
+                                    openReopenTaskPopup(row);
+                                }}
                             />
                         </td>
                     );
@@ -1756,6 +1846,13 @@ const ManualTaskingPage = () => {
 
             case "closeOutComments":
                 return <td key="closeOutComments" style={{ fontSize: "14px" }}>{row.closeOutComments || "-"}</td>;
+
+            case "allocationType":
+                return (
+                    <td key="allocationType" className="procCent" style={{ fontSize: "14px" }}>
+                        {row._isAllocator ? "Tasks Assigned" : "My Tasks"}
+                    </td>
+                );
 
             case "action":
                 return (
@@ -2181,6 +2278,20 @@ const ManualTaskingPage = () => {
 
             {/* Allocator popups */}
             {showAddTaskPopup && <AddTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddTaskPopup(false)} />}
+            {showAddSubTaskPopup && (
+                <AddSubTaskPopup
+                    parentTask={subTaskParent}
+                    onTaskAdded={fetchTasks}
+                    onClose={closeAddSubTaskPopup}
+                />
+            )}
+            {viewSubTasksPopup.open && (
+                <ViewSubTasksPopup
+                    parentTask={viewSubTasksPopup.parentTask}
+                    subtasks={viewSubTasksPopup.subtasks}
+                    onClose={closeViewSubTasksPopup}
+                />
+            )}
             {isTaskDueDatePopupOpen && (
                 <TaskDueDatePopup
                     isOpen={isTaskDueDatePopupOpen}

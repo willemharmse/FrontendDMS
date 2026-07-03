@@ -83,6 +83,7 @@
 }
 
 .gen-th {
+    font-size: 14px !important;
     padding: 5px;
     text-align: center;
     border-bottom: 1px solid #ddd;

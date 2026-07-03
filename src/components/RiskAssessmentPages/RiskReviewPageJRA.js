@@ -37,6 +37,8 @@ import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 import DatePicker from "react-multi-date-picker";
 import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopup"
 import ApproveApprovalProcessPopup from "../Popups/ApproveApprovalProcessPopup";
+import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
+import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
 
 const RiskReviewPageJRA = () => {
     const navigate = useNavigate();
@@ -76,6 +78,8 @@ const RiskReviewPageJRA = () => {
     const [inApproval, setInApproval] = useState(false);
     const [inReview, setInReview] = useState(false);
     const [approveState, setApproveState] = useState(false);
+    const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
+    const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
 
     const openApproval = () => {
         setApproval(true);
@@ -155,30 +159,44 @@ const RiskReviewPageJRA = () => {
         setHelpScope(false);
     };
 
-    const handleSave = (fileID) => {
-        if (formData.title !== "") {
-            saveData(fileID);
-
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Draft has been successfully saved", {
-                closeButton: false,
-                autoClose: 1500, // 1.5 seconds
-                style: {
-                    textAlign: 'center'
-                }
-            });
-        }
-        else {
+    const handleSave = async () => {
+        if (formData.title === "") {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.error("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
-            });
+            })
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const result = await saveData(fileID);
+
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            if (result?.ok) {
+                toast.success("Draft has been successfully saved", {
+                    closeButton: false,
+                    autoClose: 1500, // 1.5 seconds
+                    style: {
+                        textAlign: 'center'
+                    }
+                });
+            } else {
+                toast.error("Failed to save draft. Please try again.", {
+                    closeButton: false,
+                    autoClose: 2000,
+                    style: {
+                        textAlign: 'center'
+                    }
+                });
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -313,8 +331,11 @@ const RiskReviewPageJRA = () => {
                 setFormData(result.draft.formData);
                 formDataRef.current = result.draft.formData;
             }
+
+            return { ok: true };
         } catch (error) {
             console.error('Error saving data:', error);
+            return { ok: false, error };
         }
     };
 
@@ -334,7 +355,12 @@ const RiskReviewPageJRA = () => {
 
     const handleClick3 = async () => {
         try {
-            handlePublishApprovalFlow();
+            setIsPublishing(true);
+            try {
+                await handlePublishApprovalFlow();
+            } finally {
+                setIsPublishing(false);
+            }
         } catch (err) {
             toast.error("Could not save draft, generation aborted." + err);
         }
@@ -1533,6 +1559,12 @@ const RiskReviewPageJRA = () => {
 
             {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
             {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+            {isSaving && (
+                <SavingInProgress />
+            )}
+            {isPublishing && (
+                <PublishingInProgress />
+            )}
         </div>
     );
 };

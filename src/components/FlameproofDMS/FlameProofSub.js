@@ -739,7 +739,7 @@ const FlameProofSub = () => {
                 {isLoadingTable && (<tr><td colSpan={10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)} style={{ textAlign: "center", padding: 20 }}><FontAwesomeIcon icon={faSpinner} spin /> &nbsp; Loading certificates.</td></tr>)}
                 {!isLoadingTable && showNoAssets && (<tr><td colSpan={10 + (isTrashView ? 1 : 0) + (canIn(access, "FCMS", ["systemAdmin", "contributor"]) ? 1 : 0)} style={{ textAlign: "center", padding: 20 }}>No Certificates Uploaded.</td></tr>)}
                 {filteredFiles.map((file, index) => (
-                  <tr key={index} style={{ fontSize: "14px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
+                  <tr key={index} style={{ fontSize: "16px", cursor: file.isPlaceholder ? "default" : "pointer" }} className={`${file.isPlaceholder ? "tr-placeholder" : ""} file-info-row-height`} onClick={() => setHoveredFileId(hoveredFileId === file._id ? null : file._id)}>
                     <td className="col">{index + 1}</td>
                     <td className="col" style={{ textAlign: "center", position: "relative" }}>{file.certNr}
                       {(hoveredFileId === file._id && !file.isPlaceholder) && (

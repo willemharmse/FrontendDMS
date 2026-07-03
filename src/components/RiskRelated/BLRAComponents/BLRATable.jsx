@@ -164,19 +164,19 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
         maxConsequence: 300,
         owner: 200,
         controls: 170,
-        odds: 95,
+        odds: 110,
         riskRank: 90,
         priority: 70,
         material: 70,
         actions: 500,
-        responsible: 370,
+        responsible: 130,
         dueDate: 130,
         additional: 150,
         S: 60,
         H: 60,
         E: 60,
         C: 60,
-        LR: 60,
+        LR: 70,
         M: 60,
         R: 60,
         action: 50
@@ -192,19 +192,19 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
         maxConsequence: 300,
         owner: 200,
         controls: 170,
-        odds: 95,
+        odds: 110,
         riskRank: 90,
         priority: 70,
         material: 70,
         actions: 500,
-        responsible: 370,
+        responsible: 130,
         dueDate: 130,
         additional: 150,
         S: 60,
         H: 60,
         E: 60,
         C: 60,
-        LR: 60,
+        LR: 70,
         M: 60,
         R: 60,
         action: 50
@@ -224,9 +224,9 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
         riskRank: { min: 80, max: 150 },
         priority: { min: 70, max: 150 },
         material: { min: 70, max: 150 },
-        actions: { min: 300, max: 1000 },
-        responsible: { min: 200, max: 600 },
-        dueDate: { min: 120, max: 300 },
+        actions: { min: 100, max: 1000 },
+        responsible: { min: 100, max: 600 },
+        dueDate: { min: 100, max: 300 },
         additional: { min: 150, max: 400 },
         S: { min: 50, max: 100 },
         H: { min: 50, max: 100 },
@@ -1567,6 +1567,17 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                                     tableLayout: 'fixed',
                                 }}
                             >
+                                <colgroup>
+                                    {displayColumns.map((columnId, idx) => {
+                                        const width = columnWidths[columnId];
+                                        return (
+                                            <col
+                                                key={idx}
+                                                style={width ? { width: `${width}px` } : undefined}
+                                            />
+                                        );
+                                    })}
+                                </colgroup>
                                 <thead className="ibra-table-header">
                                     <tr>
                                         {displayColumns.map((columnId, idx) => {

@@ -359,7 +359,7 @@ const SGIVersionHistory = () => {
                     </div>
                     <div className="table-container-file-flameproof-all-assets">
                         <table className="version-history-file-info-table">
-                            <thead className="version-history-file-info-head">
+                            <thead className="version-history-file-info-head" style={{ fontSize: "14px" }}>
                                 <tr>
                                     {columns.map((col) => (
                                         <th
@@ -393,7 +393,7 @@ const SGIVersionHistory = () => {
                             <tbody>
                                 {displayedActivity.length > 0 ? (
                                     displayedActivity.map((act, index) => (
-                                        <tr key={act._id} className="file-info-row-height version-history-file-info-tr">
+                                        <tr style={{ fontSize: "14px" }} key={act._id} className="file-info-row-height version-history-file-info-tr">
                                             <td style={{ textAlign: "center" }}>{index + 1}</td>
                                             <td style={{ textAlign: "left" }}>{removeFileExtension(act.fileName)}</td>
                                             <td style={{ textAlign: "center" }}>{act.version ? `V ${act.version}` : ""}</td>

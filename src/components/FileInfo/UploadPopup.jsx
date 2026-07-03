@@ -150,10 +150,27 @@ const UploadPopup = ({ onClose }) => {
                 },
                 body: formData,
             });
+
             if (!response.ok) {
-                throw new Error(response.error || 'Failed to upload file');
+                let errorMessage = 'Could not upload file. Please try again or contact an administrator.';
+
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.details || errorData.error || errorData.message || errorMessage;
+                } catch {
+                    try {
+                        const textError = await response.text();
+                        errorMessage = textError || errorMessage;
+                    } catch {
+                        // Keep default message
+                    }
+                }
+
+                throw new Error(errorMessage);
             }
+
             await response.json();
+
             setSuccessMessage("Document uploaded successfully!");
             setShowPopup(true);
             setSelectedFile(null);
@@ -167,34 +184,27 @@ const UploadPopup = ({ onClose }) => {
             setReviewer('');
             setError(null);
 
-            setLoading(false); // Reset loading state after response
             toast.success("Document Uploaded Successfully", {
                 closeButton: false,
                 autoClose: 800,
                 style: {
                     textAlign: 'center'
                 }
-
-            })
+            });
         } catch (error) {
-            toast.error("Could not upload file. Please try again or contact an administrator.", {
+            const message = error?.message || "Could not upload file. Please try again or contact an administrator.";
+
+            toast.error(message, {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 5000,
                 style: {
                     textAlign: 'center'
                 }
+            });
 
-            })
-            toast.error(error.message, {
-                closeButton: false,
-                autoClose: 82200,
-                style: {
-                    textAlign: 'center'
-                }
-
-            })
-            setError(error.message);
+            setError(message);
             setSuccessMessage('');
+        } finally {
             setLoading(false);
         }
     };

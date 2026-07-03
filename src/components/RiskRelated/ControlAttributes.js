@@ -1397,6 +1397,7 @@ const ControlAttributes = () => {
                                         <th
                                             colSpan={visibleIdentificationColumns.length}
                                             className="risk-control-attributes-split"
+                                            style={{ fontSize: "14px" }}
                                         >
                                             Control Identification
                                         </th>
@@ -1405,6 +1406,7 @@ const ControlAttributes = () => {
                                         <th
                                             colSpan={visibleCerColumns.length}
                                             className="risk-control-attributes-th"
+                                            style={{ fontSize: "14px" }}
                                         >
                                             Control Effectiveness Rating (CER)
                                         </th>

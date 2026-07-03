@@ -7,6 +7,7 @@ import {
     faArrowLeft,
     faDownload,
     faCalendarAlt,
+    faInfoCircle,
     faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
@@ -14,7 +15,9 @@ import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
 import "./DMSMainDash.css";
+import InfoPopupDashFlame from "./InfoPopupDashFlame";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -45,11 +48,16 @@ const linePoint = (val, min, max, svgH, svgPadT, svgPadB, idx, total, svgW, padL
  * direction: "positive-good" → up=green, down=red (valid)
  * direction: "positive-bad"  → up=red,   down=green (expiring/invalid)
  */
-const buildDelta = (delta, direction) => {
+const buildDelta = (delta, direction, suffix = "") => {
     const abs = Math.abs(delta);
-    if (delta === 0) return { label: `0 vs last month`, cls: "mdash-card--grey" };
+
+    if (delta === 0) {
+        return { label: `0${suffix} vs last month`, cls: "mdash-card--grey" };
+    }
+
     const arrow = delta > 0 ? "▲" : "▼";
-    const label = `${arrow} ${fmt(abs)} vs last month`;
+    const label = `${arrow} ${fmt(abs)}${suffix} vs last month`;
+
     let cls;
     if (direction === "neutral") {
         cls = "mdash-card--grey";
@@ -58,6 +66,7 @@ const buildDelta = (delta, direction) => {
     } else {
         cls = delta > 0 ? "mdash-card--red" : "mdash-card--green";
     }
+
     return { label, cls };
 };
 
@@ -479,6 +488,15 @@ const EPAMSMainDash = () => {
     // ── Trendline window selection ──
     const [trendWindow, setTrendWindow] = useState(6);
 
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoCompliance, setInfoCompliance] = useState(false);
+    const [infoTotal, setInfoTotal] = useState(false);
+    const [infoValid, setInfoValid] = useState(false);
+    const [infoExpiring, setInfoExpiring] = useState(false);
+    const [infoInvalid, setInfoInvalid] = useState(false);
+    const [infoOutstanding, setInfoOutstanding] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
+
     useEffect(() => {
         const fetchDash = async () => {
             try {
@@ -532,7 +550,7 @@ const EPAMSMainDash = () => {
     const vsOrgCompliance = d.vsOrgCompliance ?? 0;
 
     // ── Delta helpers — same pattern as DMS ──
-    const complianceDelta = buildDelta(vsOrgCompliance, "neutral");   // grey always
+    const complianceDelta = buildDelta(vsOrgCompliance, "neutral", "%");   // grey always, show % change
     const totalDelta = buildDelta(vsTotalCerts, "neutral");   // grey always
 
     const certStatusOverview = d.certStatusOverview ?? {
@@ -594,6 +612,7 @@ const EPAMSMainDash = () => {
             subColorClass: "mdash-card--grey",   // always grey, per spec
             colorClass: "mdash-card--grey",
             skipFmt: true,
+            onInfo: () => setInfoCompliance(true),
         },
         {
             id: "total",
@@ -602,6 +621,7 @@ const EPAMSMainDash = () => {
             sub: totalDelta.label,
             subColorClass: "mdash-sub--grey",    // always grey
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoTotal(true),
         },
         {
             id: "valid",
@@ -610,6 +630,7 @@ const EPAMSMainDash = () => {
             sub: pctSub(validCerts, totalCerts),
             subColorClass: "mdash-sub--green",   // always green
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoValid(true),
         },
         {
             id: "expiring",
@@ -618,6 +639,7 @@ const EPAMSMainDash = () => {
             sub: pctSub(expiringCerts, totalCerts),
             subColorClass: "mdash-sub--grey",
             colorClass: "mdash-card--orange",
+            onInfo: () => setInfoExpiring(true),
         },
         {
             id: "invalid",
@@ -626,6 +648,7 @@ const EPAMSMainDash = () => {
             sub: pctSub(invalidCerts, totalCerts),
             subColorClass: "mdash-sub--grey",
             colorClass: "mdash-card--red",
+            onInfo: () => setInfoInvalid(true),
         },
         {
             id: "outstanding",
@@ -634,6 +657,7 @@ const EPAMSMainDash = () => {
             sub: "Certificates Required",
             subColorClass: "mdash-sub--grey",
             colorClass: "mdash-card--red",
+            onInfo: () => setInfoOutstanding(true),
         },
     ];
 
@@ -699,7 +723,12 @@ const EPAMSMainDash = () => {
                     {/* ── Summary Cards ── */}
                     <div className="mdash-summary-grid">
                         {summaryCards.map((card) => (
-                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
+                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`} style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
+                                />
                                 <p className="mdash-summary-label">{card.label}</p>
                                 <strong className="mdash-summary-value">
                                     {card.skipFmt ? card.value : fmt(card.value)}
@@ -723,7 +752,7 @@ const EPAMSMainDash = () => {
                                     {[
                                         { label: "Valid", count: certStatusOverview.valid?.count ?? 0, pct: certStatusOverview.valid?.pct ?? 0, cls: "green" },
                                         { label: "Expiring Soon", count: certStatusOverview.expiring?.count ?? 0, pct: certStatusOverview.expiring?.pct ?? 0, cls: "orange" },
-                                        { label: "Expired", count: certStatusOverview.invalid?.count ?? 0, pct: certStatusOverview.invalid?.pct ?? 0, cls: "red" },
+                                        { label: "Invalid", count: certStatusOverview.invalid?.count ?? 0, pct: certStatusOverview.invalid?.pct ?? 0, cls: "red" },
                                     ].map((item) => (
                                         <div key={item.label} className="mdash-legend-row">
                                             <span className={`mdash-legend-dot mdash-legend-dot--${item.cls}`} />
@@ -1009,6 +1038,56 @@ const EPAMSMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoCompliance && (
+                <InfoPopupDashFlame
+                    type="organisationCompliance"
+                    title="Organisation Compliance"
+                    setClose={() => setInfoCompliance(false)}
+                />
+            )}
+
+            {infoTotal && (
+                <InfoPopupDashFlame
+                    type="totalComponentCertificates"
+                    title="Total Component Certificates"
+                    setClose={() => setInfoTotal(false)}
+                />
+            )}
+
+            {infoValid && (
+                <InfoPopupDashFlame
+                    type="validComponentCertificates"
+                    title="Valid Component Certificates"
+                    setClose={() => setInfoValid(false)}
+                />
+            )}
+
+            {infoExpiring && (
+                <InfoPopupDashFlame
+                    type="expiringComponentCertificates"
+                    title="Expiring Component Certificates"
+                    setClose={() => setInfoExpiring(false)}
+                />
+            )}
+
+            {infoInvalid && (
+                <InfoPopupDashFlame
+                    type="invalidComponentCertificates"
+                    title="Invalid Component Certificates"
+                    setClose={() => setInfoInvalid(false)}
+                />
+            )}
+
+            {infoOutstanding && (
+                <InfoPopupDashFlame
+                    type="outstandingComponentCertificates"
+                    title="Outstanding Component Certificates"
+                    setClose={() => setInfoOutstanding(false)}
+                />
+            )}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
         </div>
     );
 };

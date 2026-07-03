@@ -1154,7 +1154,7 @@ const DeletedControlAttributes = () => {
                     </div>
                     <div className="table-scroll-wrapper-attributes-controls" ref={scrollerRef}>
                         <table className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}>
-                            <thead className="risk-control-attributes-head">
+                            <thead style={{ fontSize: "14px" }} className="risk-control-attributes-head">
                                 <tr>
                                     {visibleIdentificationColumns.length > 0 && (
                                         <th

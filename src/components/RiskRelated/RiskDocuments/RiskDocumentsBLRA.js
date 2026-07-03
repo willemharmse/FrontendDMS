@@ -322,11 +322,26 @@ const RiskDocumentsBLRA = () => {
         { id: "lastReviewedBy", title: "Last Reviewed By", thClass: "gen-th ibraGenRB", tdClass: "cent-values-gen gen-point", td: (file) => file.reviewer?.username ? file.reviewer.username : "N/A" },
         { id: "lastReviewDate", title: "Last Review Date", thClass: "gen-th ibraGenRD", tdClass: "cent-values-gen gen-point", td: (file) => file.dateReviewed ? formatDate(file.dateReviewed) : "N/A" },
         {
-            id: "action", title: "Action", thClass: "gen-th ibraGenType", tdClass: "cent-values-gen gen-point", td: (file) => (
-                <button className={"delete-button-fi col-but"} onClick={(e) => { e.stopPropagation(); fileDelete(file._id, file.formData.title); }}>
-                    <FontAwesomeIcon icon={faTrash} title="Delete Document" />
-                </button>
-            )
+            id: "action",
+            title: "Action",
+            thClass: "gen-th ibraGenType",
+            tdClass: "cent-values-gen gen-point",
+            td: (f) => (
+                <div className="action-buttons-fi">
+                    <button
+                        className="download-button-fi col-but-res"
+                        onClick={() => downloadFile(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faDownload} title="Download" />
+                    </button>
+                    <button
+                        className="delete-button-fi col-but"
+                        onClick={() => fileDelete(f._id, f.formData.title)}
+                    >
+                        <FontAwesomeIcon icon={faTrash} title="Delete" />
+                    </button>
+                </div>
+            ),
         }
     ];
 

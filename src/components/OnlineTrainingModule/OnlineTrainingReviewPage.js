@@ -21,6 +21,7 @@ import SaveAsOnlineTrainingPopup from "./SaveAsOnlineTrainingPopup";
 import OTCourseAssessment from "./OTCourseAssessment";
 import CourseResourceTable from "./CourseResourceTable";
 import PublishedOnlineTrainingPreviewPage from "./PublishedOnlineTrainingPreviewPage"
+import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 
 const OnlineTrainingReviewPage = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const OnlineTrainingReviewPage = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
   const loadedIDRef = useRef('');
   const [loadingIntro, setLoadingIntro] = useState(false);
   const [loadingObj, setLoadingObj] = useState(false);
@@ -468,21 +470,12 @@ const OnlineTrainingReviewPage = () => {
     return fd;
   }
 
-  const handleSave = () => {
-    if (formData.courseTitle !== "") {
-      updateData();
-
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Draft has been successfully saved", {
-        closeButton: true,
-        autoClose: 1500, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
-    }
-    else {
+  // handleSave: this is the ONLY place a save toast should be shown from.
+  // updateData() is called from lots of other places (autosave, save-before-
+  // navigate, etc.) where we intentionally do NOT want a toast, so the
+  // success/failure messaging lives here, not inside updateData.
+  const handleSave = async () => {
+    if (formData.courseTitle === "") {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
@@ -492,6 +485,39 @@ const OnlineTrainingReviewPage = () => {
           textAlign: 'center'
         }
       });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updated = await updateData();
+
+      // updateData() already shows its own error toast internally on
+      // failure, so we only need to handle the success case here.
+      if (updated) {
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        toast.success("Draft has been successfully saved", {
+          closeButton: true,
+          autoClose: 1500, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Failed to save draft. Please try again.", {
+        closeButton: true,
+        autoClose: 2000,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1258,6 +1284,9 @@ const OnlineTrainingReviewPage = () => {
       {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       {retakeConfirmation && (<RepublishTrainingConfirmation closeModal={cancelRetakeConfirmation} normalPublish={cancelRetakeConfirmation} retakeInduction={confirmRetakeConfirmation} />)}
       <ToastContainer />
+      {isSaving && (
+        <SavingInProgress />
+      )}
     </div>
   );
 };

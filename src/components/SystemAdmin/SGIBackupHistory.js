@@ -356,7 +356,7 @@ const SGIBackupHistory = () => {
                     </div>
                     <div className="table-containerversion-history-file-info">
                         <table className="version-history-file-info-table">
-                            <thead className="version-history-file-info-head">
+                            <thead style={{ fontSize: "14px" }} className="version-history-file-info-head">
                                 <tr>
                                     {columns.map((col) => (
                                         <th
@@ -390,7 +390,7 @@ const SGIBackupHistory = () => {
                             <tbody>
                                 {displayedActivity.length > 0 ? (
                                     displayedActivity.map((act, index) => (
-                                        <tr key={act._id} className="file-info-row-height version-history-file-info-tr">
+                                        <tr style={{ fontSize: "14px" }} key={act._id} className="file-info-row-height version-history-file-info-tr">
                                             <td className="version-history-file-nr">{index + 1}</td>
                                             <td className="version-history-file-fn" style={{ textAlign: "left" }}>
                                                 {removeFileExtension(act.fileName)}

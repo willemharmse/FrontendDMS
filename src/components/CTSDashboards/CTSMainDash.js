@@ -8,6 +8,7 @@ import {
     faDownload,
     faCalendarAlt,
     faFilter,
+    faInfoCircle,
     faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import TopBar from "../Notifications/TopBar";
@@ -16,6 +17,8 @@ import { getCurrentUser, canIn } from "../../utils/auth";
 import { ToastContainer } from "react-toastify";
 import "./DMSMainDash.css";
 import { exportDashboardPDF } from "./exportDashboardPDF";
+import InfoPopupDash from "./InfoPopupDash";
+import InfoPopupDashCTS from "./InfoPopupDashCTS";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -97,7 +100,7 @@ const BarChart = ({ data }) => {
                 const y = padT + (svgH - padT - padB) - barH;
                 return (
                     <g key={d.label}>
-                        <rect x={x} y={y} width={barW} height={barH} rx="2" className={`mddsash-bar ${d.class}`} />
+                        <rect x={x} y={y} width={barW} height={barH} rx="0" className={`mddsash-bar ${d.class}`} />
                         <text x={slotCentreX} y={y - 4} textAnchor="middle" className="mddsash-bar-value">{d.value}</text>
                         <text x={slotCentreX} y={svgH - 6} textAnchor="middle" className="mddsash-axis-text">{d.label}</text>
                     </g>
@@ -263,6 +266,13 @@ const CTSMainDash = () => {
     const [loading, setLoading] = useState(true);
     const [dash, setDash] = useState(null);
     const [trendRange, setTrendRange] = useState(6);
+
+    // ── Info popup states — one per summary tile ──────────────────────────────
+    const [infoOpen, setInfoOpen] = useState(false);
+    const [infoOverdue, setInfoOverdue] = useState(false);
+    const [infoDue, setInfoDue] = useState(false);
+    const [infoCloseout, setInfoCloseout] = useState(false);
+    // ─────────────────────────────────────────────────────────────────────────
 
     // ── Excel-style filter state ──────────────────────────────────────────
     const BLANK = "(Blanks)";
@@ -557,6 +567,7 @@ const CTSMainDash = () => {
             sub: totalDelta.label,
             subColorClass: totalDelta.cls,
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoOpen(true),
         },
         {
             id: "overdue",
@@ -565,6 +576,7 @@ const CTSMainDash = () => {
             sub: overdueDelta.label,
             subColorClass: overdueDelta.cls,
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoOverdue(true),
         },
         {
             id: "due",
@@ -573,6 +585,7 @@ const CTSMainDash = () => {
             sub: expiringDelta.label,
             subColorClass: expiringDelta.cls,
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoDue(true),
         },
         {
             id: "closeout",
@@ -581,6 +594,7 @@ const CTSMainDash = () => {
             sub: closeoutDelta.label,
             subColorClass: closeoutDelta.cls,
             colorClass: "mdash-card--grey",
+            onInfo: () => setInfoCloseout(true),
         },
     ];
 
@@ -664,7 +678,12 @@ const CTSMainDash = () => {
                     {/* ── Summary Cards ── */}
                     <div className="mdxmash-summary-grid">
                         {summaryCards.map((card) => (
-                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`}>
+                            <div key={card.id} className={`mdash-summary-card ${card.colorClass}`} style={{ position: "relative" }}>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    style={{ color: "gray", fontSize: "16px", position: "absolute", top: "12px", right: "12px", cursor: "pointer" }}
+                                    onClick={card.onInfo}
+                                />
                                 <p className="mdash-summary-label">{card.label}</p>
                                 <strong className="mdash-summary-value">
                                     {card.noFmt ? card.value : fmt(card.value)}
@@ -977,6 +996,40 @@ const CTSMainDash = () => {
                 </div>
             </div>
             <ToastContainer />
+
+            {/* ── Info Popups — one per info button ───────────────────────────────── */}
+            {infoOpen && (
+                <InfoPopupDashCTS
+                    type="openTasks"
+                    title="Open Tasks"
+                    setClose={() => setInfoOpen(false)}
+                />
+            )}
+
+            {infoOverdue && (
+                <InfoPopupDashCTS
+                    type="overdueTasks"
+                    title="Overdue Tasks"
+                    setClose={() => setInfoOverdue(false)}
+                />
+            )}
+
+            {infoDue && (
+                <InfoPopupDashCTS
+                    type="tasksDueThisWeek"
+                    title="Tasks Due This Week"
+                    setClose={() => setInfoDue(false)}
+                />
+            )}
+
+            {infoCloseout && (
+                <InfoPopupDashCTS
+                    type="tasksRequiringCloseOut"
+                    title="Tasks Requiring Close Out"
+                    setClose={() => setInfoCloseout(false)}
+                />
+            )}
+            {/* ─────────────────────────────────────────────────────────────────────── */}
 
             {/* ── Excel filter popup ─────────────────────────────────────── */}
             {excelFilter.open && (() => {

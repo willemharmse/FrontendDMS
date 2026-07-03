@@ -19,13 +19,14 @@
     background: #f2f2f2;
     padding: 20px;
     width: 800px;
-    max-height: 300px;
+    max-height: 400px;
     /* ← Change this value to resize the popup's max height */
-    min-height: 300px;
+    min-height: 100px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     border-radius: 10px;
+    font-family: Arial;
 }
 
 .dashInfo-header {
@@ -74,7 +75,29 @@
     color: black;
     overflow-y: auto;
     font-family: Arial;
-    font-size: 15px;
+    font-size: 16px;
     display: block;
     white-space: pre-line;
+}
+
+.dashInfo-section {
+    margin-top: 16px;
+}
+
+.dashInfo-section-title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: black;
+}
+
+.dashInfo-list {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.dashInfo-list li {
+    margin-bottom: 6px;
+    font-size: 16px;
+    color: black;
 }

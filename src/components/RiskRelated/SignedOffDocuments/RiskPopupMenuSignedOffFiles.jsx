@@ -45,9 +45,9 @@ const RiskPopupMenuSignedOffFiles = ({ isOpen, setHoveredFileId, openDownloadMod
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    <ul>
+                    {false && (<ul>
                         <li onClick={() => openDownloadModal(file.dmsId._id, file.dmsId.fileName)}>Download</li>
-                    </ul>
+                    </ul>)}
                     {file.documentStatus.toLowerCase() !== "in revision" && (
                         <ul>
                             <li onClick={() => review(file._id)}>Review</li>

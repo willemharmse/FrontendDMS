@@ -59,7 +59,7 @@ const CTSHome = () => {
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/templateManagement1.svg`} className={"all-icon-fi-home"} />
                             </div>
-                            <h3 className="document-title-dc-home">Manage Templates</h3>
+                            <h3 className="document-title-dc-home">Task Templates</h3>
                         </>
                     </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/manualTaskingPage")}>
@@ -73,7 +73,7 @@ const CTSHome = () => {
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/mainDash")}>
                         <>
                             <div className="icon-dc">
-                                <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} src={`${process.env.PUBLIC_URL}/standardsDMS.svg`} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/dashboardMain.svg`} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Dashboards</h3>
                         </>

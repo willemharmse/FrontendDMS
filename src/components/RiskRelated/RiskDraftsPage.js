@@ -337,12 +337,12 @@ const RiskDraftsPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
                     <div className="button-container-create">
-                        <button className="but-um" onClick={() => navigate(`/FrontendDMS/deletedRiskDrafts/${type}`)}>
+                        <button className="but-um" onClick={() => navigate(`/deletedRiskDrafts/${type}`)}>
                             <div className="button-content">
                                 <FontAwesomeIcon icon={faTrash} className="button-logo-custom" />
                                 <span className="button-text">Deleted Drafts</span>
@@ -413,7 +413,7 @@ const RiskDraftsPage = () => {
                             </div>
                         ) : (
                             <table className="gen-table">
-                                <thead className="gen-head">
+                                <thead className="gen-head" style={{ fontSize: "14px" }}>
                                     <tr>
                                         <th className="gen-th ibraGenNr" style={{ width: "5%" }}>Nr</th>
                                         <th className="gen-th ibraGenFN" style={{ width: "30%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("name", e)}>
@@ -445,7 +445,7 @@ const RiskDraftsPage = () => {
                                             .map((item, index) => (
                                                 <tr
                                                     key={item._id}
-                                                    style={{ fontSize: "15px" }}
+                                                    style={{ fontSize: "14px" }}
                                                     className="load-draft-td"
                                                     onClick={() => navigate(pageConfig.rowClickRoute(item._id))}
                                                 >

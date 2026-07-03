@@ -29,6 +29,8 @@ import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopu
 import ApproveApprovalProcessPopup from "../Popups/ApproveApprovalProcessPopup";
 import AimBulletComponent from "../CreatePage/AimBulletComponent";
 import ScopeBulletComponent from "../CreatePage/ScopeBulletComponent";
+import SavingInProgress from "./SavingInProgress";
+import PublishingInProgress from "./PublishingInProgress";
 
 const CreatePageStandardsReview = () => {
   const navigate = useNavigate();
@@ -44,6 +46,8 @@ const CreatePageStandardsReview = () => {
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
+  const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
@@ -137,21 +141,12 @@ const CreatePageStandardsReview = () => {
     setIsSaveAsModalOpen(false);
   };
 
-  const handleSave = () => {
-    if (formData.title !== "") {
-      saveData(fileID);
-
-      toast.dismiss();
-      toast.clearWaitingQueue();
-      toast.success("Draft has been successfully saved", {
-        closeButton: false,
-        autoClose: 1500, // 1.5 seconds
-        style: {
-          textAlign: 'center'
-        }
-      });
-    }
-    else {
+  // handleSave: this is the ONLY place a save toast should be shown from.
+  // saveData() is called from lots of other places (autosave, save-before-navigate,
+  // etc.) where we intentionally do NOT want a toast, so the success/failure
+  // messaging lives here, not inside saveData.
+  const handleSave = async () => {
+    if (formData.title === "") {
       toast.dismiss();
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
@@ -160,6 +155,34 @@ const CreatePageStandardsReview = () => {
           textAlign: 'center'
         }
       })
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const result = await saveData(fileID);
+
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      if (result?.ok) {
+        toast.success("Draft has been successfully saved", {
+          closeButton: false,
+          autoClose: 1500, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      } else {
+        toast.error("Failed to save draft. Please try again.", {
+          closeButton: false,
+          autoClose: 2000,
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -286,12 +309,15 @@ const CreatePageStandardsReview = () => {
         setFormData(result.draft.formData);
         formDataRef.current = result.draft.formData;
       }
+
+      return { ok: true };
     } catch (error) {
       console.error('Error saving data:', error);
+      return { ok: false, error };
     }
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     const newErrors = validateForm();
     setErrors(newErrors);
 
@@ -303,7 +329,12 @@ const CreatePageStandardsReview = () => {
         }
       })
     } else {
-      handlePublishApprovalFlow();
+      setIsPublishing(true);
+      try {
+        await handlePublishApprovalFlow();
+      } finally {
+        setIsPublishing(false);
+      }
     }
   };
 
@@ -1948,6 +1979,12 @@ const CreatePageStandardsReview = () => {
       </div>
       <ToastContainer />
       {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+      {isSaving && (
+        <SavingInProgress />
+      )}
+      {isPublishing && (
+        <PublishingInProgress />
+      )}
     </div>
   );
 };

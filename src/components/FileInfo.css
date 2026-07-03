@@ -241,6 +241,11 @@ body {
   font-size: smaller;
 }
 
+.col-fi {
+  text-align: center;
+  font-size: smaller;
+}
+
 .col-size {
   text-align: center;
   font-size: small;
@@ -1048,7 +1053,7 @@ tbody tr:hover {
 }
 
 @media (max-width: 1199px) {
-  .col {
+  .col-fi {
     font-size: 9px;
   }
 
@@ -1080,7 +1085,7 @@ tbody tr:hover {
 }
 
 @media (min-width: 1200px) and (max-width: 1290px) {
-  .col {
+  .col-fi {
     font-size: 11px;
   }
 
@@ -1112,7 +1117,7 @@ tbody tr:hover {
 }
 
 @media (min-width: 1291px) and (max-width: 1600px) {
-  .col {
+  .col-fi {
     font-size: 13px;
   }
 

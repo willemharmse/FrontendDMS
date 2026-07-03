@@ -28,6 +28,30 @@ const FileInfoHome = () => {
     const [showDelayedLoading, setShowDelayedLoading] = useState(false);
     const [migrate, setMigrate] = useState(false);
 
+    const toPlural = (type) => {
+        const pluralMap = {
+            "All Document": "All Documents",
+            "DMPR MCOP Guideline": "DMPR MCOP Guidelines",
+            "General": "General",
+            "Guideline": "Guidelines",
+            "Instruction": "Instructions",
+            "Log and Register": "Logs and Registers",
+            "Manual and User Guide": "Manuals and User Guides",
+            "Permit": "Permits",
+            "Policy": "Policies",
+            "Procedure": "Procedures",
+            "Project Management Artifact": "Project Management Artifacts",
+            "Report": "Reports",
+            "Risk Assessment": "Risk Assessments",
+            "Specification": "Specifications",
+            "Standard": "Standards",
+            "Training and Assessment Document": "Training and Assessment Documents",
+            "Work Order": "Work Orders"
+        };
+
+        return pluralMap[type] || `${type}s`;
+    };
+
     useEffect(() => {
         let timer;
         if (isLoading) {
@@ -68,20 +92,25 @@ const FileInfoHome = () => {
         }
     }, [navigate]);
 
+    /*
+      const iconMap = {
+        "All Document": "allDocumentsDMS.svg",
+        Audit: "auditsDMSInverted.svg",
+        Guideline: "guidelinesDMSInverted.svg",
+        "DMPR MCOP Guideline": "guidelinesDMSInverted.svg",
+        "Industry Document": "guidelinesDMSInverted.svg",
+        MCOP: "guidelinesDMSInverted.svg",
+        Policy: "policiesDMSInverted.svg",
+        Procedure: "proceduresDMSInverted.svg",
+        "Risk Assessment": "riskAssessmentDMSInverted.svg",
+        "Special Instruction": "guidelinesDMSInverted.svg",
+        Standard: "standardsDMSInverted.svg",
+        Training: "guidelinesDMSInverted.svg",
+        Permit: "permitsDMSInverted.svg"
+      }
+    */
     const iconMap = {
         "All Document": "allDocumentsDMS.svg",
-        Audit: "auditsDMS.svg",
-        Guideline: "guidelinesDMS.svg",
-        "DMPR MCOP Guideline": "guidelinesDMS.svg",
-        "Industry Document": "guidelinesDMS.svg",
-        MCOP: "guidelinesDMS.svg",
-        Policy: "policiesDMS.svg",
-        Procedure: "proceduresDMS.svg",
-        "Risk Assessment": "riskAssessmentDMS.svg",
-        "Special Instruction": "guidelinesDMS.svg",
-        Standard: "standardsDMS.svg",
-        Training: "guidelinesDMS.svg",
-        Permit: "permitsDMS.svg"
     }
 
     const fetchCount = async () => {
@@ -226,7 +255,7 @@ const FileInfoHome = () => {
                     <TopBar menu={"Admin"} reset={"true"} setReset={setReset} showInfo={true} type={"DMS"} />
                 </div>
 
-                <div className="scrollable-box-fi-home">
+                <div className="scrollable-box-fi-new-home">
                     {showDelayedLoading && (
                         <div className="file-info-loading" role="status" aria-live="polite" aria-label="Loading">
                             <div className="file-info-loading__spinner" />
@@ -238,14 +267,10 @@ const FileInfoHome = () => {
                             {doc && (
                                 <>
                                     <div className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`}>
-                                        <img src={`${process.env.PUBLIC_URL}/${iconMap[doc._id]}` || `${process.env.PUBLIC_URL}/guidelinesDMS.svg`} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
+                                        <img src={`${process.env.PUBLIC_URL}/${iconMap[doc._id] || "policiesDMS.svg"}` || `${process.env.PUBLIC_URL}/policiesDMS.svg`} className={`${doc._id === "All Document" ? "all-icon-fi-home" : "icon-dept"}`} />
                                     </div>
                                     <h3 className="document-title-fi-home">
-                                        {doc._id === "Policy"
-                                            ? "Policies"
-                                            : doc._id === "Training"
-                                                ? "Training"
-                                                : `${doc._id}s`}
+                                        {toPlural(doc._id)}
                                     </h3>
                                     <p className="document-info-fi-home">Documents: {doc.totalCount}</p>
                                     <p className="document-info-fi-home">Reviews Overdue: {doc.overdueCount}</p>

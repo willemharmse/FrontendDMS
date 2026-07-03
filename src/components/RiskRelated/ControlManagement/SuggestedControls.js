@@ -939,7 +939,7 @@ const SuggestedControls = () => {
                     </div>
                     <div className="table-scroll-wrapper-attributes-controls" ref={scrollerRef}>
                         <table className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}>
-                            <thead className="risk-control-attributes-head">
+                            <thead className="risk-control-attributes-head" style={{ fontSize: "14px" }}>
                                 <tr>
                                     {/* Render Headers Row 1: Standalone columns (RowSpan 2) AND Group Headers (ColSpan X) */}
                                     {availableColumns.map(col => {
