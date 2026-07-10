@@ -50,6 +50,9 @@ export const getAutoManualNavigationRoute = (row) => {
                 return `/FrontendDMS/riskJRA/JRA/${sourceId}`;
             }
         }
+        else if (sourceSystem === "fts") {
+            return `/FrontendDMS/ftsCreateTemplate/template/${sourceId}`;
+        }
     }
 
     if (sourceType === "published") {
@@ -78,6 +81,9 @@ export const getAutoManualNavigationRoute = (row) => {
             } else if (systemType === "jra") {
                 return `/FrontendDMS/reviewJRA/${sourceId}/JRA`;
             }
+        }
+        else if (sourceSystem === "fts") {
+            return `/FrontendDMS/ftsReviewTemplate/${sourceId}/template`;
         }
     }
 

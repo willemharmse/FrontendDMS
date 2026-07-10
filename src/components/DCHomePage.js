@@ -60,7 +60,8 @@ const DCHomePage = () => {
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} showInfo={true} type={"DDS"} />
+                    {/* Container for right-aligned icons */}
+                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} showInfo={true} type={"DDS"} showDash={true} />
                 </div>
 
                 <div className="scrollable-box-dc-home">

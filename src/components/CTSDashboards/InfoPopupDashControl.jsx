@@ -4,22 +4,22 @@ import "./InfoPopupDash.css";
 const INFO_CONTENT = {
     totalControls: {
         title: "Total Controls in System",
-        text: "This tile shows the total amount of controls that are currently added to the system. This count includes all controls in the system, including critical controls, controls of concern, controls to monitor, and controls with a good quality rating. The month-on-month indicator shows if the amount of controls has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of standard controls in the system. These can be selected for use in risk assessments (IBRA and BLRA)."
     },
 
     criticalControls: {
         title: "Critical Controls",
-        text: "This tile shows the amount of controls in the system that are marked as critical controls. Critical controls are the controls that are important for managing key risks. The month-on-month indicator shows if the amount of critical controls has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of controls in the system that are identified as critical."
     },
 
     controlsOfConcern: {
         title: "Controls of Concern",
-        text: "This tile shows the amount of controls in the system that have a quality rating below 30%. These controls need attention because their quality rating is very low. The month-on-month indicator shows if the amount of controls of concern has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of controls in the system that have a quality rating below 30%. These controls need to be improved."
     },
 
     controlsToMonitor: {
         title: "Controls to Monitor",
-        text: "This tile shows the amount of controls in the system that have a quality rating between 30% and 90%. This includes controls with a quality rating of 30-59% and controls with a quality rating of 60-90%. These controls should be monitored because they are not yet above 90%. The month-on-month indicator shows if the amount of controls to monitor has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of controls in the system that have a quality rating between 30% and 90%. These controls can be improved."
     }
 };
 

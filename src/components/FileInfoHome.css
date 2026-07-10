@@ -138,7 +138,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #002060 !important;
+    color: #002060;
     overflow: hidden;
     /* Prevents overflow */
 }

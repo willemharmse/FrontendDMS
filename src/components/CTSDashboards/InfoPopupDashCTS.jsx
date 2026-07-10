@@ -4,22 +4,22 @@ import "./InfoPopupDash.css";
 const INFO_CONTENT = {
     openTasks: {
         title: "Open Tasks",
-        text: "This tile shows the amount of tasks in CTS that are still open. These are tasks that have not been closed out yet and are not overdue. The month-on-month indicator shows if the amount of open tasks has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of assigned tasks that are still active and require close-out."
     },
 
     overdueTasks: {
         title: "Overdue Tasks",
-        text: "This tile shows the amount of tasks in CTS that are overdue. These are tasks where the due date has already passed and the task has not been closed out yet. The month-on-month indicator shows if the amount of overdue tasks has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of assigned tasks that have passed their due date and still require completion or close-out."
     },
 
     tasksDueThisWeek: {
         title: "Tasks Due This Week",
-        text: "This tile shows the amount of open tasks in CTS that are due this week. These are tasks that have not been closed out yet and have a due date that falls within the current week. The month-on-month indicator shows if the amount of tasks due this week has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of assigned tasks scheduled for close-out within the current week."
     },
 
     tasksRequiringCloseOut: {
         title: "Tasks Requiring Close Out",
-        text: "This tile shows the amount of tasks in CTS that require close out. These are tasks that have been finished by the responsible person and now need to be closed out by the allocator. The month-on-month indicator shows if the amount of tasks requiring close out has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of completed or actioned tasks that still require verification, approval, or formal close-out."
     }
 };
 

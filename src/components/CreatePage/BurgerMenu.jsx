@@ -6,9 +6,9 @@ import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { isAdmin } from "../../utils/auth";
 
-const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
+const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk = false }) => {
     const navigate = useNavigate();
-    const link = risk ? "/FrontendDMS/riskApprover/new" : "/FrontendDMS/adminApprover/new";
+    const link = risk ? "/FrontendDMS/riskApprover/new" : "/adminApprover/new";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
@@ -55,11 +55,11 @@ const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk }) => {
             {isOpen && (
                 <div className="menu-content" onMouseLeave={() => setIsOpen(false)}>
                     <ul>
-                        {canIn(access, "RMS", ["systemAdmin"]) && !isAdmin(access) && (
+                        {canIn(access, "RMS", ["systemAdmin"]) && !isAdmin(access) && risk && (
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 
-                        {canIn(access, "DDS", ["systemAdmin"]) && !isAdmin(access) && (
+                        {canIn(access, "DDS", ["systemAdmin"]) && !isAdmin(access) && !risk && (
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 

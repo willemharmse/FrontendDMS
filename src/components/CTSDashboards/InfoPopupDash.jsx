@@ -4,32 +4,32 @@ import "./InfoPopupDash.css";
 const INFO_CONTENT = {
     total: {
         title: "Total Documents",
-        text: "This tile shows the amount of documents that are uploaded on the DMS. This count includes documents that are valid, documents that are due for review soon, and documents that have a review overdue. The month-on-month indicator shows if the amount of documents has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of documents stored in the system, including valid and invalid documents."
     },
 
     valid: {
         title: "Valid Documents",
-        text: "This tile shows the amount of documents uploaded to the DMS that have a review date that has not passed yet and is not due in the next 30 days. The month-on-month indicator shows if the amount of valid documents has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of approved and active documents that are available for use and have not yet reached their review date."
     },
 
     expiring: {
         title: "Due for Review Documents",
-        text: "This tile shows the amount of documents that are due for review soon. These are documents that have a review date coming up in the next 30 days. These documents have not passed their review date yet, but they need to be checked before they become overdue. The month-on-month indicator shows if the amount of documents due for review has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of documents that are approaching their scheduled date and require review."
     },
 
     expired: {
         title: "Review Overdue Documents",
-        text: "This tile shows the amount of documents that have passed their review date. These documents are overdue and need to be reviewed. The month-on-month indicator shows if the amount of overdue documents has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of documents that have passed their scheduled review date."
     },
 
     owners: {
         title: "Document Owners",
-        text: "This tile shows the amount of different document owners on the DMS. A document owner is the person responsible for a document. The month-on-month indicator shows if the amount of document owners has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of individuals assigned responsibility for maintaining and reviewing documents."
     },
 
     upload: {
         title: "Latest Upload Date",
-        text: "This tile shows the latest date that a document was uploaded on the DMS. This helps show how recently the DMS has been updated."
+        text: "Shows the most recent date on which a document was uploaded to the system."
     }
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faCircleExclamation, faHome, faArrowsRotate, faArrowRight, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faCircleExclamation, faHome, faArrowsRotate, faArrowRight, faInfoCircle, faDashboard, faChartLine, faChartColumn } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import BurgerMenu from "../CreatePage/BurgerMenu";
@@ -30,6 +30,7 @@ const TopBarDD = ({
     // Intercept callbacks — optional, only supplied by create/edit pages
     onHome,
     onRefresh,
+    showDash
 }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -65,6 +66,25 @@ const TopBarDD = ({
         fetchNotificationCount();
     }, []);
 
+    const navigateToDash = (type) => {
+        const routes = {
+            DDS: "/FrontendDMS/ddsDash",
+            DMS: "/FrontendDMS/dmsDash",
+            RMS: "/FrontendDMS/rmsDash",
+            TMS: "/FrontendDMS/constructionHelp",
+            EPAMS: "/FrontendDMS/epamsDash",
+            CTS: "/FrontendDMS/ctsDash",
+        };
+
+        const path = routes[type];
+
+        if (path) {
+            navigate(path);
+        } else {
+            console.warn("Unknown dashboard type:", type);
+        }
+    };
+
     const handleHomeClick = () => {
         if (onHome) {
             onHome();
@@ -83,6 +103,14 @@ const TopBarDD = ({
 
     return (
         <div className="icons-container-create-page">
+            {showDash && (<div className="burger-menu-icon-create-page-2">
+                <FontAwesomeIcon
+                    icon={faChartColumn}
+                    title="System Dashboard"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigateToDash(type)}
+                />
+            </div>)}
             {refreshable && (
                 <div className="burger-menu-icon-create-page-2">
                     <FontAwesomeIcon

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowCircleRight, faArrowLeft, faArrowRight, faArrowRotateLeft, faArrowRotateRight, faArrowsRotate, faBell, faCircleUser, faGroupArrowsRotate, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowCircleRight, faArrowLeft, faArrowRight, faArrowRotateLeft, faArrowRotateRight, faArrowsRotate, faBell, faChartColumn, faChartLine, faCircleUser, faDashboard, faGroupArrowsRotate, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import Notifications from "./Notifications";
 import InfoMenu from "./InfoMenu";
 
-const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor = false, training = true, student = false, showInfo = false, type }) => {
+const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor = false, training = true, student = false, showInfo = false, type, showDash }) => {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,12 +38,39 @@ const TopBar = ({ refreshable = true, menu, setReset, isProfile = false, visitor
         }
     };
 
+    const navigateToDash = (type) => {
+        const routes = {
+            DDS: "/FrontendDMS/ddsDash",
+            DMS: "/FrontendDMS/dmsDash",
+            RMS: "/FrontendDMS/rmsDash",
+            TMS: "/FrontendDMS/constructionHelp",
+            EPAMS: "/FrontendDMS/epamsDash",
+            CTS: "/FrontendDMS/ctsDash",
+        };
+
+        const path = routes[type];
+
+        if (path) {
+            navigate(path);
+        } else {
+            console.warn("Unknown dashboard type:", type);
+        }
+    };
+
     useEffect(() => {
         fetchNotificationCount();
     }, []);
 
     return (
         <div className="icons-container">
+            {showDash && (<div className="burger-menu-icon-create-page-2">
+                <FontAwesomeIcon
+                    icon={faChartColumn}
+                    title="System Dashboard"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigateToDash(type)}
+                />
+            </div>)}
             {refreshable && (<div className="burger-menu-icon-create-page-2">
                 <FontAwesomeIcon
                     icon={faArrowsRotate}

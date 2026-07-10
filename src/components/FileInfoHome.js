@@ -252,7 +252,8 @@ const FileInfoHome = () => {
 
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
-                    <TopBar menu={"Admin"} reset={"true"} setReset={setReset} showInfo={true} type={"DMS"} />
+                    {/* Container for right-aligned icons */}
+                    <TopBar menu={"Admin"} reset={"true"} setReset={setReset} showInfo={true} type={"DMS"} showDash={true} />
                 </div>
 
                 <div className="scrollable-box-fi-new-home">

@@ -293,6 +293,22 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
                     else {
                         targetPath = `/FrontendDMS/manualTaskingPage`
                     }
+                } else if (note.actionLocation === "FTS") {
+                    if (note.actionType === "suggestion") {
+                        targetPath = `/FrontendDMS/adminApprover/${note.actionId}`;
+                    }
+
+                    if (note.actionType === "draftShared") {
+                        targetPath = `/FrontendDMS/ftsCreateTemplate/template/${note.actionId}`
+                    }
+
+                    if (note.actionType === "publishApprove") {
+                        targetPath = `/FrontendDMS/ftsReviewTemplate/${note.actionId}/template`
+                    }
+
+                    if (note.actionType === "draftApprove") {
+                        targetPath = `/FrontendDMS/ftsCreateTemplate/template/${note.actionId}`
+                    }
                 }
 
                 if (targetPath) {

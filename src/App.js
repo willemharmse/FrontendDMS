@@ -216,6 +216,19 @@ import DWMainDash from './components/CTSDashboards/DWMainDash';
 import CTSMainDash from './components/CTSDashboards/CTSMainDash';
 import TMSMainDash from './components/CTSDashboards/TMSMainDash';
 import WorkManagement from './components/ComplainceTracking/TaskingPages/ManualTasking/WorkManagement';
+import FieldTemplateHomePage from './components/FieldTracking/FieldTemplateHomePage';
+import FTSCreateHomePage from './components/FieldTracking/FTSCreateHomePage';
+import FTSTemplatesDraftsPage from './components/FieldTracking/FTSTemplatesDraftsPage';
+import FTSSignedOffTemplates from './components/FieldTracking/FTSSignedOffTemplates';
+import FTSDeletedTemplatesSO from './components/FieldTracking/FTSDeletedTemplatesSO';
+import FTSVersionHistorySO from './components/FieldTracking/FTSVersionHistorySO';
+import FTSTemplateDocuments from './components/FieldTracking/FTSTemplateDocuments';
+import FTSDeletedTemplateDocuments from './components/FieldTracking/FTSDeletedTemplateDocuments';
+import FTSVersionHistory from './components/FieldTracking/FTSVersionHistory';
+import FTSCreatePageTemplate from './components/FieldTracking/FTSCreatePageTemplate';
+import FTSCreatePageTemplatesReview from './components/FieldTracking/FTSCreatePageTemplatesReview';
+import FTSDeletedTemplateDraftsPage from './components/FieldTracking/FTSDeletedTemplateDraftsPage';
+import StandardFieldsFTS from './components/FieldTracking/StandardFieldsFTS';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -498,6 +511,20 @@ function App() {
         <Route path="FrontendDMS/tmsDash" element={<TMSMainDash />} />
         <Route path="FrontendDMS/infoTraining/:id" element={<TrainingInfoPage />} />
         <Route path="FrontendDMS/workManagement" element={<WorkManagement />} />
+
+        <Route path="FrontendDMS/ftsHome" element={<FieldTemplateHomePage />} />
+        <Route path="FrontendDMS/ftsDevelopHome" element={<FTSCreateHomePage />} />
+        <Route path="FrontendDMS/ftsDrafts/:type" element={<FTSTemplatesDraftsPage />} />
+        <Route path="FrontendDMS/ftsSignedOffTemplates" element={<FTSSignedOffTemplates />} />
+        <Route path='FrontendDMS/ftsDeletedSignedOffTemplates' element={<FTSDeletedTemplatesSO />} />
+        <Route path="FrontendDMS/ftsSOTemplateVersionHistory/:id" element={<FTSVersionHistorySO />} />
+        <Route path='FrontendDMS/ftsGeneratedTemplates' element={<FTSTemplateDocuments />} />
+        <Route path='FrontendDMS/ftsDeletedTemplates' element={<FTSDeletedTemplateDocuments />} />
+        <Route path="FrontendDMS/ftsTemplateVersionHistory/:id" element={<FTSVersionHistory />} />
+        <Route path="FrontendDMS/ftsCreateTemplate/:type/:id" element={<FTSCreatePageTemplate />} />
+        <Route path='FrontendDMS/ftsReviewTemplate/:fileId/:type' element={<FTSCreatePageTemplatesReview />} />
+        <Route path="FrontendDMS/ftsDeletedTemplateDrafts/:type" element={<FTSDeletedTemplateDraftsPage />} />
+        <Route path="FrontendDMS/standardFieldsFTS" element={<StandardFieldsFTS />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

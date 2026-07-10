@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faTrashAlt, faPlus, faInfoCircle, faCirclePlus, faCalendarDays, faTrash, faClock } from '@fortawesome/free-solid-svg-icons';
@@ -26,6 +26,18 @@ const AddSubTaskPopup = ({ onClose, onTaskAdded, parentTask }) => {
     const [responsiblePerson, setResponsiblePerson] = useState("");
     const [dueDate, setDueDate] = useState("");
     const [dueTime, setDueTime] = useState(null);
+
+    // Sub-task due date can't be after the parent task's due date. parentTask.dueDate
+    // is a precise instant (e.g. midnight of that day), so using it directly as
+    // maxDate would reject a click on that same calendar day the moment the
+    // constructed selection time is even a fraction later than that instant.
+    // Extending it to the end of that day makes the whole day selectable.
+    const maxDueDate = useMemo(() => {
+        if (!parentTask?.dueDate) return undefined;
+        const d = new Date(parentTask.dueDate);
+        if (isNaN(d.getTime())) return undefined;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    }, [parentTask?.dueDate]);
     const [comments, setComments] = useState("");
     const [loading, setLoading] = useState(false);
     const [attachements, setAttachements] = useState([]);
@@ -670,7 +682,27 @@ const AddSubTaskPopup = ({ onClose, onTaskAdded, parentTask }) => {
                                                         zIndex={999999}
                                                         onOpenPickNewDate={false}
                                                         minDate={new Date()}
-                                                        maxDate={parentTask?.dueDate ? new Date(parentTask.dueDate) : undefined}
+                                                        maxDate={maxDueDate}
+                                                        mapDays={({ date }) => {
+                                                            if (maxDueDate && date.toDate() > maxDueDate) {
+                                                                return {
+                                                                    onClick: () =>
+                                                                        toast.warn(
+                                                                            `Subtask due date must be on or before the main task due date and may not be a past date`,
+                                                                            { autoClose: 2500, closeButton: false, toastId: 'subtask-due-date-max' }
+                                                                        ),
+                                                                };
+                                                            }
+                                                            if (date.toDate() < new Date()) {
+                                                                return {
+                                                                    onClick: () =>
+                                                                        toast.warn(
+                                                                            `Subtask due date must be on or before the main task due date and may not be a past date`,
+                                                                            { autoClose: 2500, closeButton: false, toastId: 'subtask-due-date-max' }
+                                                                        ),
+                                                                };
+                                                            }
+                                                        }}
                                                     />
                                                     <FontAwesomeIcon
                                                         icon={faCalendarDays}

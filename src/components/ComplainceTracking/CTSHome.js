@@ -50,7 +50,7 @@ const CTSHome = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar showInfo={true} type={"CTS"} training={false} />
+                    <TopBar showInfo={true} type={"CTS"} training={false} showDash={true} />
                 </div>
 
                 <div className="scrollable-box-dc-home">
@@ -70,14 +70,14 @@ const CTSHome = () => {
                             <h3 className="document-title-dc-home">Task Management</h3>
                         </>
                     </div>
-                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/mainDash")}>
+                    {false && (<div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/mainDash")}>
                         <>
                             <div className="icon-dc">
-                                <img src={`${process.env.PUBLIC_URL}/dashboardMain.svg`} className={"icon-dc"} />
+                                <img src={"/dashboardMain.svg"} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Dashboards</h3>
                         </>
-                    </div>
+                    </div>)}
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/workManagement")}>
                         <>
                             <div className="icon-dc">

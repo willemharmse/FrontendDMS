@@ -63,6 +63,10 @@ const HomePage = () => {
     navigate("/FrontendDMS/admin");
   };
 
+  const handleNavigateDash = () => {
+    navigate("/FrontendDMS/mainDash");
+  };
+
   const RAW_MENU = [
     {
       title: "Document Management", src: "DM.png", icon: faFolderOpen, path: "/FrontendDMS/documentManageHome", category: "DMS"
@@ -82,6 +86,9 @@ const HomePage = () => {
     {
       title: "Compliance Tracking", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/ctsHome", category: "CMS"
     },
+    {
+      title: "Field Templates", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/ftsHome", category: "FTS"
+    }
   ];
 
   const menuItems = useMemo(() => {
@@ -178,7 +185,9 @@ const HomePage = () => {
                 ${item.src === "CM.png" ? "card-icon-cm" : ""}`}
                       />
                     </div>
-                    <h3>{item.title}</h3>
+                    <h3>
+                      {item.title === "Field Templates" ? <>Field<br />Templates</> : item.title}
+                    </h3>
                   </>
                 )}
               </div>
@@ -204,8 +213,8 @@ const HomePage = () => {
         <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
         <p className="logo-bottom-text">A TAU5 PRODUCT</p>
       </div>
-      {isAdmin(access) && (<button className="admin-page-home-button" onClick={handleNavigateAdmin}>Admin Page</button>)}
-      <button className="logout-button" onClick={handleLogout}>Log Out</button>
+      <button className={isAdmin(access) ? `admin-page-home-button` : `logout-button`} onClick={handleNavigateDash}>Dashboards</button>
+      {isAdmin(access) && (<button className="logout-button" onClick={handleNavigateAdmin}>Admin Page</button>)}
       <button className="coming-soon-button" onClick={() => navigate("/FrontendDMS/futureEnhancement")}>Coming Soon</button>
       <ToastContainer />
       {showNotifications && (<NotificationsHomePage setClose={setShowNotifications} getCount={fetchNotificationCount} />)}

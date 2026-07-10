@@ -75,7 +75,7 @@ const TMSHomePage = () => {
                     <div className="spacer"></div>
 
                     {/* Container for right-aligned icons */}
-                    <TopBar showInfo={true} type={"TMS"} />
+                    <TopBar showInfo={true} type={"TMS"} showDash={true} />
                 </div>
 
                 <div className="scrollable-box-fi-home">

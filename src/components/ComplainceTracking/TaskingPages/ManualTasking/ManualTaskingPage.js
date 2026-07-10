@@ -29,6 +29,7 @@ import DeleteAllocatedTask from "./DeleteAllocatedTask";
 import CloseAllocatedTask from "./CloseAllocatedTask";
 import ReopenAllocatedTask from "./ReopenAllocatedTask";
 import ModifyAllocatedTaskPopup from "./ModifyAllocatedTaskPopup";
+import ViewMainTask from "./ViewMainTask";
 import ModifyMyTask from "./ModifyMyTask";
 import axios from "axios";
 import AcceptTaskPopup from "./AcceptTaskPopup";
@@ -265,6 +266,7 @@ const ManualTaskingPage = () => {
     const [showAddSubTaskPopup, setShowAddSubTaskPopup] = useState(false);
     const [subTaskParent, setSubTaskParent] = useState(null);
     const [viewSubTasksPopup, setViewSubTasksPopup] = useState({ open: false, parentTask: null, subtasks: [] });
+    const [viewMainTaskPopup, setViewMainTaskPopup] = useState({ open: false, subTaskId: null });
     const [showAddRepeatingTaskPopup, setShowAddRepeatingTaskPopup] = useState(false);
     const [deleteTaskPopup, setDeleteTaskPopup] = useState({ open: false, task: null, taskName: "" });
     const [closeTaskPopup, setCloseTaskPopup] = useState({ open: false, task: null, taskName: "" });
@@ -541,6 +543,13 @@ const ManualTaskingPage = () => {
         setViewSubTasksPopup({ open: false, parentTask: null, subtasks: [] });
     };
 
+    const openViewMainTaskPopup = (task) => {
+        setViewMainTaskPopup({ open: true, subTaskId: task?._id || null });
+    };
+    const closeViewMainTaskPopup = () => {
+        setViewMainTaskPopup({ open: false, subTaskId: null });
+    };
+
     const handleDeleteTask = async () => {
         const storedToken = localStorage.getItem("token");
         const task = deleteTaskPopup?.task;
@@ -804,7 +813,7 @@ const ManualTaskingPage = () => {
         if (!hoveredTaskId) return;
 
         const closeTaskPopup = (e) => {
-            if (!e.target.closest(".popup-anchor")) {
+            if (!e.target.closest(".popup-anchor") && !e.target.closest(".popup-content-pub-files")) {
                 setHoveredTaskId(null);
             }
         };
@@ -1486,10 +1495,17 @@ const ManualTaskingPage = () => {
                                         const colonIndex = title.indexOf(":");
 
                                         if (colonIndex !== -1) {
+                                            // DB keeps the colon (e.g. "Subtask of AM-MT-0008: ...") —
+                                            // only the display strips it and adds a blank line.
+                                            const boldPart = title.slice(0, colonIndex);
+                                            const restPart = title.slice(colonIndex + 1).trimStart();
+
                                             return (
                                                 <>
-                                                    <strong>{title.slice(0, colonIndex + 1)}</strong>
-                                                    {title.slice(colonIndex + 1)}
+                                                    <strong>{boldPart}</strong>
+                                                    <br />
+                                                    <br />
+                                                    {restPart}
                                                 </>
                                             );
                                         }
@@ -1509,6 +1525,7 @@ const ManualTaskingPage = () => {
                                     allowed={!isAutoAuto && !isAutoManual}
                                     onAddSubTask={openAddSubTaskPopup}
                                     onViewSubtasks={openViewSubTasksPopup}
+                                    onViewMainTask={openViewMainTaskPopup}
                                 />
                             )}
                         </div>
@@ -2290,6 +2307,12 @@ const ManualTaskingPage = () => {
                     parentTask={viewSubTasksPopup.parentTask}
                     subtasks={viewSubTasksPopup.subtasks}
                     onClose={closeViewSubTasksPopup}
+                />
+            )}
+            {viewMainTaskPopup.open && (
+                <ViewMainTask
+                    subTaskId={viewMainTaskPopup.subTaskId}
+                    onClose={closeViewMainTaskPopup}
                 />
             )}
             {isTaskDueDatePopupOpen && (

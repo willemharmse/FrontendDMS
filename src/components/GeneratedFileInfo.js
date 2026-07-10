@@ -149,7 +149,7 @@ const GeneratedFileInfo = () => {
                 <div className="action-buttons-fi">
                     <button
                         className="download-button-fi col-but-res"
-                        onClick={() => downloadFile(f._id, f.formData.title)}
+                        onClick={() => downloadFile(f._id, f.fileName)}
                     >
                         <FontAwesomeIcon icon={faDownload} title="Download" />
                     </button>

@@ -4,22 +4,22 @@ import "./InfoPopupDash.css";
 const INFO_CONTENT = {
     totalComponents: {
         title: "Number of Components",
-        text: "This tile shows the amount of components that are currently in the Digital Warehouse for the organisation. This count includes all components in the Digital Warehouse, including valid components, invalid components. The month-on-month indicator shows if the amount of components has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of components registered in the Digital Warehouse."
     },
 
     validComponents: {
         title: "Number of Valid Components",
-        text: "This tile shows the amount of components in the Digital Warehouse that are currently valid. A component is counted as valid when its expiry date has not passed yet, and its certificate was issued by a certification body that has a valid certification body certificate. The month-on-month indicator shows if the amount of valid components has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of components registered in the Digital Warehouse that have valid flameproof certificates."
     },
 
     invalidComponents: {
         title: "Number of Invalid Components",
-        text: "This tile shows the amount of components in the Digital Warehouse that are currently invalid. A component is counted as invalid when its expiry date has passed, or when its certificate was issued by a certification body that has an expired certification body certificate. The month-on-month indicator shows if the amount of invalid components has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the total number of components registered in the Digital Warehouse that do not have valid flameproof certificates or do not have certificates uploaded."
     },
 
     componentsInRepair: {
         title: "Components in Repair",
-        text: "This tile shows the amount of components that are currently in repair in the Digital Warehouse. These are components that are not currently available for normal use because they are being repaired. The month-on-month indicator shows if the amount of components in repair has increased, decreased, or stayed the same compared to last month."
+        text: "Shows the number of components registered in the Digital Warehouse that require repairs or are currently getting repaired or worked on."
     }
 };
 

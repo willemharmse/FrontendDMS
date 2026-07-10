@@ -49,7 +49,7 @@ const EPACSHome = () => {
 
                     <div className="spacer"></div>
 
-                    <TopBar showInfo={true} type={"EPAMS"} />
+                    <TopBar showInfo={true} type={"EPAMS"} showDash={true} />
                 </div>
 
                 <div className="scrollable-box-dc-home">

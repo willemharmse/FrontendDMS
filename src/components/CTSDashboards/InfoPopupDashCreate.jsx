@@ -7,37 +7,37 @@ const INFO_CONTENT = {
     totalInDevelopment: {
         title: "Total Documents in Development",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the amount of ${documentType} that are currently in development in ${systemType}. This count includes ${documentType} that are in approval, in review, and pending sign-off. These are ${documentType} that have not been signed off yet. The month-on-month indicator shows if the amount of ${documentType} in development has increased, decreased, or stayed the same compared to last month.`
+            `Shows the total number of documents currently being created, reviewed, or approved in the system before sign-off.`
     },
 
     inApproval: {
         title: "In Approval",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the amount of ${documentType} in ${systemType} that are waiting for approval. These ${documentType} have already been reviewed and now require an approver to approve them. Once the ${documentType} has been approved, it can move further through the process so that it can be published. The month-on-month indicator shows if the amount of ${documentType} waiting for approval has increased, decreased, or stayed the same compared to last month.`
+            `Shows the number of documents developed in the system submitted for approval within the system.`
     },
 
     inReview: {
         title: "In Review",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the amount of ${documentType} in ${systemType} that are waiting to be reviewed. These ${documentType} require a reviewer to check the content before they can move to the next step in the process. The month-on-month indicator shows if the amount of ${documentType} waiting for review has increased, decreased, or stayed the same compared to last month.`
+            `Shows the number of documents currently being reviewed for accuracy, completeness, and readiness for approval within the system.`
     },
 
     pendingSignOff: {
         title: "Pending Sign-Off",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the amount of ${documentType} in ${systemType} that are waiting for sign-off. These ${documentType} require a signed-off PDF to be uploaded before they can be signed off in the system. The month-on-month indicator shows if the amount of ${documentType} pending sign-off has increased, decreased, or stayed the same compared to last month.`
+            `Shows the number of documents that have been reviewed and approved, now awaiting a signed off pdf copy to be uploaded to the system.`
     },
 
     underPeriodicReview: {
         title: "Under Periodic Review",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the amount of ${documentType} in ${systemType} that are under periodic review. These ${documentType} were signed off previously, but are now being reviewed again as part of the normal review process. The month-on-month indicator shows if the amount of ${documentType} under periodic review has increased, decreased, or stayed the same compared to last month.`
+            `Shows the number of approved documents currently undergoing scheduled review to confirm they remain accurate, relevant, and fit for use.`
     },
 
     averageTurnAroundTime: {
         title: "Average Turn Around Time",
         getText: ({ systemType, documentType }) =>
-            `This tile shows the average amount of time it takes for a ${documentType} to move through the process in ${systemType}. It measures how long it takes from when the ${documentType} is reviewed until it is signed off. This helps show how quickly ${documentType} are being completed in the system.`
+            `Shows the average time taken for documents to move from creation or review to final sign-off.`
     }
 };
 
