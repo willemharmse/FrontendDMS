@@ -295,7 +295,7 @@ const NotificationsHomePage = ({ setClose, getCount }) => {
                     }
                 } else if (note.actionLocation === "FTS") {
                     if (note.actionType === "suggestion") {
-                        targetPath = `/FrontendDMS/adminApprover/${note.actionId}`;
+                        targetPath = `/FrontendDMS/suggestedFields/${note.actionId}`;
                     }
 
                     if (note.actionType === "draftShared") {

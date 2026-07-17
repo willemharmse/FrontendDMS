@@ -6,10 +6,27 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskRelated/RiskAssessmentItemsDelete";
 
 const PicturesTable = ({ collapsible = false, picturesRows, addPicRow, removePicRow, updatePicRow, readOnly = false }) => {
     const [collapsed, setCollapsed] = useState(true);
     const isCollapsed = collapsible ? collapsed : false;
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
+
+    const requestRemovePicRow = (index) => {
+        setConfirmDeleteIndex(index);
+    };
+
+    const confirmRemovePicRow = () => {
+        if (confirmDeleteIndex != null) {
+            removePicRow(confirmDeleteIndex);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemovePicRow = () => {
+        setConfirmDeleteIndex(null);
+    };
 
     const toggleCollapse = () => {
         const newState = !collapsed;
@@ -98,7 +115,7 @@ const PicturesTable = ({ collapsible = false, picturesRows, addPicRow, removePic
                                                 />
                                             </td>
                                             {!readOnly && (<td className="ref-but-row procCent">
-                                                <button className="remove-row-button" onClick={() => removePicRow(index)}>
+                                                <button className="remove-row-button" onClick={() => requestRemovePicRow(index)}>
                                                     <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                 </button>
                                             </td>)}
@@ -122,6 +139,14 @@ const PicturesTable = ({ collapsible = false, picturesRows, addPicRow, removePic
                     </>
                 )}
             </div>
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemovePicRow}
+                    type="Figure and Graph Row"
+                    removeRow={confirmRemovePicRow}
+                />
+            )}
         </div>
     );
 };

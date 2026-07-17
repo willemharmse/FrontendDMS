@@ -737,3 +737,25 @@
     color: white;
     border-color: #002060;
 }
+
+.cea-table-page-quality-poor {
+    background-color: #CB6F6F;
+    text-align: center;
+    color: white;
+}
+
+.cea-table-page-quality-fair {
+    background-color: #FFC000;
+    text-align: center;
+}
+
+.cea-table-page-quality-good {
+    background-color: #FFFF89;
+    text-align: center;
+}
+
+.cea-table-page-quality-excellent {
+    background-color: #7EAC89;
+    text-align: center;
+    color: white;
+}

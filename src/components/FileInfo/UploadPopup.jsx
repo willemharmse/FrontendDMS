@@ -20,7 +20,7 @@ const UploadPopup = ({ onClose }) => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [users, setUsers] = useState([]); // State to hold the list of users
-    const [deptHeads, setDeptHeads] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [docTypes, setDocTypes] = useState([]);
     const [disciplines, setDisciplines] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -28,6 +28,7 @@ const UploadPopup = ({ onClose }) => {
     const [userID, setUserID] = useState('');
     const [errors, setErrors] = useState([]);
     const [usersList, setUsersList] = useState([]);
+    const [uploadedDocumentType, setUploadedDocumentType] = useState('');
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -49,19 +50,37 @@ const UploadPopup = ({ onClose }) => {
                 const data = await response.json();
 
                 setDocTypes(data[0].documentType);
-                setDisciplines(data[0].disciplines);
                 const owners = Array.from(new Set([
                     ...data[0].owner,
                     ...data[0].departmentHeads
                 ]));
 
                 setUsers(owners); // This now contains owners + departmentHeads, with duplicates removed
-                setDeptHeads(data[0].departmentHeads);
             } catch (error) {
                 setError(error.message);
             }
         };
         fetchValues();
+    }, []);
+
+    useEffect(() => {
+        // Discipline options now come from the actual departments, not the static values list
+        const fetchDepartments = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/department/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch departments");
+                }
+                const data = await response.json();
+
+                const departmentList = data.departments || [];
+                setDepartments(departmentList);
+                setDisciplines(departmentList.map((dept) => dept.department));
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+        fetchDepartments();
     }, []);
 
     useEffect(() => {
@@ -81,6 +100,14 @@ const UploadPopup = ({ onClose }) => {
         };
         fetchUsers();
     }, []);
+
+    useEffect(() => {
+        // The department head is no longer picked manually — it follows the selected discipline
+        const matchedDepartment = departments.find((dept) => dept.department === discipline);
+        setDepartmentHead(matchedDepartment?.departmentHead || '');
+    }, [discipline, departments]);
+
+    const departmentHeadName = usersList.find((user) => user._id === departmentHead)?.username || '';
 
     const validateForm = () => {
         const newErrors = {};
@@ -130,7 +157,7 @@ const UploadPopup = ({ onClose }) => {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('departmentHead', departmentHead);
+        formData.append('departmentHead', departmentHeadName);
         formData.append('owner', JSON.stringify(owner));
         formData.append('documentType', documentType);
         formData.append('discipline', discipline);
@@ -170,6 +197,8 @@ const UploadPopup = ({ onClose }) => {
             }
 
             await response.json();
+
+            setUploadedDocumentType(documentType);
 
             setSuccessMessage("Document uploaded successfully!");
             setShowPopup(true);
@@ -227,6 +256,13 @@ const UploadPopup = ({ onClose }) => {
         if (isFormValid()) {
             handleFileUpload();  // Call your function when the form is valid
         }
+    };
+
+    const handleFinishUploading = () => {
+        const targetPath =
+            `/FrontendDMS/documentManage/${encodeURIComponent(uploadedDocumentType)}/new`;
+
+        window.location.assign(targetPath);
     };
 
     return (
@@ -289,22 +325,6 @@ const UploadPopup = ({ onClose }) => {
                                         </select>
                                     </div>
                                 </div>
-                                <div className={`upload-file-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                    <label>Department Head <span className="required-field">*</span></label>
-                                    <div className="upload-file-page-select-container">
-                                        <select value={departmentHead} className="upload-file-page-select" onChange={(e) => setDepartmentHead(e.target.value)}>
-                                            <option value="">Select Head</option>
-                                            {deptHeads.sort((a, b) => a.localeCompare(b)).map((head, index) => (
-                                                <option key={index} value={head}>
-                                                    {head}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="upload-file-page-form-row">
                                 <div className={`upload-file-page-form-group ${errors.status ? "error-upload-required-up" : ""}`}>
                                     <label>Document Status <span className="required-field">*</span></label>
                                     <div className="upload-file-page-select-container">
@@ -316,6 +336,9 @@ const UploadPopup = ({ onClose }) => {
                                         </select>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="upload-file-page-form-row">
                                 <div className={`upload-file-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
                                     <label>Document Reviewer <span className="required-field">*</span></label>
                                     <div className="upload-file-page-select-container">
@@ -342,11 +365,6 @@ const UploadPopup = ({ onClose }) => {
                                         </select>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="upload-file-page-form-row">
-
-
                                 <div className={`upload-file-page-form-group ${errors.documentType ? "error-upload-required-up" : ""}`}>
                                     <label>Document Type <span className="required-field">*</span></label>
                                     <div className="upload-file-page-select-container">
@@ -360,6 +378,9 @@ const UploadPopup = ({ onClose }) => {
                                         </select>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="upload-file-page-form-row">
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                     <label>Review Date <span className="required-field">*</span></label>
                                     <div style={{ position: "relative", width: "calc(100% - 8.01px)" }}>
@@ -383,6 +404,8 @@ const UploadPopup = ({ onClose }) => {
                                             className="date-input-calendar-icon"
                                         />
                                     </div>
+                                </div>
+                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                 </div>
                                 <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
                                 </div>
@@ -417,7 +440,7 @@ const UploadPopup = ({ onClose }) => {
                                     <button className="download-file-button-download" onClick={() => setShowPopup(false)}>
                                         Yes
                                     </button>
-                                    <button className="download-file-button-cancel" onClick={onClose}>
+                                    <button className="download-file-button-cancel" onClick={handleFinishUploading}>
                                         No
                                     </button>
                                 </div>

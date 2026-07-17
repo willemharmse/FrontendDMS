@@ -209,6 +209,9 @@
     field-sizing: content;
     min-height: 160px;
     resize: vertical;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .courseCont-textarea-stacked {

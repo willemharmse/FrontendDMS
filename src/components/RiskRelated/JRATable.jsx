@@ -16,6 +16,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentDeletePopup from "./RiskAssessmentDeletePopup";
 
 const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible, error, setErrors, readOnly = false }) => {
     const [rowData, setRowData] = useState([]);
@@ -26,6 +27,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
     const savedWidthRef = useRef(null);
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
+    const [rowPendingDelete, setRowPendingDelete] = useState(null);
 
     // Help Popups
     const [helpHazards, setHelpHazards] = useState(false);
@@ -113,6 +115,41 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
         }
 
         return true;
+    };
+
+    const requestRemoveRow = (row) => {
+        setRowPendingDelete({
+            kind: "row",
+            rowId: row.id,
+            type: "JRA"
+        });
+    };
+
+    const requestRemoveBodyRow = (row, body) => {
+        const removesWholeRow = row.jraBody.length === 1;
+
+        setRowPendingDelete({
+            kind: "body",
+            rowId: row.id,
+            bodyId: body.idBody,
+            type: removesWholeRow ? "JRA" : "JRA Sub-step"
+        });
+    };
+
+    const closeRemoveRowPopup = () => {
+        setRowPendingDelete(null);
+    };
+
+    const confirmRemoveRow = () => {
+        if (!rowPendingDelete) return;
+
+        if (rowPendingDelete.kind === "body") {
+            removeBodyRow(rowPendingDelete.rowId, rowPendingDelete.bodyId);
+        } else {
+            removeRow(rowPendingDelete.rowId);
+        }
+
+        setRowPendingDelete(null);
     };
 
     const getDefaultShowColumns = () => [
@@ -1476,7 +1513,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
                                                                             type="button"
                                                                             className="delete-mainrow-button"
                                                                             title="Delete Main Step"
-                                                                            onClick={() => removeRow(row.id)}
+                                                                            onClick={() => requestRemoveRow(row)}
                                                                         >
                                                                             <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
                                                                         </button>
@@ -1512,9 +1549,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
                                                                                     ? "Delete Sub-step"
                                                                                     : "Delete Row"
                                                                             }
-                                                                            onClick={() =>
-                                                                                removeBodyRow(row.id, body.idBody)
-                                                                            } />
+                                                                            onClick={() => requestRemoveBodyRow(row, body)} />
                                                                     )}
 
                                                                 </td>
@@ -1841,6 +1876,13 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
                         );
                     })()}
                 </div>
+            )}
+            {rowPendingDelete && (
+                <RiskAssessmentDeletePopup
+                    closeModal={closeRemoveRowPopup}
+                    type={rowPendingDelete.type}
+                    removeRow={confirmRemoveRow}
+                />
             )}
 
             {helpHazards && (<HazardJRA setClose={closeHazardsHelp} />)}

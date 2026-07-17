@@ -1342,13 +1342,13 @@ const PublishedOnlineTrainingPreviewPage = ({ draftID, closeModal }) => {
 
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
                                                                 <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentLeft || ""}
                                                                         </div>
                                                                     </div>
                                                                     <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentRight || ""}
                                                                         </div>
@@ -1414,7 +1414,7 @@ const PublishedOnlineTrainingPreviewPage = ({ draftID, closeModal }) => {
                                         </div>
                                         <div style={{ height: 4, background: "#0b2f6b", borderRadius: 2, marginTop: 8, marginBottom: 10 }} />
 
-                                        <div className="recap-content" style={{ fontSize: "20px" }}>
+                                        <div className="recap-content" style={{ fontSize: "22px" }}>
 
                                             {course?.formData?.summary || "No summary provided."}
                                         </div>

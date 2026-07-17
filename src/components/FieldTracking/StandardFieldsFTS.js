@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faCircleUser, faDownload, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faCircleUser, faDownload, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faFilter, faFile, faFileExport, faPlusCircle, faUpload, faCirclePlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import BurgerMenuFI from "../FileInfo/BurgerMenuFI";
 import DownloadPopup from "../FileInfo/DownloadPopup";
 import { jwtDecode } from 'jwt-decode';
 import TopBar from "../Notifications/TopBar";
+import { canIn, getCurrentUser } from "../../utils/auth";
+import { saveAs } from "file-saver";
+import BatchImportStandardFields from "./BatchImportStandardFields";
+import AddFTSField from "./AddFTSField";
+import ModifyFTSField from "./ModifyFTSField";
+import DeleteStandardFieldPopup from "./DeleteStandardFieldPopup";
+import { toast, ToastContainer } from "react-toastify";
 
 const StandardFieldsFTS = () => {
     const [error, setError] = useState(null);
@@ -18,6 +25,13 @@ const StandardFieldsFTS = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
     const [fields, setFields] = useState([]);
+    const [isImportOpen, setIsImportOpen] = useState(false);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isModifyOpen, setIsModifyOpen] = useState(false);
+    const [modifyTarget, setModifyTarget] = useState(null);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const access = getCurrentUser();
 
     // --- Excel Filter States ---
     const DEFAULT_SORT = { colId: null, direction: "asc" };
@@ -316,6 +330,97 @@ const StandardFieldsFTS = () => {
         setSortConfig(DEFAULT_SORT);
     };
 
+    const handleDownload = async () => {
+        const dataToStore = fields;
+        const documentName = `FTS Standard Fields`;
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/generateExcels/generate-xlsx-standardControlsFTS`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to generate document");
+
+            const blob = await response.blob();
+            saveAs(blob, `${documentName}.xlsx`);
+        } catch (error) {
+            console.error("Error generating document:", error);
+        }
+    };
+
+    const handleImport = () => {
+        setIsImportOpen(true);
+    };
+
+    const handleImportClose = () => {
+        setIsImportOpen(false);
+    };
+
+    const handleImportSuccess = () => {
+        fetchStandardFields();
+        setIsImportOpen(false);
+    };
+
+    const handleAddOpen = () => {
+        setIsAddOpen(true);
+    };
+
+    const handleAddClose = () => {
+        setIsAddOpen(false);
+        fetchStandardFields();
+    };
+
+    const handleModifyOpen = (row) => {
+        setModifyTarget(row);
+        setIsModifyOpen(true);
+    };
+
+    const handleModifyClose = () => {
+        setIsModifyOpen(false);
+        setModifyTarget(null);
+        fetchStandardFields();
+    };
+
+    const handleDeleteOpen = (row) => {
+        setDeleteTarget(row);
+        setIsDeleteOpen(true);
+    };
+
+    const handleDeleteClose = () => {
+        setIsDeleteOpen(false);
+        setDeleteTarget(null);
+    };
+
+    const handleDeleteField = async (id) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsImports/deleteStandardField/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                toast.error(responseData?.error || "Failed to delete field", { closeButton: false, autoClose: 1500 });
+                return;
+            }
+
+            toast.success("Standard Field Deleted", { closeButton: false, autoClose: 1500 });
+        } catch (error) {
+            toast.error("Failed to delete field", { closeButton: false, autoClose: 1500 });
+        } finally {
+            handleDeleteClose();
+            fetchStandardFields();
+        }
+    };
+
     return (
         <div className="dc-version-history-file-info-container">
             {isSidebarVisible && (
@@ -326,6 +431,19 @@ const StandardFieldsFTS = () => {
                     <div className="sidebar-logo-um">
                         <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Standard Fields</p>
+                        <div className="button-container-create">
+
+                            {canIn(access, "FTS", ["systemAdmin", "contributor"]) && (
+                                <>
+                                    <button className="but-um" onClick={() => navigate("/FrontendDMS/suggestedFields/new")}>
+                                        <div className="button-content">
+                                            <FontAwesomeIcon icon={faFile} className="button-logo-custom" />
+                                            <span className="button-text">Suggested Fields</span>
+                                        </div>
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -341,6 +459,14 @@ const StandardFieldsFTS = () => {
                 <div className="top-section-um">
                     <div className="burger-menu-icon-um">
                         <FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} title="Back" />
+
+                        {false && canIn(access, "FTS", ["systemAdmin", "contributor"]) && (
+                            <>
+                                <div className="burger-menu-icon-um">
+                                    <FontAwesomeIcon icon={faCirclePlus} title="Add New Field" onClick={handleAddOpen} style={{ cursor: "pointer" }} />
+                                </div>
+                            </>
+                        )}
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -363,11 +489,25 @@ const StandardFieldsFTS = () => {
                             className="top-right-button-control-att"
                             onDoubleClick={handleClearFilters}
                         />
+
+                        <FontAwesomeIcon
+                            icon={faUpload}
+                            title={"Export Standard Fields Table"}
+                            className="top-right-button-control-att-2"
+                            onClick={handleDownload}
+                        />
+
+                        {true && (<FontAwesomeIcon
+                            icon={faDownload}
+                            title={"Import Standard Fields"}
+                            className="top-right-button-control-att-3"
+                            onClick={handleImport}
+                        />)}
                     </div>
                     <div className="table-containerdc-version-history-file-info" style={{ overflowY: "auto" }}>
                         <table className="dc-version-history-file-info-table">
                             <thead className="dc-version-history-file-info-head">
-                                <tr>
+                                <tr style={{ fontSize: "14px" }}>
                                     <th
                                         style={{ width: "5%", position: "relative", cursor: "pointer", textAlign: "center" }}
                                         onClick={(e) => openExcelFilterPopup("nr", e)}
@@ -405,11 +545,28 @@ const StandardFieldsFTS = () => {
                             <tbody>
                                 {processedFields.length > 0 ? (
                                     processedFields.map((row, index) => (
-                                        <tr key={row._id ?? index} className={`file-info-row-height dc-version-history-file-info-tr`}>
+                                        <tr style={{ fontSize: "14px" }} key={row._id ?? index} className={`file-info-row-height dc-version-history-file-info-tr`}>
                                             <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>{index + 1}</td>
                                             <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>{row.field}</td>
                                             <td style={{ textAlign: "left", fontFamily: "Arial", fontSize: "14px" }}>{row.definition}</td>
-                                            <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}></td>
+                                            <td style={{ textAlign: "center", fontFamily: "Arial", fontSize: "14px" }}>
+                                                {false && (
+                                                    <>
+                                                        <FontAwesomeIcon
+                                                            icon={faEdit}
+                                                            title="Modify Field"
+                                                            style={{ cursor: "pointer", marginRight: "12px" }}
+                                                            onClick={() => handleModifyOpen(row)}
+                                                        />
+                                                        <FontAwesomeIcon
+                                                            icon={faTrash}
+                                                            title="Delete Field"
+                                                            style={{ cursor: "pointer" }}
+                                                            onClick={() => handleDeleteOpen(row)}
+                                                        />
+                                                    </>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
@@ -579,7 +736,29 @@ const StandardFieldsFTS = () => {
                 </div>
             )}
 
+            {isImportOpen && (
+                <BatchImportStandardFields
+                    onClose={handleImportClose}
+                    onImportSuccess={handleImportSuccess}
+                />
+            )}
             {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={displayName} loading={loading} />)}
+
+            <AddFTSField isOpen={isAddOpen} onClose={handleAddClose} />
+
+            {isModifyOpen && modifyTarget && (
+                <ModifyFTSField isOpen={isModifyOpen} onClose={handleModifyClose} data={modifyTarget} />
+            )}
+
+            {isDeleteOpen && deleteTarget && (
+                <DeleteStandardFieldPopup
+                    closeModal={handleDeleteClose}
+                    deleteField={handleDeleteField}
+                    field={deleteTarget}
+                />
+            )}
+
+            <ToastContainer />
         </div >
     );
 };

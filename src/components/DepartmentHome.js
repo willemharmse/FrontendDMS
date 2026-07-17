@@ -54,6 +54,14 @@ const DepartmentHome = () => {
 
     const clearSearch = () => setSearchQuery("");
 
+    const countDepartmentUsers = (department) => {
+        const memberCount = Array.isArray(department.departmentMembers)
+            ? department.departmentMembers.length
+            : 0;
+        const headCount = department.departmentHead ? 1 : 0;
+        return memberCount + headCount;
+    };
+
     const openAdd = () => setCreate(true);
     const closeAdd = () => {
         setCreate(false);
@@ -231,7 +239,7 @@ const DepartmentHome = () => {
             .map((d, index) => ({
                 ...d,
                 nr: index + 1,
-                departmentUsers: Array.isArray(d.departmentMembers) ? d.departmentMembers.length : 0,
+                departmentUsers: countDepartmentUsers(d),
             }));
 
         const values = Array.from(
@@ -328,9 +336,7 @@ const DepartmentHome = () => {
             .map((department, index) => ({
                 ...department,
                 nr: index + 1,
-                departmentUsers: Array.isArray(department.departmentMembers)
-                    ? department.departmentMembers.length
-                    : 0,
+                departmentUsers: countDepartmentUsers(department),
             }));
 
         for (const [colId, selectedValues] of Object.entries(columnFilters)) {
@@ -388,7 +394,7 @@ const DepartmentHome = () => {
             .map((d, index) => ({
                 ...d,
                 nr: index + 1,
-                departmentUsers: Array.isArray(d.departmentMembers) ? d.departmentMembers.length : 0,
+                departmentUsers: countDepartmentUsers(d),
             }));
 
         for (const [filterColId, selectedValues] of Object.entries(columnFilters)) {

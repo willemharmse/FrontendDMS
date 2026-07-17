@@ -9,6 +9,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentDeletePopup from "../RiskRelated/RiskAssessmentDeletePopup";
 
 const StandardsTable = ({ collapsible = false, formData, setFormData, error, title, documentType, setErrors, readOnly = false }) => {
     const [collapsed, setCollapsed] = useState(false);
@@ -33,10 +34,30 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
     const [draggedRowId, setDraggedRowId] = useState(null);
     const [dragOverRowId, setDragOverRowId] = useState(null);
     const draggedElRef = useRef(null);
+    const [rowPendingDelete, setRowPendingDelete] = useState(null);
 
     const toggleCollapse = () => {
         const newState = !collapsed;
         setCollapsed(newState);
+    };
+
+    const requestRemoveRow = (pendingDelete) => {
+        setRowPendingDelete(pendingDelete);
+    };
+
+    const closeRemoveRowPopup = () => {
+        setRowPendingDelete(null);
+    };
+
+    const confirmRemoveRow = () => {
+        if (!rowPendingDelete) return;
+
+        if (rowPendingDelete.kind === "detail") {
+            handleDeleteDetail(rowPendingDelete.standardId, rowPendingDelete.detailId);
+        } else {
+            handleDeleteMain(rowPendingDelete.standardId);
+        }
+        setRowPendingDelete(null);
     };
 
     const renumberStandards = (arr) => {
@@ -645,7 +666,7 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
                                                                     type="button"
                                                                     className="delete-mainrow-button-standards"
                                                                     title="Delete Main Step"
-                                                                    onClick={() => handleDeleteMain(row.id)}
+                                                                    onClick={() => requestRemoveRow({ kind: "standard", standardId: row.id })}
                                                                 >
                                                                     <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
                                                                 </button>
@@ -690,7 +711,7 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
                                                                             type="button"
                                                                             className="delete-subrow-button-standards"
                                                                             title="Delete Main Step"
-                                                                            onClick={() => handleDeleteDetail(row.id, row.details[0].id)}
+                                                                            onClick={() => requestRemoveRow({ kind: "detail", standardId: row.id, detailId: row.details[0].id })}
                                                                         >
                                                                             <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
                                                                         </button>
@@ -753,7 +774,7 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
                                                                     type="button"
                                                                     className="delete-subrow-button-standards"
                                                                     title="Delete Main Step"
-                                                                    onClick={() => handleDeleteDetail(row.id, detail.id)}
+                                                                    onClick={() => requestRemoveRow({ kind: "detail", standardId: row.id, detailId: detail.id })}
                                                                 >
                                                                     <FontAwesomeIcon icon={faTrash} className="delete-mainrow-icon" />
                                                                 </button>
@@ -950,6 +971,13 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
                     </>
                 )}
             </div>
+            {rowPendingDelete && (
+                <RiskAssessmentDeletePopup
+                    closeModal={closeRemoveRowPopup}
+                    type={rowPendingDelete.kind === "detail" ? "Standard Detail" : "Standard"}
+                    removeRow={confirmRemoveRow}
+                />
+            )}
         </div>
     );
 };

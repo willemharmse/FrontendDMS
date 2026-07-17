@@ -27,10 +27,10 @@ const fmt = (n) => (n ?? 0).toLocaleString("en-ZA");
 
 const getCategoryClass = (q) => {
     switch (q) {
-        case "<30%": return "category-low";
+        case "< 30%": return "category-low";
         case "30-59%": return "category-medium";
         case "60-90%": return "category-high";
-        case ">90%": return "category-complete";
+        case "> 90%": return "category-complete";
         default: return "";
     }
 };

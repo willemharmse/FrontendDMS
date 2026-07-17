@@ -9,10 +9,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const HandToolsTableRisk = ({ collapsible = false, formData, setFormData, usedHandTools, setUsedHandTools, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [collapsed, setCollapsed] = useState(true);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const isCollapsed = collapsible ? collapsed : false;
     const [toolsData, setToolsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -138,6 +140,29 @@ const HandToolsTableRisk = ({ collapsible = false, formData, setFormData, usedHa
 
         setUpdatePopup(false);
     }
+
+    const confirmRemoveToolRow = () => {
+        if (confirmDeleteIndex != null) {
+            const row = formData.HandTools[confirmDeleteIndex];
+
+            setFormData({
+                ...formData,
+                HandTools: formData.HandTools.filter((_, i) => i !== confirmDeleteIndex),
+            });
+            setUsedHandTools(
+                usedHandTools.filter((tool) => tool !== row.tool)
+            );
+
+            const newSelectedTools = new Set(selectedTools);
+            newSelectedTools.delete(row.tool);
+            setSelectedTools(newSelectedTools);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemoveToolRow = () => {
+        setConfirmDeleteIndex(null);
+    };
 
     useEffect(() => {
         setSelectedTools(new Set(usedHandTools));
@@ -333,21 +358,7 @@ const HandToolsTableRisk = ({ collapsible = false, formData, setFormData, usedHa
                                                         <button
                                                             className="remove-row-button"
                                                             style={{ paddingRight: "6px" }}
-                                                            onClick={() => {
-                                                                // Remove abbreviation from table and the selected abbreviations set
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    HandTools: formData.HandTools.filter((_, i) => i !== index),
-                                                                });
-                                                                setUsedHandTools(
-                                                                    usedHandTools.filter((tool) => tool !== row.tool)
-                                                                );
-
-                                                                // Update the selectedAbbrs state to reflect the removal
-                                                                const newSelectedTools = new Set(selectedTools);
-                                                                newSelectedTools.delete(row.tool);
-                                                                setSelectedTools(newSelectedTools);
-                                                            }}
+                                                            onClick={() => setConfirmDeleteIndex(index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                         </button>
@@ -388,6 +399,14 @@ const HandToolsTableRisk = ({ collapsible = false, formData, setFormData, usedHa
             </div>
 
             {updatePopup && (<ModifySuggestedHandTools tool={toolUpdate} closePopup={closeUpdate} onAdd={handleUpdateTool} setToolData={setToolsData} />)}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveToolRow}
+                    type="Hand Tool"
+                    removeRow={confirmRemoveToolRow}
+                />
+            )}
         </div>
     );
 };

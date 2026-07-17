@@ -9,10 +9,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const PPETableRisk = ({ collapsible = false, formData, setFormData, usedPPEOptions, setUsedPPEOptions, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [collapsed, setCollapsed] = useState(true);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const isCollapsed = collapsible ? collapsed : false;
     const [ppeData, setPPEData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -135,6 +137,29 @@ const PPETableRisk = ({ collapsible = false, formData, setFormData, usedPPEOptio
 
         setUpdatePopup(false);
     }
+
+    const confirmRemovePPERow = () => {
+        if (confirmDeleteIndex != null) {
+            const row = formData.PPEItems[confirmDeleteIndex];
+
+            setFormData({
+                ...formData,
+                PPEItems: formData.PPEItems.filter((_, i) => i !== confirmDeleteIndex),
+            });
+            setUsedPPEOptions(
+                usedPPEOptions.filter((ppe) => ppe !== row.ppe)
+            );
+
+            const newSelectedPPE = new Set(selectedPPE);
+            newSelectedPPE.delete(row.ppe);
+            setSelectedPPE(newSelectedPPE);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemovePPERow = () => {
+        setConfirmDeleteIndex(null);
+    };
 
     useEffect(() => {
         setSelectedPPE(new Set(usedPPEOptions));
@@ -333,21 +358,7 @@ const PPETableRisk = ({ collapsible = false, formData, setFormData, usedPPEOptio
                                                         <button
                                                             className="remove-row-button"
                                                             style={{ paddingRight: "6px" }}
-                                                            onClick={() => {
-                                                                // Remove abbreviation from table and the selected abbreviations set
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    PPEItems: formData.PPEItems.filter((_, i) => i !== index),
-                                                                });
-                                                                setUsedPPEOptions(
-                                                                    usedPPEOptions.filter((ppe) => ppe !== row.ppe)
-                                                                );
-
-                                                                // Update the selectedAbbrs state to reflect the removal
-                                                                const newSelectedPPE = new Set(selectedPPE);
-                                                                newSelectedPPE.delete(row.ppe);
-                                                                setSelectedPPE(newSelectedPPE);
-                                                            }}
+                                                            onClick={() => setConfirmDeleteIndex(index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                         </button>
@@ -388,6 +399,14 @@ const PPETableRisk = ({ collapsible = false, formData, setFormData, usedPPEOptio
             </div>
 
             {updatePopup && (<ModifySuggestedPPE ppe={ppeUpdate} closePopup={closeUpdate} onAdd={handleUpdatePPE} setPPEData={setPPEData} />)}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemovePPERow}
+                    type="PPE"
+                    removeRow={confirmRemovePPERow}
+                />
+            )}
         </div>
     );
 };

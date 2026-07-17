@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import SuggestFTSField from "./SuggestFTSField";
+import { templateFieldsStore, useTemplateFieldsStore } from "./templateFieldsStore";
 
 const SelectFieldsPopup = ({
     visible,
@@ -12,9 +14,20 @@ const SelectFieldsPopup = ({
 }) => {
     const [selectedFields, setSelectedFields] = useState(new Set(currentFields));
     const [searchTerm, setSearchTerm] = useState("");
-    const [templateFields, setTemplateFields] = useState([]);
-    const [fieldsLoading, setFieldsLoading] = useState(false);
-    const [fieldsError, setFieldsError] = useState(null);
+    const { fields: templateFields, loading: fieldsLoading, error: fieldsError } = useTemplateFieldsStore();
+    const [showNewPopup, setShowNewPopup] = useState(false);
+
+    const openAddPopup = () => {
+        setShowNewPopup(true)
+    }
+
+    // Called when SuggestFTSField successfully adds a new field. The field
+    // itself gets appended to the shared store via setFieldData (below), so
+    // every section's popup sees it immediately - here we just auto-check
+    // it in THIS popup's own selection.
+    const handleFieldSuggested = (newField) => {
+        setSelectedFields(prev => new Set(prev).add(newField.field));
+    };
 
     // Reset the working selection whenever the popup is (re)opened, so it
     // reflects whatever is currently saved for this section.
@@ -26,14 +39,17 @@ const SelectFieldsPopup = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visible]);
 
-    // Pull the standard field / definition pairs from the same backend route
-    // used by the Standard Fields table, each time the popup opens.
+    // Pull the standard field / definition pairs once for the whole page,
+    // via the shared store - so every SelectFieldsPopup instance (Task
+    // Description, Responsibility, Resources, Safety, Close Out...) reads
+    // the same list, and a field suggested from any one of them shows up
+    // as an option in all the others immediately.
     useEffect(() => {
-        if (!visible) return;
+        if (!visible || !templateFieldsStore.markFetchStarted()) return;
 
         const fetchStandardFields = async () => {
-            setFieldsLoading(true);
-            setFieldsError(null);
+            templateFieldsStore.setLoading(true);
+            templateFieldsStore.setError(null);
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/standardFields`, {
@@ -45,11 +61,18 @@ const SelectFieldsPopup = ({
                     throw new Error('Failed to fetch standard fields');
                 }
                 const data = await response.json();
-                setTemplateFields(data.standardFields || []);
+                templateFieldsStore.setFields(prev => {
+                    // Keep any locally-suggested fields that were added
+                    // before this fetch resolved, rather than dropping them.
+                    const fetched = data.standardFields || [];
+                    const fetchedNames = new Set(fetched.map(f => f.field));
+                    const localOnly = prev.filter(f => !fetchedNames.has(f.field));
+                    return [...fetched, ...localOnly];
+                });
             } catch (error) {
-                setFieldsError(error.message);
+                templateFieldsStore.setError(error.message);
             } finally {
-                setFieldsLoading(false);
+                templateFieldsStore.setLoading(false);
             }
         };
 
@@ -166,9 +189,18 @@ const SelectFieldsPopup = ({
                     </div>
                 </div>
                 <div className="abbr-buttons-dual">
-                    <button onClick={handleSaveSelection} className="abbr--butt-cent-1">Save Selection</button>
+                    <button onClick={handleSaveSelection} className="abbr-button-1">Save Selection</button>
+                    <button onClick={openAddPopup} className="abbr-button-2">Suggest New</button>
                 </div>
             </div>
+
+
+            {showNewPopup && (<SuggestFTSField
+                isOpen={showNewPopup}
+                onClose={() => { setShowNewPopup(false); }}
+                setFieldData={templateFieldsStore.setFields}
+                onAdd={handleFieldSuggested}
+            />)}
         </div>
     );
 };

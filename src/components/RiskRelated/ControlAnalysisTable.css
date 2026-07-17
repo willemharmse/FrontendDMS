@@ -243,8 +243,12 @@
     /* show it in Chrome/Safari */
     display: block !important;
     height: 12px;
-    width: 5px;
+    width: 12px;
     /* adjust thickness if you like */
+}
+
+.table-wrapper-cea::-webkit-scrollbar-thumb:hover {
+    background: #888888;
 }
 
 /* Optional: style the WebKit scrollbar thumb/track */

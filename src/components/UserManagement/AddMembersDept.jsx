@@ -12,6 +12,8 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
 
     const initiallySelectedUsers = useRef(new Set());
 
+    const departmentHeadId = usersData.find((user) => user.isDepartmentHead)?._id;
+
     const fetchValues = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/department/members/${deptID}`);
@@ -150,6 +152,7 @@ const AddMembersDept = ({ deptID, popupVisible, closePopup }) => {
                                 {users.length > 0 ? (
                                     users
                                         .filter(user => !initiallySelectedUsers.current.has(user._id)) // ❌ Exclude only initially selected users
+                                        .filter(user => user._id !== departmentHeadId) // ❌ A department head cannot also be a member
                                         .filter(user => user.username.toLowerCase().includes(searchTerm.toLowerCase())) // ✅ Apply search filter
                                         .sort((a, b) => a.username.localeCompare(b.username)) // ✅ Sort users alphabetically
                                         .map(user => (

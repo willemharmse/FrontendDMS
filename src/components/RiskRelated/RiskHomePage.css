@@ -30,6 +30,13 @@
     cursor: pointer;
 }
 
+.document-card-riks-all:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.45),
+        0 0 18px rgba(255, 255, 255, 0.28);
+}
+
 /* Document card */
 .document-card-risk-home {
     background: linear-gradient(135deg, #7F7F7F 0%, #BFBFBF 100%);
@@ -46,6 +53,11 @@
     align-items: center;
     min-height: 230px;
     cursor: pointer;
+}
+
+.document-card-risk-home:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
 
 .button-container-rm-home {

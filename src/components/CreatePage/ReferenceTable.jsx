@@ -6,11 +6,13 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskRelated/RiskAssessmentItemsDelete";
 
 const ReferenceTable = ({ collapsible = false, referenceRows, addRefRow, removeRefRow, updateRefRow, updateRefRows, readOnly = false, error = false, required = false, setErrors }) => {
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
     const [files, setFiles] = useState([]);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const [showDropdown, setShowDropdown] = useState(null);
     const [filteredOptions, setFilteredOptions] = useState({});
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
@@ -142,6 +144,21 @@ const ReferenceTable = ({ collapsible = false, referenceRows, addRefRow, removeR
         removeRefRow(index);
     };
 
+    const requestRemove = (index) => {
+        setConfirmDeleteIndex(index);
+    };
+
+    const confirmRemove = () => {
+        if (confirmDeleteIndex != null) {
+            handleRemove(confirmDeleteIndex);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemove = () => {
+        setConfirmDeleteIndex(null);
+    };
+
     useEffect(() => {
         const popupSelector = '.floating-dropdown';
 
@@ -263,7 +280,7 @@ const ReferenceTable = ({ collapsible = false, referenceRows, addRefRow, removeR
                                             {!readOnly && (<td className="procCent action-cell-auth-risk">
                                                 <button
                                                     className="remove-row-button"
-                                                    onClick={() => handleRemove(index)}
+                                                    onClick={() => requestRemove(index)}
                                                     title="Remove Row"
                                                 >
                                                     <FontAwesomeIcon icon={faTrash} />
@@ -308,6 +325,14 @@ const ReferenceTable = ({ collapsible = false, referenceRows, addRefRow, removeR
                     </ul>
                 )}
             </div>
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemove}
+                    type="Site Reference Document"
+                    removeRow={confirmRemove}
+                />
+            )}
         </div>
     );
 };

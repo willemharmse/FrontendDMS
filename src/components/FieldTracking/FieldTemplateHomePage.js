@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCaretLeft, faCaretRight, faCircle } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../Notifications/TopBarDD";
 import { getCurrentUser, canIn } from "../../utils/auth";
+import TopBar from "../Notifications/TopBar";
 
 const FieldTemplateHomePage = () => {
     const navigate = useNavigate();
@@ -49,11 +50,11 @@ const FieldTemplateHomePage = () => {
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
 
-                    <TopBarDD canIn={canIn} access={access} menu={"1"} create={true} />
+                    <TopBar canIn={canIn} access={access} menu={"1"} create={true} />
                 </div>
 
                 <div className="scrollable-box-risk-home">
-                    {false && (<div className={`document-card-riks-all`}>
+                    {true && (<div className={`document-card-riks-all`} onClick={() => navigate("/FrontendDMS/standardFieldsFTS")}>
                         <>
                             <div className="icon-risk-all">
                                 <FontAwesomeIcon icon={faCircle} alt="Control Attributes" className="icon-risk-all" style={{ color: "white" }} />

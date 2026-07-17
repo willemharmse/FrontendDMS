@@ -25,6 +25,7 @@ import OTCourseAssessment from "./OTCourseAssessment";
 import CourseResourceTable from "./CourseResourceTable";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
+import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
 
 const OnlineCourseCreationPage = () => {
   const id = useParams().id || '';
@@ -1283,6 +1284,11 @@ const OnlineCourseCreationPage = () => {
     setIsSaveConfirmOpen(false);
     pendingActionRef.current = null;
   };
+
+  useTauriCloseGuard(
+    requiresSavePrompt,
+    (closeWindow) => openSaveConfirm("close", closeWindow)
+  );
 
   return (
     <div className="file-create-container">

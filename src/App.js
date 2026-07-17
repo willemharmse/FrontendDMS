@@ -229,6 +229,7 @@ import FTSCreatePageTemplate from './components/FieldTracking/FTSCreatePageTempl
 import FTSCreatePageTemplatesReview from './components/FieldTracking/FTSCreatePageTemplatesReview';
 import FTSDeletedTemplateDraftsPage from './components/FieldTracking/FTSDeletedTemplateDraftsPage';
 import StandardFieldsFTS from './components/FieldTracking/StandardFieldsFTS';
+import SuggestedStandardFieldsFTS from './components/FieldTracking/SuggestedStandardFieldsFTS';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -525,6 +526,7 @@ function App() {
         <Route path='FrontendDMS/ftsReviewTemplate/:fileId/:type' element={<FTSCreatePageTemplatesReview />} />
         <Route path="FrontendDMS/ftsDeletedTemplateDrafts/:type" element={<FTSDeletedTemplateDraftsPage />} />
         <Route path="FrontendDMS/standardFieldsFTS" element={<StandardFieldsFTS />} />
+        <Route path="FrontendDMS/suggestedFields/:id" element={<SuggestedStandardFieldsFTS />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

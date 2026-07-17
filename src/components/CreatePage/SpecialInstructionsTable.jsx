@@ -9,6 +9,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentDeletePopup from "../RiskRelated/RiskAssessmentDeletePopup";
 
 const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, error, title, documentType, setErrors, readOnly = false }) => {
     const [collapsed, setCollapsed] = useState(false);
@@ -17,10 +18,26 @@ const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, 
     const [draggedRowId, setDraggedRowId] = useState(null);
     const [dragOverRowId, setDragOverRowId] = useState(null);
     const draggedElRef = useRef(null);
+    const [rowPendingDelete, setRowPendingDelete] = useState(null);
 
     const toggleCollapse = () => {
         const newState = !collapsed;
         setCollapsed(newState);
+    };
+
+    const requestRemoveRow = (row) => {
+        setRowPendingDelete(row);
+    };
+
+    const closeRemoveRowPopup = () => {
+        setRowPendingDelete(null);
+    };
+
+    const confirmRemoveRow = () => {
+        if (!rowPendingDelete) return;
+
+        handleDeleteMain(rowPendingDelete.id);
+        setRowPendingDelete(null);
     };
 
     // ---- DRAG & DROP HANDLERS ----
@@ -142,7 +159,7 @@ const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, 
                 {(!isCollapsed) && (
                     <>
                         <div className="si-chapter-card">
-                            <span style={{ color: "black" }}><strong>Note:</strong> The following special instructions are effective immediately.</span>
+                            <span style={{ color: "black" }}><strong>Note:</strong> The following special instructions are effective immediately.</span>
                             <table className="vcr-table table-borders">
                                 <thead className="cp-table-header">
                                     <tr>
@@ -198,7 +215,7 @@ const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, 
                                                             className="remove-row-button font-fam"
                                                             style={{ fontSize: "14px" }}
                                                             title="Remove Row"
-                                                            onClick={() => handleDeleteMain(row.id)}
+                                                            onClick={() => requestRemoveRow(row)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
@@ -222,6 +239,13 @@ const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, 
                     </>
                 )}
             </div>
+            {rowPendingDelete && (
+                <RiskAssessmentDeletePopup
+                    closeModal={closeRemoveRowPopup}
+                    type="Special Instruction"
+                    removeRow={confirmRemoveRow}
+                />
+            )}
         </div>
     );
 };

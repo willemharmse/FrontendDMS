@@ -12,6 +12,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentDeletePopup from "../RiskAssessmentDeletePopup";
 
 const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, generate, updateRow, isSidebarVisible, error, setErrors, readOnly = false, relevantControls = [] }) => {
     const [collapsed, setCollapsed] = useState(false);
@@ -33,6 +34,7 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
     const [posLists, setPosLists] = useState([]);
     const [activeSubCell, setActiveSubCell] = useState(null);
     const responsibleInputRefs = useRef({});
+    const [rowPendingDelete, setRowPendingDelete] = useState(null);
     const findRowAndPossibleById = (rowId, possibleId) => {
         const rowIndex = rows.findIndex(r => r.id === rowId);
         if (rowIndex === -1) return {};
@@ -48,6 +50,21 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
     const toggleCollapse = () => {
         const newState = !collapsed;
         setCollapsed(newState);
+    };
+
+    const requestRemoveRow = (row) => {
+        setRowPendingDelete(row);
+    };
+
+    const closeRemoveRowPopup = () => {
+        setRowPendingDelete(null);
+    };
+
+    const confirmRemoveRow = () => {
+        if (!rowPendingDelete) return;
+
+        removeRow(rowPendingDelete.id);
+        setRowPendingDelete(null);
     };
 
     const excludedColumns = ["UE", "S", "H", "E", "C", "LR", "M", "R", "actions", "responsible", "dueDate"];
@@ -2163,7 +2180,7 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                                                                         <button
                                                                             className="ibra-remove-row-button"
                                                                             title="Delete row"
-                                                                            onClick={() => removeRow(row.id)}
+                                                                            onClick={() => requestRemoveRow(row)}
                                                                         >
                                                                             <FontAwesomeIcon icon={faTrash} />
                                                                         </button>
@@ -2295,6 +2312,15 @@ const BLRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                     </>
                 )}
             </div>
+
+            {rowPendingDelete && (
+                <RiskAssessmentDeletePopup
+                    closeModal={closeRemoveRowPopup}
+                    type="BLRA"
+                    removeRow={confirmRemoveRow}
+                />
+            )}
+
             {showNote && (<IbraNote setClose={closeNote} text={noteText} />)}
             {ibraPopup && (<BLRAPopup onClose={closePopup} data={selectedRowData} onSave={handleSaveWithRiskTreatment} rowsData={rows} readOnly={readOnly} availableControls={relevantControls} />)}
 

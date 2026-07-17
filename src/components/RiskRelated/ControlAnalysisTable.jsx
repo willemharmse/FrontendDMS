@@ -432,6 +432,85 @@ const ControlAnalysisTable = ({ collapsible = false, rows, updateRows, ibra, add
         }
     }
 
+
+    const getQualityClass = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+
+        const text = String(value).trim();
+
+        // Handle ranges such as "30-59%", "30 - 59%", or "60–90%"
+        const rangeMatch = text.match(
+            /^(-?\d+(?:\.\d+)?)\s*[-–]\s*(-?\d+(?:\.\d+)?)\s*%?$/
+        );
+
+        if (rangeMatch) {
+            const minimum = Number(rangeMatch[1]);
+            const maximum = Number(rangeMatch[2]);
+
+            if (maximum < 30) {
+                return 'cea-table-page-quality-poor';
+            }
+
+            if (minimum >= 30 && maximum < 60) {
+                return 'cea-table-page-quality-fair';
+            }
+
+            if (minimum >= 60 && maximum <= 90) {
+                return 'cea-table-page-quality-good';
+            }
+
+            if (minimum > 90) {
+                return 'cea-table-page-quality-excellent';
+            }
+
+            return '';
+        }
+
+        // Handle values such as "<30%", "> 30%", "75%", and ">90%"
+        const valueMatch = text.match(
+            /^(>=|<=|>|<)?\s*(-?\d+(?:\.\d+)?)\s*%?$/
+        );
+
+        if (!valueMatch) return '';
+
+        const operator = valueMatch[1] || '';
+        const numeric = Number(valueMatch[2]);
+
+        if (operator === '<' || operator === '<=') {
+            if (numeric <= 30) {
+                return 'cea-table-page-quality-poor';
+            }
+        }
+
+        if (operator === '>' || operator === '>=') {
+            if (numeric >= 90) {
+                return 'cea-table-page-quality-excellent';
+            }
+
+            if (numeric >= 60) {
+                return 'cea-table-page-quality-good';
+            }
+
+            if (numeric >= 30) {
+                return 'cea-table-page-quality-fair';
+            }
+        }
+
+        if (numeric < 30) {
+            return 'cea-table-page-quality-poor';
+        }
+
+        if (numeric < 60) {
+            return 'cea-table-page-quality-fair';
+        }
+
+        if (numeric <= 90) {
+            return 'cea-table-page-quality-good';
+        }
+
+        return 'cea-table-page-quality-excellent';
+    };
+
     const filteredRows = useMemo(() => {
         // Start with a copy of the base rows
         let currentRows = [...rows];
@@ -1284,6 +1363,8 @@ const ControlAnalysisTable = ({ collapsible = false, rows, updateRows, ibra, add
                                                     cellClass = '';
                                                 } else if (columnId === 'cer') {
                                                     cellClass = getClass(value);
+                                                } else if (columnId === 'quality') {
+                                                    cellClass = getQualityClass(value);
                                                 }
 
                                                 // Center‐align certain columns

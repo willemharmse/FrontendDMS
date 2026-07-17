@@ -10,6 +10,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentDeletePopup from "../RiskRelated/RiskAssessmentDeletePopup";
 
 const ProcedureTable = forwardRef(({ collapsible = false, procedureRows, addRow, removeRow, updateRow, error, title, documentType, updateProcRows, readOnly = false, setErrors, setFormData, formData }, ref) => {
     const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +27,7 @@ const ProcedureTable = forwardRef(({ collapsible = false, procedureRows, addRow,
     const [loadingSubKey, setLoadingSubKey] = useState(null);
     const mainInputRefs = useRef({});
     const subInputRefs = useRef({});
+    const [rowPendingDelete, setRowPendingDelete] = useState(null);
 
     const [armedDragRow, setArmedDragRow] = useState(null);
     const [draggedRowNr, setDraggedRowNr] = useState(null);
@@ -51,6 +53,21 @@ const ProcedureTable = forwardRef(({ collapsible = false, procedureRows, addRow,
     const toggleCollapse = () => {
         const newState = !collapsed;
         setCollapsed(newState);
+    };
+
+    const requestRemoveRow = (index) => {
+        setRowPendingDelete({ index });
+    };
+
+    const closeRemoveRowPopup = () => {
+        setRowPendingDelete(null);
+    };
+
+    const confirmRemoveRow = () => {
+        if (!rowPendingDelete) return;
+
+        removeProRow(rowPendingDelete.index);
+        setRowPendingDelete(null);
     };
 
     useImperativeHandle(ref, () => ({
@@ -985,7 +1002,7 @@ const ProcedureTable = forwardRef(({ collapsible = false, procedureRows, addRow,
                                                     {!readOnly && (<td className="procCent">
                                                         <button
                                                             className="remove-row-button"
-                                                            onClick={() => removeProRow(index)}
+                                                            onClick={() => requestRemoveRow(index)}
                                                             title="Delete step"
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
@@ -1208,6 +1225,13 @@ const ProcedureTable = forwardRef(({ collapsible = false, procedureRows, addRow,
                         );
                     })()}
                 </div>
+            )}
+            {rowPendingDelete && (
+                <RiskAssessmentDeletePopup
+                    closeModal={closeRemoveRowPopup}
+                    type="Procedure"
+                    removeRow={confirmRemoveRow}
+                />
             )}
         </div>
     );

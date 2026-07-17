@@ -34,6 +34,9 @@ const UpdateDepartmentModal = ({
 }) => {
     const [departmentName, setDepartmentName] = useState("");
     const [icon, setIcon] = useState("");
+    const [departmentHead, setDepartmentHead] = useState("");
+    const [users, setUsers] = useState([]);
+    const [teamMembers, setTeamMembers] = useState([]);
 
     const iconMap = useMemo(
         () => ({
@@ -61,10 +64,76 @@ const UpdateDepartmentModal = ({
         []
     );
 
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/`, {
+                headers: {
+                    //'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+
+            const data = await response.json();
+
+            const sortedUsers = data.users.sort((a, b) => {
+                return a.username.localeCompare(b.username);
+            });
+
+            setUsers(sortedUsers);
+
+        } catch (error) {
+            console.error("Error fetching users:", error)
+        }
+    };
+
+    const fetchTeamMembers = async (id) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/department/members/${id}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch department members');
+            }
+
+            const data = await response.json();
+            setTeamMembers(data.members || []);
+        } catch (error) {
+            console.error("Error fetching department members:", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    useEffect(() => {
+        if (show && departmentData?._id) {
+            fetchTeamMembers(departmentData._id);
+        }
+    }, [show, departmentData]);
+
+    const teamMemberIds = useMemo(
+        () => new Set(
+            teamMembers
+                .filter((user) => !user.isDepartmentHead) // the current head isn't a "member" for this purpose
+                .map((user) => user._id)
+        ),
+        [teamMembers]
+    );
+
+    // A user already on the team can't also be picked as head, unless they're the current head
+    const availableHeadUsers = useMemo(
+        () => users.filter((user) => user._id === departmentHead || !teamMemberIds.has(user._id)),
+        [users, teamMemberIds, departmentHead]
+    );
+
     useEffect(() => {
         if (show && departmentData) {
             setDepartmentName(departmentData.department || "");
             setIcon(departmentData.icon || "");
+            setDepartmentHead(departmentData.departmentHead || "");
         }
     }, [show, departmentData]);
 
@@ -86,7 +155,8 @@ const UpdateDepartmentModal = ({
 
         const payload = {
             department: departmentName.trim(),
-            icon: icon
+            icon: icon,
+            departmentHead: departmentHead
         };
 
         try {
@@ -111,48 +181,72 @@ const UpdateDepartmentModal = ({
                     </button>
                 </div>
 
-                <form onSubmit={handleUpdateDepartment}>
-                    <div className="create-dept-group">
-                        <label className="create-dept-label" htmlFor="department-name">
-                            Department Name
-                        </label>
-                        <input
-                            type="text"
-                            id="department-name"
-                            className="create-dept-input"
-                            placeholder="Insert Department Name (e.g., Marketing)"
-                            value={departmentName}
-                            onChange={(e) => setDepartmentName(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="create-dept-group">
-                        <label className="create-dept-label" htmlFor="department-icon">
-                            Department Icon
-                        </label>
-
-                        <div className="uc-info-popup-page-select-container">
-                            <select
-                                className={icon === "" ? "create-dept-select def-colour" : "create-dept-select"}
-                                id="department-icon"
-                                value={icon}
-                                onChange={(e) => setIcon(e.target.value)}
-                            >
-                                <option value="" className="def-colour">Select Icon</option>
-                                {Object.keys(iconMap).map((key) => (
-                                    <option key={key} value={key}>
-                                        {key.replace("fa", "").replace(/([A-Z])/g, " $1").trim()}
-                                    </option>
-                                ))}
-                            </select>
+                <form className="create-dept-form" onSubmit={handleUpdateDepartment}>
+                    <div className="create-dept-body">
+                        <div className="create-dept-group">
+                            <label className="create-dept-label" htmlFor="department-name">
+                                Department Name
+                            </label>
+                            <input
+                                type="text"
+                                id="department-name"
+                                className="create-dept-input"
+                                placeholder="Insert Department Name (e.g., Marketing)"
+                                value={departmentName}
+                                onChange={(e) => setDepartmentName(e.target.value)}
+                            />
                         </div>
 
-                        <div className="dept-icon">
-                            <div className="dept-icon-style">
-                                <FontAwesomeIcon
-                                    icon={iconMap[icon] || faBuilding}
-                                    className="fa-icon"
-                                />
+                        <div className="create-dept-group">
+                            <label className="create-dept-label" htmlFor="department-head">
+                                Department Head
+                            </label>
+
+                            <div className="dept-info-popup-page-select-container">
+                                <select
+                                    className={departmentHead === "" ? "create-dept-select def-colour" : "create-dept-select"}
+                                    id="department-head"
+                                    value={departmentHead}
+                                    onChange={(e) => setDepartmentHead(e.target.value)}
+                                >
+                                    <option value="" className="def-colour">Select Department Head</option>
+                                    {availableHeadUsers.map((user, index) => (
+                                        <option key={index} value={user._id}>
+                                            {user.username}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="create-dept-group" style={{ marginBottom: "5px" }}>
+                            <label className="create-dept-label" htmlFor="department-icon">
+                                Department Icon
+                            </label>
+
+                            <div className="uc-info-popup-page-select-container">
+                                <select
+                                    className={icon === "" ? "create-dept-select def-colour" : "create-dept-select"}
+                                    id="department-icon"
+                                    value={icon}
+                                    onChange={(e) => setIcon(e.target.value)}
+                                >
+                                    <option value="" className="def-colour">Select Icon</option>
+                                    {Object.keys(iconMap).map((key) => (
+                                        <option key={key} value={key}>
+                                            {key.replace("fa", "").replace(/([A-Z])/g, " $1").trim()}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="dept-icon">
+                                <div className="dept-icon-style">
+                                    <FontAwesomeIcon
+                                        icon={iconMap[icon] || faBuilding}
+                                        className="fa-icon"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

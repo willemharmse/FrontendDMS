@@ -4,6 +4,7 @@ import "./DocumentSignaturesRiskTable.css";
 // reuse the floating-dropdown styles
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const DocumentSignaturesRiskTable = ({
   rows,
@@ -16,6 +17,7 @@ const DocumentSignaturesRiskTable = ({
   readOnly = false
 }) => {
   const [users, setUsers] = useState([]);
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
   const [attendees, setAttendees] = useState([]); // users + stakeholders
 
   // floating dropdown state
@@ -267,6 +269,17 @@ const DocumentSignaturesRiskTable = ({
     return used;
   };
 
+  // These auth types must always have at least one row present
+  const REQUIRED_AUTH_TYPES = ["Facilitator", "Owner", "Reviewer", "Approver"];
+
+  const canRemoveRow = (idx) => {
+    const auth = rows[idx]?.auth;
+    if (!REQUIRED_AUTH_TYPES.includes(auth)) return true;
+
+    const countForAuth = rows.filter(r => r.auth === auth).length;
+    return countForAuth > 1;
+  };
+
   useEffect(() => {
     const popupSelector = '.floating-dropdown';
 
@@ -403,11 +416,16 @@ const DocumentSignaturesRiskTable = ({
                   <button
                     className="remove-row-button font-fam"
                     onClick={() => {
-                      removeRow(idx);
+                      if (!canRemoveRow(idx)) return;
+                      setConfirmDeleteIndex(idx);
                     }}
-
-                    style={{ fontSize: "14px" }}
-                    title="Remove Row"
+                    disabled={!canRemoveRow(idx)}
+                    style={{
+                      fontSize: "14px",
+                      opacity: canRemoveRow(idx) ? 1 : 0.4,
+                      cursor: canRemoveRow(idx) ? "pointer" : "not-allowed"
+                    }}
+                    title={canRemoveRow(idx) ? "Remove Row" : `At least one ${row.auth} row is required`}
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
@@ -461,6 +479,17 @@ const DocumentSignaturesRiskTable = ({
               </li>
             ))}
           </ul>
+        )}
+
+        {confirmDeleteIndex != null && (
+          <RiskAssessmentItemsDelete
+            closeModal={() => setConfirmDeleteIndex(null)}
+            type="Authorisation"
+            removeRow={() => {
+              removeRow(confirmDeleteIndex);
+              setConfirmDeleteIndex(null);
+            }}
+          />
         )}
       </div>
     </div>

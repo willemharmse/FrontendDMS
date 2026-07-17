@@ -193,8 +193,15 @@ const TermTable = ({ collapsible = false, risk, formData, setFormData, usedTermC
       return { term: `${norm(code)} *`, definition: kept };
     });
 
-    // track usage normalized so CPU and CPU * are the "same" key internally
-    setUsedTermCodes(selectedTermArray.map(norm));
+    // IMPORTANT: usedAbbrCodes must hold the exact same strings as abbrRows
+    // (including the " *" suffix for suggested items). Previously this was
+    // normalized (stripping " *"), which desynced usedAbbrCodes/selectedAbbrs
+    // from abbrRows/abbrData — causing removed suggestions to look unchecked
+    // in the popup while still being resurrected on the next save, and
+    // deletions to silently fail to clear usedAbbrCodes.
+    const selectedCodes = selectedRows.map((r) => r.term);
+
+    setUsedTermCodes(selectedCodes);
     setFormData({ ...formData, termRows: selectedRows });
     setPopupVisible(false);
   };

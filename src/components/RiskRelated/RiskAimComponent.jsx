@@ -11,6 +11,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const RiskAimComponent = ({
     readOnly,
@@ -37,6 +38,34 @@ const RiskAimComponent = ({
     const nextType = lastType === "text" ? "bullet" : "text";
     const sectionCount = aims.filter((item) => item?.type === "text").length;
     const bulletRefs = useRef({});
+    const [confirmDelete, setConfirmDelete] = useState(null);
+
+    const requestRemoveAimSection = (index) => {
+        setConfirmDelete({
+            type: "Aim Section",
+            specialText: "Are you sure you want to delete this aim paragraph and its bullets section?",
+            action: () => onRemoveAimSection(index)
+        });
+    };
+
+    const requestRemoveAim = (index, specialText) => {
+        setConfirmDelete({ type: "Aim", specialText, action: () => onRemoveAim(index) });
+    };
+
+    const requestRemoveBullet = (aimIndex, bulletId) => {
+        setConfirmDelete({ type: "Bullet", action: () => onRemoveBullet(aimIndex, bulletId) });
+    };
+
+    const confirmRemove = () => {
+        if (confirmDelete?.action) {
+            confirmDelete.action();
+        }
+        setConfirmDelete(null);
+    };
+
+    const cancelRemove = () => {
+        setConfirmDelete(null);
+    };
 
     const toggleCollapse = () => {
         const newState = !collapsed;
@@ -103,74 +132,87 @@ const RiskAimComponent = ({
                                 return (
                                     <React.Fragment key={index}>
                                         <div className={`aim-textarea-stack-item ${hasError ? "error-create" : ""}`}>
-                                            {isTextType && !readOnly && aims.length > 1 && isLast && (
-                                                <button
-                                                    type="button"
-                                                    className="top-right-button-aim-delete"
-                                                    title="Remove Aim"
-                                                    onClick={() => onRemoveAim(index)}
-                                                >
-                                                    <FontAwesomeIcon icon={faTrash} />
-                                                </button>
-                                            )}
-
                                             {isTextType ? (
-                                                <>
-                                                    {!readOnly && aims[index + 1]?.type === "bullet" && sectionCount > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            className="top-right-button-aim-delete top-right-button-aim-delete-section"
-                                                            title="Remove Section"
-                                                            onClick={() => onRemoveAimSection(index)}
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} />
-                                                        </button>
-                                                    )}
+                                                (() => {
+                                                    const showRemoveSection = !readOnly && aims[index + 1]?.type === "bullet" && sectionCount > 1;
+                                                    const showRemoveItem = !readOnly && aims.length > 1 && isLast;
+                                                    const hasDeleteButton = showRemoveSection || showRemoveItem;
+                                                    const textareaClass = (index === 0 && !hasDeleteButton)
+                                                        ? "aim-textarea-risk-create-ibra font-fam aim-textarea-text"
+                                                        : "aim-textarea-risk-create-ibra font-fam aim-textarea-text-with-delete";
 
-                                                    <textarea
-                                                        spellCheck="true"
-                                                        name={`aim-${index}`}
-                                                        className="aim-textarea-risk-create-ibra font-fam aim-textarea-text"
-                                                        onChange={(e) => onChange(index, e.target.value)}
-                                                        onFocus={() => onFocus?.(index)}
-                                                        value={aim?.text || ""}
-                                                        rows={1}
-                                                        placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven."
-                                                        readOnly={readOnly}
-                                                    />
-
-                                                    {!readOnly && (
+                                                    return (
                                                         <>
-                                                            {loadingIndex === index ? (
-                                                                <FontAwesomeIcon
-                                                                    icon={faSpinner}
-                                                                    className="aim-textarea-icon-ibra2 spin-animation"
+                                                            <div className="aim-textarea-inner-wrap">
+                                                                <textarea
+                                                                    spellCheck="true"
+                                                                    name={`aim-${index}`}
+                                                                    className={textareaClass}
+                                                                    onChange={(e) => onChange(index, e.target.value)}
+                                                                    onFocus={() => onFocus?.(index)}
+                                                                    value={aim?.text || ""}
+                                                                    rows={1}
+                                                                    placeholder="Clearly state the goal of the risk assessment, focusing on what the assessment intends to achieve or address. Keep it specific, relevant, and outcome-driven."
+                                                                    readOnly={readOnly}
                                                                 />
-                                                            ) : (
-                                                                <FontAwesomeIcon
-                                                                    icon={faMagicWandSparkles}
-                                                                    className="aim-textarea-icon-ibra2"
-                                                                    title="AI Rewrite"
-                                                                    style={{ fontSize: "15px" }}
-                                                                    onClick={() => onAiRewrite(index)}
-                                                                />
+
+                                                                {!readOnly && (
+                                                                    <>
+                                                                        {loadingIndex === index ? (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faSpinner}
+                                                                                className="aim-textarea-icon-ibra2 spin-animation"
+                                                                            />
+                                                                        ) : (
+                                                                            <FontAwesomeIcon
+                                                                                icon={faMagicWandSparkles}
+                                                                                className="aim-textarea-icon-ibra2"
+                                                                                title="AI Rewrite"
+                                                                                style={{ fontSize: "15px" }}
+                                                                                onClick={() => onAiRewrite(index)}
+                                                                            />
+                                                                        )}
+
+                                                                        <FontAwesomeIcon
+                                                                            icon={faRotateLeft}
+                                                                            className="aim-textarea-icon-ibra2-undo"
+                                                                            title="Undo AI Rewrite"
+                                                                            onClick={() => onUndo(index)}
+                                                                            style={{
+                                                                                marginLeft: "8px",
+                                                                                opacity: rewriteHistory?.aim?.[index]?.length ? 1 : 0.3,
+                                                                                cursor: rewriteHistory?.aim?.[index]?.length ? "pointer" : "not-allowed",
+                                                                                fontSize: "15px"
+                                                                            }}
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                            </div>
+
+                                                            {showRemoveSection && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="aim-textarea-delete-btn-inline"
+                                                                    title="Remove Section"
+                                                                    onClick={() => requestRemoveAimSection(index)}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                </button>
                                                             )}
 
-                                                            <FontAwesomeIcon
-                                                                icon={faRotateLeft}
-                                                                className="aim-textarea-icon-ibra2-undo"
-                                                                title="Undo AI Rewrite"
-                                                                onClick={() => onUndo(index)}
-                                                                style={{
-                                                                    marginLeft: "8px",
-                                                                    opacity: rewriteHistory?.aim?.[index]?.length ? 1 : 0.3,
-                                                                    cursor: rewriteHistory?.aim?.[index]?.length ? "pointer" : "not-allowed",
-                                                                    fontSize: "15px"
-                                                                }}
-                                                            />
+                                                            {showRemoveItem && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="aim-textarea-delete-btn-inline"
+                                                                    title="Remove Aim"
+                                                                    onClick={() => requestRemoveAim(index, "Are you sure you want to delete this aim paragraph section?")}
+                                                                >
+                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                </button>
+                                                            )}
                                                         </>
-                                                    )}
-                                                </>
+                                                    );
+                                                })()
                                             ) : (
                                                 <div
                                                     className={`aim-bullet-section-box ${!readOnly && aims.length > 1 && isLast ? "aim-bullet-section-box-with-delete" : ""
@@ -181,7 +223,7 @@ const RiskAimComponent = ({
                                                             type="button"
                                                             className="top-right-button-aim-delete"
                                                             title="Remove Aim"
-                                                            onClick={() => onRemoveAim(index)}
+                                                            onClick={() => requestRemoveAim(index, "Are you sure you want to delete this aim bullet section?")}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
@@ -220,7 +262,7 @@ const RiskAimComponent = ({
                                                                                 type="button"
                                                                                 className="aim-bullet-inline-button"
                                                                                 title="Remove Bullet"
-                                                                                onClick={() => onRemoveBullet(index, bullet.id)}
+                                                                                onClick={() => requestRemoveBullet(index, bullet.id)}
                                                                             >
                                                                                 <FontAwesomeIcon icon={faTrash} />
                                                                             </button>
@@ -259,6 +301,15 @@ const RiskAimComponent = ({
                     </>
                 )}
             </div>
+
+            {confirmDelete && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemove}
+                    type={confirmDelete.type}
+                    specialText={confirmDelete.specialText}
+                    removeRow={confirmRemove}
+                />
+            )}
         </div>
     );
 };

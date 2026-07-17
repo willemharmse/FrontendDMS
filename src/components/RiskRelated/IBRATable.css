@@ -736,6 +736,28 @@ td.ibraDeadline {
     /* adjust thickness if you like */
 }
 
+.table-borders-ibra-table::-webkit-scrollbar {
+    /* show it in Chrome/Safari */
+    display: block !important;
+    width: 12px;
+    height: 12px;
+    /* adjust thickness if you like */
+}
+
+.table-borders-ibra-table::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-borders-ibra-table::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.table-borders-ibra-table::-webkit-scrollbar-thumb:hover {
+    background: #888888;
+}
+
 /* Optional: style the WebKit scrollbar thumb/track */
 .table-wrapper-ibra::-webkit-scrollbar-track {
     background: #f1f1f1;

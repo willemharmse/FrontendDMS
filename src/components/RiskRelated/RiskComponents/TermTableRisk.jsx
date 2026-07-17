@@ -9,6 +9,7 @@ import {
   faChevronDown,
   faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedTermCodes, setUsedTermCodes, error, userID, setError, readOnly = false }) => {
   const [collapsed, setCollapsed] = useState(true);
@@ -18,6 +19,7 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
   const [popupVisible, setPopupVisible] = useState(false);
   const [selectedTerms, setSelectedTerms] = useState(new Set(usedTermCodes));
   const [isManageOpen, setIsManageOpen] = useState(false);
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
   const [showNewPopup, setShowNewPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [termUpdate, setTermUpdate] = useState("");
@@ -116,6 +118,29 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
     setUpdatePopup(false);
   }
 
+  const confirmRemoveTermRow = () => {
+    if (confirmDeleteIndex != null) {
+      const row = formData.termRows[confirmDeleteIndex];
+
+      setFormData({
+        ...formData,
+        termRows: formData.termRows.filter((_, i) => i !== confirmDeleteIndex),
+      });
+      setUsedTermCodes(
+        usedTermCodes.filter((term) => term !== row.term)
+      );
+
+      const newSelectedTerms = new Set(selectedTerms);
+      newSelectedTerms.delete(row.term);
+      setSelectedTerms(newSelectedTerms);
+    }
+    setConfirmDeleteIndex(null);
+  };
+
+  const cancelRemoveTermRow = () => {
+    setConfirmDeleteIndex(null);
+  };
+
   const fetchValues = async () => {
     const route = `/api/riskInfo/def`;
     try {
@@ -188,8 +213,15 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
       return { term: `${norm(code)} *`, definition: kept };
     });
 
-    // track usage normalized so CPU and CPU * are the "same" key internally
-    setUsedTermCodes(selectedTermArray.map(norm));
+    // IMPORTANT: usedTermCodes must hold the exact same strings as termRows
+    // (including the " *" suffix for suggested items). Normalizing it here
+    // desyncs usedTermCodes/selectedTerms from termRows/termData — causing
+    // removed suggestions to look unchecked in the popup while still being
+    // resurrected on the next save, and deletions to silently fail to clear
+    // usedTermCodes.
+    const selectedCodes = selectedRows.map((r) => r.term);
+
+    setUsedTermCodes(selectedCodes);
     setFormData({ ...formData, termRows: selectedRows });
     setPopupVisible(false);
   };
@@ -333,22 +365,7 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
                             <button
                               className="remove-row-button"
                               style={{ paddingRight: "6px" }}
-                              onClick={() => {
-                                const cleanTerm = row.term.replace(/\s*\*$/, "");
-                                // Remove abbreviation from table and the selected abbreviations set
-                                setFormData({
-                                  ...formData,
-                                  termRows: formData.termRows.filter((_, i) => i !== index),
-                                });
-                                setUsedTermCodes(
-                                  usedTermCodes.filter((term) => term !== cleanTerm)
-                                );
-
-                                // Update the selectedAbbrs state to reflect the removal
-                                const newSelectedTerms = new Set(selectedTerms);
-                                newSelectedTerms.delete(cleanTerm);
-                                setSelectedTerms(newSelectedTerms);
-                              }}
+                              onClick={() => setConfirmDeleteIndex(index)}
                             >
                               <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                             </button>
@@ -390,6 +407,14 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
       </div>
 
       {updatePopup && (<ModifySuggestedDefinitions term={termUpdate} definition={defUpdate} closePopup={closeUpdate} onAdd={handleUpdateTerm} setTermData={setTermData} />)}
+
+      {confirmDeleteIndex != null && (
+        <RiskAssessmentItemsDelete
+          closeModal={cancelRemoveTermRow}
+          type="Term"
+          removeRow={confirmRemoveTermRow}
+        />
+      )}
     </div>
   );
 };

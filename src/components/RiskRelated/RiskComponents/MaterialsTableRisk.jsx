@@ -9,10 +9,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const MaterialsTableRisk = ({ collapsible = false, formData, setFormData, usedMaterials, setUsedMaterials, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [collapsed, setCollapsed] = useState(true);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const isCollapsed = collapsible ? collapsed : false;
     const [matsData, setMatsData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -100,6 +102,29 @@ const MaterialsTableRisk = ({ collapsible = false, formData, setFormData, usedMa
 
         setUpdatePopup(false);
     }
+
+    const confirmRemoveMatRow = () => {
+        if (confirmDeleteIndex != null) {
+            const row = formData.Materials[confirmDeleteIndex];
+
+            setFormData({
+                ...formData,
+                Materials: formData.Materials.filter((_, i) => i !== confirmDeleteIndex),
+            });
+            setUsedMaterials(
+                usedMaterials.filter((mat) => mat !== row.mat)
+            );
+
+            const newSelectedMaterials = new Set(selectedMaterials);
+            newSelectedMaterials.delete(row.mat);
+            setSelectedMaterials(newSelectedMaterials);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemoveMatRow = () => {
+        setConfirmDeleteIndex(null);
+    };
 
     const handleNewMat = (newMat) => {
         const code = newMat.mat;
@@ -333,21 +358,7 @@ const MaterialsTableRisk = ({ collapsible = false, formData, setFormData, usedMa
                                                         <button
                                                             className="remove-row-button"
                                                             style={{ paddingRight: "6px" }}
-                                                            onClick={() => {
-                                                                // Remove abbreviation from table and the selected abbreviations set
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    Materials: formData.Materials.filter((_, i) => i !== index),
-                                                                });
-                                                                setUsedMaterials(
-                                                                    usedMaterials.filter((mat) => mat !== row.mat)
-                                                                );
-
-                                                                // Update the selectedAbbrs state to reflect the removal
-                                                                const newSelectedMaterials = new Set(selectedMaterials);
-                                                                newSelectedMaterials.delete(row.mat);
-                                                                setSelectedMaterials(newSelectedMaterials);
-                                                            }}
+                                                            onClick={() => setConfirmDeleteIndex(index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                         </button>
@@ -388,6 +399,14 @@ const MaterialsTableRisk = ({ collapsible = false, formData, setFormData, usedMa
             </div>
 
             {updatePopup && (<ModifySuggestedMaterial mat={matUpdate} closePopup={closeUpdate} onAdd={handleUpdateMat} setMatData={setMatsData} />)}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveMatRow}
+                    type="Material"
+                    removeRow={confirmRemoveMatRow}
+                />
+            )}
         </div>
     );
 };

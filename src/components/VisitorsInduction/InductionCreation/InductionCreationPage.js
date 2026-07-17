@@ -29,6 +29,7 @@ import InductionPreviewPage from "./InductionPreviewPage";
 import ApproversPopup from "./ApproversPopup";
 import SaveConfirmationPopup from "../../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../../DocumentCreationPages/SavingInProgress";
+import { useTauriCloseGuard } from "../../../utils/useTauriCloseGuard";
 
 const InductionCreationPage = () => {
   const id = useParams().id || '';
@@ -1321,6 +1322,11 @@ const InductionCreationPage = () => {
     setIsSaveConfirmOpen(false);
     pendingActionRef.current = null;
   };
+
+  useTauriCloseGuard(
+    requiresSavePrompt,
+    (closeWindow) => openSaveConfirm("close", closeWindow)
+  );
 
   return (
     <div className="file-create-container">

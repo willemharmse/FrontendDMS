@@ -30,6 +30,7 @@ import PurposeBackgroundComponent from "../CreatePage/PurposeBackgroundComponent
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "./SavingInProgress";
 import PublishingInProgress from "./PublishingInProgress";
+import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
 
 const CreatePageSI = () => {
   const navigate = useNavigate();
@@ -1871,6 +1872,11 @@ const CreatePageSI = () => {
     setIsSaveConfirmOpen(false);
     pendingActionRef.current = null;
   };
+
+  useTauriCloseGuard(
+    requiresSavePrompt,
+    (closeWindow) => openSaveConfirm("close", closeWindow)
+  );
 
   return (
     <div className="file-create-container">

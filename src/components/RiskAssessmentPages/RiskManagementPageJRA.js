@@ -42,6 +42,7 @@ import DuplicateName from "../Popups/DuplicateName";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
+import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
 
 const RiskManagementPageJRA = () => {
     const navigate = useNavigate();
@@ -1767,6 +1768,11 @@ const RiskManagementPageJRA = () => {
         setIsSaveConfirmOpen(false);
         pendingActionRef.current = null;
     };
+
+    useTauriCloseGuard(
+        requiresSavePrompt,
+        (closeWindow) => openSaveConfirm("close", closeWindow)
+    );
 
     return (
         <div className="risk-create-container">

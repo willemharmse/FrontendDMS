@@ -41,6 +41,7 @@ import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import HazardsControlsTable from "../CreatePage/HazardsControlsTable";
 import SavingInProgress from "./SavingInProgress";
 import PublishingInProgress from "./PublishingInProgress";
+import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -2752,6 +2753,11 @@ const CreatePage = () => {
     setIsSaveConfirmOpen(false);
     pendingActionRef.current = null;
   };
+
+  useTauriCloseGuard(
+    requiresSavePrompt,
+    (closeWindow) => openSaveConfirm("close", closeWindow)
+  );
 
   return (
     <div className="file-create-container">

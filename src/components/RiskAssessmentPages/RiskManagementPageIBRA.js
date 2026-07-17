@@ -45,6 +45,7 @@ import RiskScopeIE from "../RiskRelated/RiskScopeIE";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
+import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
 
 const RiskManagementPageIBRA = () => {
     const navigate = useNavigate();
@@ -3896,6 +3897,11 @@ const RiskManagementPageIBRA = () => {
         setIsSaveConfirmOpen(false);
         pendingActionRef.current = null;
     };
+
+    useTauriCloseGuard(
+        requiresSavePrompt,
+        (closeWindow) => openSaveConfirm("close", closeWindow)
+    );
 
     return (
         <div className="risk-create-container">

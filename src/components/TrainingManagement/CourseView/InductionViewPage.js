@@ -1308,13 +1308,13 @@ const InductionViewPage = () => {
                                                     </div>
                                                     <div style={{ height: 4, background: "#0b2f6b", borderRadius: 2, marginTop: 8, marginBottom: 10 }} />
                                                     <div className="inductionView-intro-center">
-                                                        <div style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, marginBottom: 12, textAlign: "left", color: "black" }}>
+                                                        <div style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, marginBottom: 12, textAlign: "left", color: "black" }}>
                                                             {currentSlide.content}
                                                         </div>
-                                                        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, textAlign: "left", color: "black" }}>
+                                                        <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 6, textAlign: "left", color: "black" }}>
                                                             Induction Objectives:
                                                         </div>
-                                                        <ul style={{ marginTop: 0, fontSize: 14, color: "black", textAlign: "left" }}>
+                                                        <ul style={{ marginTop: 0, fontSize: 22, color: "black", textAlign: "left" }}>
                                                             {currentSlide.objectives
                                                                 .split(/\r?\n/)
                                                                 .filter(Boolean)
@@ -1340,7 +1340,7 @@ const InductionViewPage = () => {
                                                         <div className="inductionView-slide-content">
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT) && (
                                                                 <div style={{ height: "100%" }}>
-                                                                    <div className="inductionView-text-box-text" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left" }}>
+                                                                    <div className="inductionView-text-box-text" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.content || ""}
                                                                         </div>
@@ -1350,7 +1350,7 @@ const InductionViewPage = () => {
 
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA) && (
                                                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, height: "100%" }}>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.content || ""}
                                                                         </div>
@@ -1371,13 +1371,13 @@ const InductionViewPage = () => {
 
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
                                                                 <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentLeft || ""}
                                                                         </div>
                                                                     </div>
                                                                     <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentRight || ""}
                                                                         </div>
@@ -1393,7 +1393,7 @@ const InductionViewPage = () => {
                                                                         className="inductionView-text-box"
                                                                         style={{
                                                                             whiteSpace: "pre-wrap",
-                                                                            fontSize: 14,
+                                                                            fontSize: 22,
                                                                             lineHeight: 1.45,
                                                                             textAlign: "left",
                                                                             paddingTop: "10px",
@@ -1472,7 +1472,7 @@ const InductionViewPage = () => {
                                         </div>
                                         <div style={{ height: 4, background: "#0b2f6b", borderRadius: 2, marginTop: 8, marginBottom: 10 }} />
 
-                                        <div className="recap-content">
+                                        <div className="recap-content" style={{ fontSize: "22px" }}>
 
                                             {course?.formData?.summary || "No summary provided."}
                                         </div>
@@ -1617,13 +1617,13 @@ const InductionViewPage = () => {
 
                                                 {/* ONE question only */}
                                                 <div className="assessment-q" key={key}>
-                                                    <div className="assessment-q-title" style={{ marginTop: 10 }}>
+                                                    <div className="assessment-q-title" style={{ marginTop: 10, fontSize: 24 }}>
                                                         {qIndex + 1}. {q.question}
                                                     </div>
 
                                                     <div className="assessment-options">
                                                         {(q.options || []).map((opt, oi) => (
-                                                            <label className="assessment-option" key={oi}>
+                                                            <label className="assessment-option" key={oi} style={{ fontSize: 22 }}>
                                                                 <input
                                                                     type="radio"
                                                                     name={`q_${key}`}

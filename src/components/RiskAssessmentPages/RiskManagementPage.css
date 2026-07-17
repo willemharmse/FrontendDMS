@@ -316,8 +316,8 @@
 }
 
 .input-box-aim-risk-create textarea {
-    width: calc(100% - 20px);
-    padding: 10px;
+    width: calc(100% - 65px);
+    padding: 10px 55px 10px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
@@ -325,6 +325,9 @@
     outline: none;
     min-height: 50px;
     field-sizing: content;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
 
 .aim-textarea-risk-create {
@@ -462,8 +465,8 @@
 
 .aim-textarea-risk-create-ibra {
     position: relative;
-    width: calc(100% - 20px);
-    padding: 10px;
+    width: calc(100% - 59px);
+    padding: 10px 49px 10px 10px;
     resize: none;
     field-sizing: content;
     border: 1px solid #ccc;
@@ -473,6 +476,45 @@
     outline: none;
     word-break: break-all;
     white-space: pre-wrap;
+}
+
+.aim-textarea-stack-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.aim-textarea-inner-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.aim-textarea-text-with-delete {
+    /* width intentionally not overridden: the flex row (.aim-textarea-stack-item)
+       already shrinks .aim-textarea-inner-wrap to make room for the delete
+       button, so the base textarea width rules are correct here. */
+}
+
+.aim-textarea-delete-btn-inline {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.aim-textarea-delete-btn-inline:hover {
+    opacity: 0.7;
 }
 
 .scope-risk-label {
@@ -499,10 +541,10 @@
 }
 
 .aim-textarea-risk-scope {
-    width: calc(100% - 20px);
+    width: calc(100% - 59px);
+    padding: 10px 49px 10px 10px;
     min-height: 50px;
     resize: vertical;
-    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
@@ -510,16 +552,16 @@
     outline: none;
     field-sizing: content;
     overflow: hidden;
+    white-space: pre-wrap;
     overflow-wrap: break-word;
-    /* modern name */
-    word-break: break-word;
+    word-break: break-all;
 }
 
 .aim-textarea-risk-scope-2 {
-    width: calc(100% - 20px);
+    width: calc(100% - 59px);
     min-height: 50px;
     resize: vertical;
-    padding: 10px;
+    padding: 10px 49px 10px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
@@ -918,11 +960,6 @@
     width: 100%;
 }
 
-.risk-scope-text-block {
-    position: relative;
-    width: 100%;
-}
-
 .risk-scope-bullet-box {
     position: relative;
     width: 100%;
@@ -968,7 +1005,40 @@
     position: relative;
     width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.risk-scope-textarea-inner-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.risk-scope-paragraph-textarea-with-delete {
+    /* width intentionally not overridden: the flex row (.risk-scope-text-block)
+       already shrinks .risk-scope-textarea-inner-wrap to make room for the
+       delete button, so the base .aim-textarea-risk-scope width is correct here. */
+}
+
+.risk-scope-delete-btn-inline {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.risk-scope-delete-btn-inline:hover {
+    opacity: 0.7;
 }
 
 .risk-scope-bullet-box {

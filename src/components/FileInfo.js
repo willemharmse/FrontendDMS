@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faTrash, faSearch, faArrowLeft, faBell, faCircleUser, faCaretLeft, faCaretRight, faFileCirclePlus, faX, faSort, faFilter, faCopy, faPlusCircle, faTableColumns, faDownload, faArrowsLeftRight, faArrowsRotate, faFlag, faUser, faArrowRight, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faTrash, faSearch, faArrowLeft, faBell, faCircleUser, faCaretLeft, faCaretRight, faFileCirclePlus, faX, faSort, faFilter, faCopy, faPlusCircle, faTableColumns, faDownload, faArrowsLeftRight, faArrowsRotate, faFlag, faUser, faArrowRight, faClock, faSquareCheck } from '@fortawesome/free-solid-svg-icons';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { jwtDecode } from 'jwt-decode';
 import FilterFileName from "./FileInfo/FilterFileName";
@@ -23,6 +23,10 @@ import { getCurrentUser, can, isAdmin, hasRole, canIn } from "../utils/auth";
 import RestoreDocumentPopup from "./FileInfo/RestoreDocumentPopup";
 import MigrateOwnership from "./FileInfo/MigrateOwnership";
 import TopBar from "./Notifications/TopBar";
+import BatchDeletePopup from "./FileInfo/BatchDeletePopup";
+import BatchDownloadPopup from "./FileInfo/BatchDownloadPopup";
+import BatchRestoreDocumentPopup from "./FileInfo/BatchRestoreDocumentPopup";
+import JSZip from "jszip";
 
 const FileInfo = () => {
   const { type, fileIds } = useParams();
@@ -64,6 +68,12 @@ const FileInfo = () => {
   const [sortOrder, setSortOrder] = useState("ascending");
   const [migrate, setMigrate] = useState(false);
   const [isSwitchingView, setIsSwitchingView] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedFileIds, setSelectedFileIds] = useState(new Set());
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+  const [isBatchDownloadModalOpen, setIsBatchDownloadModalOpen] = useState(false);
+  const [isBatchRestoreModalOpen, setIsBatchRestoreModalOpen] = useState(false);
+  const [batchLoading, setBatchLoading] = useState(false);
 
   const toPlural = (type) => {
     const pluralMap = {
@@ -135,6 +145,29 @@ const FileInfo = () => {
 
   const openRDPopup = () => setIsRDPopupOpen(true);
   const closeRDPopup = () => setIsRDPopupOpen(false);
+
+  // --- MULTI-SELECT MODE ---
+  const toggleSelectMode = () => {
+    setIsSelectMode(prev => !prev);
+    setSelectedFileIds(new Set());
+  };
+
+  const toggleFileSelection = (fileId) => {
+    setSelectedFileIds(prev => {
+      const next = new Set(prev);
+      if (next.has(fileId)) next.delete(fileId);
+      else next.add(fileId);
+      return next;
+    });
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedFileIds(new Set(filteredFiles.map(f => f._id)));
+    } else {
+      setSelectedFileIds(new Set());
+    }
+  };
 
   // --- EXCEL FILTER HELPERS ---
   const BLANK = "(Blanks)";
@@ -330,6 +363,8 @@ const FileInfo = () => {
   }, [token]);
 
   useEffect(() => {
+    setIsSelectMode(false);
+    setSelectedFileIds(new Set());
     fetchFiles();
   }, [isTrashView]);
 
@@ -416,6 +451,157 @@ const FileInfo = () => {
       link.parentNode.removeChild(link);
     } catch (error) { console.error(error); alert('Error downloading.'); }
     finally { setLoading(false); }
+  };
+
+  // --- BATCH DOWNLOAD (zips all selected files) ---
+  const openBatchDownloadModal = () => {
+    if (selectedFileIds.size === 0) return;
+    setIsBatchDownloadModalOpen(true);
+  };
+  const closeBatchDownloadModal = () => {
+    if (batchLoading) return; // keep the popup up while the operation is running
+    setIsBatchDownloadModalOpen(false);
+  };
+
+  const confirmBatchDownload = async () => {
+    const filesToDownload = filteredFiles.filter(f => selectedFileIds.has(f._id));
+    if (filesToDownload.length === 0) return;
+
+    try {
+      setBatchLoading(true);
+
+      const zip = new JSZip();
+      const usedNames = new Set();
+
+      for (const file of filesToDownload) {
+        // eslint-disable-next-line no-await-in-loop
+        const response = await fetch(`${process.env.REACT_APP_URL}/api/file/download/${file._id}`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error(`Failed to download ${file.fileName}`);
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await response.blob();
+
+        // Avoid overwriting entries in the zip if two files share the same name
+        let name = file.fileName || `document-${file._id}`;
+        if (usedNames.has(name)) {
+          const dot = name.lastIndexOf('.');
+          const base = dot > -1 ? name.slice(0, dot) : name;
+          const ext = dot > -1 ? name.slice(dot) : '';
+          let counter = 1;
+          let candidate = `${base} (${counter})${ext}`;
+          while (usedNames.has(candidate)) {
+            counter += 1;
+            candidate = `${base} (${counter})${ext}`;
+          }
+          name = candidate;
+        }
+        usedNames.add(name);
+
+        zip.file(name, blob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const zipFileName = `ComplianceHub Documents_${dateStr}.zip`;
+
+      const url = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', zipFileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setSelectedFileIds(new Set());
+      setIsSelectMode(false);
+      setIsBatchDownloadModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      alert('Error downloading the selected documents.');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // --- BATCH DELETE ---
+  const openBatchDeleteModal = () => {
+    if (selectedFileIds.size === 0) return;
+    setIsBatchDeleteModalOpen(true);
+  };
+  const closeBatchDeleteModal = () => {
+    if (batchLoading) return;
+    setIsBatchDeleteModalOpen(false);
+  };
+
+  const confirmBatchDelete = async () => {
+    const ids = Array.from(selectedFileIds);
+    if (ids.length === 0) return;
+
+    try {
+      setBatchLoading(true);
+      const deleteRoute = isTrashView ? '/api/file/trash/delete' : '/api/file/delete';
+
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`${process.env.REACT_APP_URL}${deleteRoute}/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            method: 'DELETE',
+          })
+        )
+      );
+
+      setSelectedFileIds(new Set());
+      setIsSelectMode(false);
+      setIsBatchDeleteModalOpen(false);
+      fetchFiles();
+    } catch (error) {
+      console.error(error);
+      alert('Error deleting the selected documents.');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // --- BATCH RESTORE (trash view) ---
+  const openBatchRestoreModal = () => {
+    if (selectedFileIds.size === 0) return;
+    setIsBatchRestoreModalOpen(true);
+  };
+  const closeBatchRestoreModal = () => {
+    if (batchLoading) return;
+    setIsBatchRestoreModalOpen(false);
+  };
+
+  const confirmBatchRestore = async () => {
+    const ids = Array.from(selectedFileIds);
+    if (ids.length === 0) return;
+
+    try {
+      setBatchLoading(true);
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`${process.env.REACT_APP_URL}/api/file/trash/restore/${id}`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+
+      setSelectedFileIds(new Set());
+      setIsSelectMode(false);
+      setIsBatchRestoreModalOpen(false);
+      fetchFiles();
+    } catch (error) {
+      console.error(error);
+      alert('Error restoring the selected documents.');
+    } finally {
+      setBatchLoading(false);
+    }
   };
 
   const deleteFile = async () => {
@@ -583,6 +769,10 @@ const FileInfo = () => {
   }, [files, searchQuery, selectedType, selectedDiscipline, selectedStatus, columnFilters, sortConfig, access]);
 
 
+  const allSelected = useMemo(() => {
+    return filteredFiles.length > 0 && filteredFiles.every(f => selectedFileIds.has(f._id));
+  }, [filteredFiles, selectedFileIds]);
+
   const overdueCount = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -722,7 +912,7 @@ const FileInfo = () => {
             </div>
           )}
           <div className="sidebar-logo-dm-fi">
-            <img src={isTrashView ? `${process.env.PUBLIC_URL}/trashIcon.svg` : `${process.env.PUBLIC_URL}/${iconMap[type] || `policiesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
+            <img src={isTrashView ? "/trashIcon.svg" : `/${iconMap[type] || `policiesDMSInverted.svg`}`} alt="Logo" className="icon-risk-rm" />
             <p className="logo-text-dm-fi">
               {isTrashView ? getDeletedTitle() : toPlural(type)}
             </p>
@@ -810,13 +1000,7 @@ const FileInfo = () => {
         <div className="table-flameproof-card">
           <div className="flameproof-table-header-label-wrapper">
             <label className="risk-control-label">
-              {isTrashView
-                ? getDeletedTitle()
-                : type === "Policy"
-                  ? "Policies"
-                  : type === "Training"
-                    ? "Training"
-                    : `${type}s`}
+              {isTrashView ? getDeletedTitle() : toPlural(type)}
             </label>
             <button
               className={getFilterBtnClass()} // Calculated class (e.g., ibra4, ibra5, ibra6)
@@ -838,6 +1022,57 @@ const FileInfo = () => {
                 style={{ color: hasActiveFilters ? "#002060" : "inherit" }}
               />
             </button>
+
+            <button
+              className={`top-right-button-control-att-3`}
+              title={isSelectMode ? "Exit Select Mode" : "Select Multiple Documents"}
+              onClick={toggleSelectMode}
+              style={{
+                cursor: "pointer",
+                color: isSelectMode ? "#002060" : "gray",
+                userSelect: "none"
+              }}
+            >
+              <FontAwesomeIcon
+                icon={faSquareCheck}
+                className="icon-um-search"
+              />
+            </button>
+
+            {isSelectMode && (<FontAwesomeIcon
+              className={`top-right-button-control-att-4`}
+              icon={faTrash}
+              title="Delete Selected"
+              onClick={() => selectedFileIds.size > 0 && openBatchDeleteModal()}
+              style={{
+                cursor: selectedFileIds.size > 0 ? "pointer" : "not-allowed",
+                opacity: selectedFileIds.size > 0 ? 1 : 0.4,
+                top: "23px"
+              }}
+            />)}
+
+            {!isTrashView && isSelectMode && (<FontAwesomeIcon
+              className={`top-right-button-control-att-5`}
+              icon={faDownload}
+              title="Download Selected"
+              onClick={() => selectedFileIds.size > 0 && openBatchDownloadModal()}
+              style={{
+                cursor: selectedFileIds.size > 0 ? "pointer" : "not-allowed",
+                opacity: selectedFileIds.size > 0 ? 1 : 0.4,
+                top: "23px"
+              }}
+            />)}
+
+            {isTrashView && isSelectMode && (<FontAwesomeIcon
+              className={`top-right-button-control-att-5`}
+              icon={faRotate}
+              title="Restore Selected"
+              onClick={() => selectedFileIds.size > 0 && openBatchRestoreModal()}
+              style={{
+                cursor: selectedFileIds.size > 0 ? "pointer" : "not-allowed",
+                opacity: selectedFileIds.size > 0 ? 1 : 0.4
+              }}
+            />)}
 
             <button
               className={`${getFilterBtnClass()}-2`}
@@ -866,6 +1101,12 @@ const FileInfo = () => {
                   excelFilters={columnFilters}
                   trashed={isTrashView}
                   all={type === "All Document"}
+                  isSelectMode={isSelectMode}
+                  allSelected={allSelected}
+                  onSelectAll={handleSelectAll}
+                  onDownloadSelected={isTrashView ? openBatchRestoreModal : openBatchDownloadModal}
+                  onDeleteSelected={openBatchDeleteModal}
+                  hasSelection={selectedFileIds.size > 0}
                 />
               </thead>
               <tbody>
@@ -876,7 +1117,8 @@ const FileInfo = () => {
                         9 +
                         (type === "All Document" ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
-                        (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)
+                        (canIn(access, "DMS", ["systemAdmin"]) && !isSelectMode ? 1 : 0) +
+                        (isSelectMode ? 1 : 0)
                       }
                       className="col-fi"
                       style={{
@@ -896,7 +1138,8 @@ const FileInfo = () => {
                         9 +
                         (type === "All Document" ? 1 : 0) +
                         (canIn(access, "DMS", ["systemAdmin", "contributor"]) ? 1 : 0) +
-                        (canIn(access, "DMS", ["systemAdmin"]) ? 1 : 0)
+                        (canIn(access, "DMS", ["systemAdmin"]) && !isSelectMode ? 1 : 0) +
+                        (isSelectMode ? 1 : 0)
                       }
                       className="col-fi"
                       style={{
@@ -912,6 +1155,17 @@ const FileInfo = () => {
                 ) : (
                   filteredFiles.map((file, index) => (
                     <tr key={file._id} className={`${isTrashView ? "tr-trash" : ""} file-info-row-height`}>
+                      {isSelectMode && (
+                        <td className={isTrashView ? "col-act" : "col-act"}>
+                          <input
+                            type="checkbox"
+                            className="checkbox-inp-abbr"
+                            checked={selectedFileIds.has(file._id)}
+                            onChange={() => toggleFileSelection(file._id)}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </td>
+                      )}
                       <td className="col-fi">{index + 1}</td>
                       <td className="col-fi">{file.discipline}</td>
                       <td
@@ -965,7 +1219,7 @@ const FileInfo = () => {
                           : ""}
                       </td>
                       <td className="col-fi">{formatDate(file.uploadDate)}</td>
-                      {canIn(access, "DMS", ["systemAdmin"]) && (
+                      {!isSelectMode && canIn(access, "DMS", ["systemAdmin"]) && (
                         <td className={isTrashView ? "col-act trashed" : "col-act"}>
 
                           {(!isTrashView) && (
@@ -1171,6 +1425,32 @@ const FileInfo = () => {
       {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} deleteFileFromTrash={deleteFileFromTrash} isTrashView={isTrashView} loading={loading} selectedFileName={selectedFileName} />)}
       {isDownloadModalOpen && (<DownloadPopup closeDownloadModal={closeDownloadModal} confirmDownload={confirmDownload} downloadFileName={downloadFileName} loading={loading} />)}
       {isRestoreModalOpen && (<RestoreDocumentPopup closeModal={closeRestoreModal} restoreFile={restoreFile} selectedFileName={selectedFileName} loading={loading} />)}
+      {isBatchDeleteModalOpen && (
+        <BatchDeletePopup
+          closeModal={closeBatchDeleteModal}
+          deleteFile={confirmBatchDelete}
+          deleteFileFromTrash={confirmBatchDelete}
+          isTrashView={isTrashView}
+          loading={batchLoading}
+          selectedCount={selectedFileIds.size}
+        />
+      )}
+      {isBatchDownloadModalOpen && (
+        <BatchDownloadPopup
+          closeDownloadModal={closeBatchDownloadModal}
+          confirmDownload={confirmBatchDownload}
+          loading={batchLoading}
+          selectedCount={selectedFileIds.size}
+        />
+      )}
+      {isBatchRestoreModalOpen && (
+        <BatchRestoreDocumentPopup
+          closeModal={closeBatchRestoreModal}
+          restoreFile={confirmBatchRestore}
+          loading={batchLoading}
+          selectedCount={selectedFileIds.size}
+        />
+      )}
       {migrate && (<MigrateOwnership onClose={closeMigrate} />)}
       <ToastContainer />
     </div >

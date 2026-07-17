@@ -9,10 +9,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const AttendanceTable = ({ collapsible = false, rows = [], addRow, removeRow, error, updateRows, generateAR, setErrors, readOnly = false, title, documentType }) => {
     const [collapsed, setCollapsed] = useState(true);
     const isCollapsed = collapsible ? collapsed : false;
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const [designations, setDesignations] = useState([]);
     const [attendees, setAttendees] = useState([]);
     const [companies, setCompanies] = useState([]);
@@ -803,7 +805,7 @@ const AttendanceTable = ({ collapsible = false, rows = [], addRow, removeRow, er
                                                     className="remove-row-button font-fam"
                                                     onClick={() => {
                                                         if (index !== 0) {
-                                                            removeRow(index); // Prevent removal of the first row
+                                                            setConfirmDeleteIndex(index); // Prevent removal of the first row
                                                         } else {
                                                             toast.dismiss();
                                                             toast.clearWaitingQueue();
@@ -1042,6 +1044,17 @@ const AttendanceTable = ({ collapsible = false, rows = [], addRow, removeRow, er
                         );
                     })()}
                 </div>
+            )}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={() => setConfirmDeleteIndex(null)}
+                    type="Attendee"
+                    removeRow={() => {
+                        removeRow(confirmDeleteIndex);
+                        setConfirmDeleteIndex(null);
+                    }}
+                />
             )}
         </div>
     );

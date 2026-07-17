@@ -19,7 +19,7 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [users, setUsers] = useState([]);
-    const [deptHeads, setDeptHeads] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [docTypes, setDocTypes] = useState([]);
     const [disciplines, setDisciplines] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -47,19 +47,37 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
                 const data = await response.json();
 
                 setDocTypes(data[0].documentType);
-                setDisciplines(data[0].disciplines);
                 const owners = Array.from(new Set([
                     ...data[0].owner,
                     ...data[0].departmentHeads
                 ]));
 
-                setUsers(owners);
-                setDeptHeads(data[0].departmentHeads);
+                setUsers(owners); // This now contains owners + departmentHeads, with duplicates removed
             } catch (error) {
                 setError(error.message);
             }
         };
         fetchValues();
+    }, []);
+
+    useEffect(() => {
+        // Discipline options now come from the actual departments, not the static values list
+        const fetchDepartments = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/department/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch departments");
+                }
+                const data = await response.json();
+
+                const departmentList = data.departments || [];
+                setDepartments(departmentList);
+                setDisciplines(departmentList.map((dept) => dept.department));
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+        fetchDepartments();
     }, []);
 
     useEffect(() => {
@@ -79,6 +97,14 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
         };
         fetchUsers();
     }, []);
+
+    useEffect(() => {
+        // The department head is no longer picked manually — it follows the selected discipline
+        const matchedDepartment = departments.find((dept) => dept.department === discipline);
+        setDepartmentHead(matchedDepartment?.departmentHead || '');
+    }, [discipline, departments]);
+
+    const departmentHeadName = usersList.find((user) => user._id === departmentHead)?.username || '';
 
     const validateForm = () => {
         const newErrors = {};
@@ -126,7 +152,7 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
 
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('departmentHead', departmentHead);
+        formData.append('departmentHead', departmentHeadName);
         formData.append('owner', JSON.stringify(owner));
         formData.append('documentType', "Risk Assessment");
         formData.append('discipline', discipline);
@@ -275,22 +301,6 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
                                         </select>
                                     </div>
                                 </div>
-                                <div className={`upload-file-page-form-group ${errors.departmentHead ? "error-upload-required-up" : ""}`}>
-                                    <label>Department Head <span className="required-field">*</span></label>
-                                    <div className="upload-file-page-select-container">
-                                        <select value={departmentHead} className="upload-file-page-select" onChange={(e) => setDepartmentHead(e.target.value)}>
-                                            <option value="">Select Head</option>
-                                            {deptHeads.sort((a, b) => a.localeCompare(b)).map((head, index) => (
-                                                <option key={index} value={head}>
-                                                    {head}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="upload-file-page-form-row">
                                 <div className={`upload-file-page-form-group ${errors.reviewer ? "error-upload-required-up" : ""}`}>
                                     <label>Document Reviewer <span className="required-field">*</span></label>
                                     <div className="upload-file-page-select-container">
@@ -304,6 +314,9 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
                                         </select>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="upload-file-page-form-row">
                                 <div className={`upload-file-page-form-group ${errors.approver ? "error-upload-required-up" : ""}`}>
                                     <label>Document Approver <span className="required-field">*</span></label>
                                     <div className="upload-file-page-select-container">
@@ -340,6 +353,8 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
                                             className="date-input-calendar-icon"
                                         />
                                     </div>
+                                </div>
+                                <div className="upload-file-page-form-group">
                                 </div>
                             </div>
                         </form>

@@ -58,7 +58,7 @@ const TeamTable = ({
             case "username":
                 return user.username || "";
             case "role":
-                return formatRole(user.role) || "";
+                return user.isDepartmentHead ? "Department Head" : (formatRole(user.role) || "");
             case "dateAdded":
                 return user.dateAdded ? formatDate(user.dateAdded) : "";
             default:
@@ -176,10 +176,18 @@ const TeamTable = ({
             return true;
         });
 
+        const isDefaultSort = !sortConfig?.colId;
         const colId = sortConfig?.colId ?? "username";
         const dir = sortConfig?.direction === "desc" ? -1 : 1;
 
         current.sort((a, b) => {
+            // With no explicit sort chosen, the department head always leads.
+            // Once a column is actively sorted, the head sorts like everyone else.
+            if (isDefaultSort) {
+                if (a.isDepartmentHead && !b.isDepartmentHead) return -1;
+                if (!a.isDepartmentHead && b.isDepartmentHead) return 1;
+            }
+
             const av = normalizeValue(getCellValue(a, colId));
             const bv = normalizeValue(getCellValue(b, colId));
 
@@ -267,19 +275,21 @@ const TeamTable = ({
                             <tr key={user._id}>
                                 <td className="col-um">{index + 1}</td>
                                 <td className="col-um">{user.username}</td>
-                                <td className="col-um">{formatRole(user.role)}</td>
+                                <td className="col-um">{user.isDepartmentHead ? "Department Head" : formatRole(user.role)}</td>
                                 <td className="col-um">{user.dateAdded ? formatDate(user.dateAdded) : ""}</td>
                                 <td className="col-um">
-                                    <button
-                                        className={"action-button-user delete-button-user"}
-                                        onClick={() => {
-                                            setUserToDelete(user);
-                                            setIsDeleteModalOpen(true);
-                                        }}
-                                        disabled={!(user._id !== loggedInUserId)}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} title="Remove User" />
-                                    </button>
+                                    {!user.isDepartmentHead && (
+                                        <button
+                                            className={"action-button-user delete-button-user"}
+                                            onClick={() => {
+                                                setUserToDelete(user);
+                                                setIsDeleteModalOpen(true);
+                                            }}
+                                            disabled={!(user._id !== loggedInUserId)}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} title="Remove User" />
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

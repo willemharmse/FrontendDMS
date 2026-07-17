@@ -32,6 +32,11 @@
     cursor: pointer;
 }
 
+.document-card-dc-home:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
 /* Info */
 .document-info-dc-home {
     margin-top: 1px;

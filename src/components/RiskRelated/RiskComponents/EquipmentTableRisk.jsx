@@ -11,10 +11,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const EquipmentTableRisk = ({ collapsible = false, formData, setFormData, usedEquipment, setUsedEquipment, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [collapsed, setCollapsed] = useState(true);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const isCollapsed = collapsible ? collapsed : false;
     const [eqpData, setEqpData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -116,6 +118,29 @@ const EquipmentTableRisk = ({ collapsible = false, formData, setFormData, usedEq
 
         setUpdatePopup(false);
     }
+
+    const confirmRemoveEqpRow = () => {
+        if (confirmDeleteIndex != null) {
+            const row = formData.Equipment[confirmDeleteIndex];
+
+            setFormData({
+                ...formData,
+                Equipment: formData.Equipment.filter((_, i) => i !== confirmDeleteIndex),
+            });
+            setUsedEquipment(
+                usedEquipment.filter((eqp) => eqp !== row.eqp)
+            );
+
+            const newSelectedEquipment = new Set(selectedEquipment);
+            newSelectedEquipment.delete(row.eqp);
+            setSelectedEquipment(newSelectedEquipment);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemoveEqpRow = () => {
+        setConfirmDeleteIndex(null);
+    };
 
     useEffect(() => {
         setSelectedEquipment(new Set(usedEquipment));
@@ -336,21 +361,7 @@ const EquipmentTableRisk = ({ collapsible = false, formData, setFormData, usedEq
                                                         <button
                                                             className="remove-row-button"
                                                             style={{ paddingRight: "6px" }}
-                                                            onClick={() => {
-                                                                // Remove abbreviation from table and the selected abbreviations set
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    Equipment: formData.Equipment.filter((_, i) => i !== index),
-                                                                });
-                                                                setUsedEquipment(
-                                                                    usedEquipment.filter((eqp) => eqp !== row.eqp)
-                                                                );
-
-                                                                // Update the selectedAbbrs state to reflect the removal
-                                                                const newSelectedEquipment = new Set(selectedEquipment);
-                                                                newSelectedEquipment.delete(row.eqp);
-                                                                setSelectedEquipment(newSelectedEquipment);
-                                                            }}
+                                                            onClick={() => setConfirmDeleteIndex(index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                         </button>
@@ -391,6 +402,14 @@ const EquipmentTableRisk = ({ collapsible = false, formData, setFormData, usedEq
             </div>
 
             {updatePopup && (<ModifySuggestedEquipment eqp={eqpUpdate} closePopup={closeUpdate} onAdd={handleUpdateEqp} setEqpData={setEqpData} />)}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveEqpRow}
+                    type="Equipment"
+                    removeRow={confirmRemoveEqpRow}
+                />
+            )}
         </div>
     );
 };

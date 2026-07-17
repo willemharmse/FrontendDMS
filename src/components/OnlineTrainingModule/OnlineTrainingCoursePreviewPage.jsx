@@ -1359,13 +1359,13 @@ const OnlineTrainingCoursePreviewPage = ({ draftID, closeModal }) => {
 
                                                             {(currentSlide.type === SLIDE_TYPES.TEXT_MEDIA_2X2) && (
                                                                 <div className={`limitHeightInductionView`} style={{ display: "grid", gridTemplateColumns: "2fr 2fr", gap: 16 }}>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentLeft || ""}
                                                                         </div>
                                                                     </div>
                                                                     <div className={isAudioAt(currentSlide, 0) ? `inductionView-media-box-2` : "inductionView-media-box"}>{renderMedia(currentSlide, 0, "16/9")}</div>
-                                                                    <div className="inductionView-text-box" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
+                                                                    <div className="inductionView-text-box inductionView-split-text-panel" style={{ whiteSpace: "pre-wrap", fontSize: 22, lineHeight: 1.45, textAlign: "left", paddingTop: "10px" }}>
                                                                         <div style={{ margin: "auto 0" }}>
                                                                             {currentSlide.contentRight || ""}
                                                                         </div>

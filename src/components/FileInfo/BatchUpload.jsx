@@ -204,7 +204,7 @@ const BatchUpload = ({ onClose }) => {
 
                 <div className="batch-file-buttons">
                     <button className="batch-file-button-sub" onClick={() => handleClick()} disabled={loading}>
-                        {'Submit'}
+                        {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Submit'}
                     </button>
                 </div>
             </div>

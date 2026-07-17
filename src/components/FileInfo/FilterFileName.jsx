@@ -1,9 +1,23 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faSortUp, faSortDown, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './FilterName.css';
 
-const FilterFileName = ({ access, canIn, onHeaderClick, sortConfig, excelFilters, trashed, all = false }) => {
+const FilterFileName = ({
+    access,
+    canIn,
+    onHeaderClick,
+    sortConfig,
+    excelFilters,
+    trashed,
+    all = false,
+    isSelectMode = false,
+    allSelected = false,
+    onSelectAll = () => { },
+    onDownloadSelected = () => { },
+    onDeleteSelected = () => { },
+    hasSelection = false
+}) => {
 
     // Helper to determine if we should show an icon
     const getIcon = (colId) => {
@@ -21,6 +35,24 @@ const FilterFileName = ({ access, canIn, onHeaderClick, sortConfig, excelFilters
 
     return (
         <tr className={trashed ? 'trashed' : ""}>
+            {/* Select All + Bulk Actions - only visible in select mode */}
+            {isSelectMode && (
+                <th className="col-act-filter col">
+                    <div
+                        className="fileinfo-container-filter"
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                        <input
+                            type="checkbox"
+                            className="checkbox-inp-abbr"
+                            checked={allSelected}
+                            onChange={(e) => onSelectAll(e.target.checked)}
+                            title="Select All"
+                        />
+                    </div>
+                </th>
+            )}
+
             {/* Nr - No Filter/Sort */}
             <th className="doc-num-filter col">Nr</th>
 
@@ -136,7 +168,7 @@ const FilterFileName = ({ access, canIn, onHeaderClick, sortConfig, excelFilters
                 </div>
             </th>
 
-            {canIn(access, "DMS", ["systemAdmin", "contributor"]) && (
+            {canIn(access, "DMS", ["systemAdmin", "contributor"]) && !isSelectMode && (
                 <th className="col-act-filter col">Action</th>
             )}
         </tr>

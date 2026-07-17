@@ -4,10 +4,12 @@ import { faTrash, faPlusCircle, faInfoCircle, faChevronDown, faChevronRight, faC
 import { v4 as uuidv4 } from "uuid";
 import RelevantControlsSelectionPopup from "./RelevantControlsSelectionPopup";
 import ApplicableControlHelp from "./RiskInfo/ApplicableControlHelp";
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readOnly = false, globalControls = [], isCollapsed, highlightedControlNames }, ref) => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [help, setHelp] = useState(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     // Initialize local state using the prop (defaults to false if undefined)
     const [collapsed, setCollapsed] = useState(true);
@@ -100,6 +102,21 @@ const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readO
                 relevantControls: nextRelevant,
             };
         });
+    };
+
+    const requestRemoveControl = (id) => {
+        setConfirmDeleteId(id);
+    };
+
+    const confirmRemoveControl = () => {
+        if (confirmDeleteId != null) {
+            removeControl(confirmDeleteId);
+        }
+        setConfirmDeleteId(null);
+    };
+
+    const cancelRemoveControl = () => {
+        setConfirmDeleteId(null);
     };
 
     const sortedRelevantControls = [...(relevantControls || [])].sort((a, b) => {
@@ -206,7 +223,7 @@ const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readO
                                                 <td className="ref-but-row procCent">
                                                     <button
                                                         className="remove-row-button"
-                                                        onClick={() => removeControl(row.id)}
+                                                        onClick={() => requestRemoveControl(row.id)}
                                                         title="Remove Control"
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} />
@@ -251,6 +268,14 @@ const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readO
                     onSave={handleSaveControls}
                     globalControls={globalControls}
                     currentControls={relevantControls}
+                />
+            )}
+
+            {confirmDeleteId != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveControl}
+                    type="Control"
+                    removeRow={confirmRemoveControl}
                 />
             )}
         </div>

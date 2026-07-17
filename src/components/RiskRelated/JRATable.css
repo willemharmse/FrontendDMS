@@ -678,15 +678,29 @@ td.jraStatus {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     cursor: grab;
-    scrollbar-width: none;
     padding-bottom: 8px;
     max-height: 600px;
     /* Firefox */
 }
 
 .table-wrapper-jra::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari */
+    display: block !important;
+    width: 12px;
+    height: 12px;
+}
+
+.table-wrapper-jra::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-wrapper-jra::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.table-wrapper-jra::-webkit-scrollbar-thumb:hover {
+    background: #888888;
 }
 
 /* Add these styles to your existing IBRATable.css file */

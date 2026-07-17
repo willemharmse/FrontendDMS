@@ -7,12 +7,14 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, readOnly = false }) => {
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
     const fileInputRef = useRef(null);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
 
     const toggleCollapse = () => {
         const newState = !collapsed;
@@ -195,6 +197,21 @@ const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, r
         setSelectedFiles(updatedDocuments);
     };
 
+    const requestRemoveFile = (indexToRemove) => {
+        setConfirmDeleteIndex(indexToRemove);
+    };
+
+    const confirmRemoveFile = () => {
+        if (confirmDeleteIndex != null) {
+            handleRemoveFile(confirmDeleteIndex);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemoveFile = () => {
+        setConfirmDeleteIndex(null);
+    };
+
     return (
         <div className="input-row">
             <div className="input-box-ref">
@@ -257,7 +274,7 @@ const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, r
                                                         <button
                                                             type="button"
                                                             className="remove-row-button"
-                                                            onClick={() => handleRemoveFile(index)}
+                                                            onClick={() => requestRemoveFile(index)}
                                                             title="Remove File"
                                                             style={{
                                                                 display: "inline-flex",
@@ -289,6 +306,14 @@ const SupportingDocumentTable = ({ collapsible = false, formData, setFormData, r
                     </>
                 )}
             </div>
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveFile}
+                    type="External Supporting Document"
+                    removeRow={confirmRemoveFile}
+                />
+            )}
         </div>
     );
 };

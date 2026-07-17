@@ -9,10 +9,12 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const MobileMachineTableRisk = ({ collapsible = false, formData, setFormData, usedMobileMachine, setUsedMobileMachine, userID, readOnly = false }) => {
     // State to control the popup and selected abbreviations
     const [collapsed, setCollapsed] = useState(true);
+    const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
     const isCollapsed = collapsible ? collapsed : false;
     const [macData, setMacData] = useState([]);
     const [originalData, setOriginalData] = useState([])
@@ -134,6 +136,29 @@ const MobileMachineTableRisk = ({ collapsible = false, formData, setFormData, us
 
         setUpdatePopup(false);
     }
+
+    const confirmRemoveMacRow = () => {
+        if (confirmDeleteIndex != null) {
+            const row = formData.MobileMachine[confirmDeleteIndex];
+
+            setFormData({
+                ...formData,
+                MobileMachine: formData.MobileMachine.filter((_, i) => i !== confirmDeleteIndex),
+            });
+            setUsedMobileMachine(
+                usedMobileMachine.filter((mac) => mac !== row.mac)
+            );
+
+            const newSelectedMachines = new Set(selectedMMachine);
+            newSelectedMachines.delete(row.mac);
+            setSelectedMMachine(newSelectedMachines);
+        }
+        setConfirmDeleteIndex(null);
+    };
+
+    const cancelRemoveMacRow = () => {
+        setConfirmDeleteIndex(null);
+    };
     useEffect(() => {
         setSelectedMMachine(new Set(usedMobileMachine));
         if (usedMobileMachine.length > 0) {
@@ -332,21 +357,7 @@ const MobileMachineTableRisk = ({ collapsible = false, formData, setFormData, us
                                                         <button
                                                             className="remove-row-button"
                                                             style={{ paddingRight: "6px" }}
-                                                            onClick={() => {
-                                                                // Remove abbreviation from table and the selected abbreviations set
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    MobileMachine: formData.MobileMachine.filter((_, i) => i !== index),
-                                                                });
-                                                                setUsedMobileMachine(
-                                                                    usedMobileMachine.filter((mac) => mac !== row.mac)
-                                                                );
-
-                                                                // Update the selectedAbbrs state to reflect the removal
-                                                                const newSelectedMachines = new Set(selectedMMachine);
-                                                                newSelectedMachines.delete(row.mac);
-                                                                setSelectedMMachine(newSelectedMachines);
-                                                            }}
+                                                            onClick={() => setConfirmDeleteIndex(index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                                                         </button>
@@ -387,6 +398,14 @@ const MobileMachineTableRisk = ({ collapsible = false, formData, setFormData, us
             </div>
 
             {updatePopup && (<ModifySuggestedMobileMachines mac={macUpdate} closePopup={closeUpdate} onAdd={handleUpdateMac} setMachineData={setMacData} />)}
+
+            {confirmDeleteIndex != null && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemoveMacRow}
+                    type="Mobile Machine"
+                    removeRow={confirmRemoveMacRow}
+                />
+            )}
         </div>
     );
 };

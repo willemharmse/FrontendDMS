@@ -10,6 +10,7 @@ import {
     faChevronDown,
     faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "./RiskAssessmentItemsDelete";
 
 const RiskScopeIE = ({
     readOnly,
@@ -49,6 +50,34 @@ const RiskScopeIE = ({
     const [collapsed, setCollapsed] = useState(true);
     const isCollapsed = collapsible ? collapsed : false;
     const bulletRefs = useRef({});
+    const [confirmDelete, setConfirmDelete] = useState(null);
+
+    const requestRemoveSectionGroup = (sectionKey, index) => {
+        setConfirmDelete({
+            type: "Scope Section",
+            specialText: "Are you sure you want to delete this paragraph and its bullets section?",
+            action: () => onRemoveSectionGroup(sectionKey, index)
+        });
+    };
+
+    const requestRemoveSectionItem = (sectionKey, index, specialText) => {
+        setConfirmDelete({ type: "Item", specialText, action: () => onRemoveSectionItem(sectionKey, index) });
+    };
+
+    const requestRemoveSectionBullet = (sectionKey, itemIndex, bulletId) => {
+        setConfirmDelete({ type: "Bullet", action: () => onRemoveSectionBullet(sectionKey, itemIndex, bulletId) });
+    };
+
+    const confirmRemove = () => {
+        if (confirmDelete?.action) {
+            confirmDelete.action();
+        }
+        setConfirmDelete(null);
+    };
+
+    const cancelRemove = () => {
+        setConfirmDelete(null);
+    };
 
     const toggleCollapse = () => {
         setCollapsed(prev => !prev);
@@ -130,77 +159,88 @@ const RiskScopeIE = ({
                             return (
                                 <div key={index} className="risk-scope-structured-item">
                                     {isTextType ? (
-                                        <div className="risk-scope-text-block">
-                                            {!readOnly && (
-                                                (() => {
-                                                    const showRemoveSection = safeItems[index + 1]?.type === "bullet" && sectionCount > 1;
-                                                    const showRemoveItem = safeItems.length > 1 && isLast;
+                                        (() => {
+                                            const showRemoveSection = !readOnly && safeItems[index + 1]?.type === "bullet" && sectionCount > 1;
+                                            const showRemoveItem = !readOnly && safeItems.length > 1 && isLast;
+                                            const hasDeleteButton = showRemoveSection || showRemoveItem;
+                                            const textareaClass = (index === 0 && !hasDeleteButton)
+                                                ? "aim-textarea-risk-scope font-fam risk-scope-paragraph-textarea"
+                                                : "aim-textarea-risk-scope font-fam risk-scope-paragraph-textarea-with-delete";
 
-                                                    if (!showRemoveSection && !showRemoveItem) return null;
+                                            return (
+                                                <div className="risk-scope-text-block">
+                                                    <div className="risk-scope-textarea-inner-wrap">
+                                                        <textarea
+                                                            spellCheck="true"
+                                                            className={textareaClass}
+                                                            value={item?.text || ""}
+                                                            onChange={(e) => onSectionChange(sectionKey, index, e.target.value)}
+                                                            onFocus={() => {
+                                                                clearScopeError();
+                                                                onSectionFocus?.(sectionKey, index);
+                                                            }}
+                                                            rows={5}
+                                                            placeholder={meta.placeholderText}
+                                                            readOnly={readOnly}
+                                                        />
 
-                                                    return (
+                                                        {!readOnly && (
+                                                            <>
+                                                                {isItemLoading ? (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faSpinner}
+                                                                        className="scope-textarea-icon spin-animation"
+                                                                    />
+                                                                ) : (
+                                                                    <FontAwesomeIcon
+                                                                        icon={faMagicWandSparkles}
+                                                                        className="scope-textarea-icon"
+                                                                        title={`AI Rewrite ${meta.label}`}
+                                                                        style={{ fontSize: "15px" }}
+                                                                        onClick={() => onAiRewriteScopeTextItem(sectionKey, index)}
+                                                                    />
+                                                                )}
+
+                                                                <FontAwesomeIcon
+                                                                    icon={faRotateLeft}
+                                                                    className="scope-textarea-icon-undo"
+                                                                    title={`Undo AI Rewrite ${meta.label}`}
+                                                                    onClick={() => onUndoScopeTextItem(sectionKey, index)}
+                                                                    style={{
+                                                                        marginLeft: "8px",
+                                                                        opacity: textHistory.length ? 1 : 0.3,
+                                                                        cursor: textHistory.length ? "pointer" : "not-allowed",
+                                                                        fontSize: "15px"
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    {showRemoveSection && (
                                                         <button
                                                             type="button"
-                                                            className="risk-scope-delete-item-button"
-                                                            title={showRemoveSection ? "Remove Section" : "Remove Item"}
-                                                            onClick={() =>
-                                                                showRemoveSection
-                                                                    ? onRemoveSectionGroup(sectionKey, index)
-                                                                    : onRemoveSectionItem(sectionKey, index)
-                                                            }
+                                                            className="risk-scope-delete-btn-inline"
+                                                            title="Remove Section"
+                                                            onClick={() => requestRemoveSectionGroup(sectionKey, index)}
                                                         >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </button>
-                                                    );
-                                                })()
-                                            )}
-
-                                            <textarea
-                                                spellCheck="true"
-                                                className="aim-textarea-risk-scope font-fam risk-scope-paragraph-textarea"
-                                                value={item?.text || ""}
-                                                onChange={(e) => onSectionChange(sectionKey, index, e.target.value)}
-                                                onFocus={() => {
-                                                    clearScopeError();
-                                                    onSectionFocus?.(sectionKey, index);
-                                                }}
-                                                rows={5}
-                                                placeholder={meta.placeholderText}
-                                                readOnly={readOnly}
-                                            />
-
-                                            {!readOnly && (
-                                                <>
-                                                    {isItemLoading ? (
-                                                        <FontAwesomeIcon
-                                                            icon={faSpinner}
-                                                            className="scope-textarea-icon spin-animation"
-                                                        />
-                                                    ) : (
-                                                        <FontAwesomeIcon
-                                                            icon={faMagicWandSparkles}
-                                                            className="scope-textarea-icon"
-                                                            title={`AI Rewrite ${meta.label}`}
-                                                            style={{ fontSize: "15px" }}
-                                                            onClick={() => onAiRewriteScopeTextItem(sectionKey, index)}
-                                                        />
                                                     )}
 
-                                                    <FontAwesomeIcon
-                                                        icon={faRotateLeft}
-                                                        className="scope-textarea-icon-undo"
-                                                        title={`Undo AI Rewrite ${meta.label}`}
-                                                        onClick={() => onUndoScopeTextItem(sectionKey, index)}
-                                                        style={{
-                                                            marginLeft: "8px",
-                                                            opacity: textHistory.length ? 1 : 0.3,
-                                                            cursor: textHistory.length ? "pointer" : "not-allowed",
-                                                            fontSize: "15px"
-                                                        }}
-                                                    />
-                                                </>
-                                            )}
-                                        </div>
+                                                    {showRemoveItem && (
+                                                        <button
+                                                            type="button"
+                                                            className="risk-scope-delete-btn-inline"
+                                                            title="Remove Item"
+                                                            onClick={() => requestRemoveSectionItem(sectionKey, index, "Are you sure you want to delete this paragraph section?")}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()
                                     ) : (
                                         <div className={`risk-scope-bullet-box ${!readOnly && safeItems.length > 1 && isLast ? "risk-scope-bullet-box-with-delete" : ""}`}>
                                             {!readOnly && safeItems.length > 1 && isLast && (
@@ -208,7 +248,7 @@ const RiskScopeIE = ({
                                                     type="button"
                                                     className="risk-scope-delete-item-button"
                                                     title={`Remove Bullets`}
-                                                    onClick={() => onRemoveSectionItem(sectionKey, index)}
+                                                    onClick={() => requestRemoveSectionItem(sectionKey, index, "Are you sure you want to delete this bullet section?")}
                                                 >
                                                     <FontAwesomeIcon icon={faTrash} />
                                                 </button>
@@ -253,7 +293,7 @@ const RiskScopeIE = ({
                                                                         type="button"
                                                                         className="aim-bullet-inline-button"
                                                                         title="Remove Bullet"
-                                                                        onClick={() => onRemoveSectionBullet(sectionKey, index, bullet.id)}
+                                                                        onClick={() => requestRemoveSectionBullet(sectionKey, index, bullet.id)}
                                                                     >
                                                                         <FontAwesomeIcon icon={faTrash} />
                                                                     </button>
@@ -384,6 +424,15 @@ const RiskScopeIE = ({
                     </div>
                 )}
             </div>
+
+            {confirmDelete && (
+                <RiskAssessmentItemsDelete
+                    closeModal={cancelRemove}
+                    type={confirmDelete.type}
+                    specialText={confirmDelete.specialText}
+                    removeRow={confirmRemove}
+                />
+            )}
         </div>
     );
 };

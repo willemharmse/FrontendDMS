@@ -9,9 +9,11 @@ import {
   faChevronDown,
   faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import RiskAssessmentItemsDelete from "../RiskAssessmentItemsDelete";
 
 const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormData, usedAbbrCodes, setUsedAbbrCodes, error, userID, setError, readOnly = false }) => {
   const [collapsed, setCollapsed] = useState(true);
+  const [confirmDeleteIndex, setConfirmDeleteIndex] = useState(null);
   const isCollapsed = collapsible ? collapsed : false;
   const [abbrData, setAbbrData] = useState([]);
   const [originalData, setOriginalData] = useState([])
@@ -188,8 +190,15 @@ const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormDat
       return { abbr: `${norm(code)} *`, meaning: kept };
     });
 
-    // track usage normalized so CPU and CPU * are the "same" key internally
-    setUsedAbbrCodes(selectedAbbrArray.map(norm));
+    // IMPORTANT: usedAbbrCodes must hold the exact same strings as abbrRows
+    // (including the " *" suffix for suggested items). Normalizing it here
+    // desyncs usedAbbrCodes/selectedAbbrs from abbrRows/abbrData — causing
+    // removed suggestions to look unchecked in the popup while still being
+    // resurrected on the next save, and deletions to silently fail to clear
+    // usedAbbrCodes.
+    const selectedCodes = selectedRows.map((r) => r.abbr);
+
+    setUsedAbbrCodes(selectedCodes);
     setFormData({ ...formData, abbrRows: selectedRows });
     setPopupVisible(false);
   };
@@ -208,6 +217,29 @@ const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormDat
     handleSaveSelection();
     setShowNewPopup(true)
   }
+
+  const confirmRemoveAbbrRow = () => {
+    if (confirmDeleteIndex != null) {
+      const row = formData.abbrRows[confirmDeleteIndex];
+
+      setFormData({
+        ...formData,
+        abbrRows: formData.abbrRows.filter((_, i) => i !== confirmDeleteIndex),
+      });
+      setUsedAbbrCodes(
+        usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
+      );
+
+      const newSelectedAbbrs = new Set(selectedAbbrs);
+      newSelectedAbbrs.delete(row.abbr);
+      setSelectedAbbrs(newSelectedAbbrs);
+    }
+    setConfirmDeleteIndex(null);
+  };
+
+  const cancelRemoveAbbrRow = () => {
+    setConfirmDeleteIndex(null);
+  };
 
   return (
     <div className="input-row">
@@ -331,21 +363,7 @@ const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormDat
                             <button
                               className="remove-row-button"
                               style={{ paddingRight: "6px" }}
-                              onClick={() => {
-                                // Remove abbreviation from table and the selected abbreviations set
-                                setFormData({
-                                  ...formData,
-                                  abbrRows: formData.abbrRows.filter((_, i) => i !== index),
-                                });
-                                setUsedAbbrCodes(
-                                  usedAbbrCodes.filter((abbr) => abbr !== row.abbr)
-                                );
-
-                                // Update the selectedAbbrs state to reflect the removal
-                                const newSelectedAbbrs = new Set(selectedAbbrs);
-                                newSelectedAbbrs.delete(row.abbr);
-                                setSelectedAbbrs(newSelectedAbbrs);
-                              }}
+                              onClick={() => setConfirmDeleteIndex(index)}
                             >
                               <FontAwesomeIcon icon={faTrash} title="Remove Row" />
                             </button>
@@ -387,6 +405,14 @@ const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormDat
       </div>
 
       {updatePopup && (<ModifySuggestedAbbreviations abbr={abbrUpdate} meaning={meanUpdate} closePopup={closeUpdate} onAdd={handleUpdateAbbreviation} setAbbrData={setAbbrData} />)}
+
+      {confirmDeleteIndex != null && (
+        <RiskAssessmentItemsDelete
+          closeModal={cancelRemoveAbbrRow}
+          type="Abbreviation"
+          removeRow={confirmRemoveAbbrRow}
+        />
+      )}
     </div>
   );
 };
