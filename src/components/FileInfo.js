@@ -173,9 +173,9 @@ const FileInfo = () => {
   const BLANK = "(Blanks)";
 
   const formatDate = (dateString) => {
-    if (!dateString) return "";
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    if (isNaN(date)) return "";
+    if (isNaN(date)) return "N/A";
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -391,10 +391,12 @@ const FileInfo = () => {
         );
       }
 
-      // Initial sort by review date
-      const sortedFiles = fetchedFiles.sort(
-        (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)
-      );
+      // Initial sort by review date (ascending; rows with no review date sink to the bottom)
+      const sortedFiles = fetchedFiles.sort((a, b) => {
+        const da = a.reviewDate ? new Date(a.reviewDate).getTime() : Infinity;
+        const db = b.reviewDate ? new Date(b.reviewDate).getTime() : Infinity;
+        return da - db;
+      });
 
       setFiles(sortedFiles);
 
@@ -639,9 +641,11 @@ const FileInfo = () => {
   const removeFileExtension = (fileName) => fileName.replace(/\.[^/.]+$/, "");
 
   const getReviewClass = (reviewDate) => {
+    if (!reviewDate) return "";
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const review = new Date(reviewDate);
+    if (isNaN(review.getTime())) return "";
     review.setHours(0, 0, 0, 0);
     const timeDiff = review - today;
     if (timeDiff < 0) return "review-past";
@@ -754,8 +758,12 @@ const FileInfo = () => {
 
       // Handle Date objects if sorting by date columns
       if (colId === "reviewDate" || colId === "uploadDate") {
-        const da = new Date(av).getTime();
-        const db = new Date(bv).getTime();
+        // Treat missing dates as "infinitely far out" so ascending sorts push
+        // them to the bottom and descending sorts push them to the top —
+        // i.e. direction actually affects where they land, same as any other value.
+        const da = av ? new Date(av).getTime() : Infinity;
+        const db = bv ? new Date(bv).getTime() : Infinity;
+        if (da === Infinity && db === Infinity) return 0;
         return (da - db) * dir;
       }
 
@@ -777,6 +785,7 @@ const FileInfo = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return filteredFiles.filter(doc => {
+      if (!doc.reviewDate) return false;
       const d = new Date(doc.reviewDate);
       d.setHours(0, 0, 0, 0);
       return !isNaN(d) && d < today;

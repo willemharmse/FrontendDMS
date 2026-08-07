@@ -478,6 +478,53 @@
     white-space: pre-wrap;
 }
 
+
+.aim-textarea-risk-create-textarea-nopads {
+    position: relative;
+    width: calc(100% - 20px);
+    padding: 10px 10px 10px 10px;
+    resize: none;
+    field-sizing: content;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+.aim-textarea-risk-create-textarea-nopads-workorderTitle {
+    position: relative;
+    width: calc(100% - 20px);
+    padding: 10px 10px 10px 10px;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    word-break: break-all;
+    white-space: pre-wrap;
+    min-height: 50px;
+}
+
+.aim-textarea-risk-create-textarea-nopads-workOrder {
+    position: relative;
+    width: calc(100% - 20px);
+    padding: 10px 10px 10px 10px;
+    padding-top: 5px;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    word-break: break-all;
+    white-space: pre-wrap;
+    height: 83px;
+}
+
 .aim-textarea-stack-item {
     position: relative;
     display: flex;
@@ -503,9 +550,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
+    width: 85px;
     height: 36px;
     padding: 0;
+    padding-right: 42px;
     border: none;
     background: transparent;
     color: black;
@@ -515,6 +563,17 @@
 
 .aim-textarea-delete-btn-inline:hover {
     opacity: 0.7;
+}
+
+/* Keep the button's box/padding as-is for layout & positioning, but only let
+   clicks land on the icon itself rather than the full 85x36 hitbox. */
+.aim-textarea-delete-btn-inline {
+    pointer-events: none;
+}
+
+.aim-textarea-delete-btn-inline svg {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .scope-risk-label {
@@ -850,8 +909,17 @@
 .aim-bullet-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 17px;
     margin-left: auto;
+    margin-left: 5px;
+}
+
+.aim-bullet-actions-scope-ie {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    margin-left: 2px;
 }
 
 .aim-bullet-inline-button {
@@ -1027,9 +1095,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
+    width: 74px;
     height: 36px;
     padding: 0;
+    padding-right: 40px;
     border: none;
     background: transparent;
     color: black;
@@ -1039,6 +1108,17 @@
 
 .risk-scope-delete-btn-inline:hover {
     opacity: 0.7;
+}
+
+/* Keep the button's box/padding as-is for layout & positioning, but only let
+   clicks land on the icon itself rather than the full 85x36 hitbox. */
+.risk-scope-delete-btn-inline {
+    pointer-events: none;
+}
+
+.risk-scope-delete-btn-inline svg {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .risk-scope-bullet-box {

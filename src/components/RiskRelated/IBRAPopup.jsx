@@ -414,6 +414,23 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
         };
     }, [showDropdown, showUEDropdown, showMainAreasDropdown, showOwnersDropdown, showSubAreasDropdown]);
 
+    useEffect(() => {
+        // Discipline options now come from the actual departments, not the static values list
+        const fetchDepartments = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/department/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch departments");
+                }
+                const data = await response.json();
+
+                const departmentList = data.departments || [];
+                setFunctionalOwners(departmentList);
+            } catch (error) {
+            }
+        };
+        fetchDepartments();
+    }, []);
 
     useEffect(() => {
         async function fetchValues() {
@@ -431,7 +448,6 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
                 setGroupedAreas(lookup);
                 setMainAreas(Object.keys(lookup));
                 setRiskSources(risks);
-                setFunctionalOwners(owners);
             } catch (err) {
                 console.error("Error fetching areas:", err);
             }
@@ -1117,7 +1133,7 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
         closeAllDropdowns();
         setSelectedOwner(value);
         const matches = functionalOwners
-            .filter(opt => opt.owner.toLowerCase().includes(value.toLowerCase()));
+            .filter(opt => opt.department.toLowerCase().includes(value.toLowerCase()));
         setFilteredOwners(matches);
         setShowOwnersDropdown(true);
 
@@ -1908,13 +1924,13 @@ const IBRAPopup = ({ onClose, onSave, data, rowsData, readOnly = true, available
                     }}
                 >
                     {[...filteredOwners]
-                        .sort((a, b) => a.owner.localeCompare(b.owner, undefined, { sensitivity: "base" }))
+                        .sort((a, b) => a.department.localeCompare(b.department, undefined, { sensitivity: "base" }))
                         .map((term, i) => (
                             <li
-                                key={term.owner ?? i}
-                                onMouseDown={() => selectOwnerSuggestion(term.owner)}
+                                key={term.department ?? i}
+                                onMouseDown={() => selectOwnerSuggestion(term.department)}
                             >
-                                {term.owner}
+                                {term.department}
                             </li>
                         ))}
                 </ul>

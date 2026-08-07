@@ -39,11 +39,27 @@ import TemplateFieldsTable from "./TemplateFieldsTable";
 import TemplateFieldsInfo from "./TemplateFieldsInfo";
 import TemplateDescription from "./TemplateDescription";
 import TemplatePreviewPopup from "./TemplatePreviewPopup";
+import TemplatePreview from "./TemplatePreview";
 import TaskDescriptionInfoBox from "./TaskDescriptionInfoBox";
 import ResponsibilityInfoBox from "./ResponsibilityInfoBox";
 import ResourcesInfoBox from "./ResourcesInfoBox";
 import CloseOutInfoBox from "./CloseOutInfoBox";
 import SafetyInfoBox from "./SafetyInfoBox";
+import WorkOrderTable from "./WorkOrderTable";
+import ActivityTaskTable from "./ActivityTaskTable";
+import ActivityNamesField from "./ActivityNamesField";
+import WorkOrderBasesSelection from "./WorkOrderBasesSelection";
+import SiteAreaInfoBox from "./SiteAreaInfoBox";
+import FrequencyTemplateCreation from "./FrequencyTemplateCreation";
+import DepartmentInfoBox from "./DepartmentInfoBox";
+import AssetInfoBox from "./AssetInfoBox";
+import ManagementInfoBox from "./ManagementInfoBox";
+import SubInformationField from "./SubInformationField";
+import ManagementInformationField from "./ManagementInformationField";
+import TemplateTitleField from "./TemplateTitleField";
+import WorkOrderActionFields from "./WorkOrderActionFields";
+import "./WorkOrderActionFields.css";
+import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
 
 const FTSCreatePageTemplate = () => {
   const navigate = useNavigate();
@@ -74,6 +90,7 @@ const FTSCreatePageTemplate = () => {
   const [offlineDraft, setOfflineDraft] = useState(false);
   const [generatePopup, setGeneratePopup] = useState(false);
   const [previewPopup, setPreviewPopup] = useState(false);
+  const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false);
   const [loadingAim, setLoadingAim] = useState(false);
   const [loadingScope, setLoadingScope] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
@@ -161,16 +178,8 @@ const FTSCreatePageTemplate = () => {
     }));
   };
 
-  const openApproval = () => {
-    setApproval(true);
-  }
-
   const closeApprovePopup = () => {
     setApproveState(false);
-  }
-
-  const closeApproval = () => {
-    setApproval(false);
   }
 
   const openWorkflow = () => {
@@ -188,11 +197,6 @@ const FTSCreatePageTemplate = () => {
   const closeDraftNote = () => {
     setDraftNote(false);
   }
-
-  const [rewriteHistory, setRewriteHistory] = useState({
-    aim: {},
-    scope: {}
-  });
 
   const openSaveAs = () => {
     if (!titleSet) {
@@ -286,13 +290,7 @@ const FTSCreatePageTemplate = () => {
     }
   };
   const closeShare = () => { setShare(false); };
-  const openLoadPopup = () => setLoadPopupOpen(true);
-  const closeLoadPopup = () => setLoadPopupOpen(false);
 
-  // handleSave: this is the ONLY place a save/update toast should be shown from.
-  // saveData()/updateData() are called from lots of other places (autosave,
-  // save-before-navigate, etc.) where we intentionally do NOT want a toast, so
-  // the success/failure messaging lives here, not inside saveData/updateData.
   const handleSave = async () => {
     if (formData.title.trim() === "") {
       toast.dismiss();
@@ -717,8 +715,7 @@ const FTSCreatePageTemplate = () => {
       const rawForm = storedData.formData || {};
       const normalizedForm = {
         ...rawForm,
-        aim: normalizeProcedureAim(rawForm.aim),
-        scope: normalizeProcedureScope(rawForm.scope)
+        actionFields: rawForm.actionFields || [],
       };
 
       setFormData(normalizedForm);
@@ -761,6 +758,7 @@ const FTSCreatePageTemplate = () => {
 
   const [formData, setFormData] = useState({
     title: "",
+    templateTitle: "",
     documentType: useParams().type,
     aim: [{ type: "text", text: "The aim of the document is " }],
     scope: [{ type: "text", text: "" }],
@@ -788,7 +786,28 @@ const FTSCreatePageTemplate = () => {
     revisionNumber: "",
     templateFieldRows: [],
     templateFieldDetails: [],
-    taskDescription: ""
+    taskDescription: "",
+    workOrderBases: "",
+    workOrderType: "",
+    workOrderDescription: "",
+    site: "",
+    mainArea: "",
+    subArea: "",
+    assetType: "",
+    assetModel: "",
+    component: "",
+    department: "",
+    codedArea: "",
+    accountableLevel: "",
+    personInCharge: "",
+    minTeamExecutors: [],
+    frequency: "",
+    activityVerb: "",
+    taskName: "",
+    activityName: "",
+    workOrderSubInformation: "",
+    workOrderRACIInformation: "",
+    actionFields: []
   });
 
   useEffect(() => {
@@ -1083,6 +1102,9 @@ const FTSCreatePageTemplate = () => {
     if (!formData.reviewDate) { newErrors.reviewDate = true } else {
       newErrors.reviewDate = false;
     };
+    if (!formData.actionFields || formData.actionFields.length === 0) { newErrors.actionFields = true } else {
+      newErrors.actionFields = false;
+    };
     return newErrors;
   };
 
@@ -1105,6 +1127,62 @@ const FTSCreatePageTemplate = () => {
     if (e.target.name === "title" && e.target.value.trim() !== "") {
       setTitleSet(true); // Enable auto-save only after title is entered
     }
+  };
+
+  const handleWorkOrderBasesFocus = () => {
+    setErrors((prev) => ({ ...prev, workOrderBases: false }));
+  };
+
+  const handleTemplateNumberChange = (value) => {
+    setFormData((prev) => ({ ...prev, templateNumber: value }));
+  };
+
+  const handleWorkOrderTypeChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderType: value }));
+    setErrors((prev) => ({ ...prev, workOrderType: false }));
+  };
+
+  const handleWorkOrderDescriptionChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderDescription: value }));
+    setErrors((prev) => ({ ...prev, workOrderDescription: false }));
+  };
+
+  const handleFrequencyChange = (e) => {
+    setFormData((prev) => ({ ...prev, frequency: e.target.value }));
+    setErrors((prev) => ({ ...prev, frequency: false }));
+  };
+
+  const handleFrequencyFocus = () => {
+    setErrors((prev) => ({ ...prev, frequency: false }));
+  };
+
+  const handleActivityVerbChange = (value) => {
+    setFormData((prev) => ({ ...prev, activityVerb: value }));
+    setErrors((prev) => ({ ...prev, activityVerb: false }));
+  };
+
+  const handleTaskNameChange = (value) => {
+    setFormData((prev) => ({ ...prev, taskName: value }));
+    setErrors((prev) => ({ ...prev, taskName: false }));
+  };
+
+  const handleActivityNameChange = (value) => {
+    setFormData((prev) => ({ ...prev, activityName: value }));
+  };
+
+  const handleWorkOrderSubInformationChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderSubInformation: value }));
+  };
+
+  const handleWorkOrderRACIInformationChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderRACIInformation: value }));
+  };
+
+  // The auto-generation logic for the derived template title now lives
+  // inside TemplateTitleField itself (rendered further down with
+  // showUI={false}) - it just reports the computed value back here.
+  const handleTemplateTitleChange = (value) => {
+    setFormData((prev) => ({ ...prev, templateTitle: value }));
   };
 
   // Handle input changes for the table rows
@@ -1316,9 +1394,7 @@ const FTSCreatePageTemplate = () => {
   };
 
   const getSanitizedFormData = (sourceFormData) => ({
-    ...sourceFormData,
-    aim: sanitizeAimForStorage(normalizeProcedureAim(sourceFormData.aim)),
-    scope: sanitizeScopeForStorage(normalizeProcedureScope(sourceFormData.scope))
+    ...sourceFormData
   });
 
   // Send data to backend to generate a Word document
@@ -1535,625 +1611,6 @@ const FTSCreatePageTemplate = () => {
     }
   }, [draftId])
 
-
-  const createAimBulletRow = () => ({
-    id: uuidv4(),
-    text: ""
-  });
-
-  const normalizeProcedureAim = (value) => {
-    if (Array.isArray(value) && value.length > 0) {
-      return value.map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            type: "text",
-            text: item?.text || ""
-          };
-        }
-
-        const bullets = Array.isArray(item?.bullets)
-          ? item.bullets.map((b) => ({
-            id: b?.id || uuidv4(),
-            text: b?.text || ""
-          }))
-          : String(item?.text || "")
-            .split(/\r?\n/)
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => ({
-              id: uuidv4(),
-              text: line
-            }));
-
-        return {
-          type: "bullet",
-          bullets: bullets.length > 0 ? bullets : [createAimBulletRow()],
-          text: bullets.map((b) => b.text).join("\n")
-        };
-      });
-    }
-
-    if (typeof value === "string" && value.trim() !== "") {
-      return [{ type: "text", text: value }];
-    }
-
-    return [{ type: "text", text: "" }];
-  };
-
-  const sanitizeAimForValidation = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const pushAimRewriteHistory = (index, oldValue) => {
-    setRewriteHistory((prev) => ({
-      ...prev,
-      aim: {
-        ...prev.aim,
-        [index]: [...(prev.aim[index] || []), oldValue]
-      }
-    }));
-  };
-
-  const undoAimRewrite = (index) => {
-    setRewriteHistory((prev) => {
-      const currentHistory = [...(prev.aim[index] || [])];
-      if (currentHistory.length === 0) return prev;
-
-      const lastValue = currentHistory.pop();
-
-      setFormData((fd) => ({
-        ...fd,
-        aim: fd.aim.map((item, i) =>
-          i === index ? { ...item, text: lastValue } : item
-        )
-      }));
-
-      return {
-        ...prev,
-        aim: {
-          ...prev.aim,
-          [index]: currentHistory
-        }
-      };
-    });
-  };
-
-  const handleAimChange = (index, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) =>
-        i === index ? { ...item, text: value } : item
-      )
-    }));
-  };
-
-  const handleAimBulletChange = (itemIndex, bulletId, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).map((bullet) =>
-          bullet.id === bulletId ? { ...bullet, text: value } : bullet
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const handleAddAim = () => {
-    setFormData((prev) => {
-      const currentAims =
-        Array.isArray(prev.aim) && prev.aim.length > 0
-          ? prev.aim
-          : [{ type: "text", text: "" }];
-
-      const lastType = currentAims[currentAims.length - 1]?.type || "text";
-      const nextType = lastType === "text" ? "bullet" : "text";
-
-      return {
-        ...prev,
-        aim: [
-          ...currentAims,
-          nextType === "bullet"
-            ? { type: "bullet", bullets: [createAimBulletRow()], text: "" }
-            : { type: "text", text: "" }
-        ]
-      };
-    });
-  };
-
-  const handleRemoveAim = (indexToRemove) => {
-    setFormData((prev) => {
-      const currentAims = Array.isArray(prev.aim) ? prev.aim : [];
-      const updatedAims = currentAims.filter((_, index) => index !== indexToRemove);
-
-      return {
-        ...prev,
-        aim: updatedAims.length > 0 ? updatedAims : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleRemoveAimSection = (textIndex) => {
-    setFormData((prev) => {
-      const currentAims = Array.isArray(prev.aim) ? prev.aim : [];
-
-      const textIndexes = currentAims
-        .map((item, index) => (item?.type === "text" ? index : null))
-        .filter((index) => index !== null);
-
-      if (textIndexes.length <= 1) {
-        return prev;
-      }
-
-      const updatedAims = currentAims.filter((_, index) => {
-        return index !== textIndex && index !== textIndex + 1;
-      });
-
-      return {
-        ...prev,
-        aim: updatedAims.length > 0 ? updatedAims : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleAddAimBullet = (itemIndex, insertAtIndex = null) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const currentBullets = Array.isArray(item.bullets) ? item.bullets : [];
-        const newBullet = createAimBulletRow();
-
-        if (
-          insertAtIndex === null ||
-          insertAtIndex < 0 ||
-          insertAtIndex > currentBullets.length
-        ) {
-          return {
-            ...item,
-            bullets: [...currentBullets, newBullet]
-          };
-        }
-
-        return {
-          ...item,
-          bullets: [
-            ...currentBullets.slice(0, insertAtIndex + 1),
-            newBullet,
-            ...currentBullets.slice(insertAtIndex + 1)
-          ]
-        };
-      })
-    }));
-  };
-
-  const handleRemoveAimBullet = (itemIndex, bulletId) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).filter(
-          (bullet) => bullet.id !== bulletId
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const AiRewriteAim = async (index) => {
-    try {
-      const currentAim = formData.aim?.[index];
-      const prompt = currentAim?.text || "";
-
-      if (!prompt.trim()) {
-        toast.warn("Please enter some aim text before using AI rewrite.", {
-          closeButton: true,
-          autoClose: 1000,
-          style: { textAlign: "center" }
-        });
-        return;
-      }
-
-      pushAimRewriteHistory(index, prompt);
-      setLoadingAimIndex(index);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      const newText = data?.response || "";
-
-      setFormData((fd) => ({
-        ...fd,
-        aim: fd.aim.map((item, i) =>
-          i === index ? { ...item, text: newText } : item
-        )
-      }));
-    } catch (error) {
-      console.error("Error rewriting aim:", error);
-      toast.error("AI rewrite failed.", {
-        closeButton: true,
-        autoClose: 1200,
-        style: { textAlign: "center" }
-      });
-    } finally {
-      setLoadingAimIndex(null);
-    }
-  };
-
-  const createScopeBulletRow = () => ({
-    id: uuidv4(),
-    text: ""
-  });
-
-  const normalizeProcedureScope = (value) => {
-    if (Array.isArray(value) && value.length > 0) {
-      return value.map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            type: "text",
-            text: item?.text || ""
-          };
-        }
-
-        const bullets = Array.isArray(item?.bullets)
-          ? item.bullets.map((b) => ({
-            id: b?.id || uuidv4(),
-            text: b?.text || ""
-          }))
-          : String(item?.text || "")
-            .split(/\r?\n/)
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => ({
-              id: uuidv4(),
-              text: line
-            }));
-
-        return {
-          type: "bullet",
-          bullets: bullets.length > 0 ? bullets : [createScopeBulletRow()],
-          text: bullets.map((b) => b.text).join("\n")
-        };
-      });
-    }
-
-    if (typeof value === "string" && value.trim() !== "") {
-      return [{ type: "text", text: value }];
-    }
-
-    return [{ type: "text", text: "" }];
-  };
-
-  const sanitizeScopeForValidation = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const sanitizeScopeForStorage = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const pushScopeRewriteHistory = (index, oldValue) => {
-    setRewriteHistory((prev) => ({
-      ...prev,
-      scope: {
-        ...prev.scope,
-        [index]: [...(prev.scope[index] || []), oldValue]
-      }
-    }));
-  };
-
-  const undoScopeRewrite = (index) => {
-    setRewriteHistory((prev) => {
-      const currentHistory = [...(prev.scope[index] || [])];
-      if (currentHistory.length === 0) return prev;
-
-      const lastValue = currentHistory.pop();
-
-      setFormData((fd) => ({
-        ...fd,
-        scope: fd.scope.map((item, i) =>
-          i === index ? { ...item, text: lastValue } : item
-        )
-      }));
-
-      return {
-        ...prev,
-        scope: {
-          ...prev.scope,
-          [index]: currentHistory
-        }
-      };
-    });
-  };
-
-  const handleScopeChange = (index, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) =>
-        i === index ? { ...item, text: value } : item
-      )
-    }));
-  };
-
-  const handleScopeBulletChange = (itemIndex, bulletId, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).map((bullet) =>
-          bullet.id === bulletId ? { ...bullet, text: value } : bullet
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const handleAddScope = () => {
-    setFormData((prev) => {
-      const currentScopes =
-        Array.isArray(prev.scope) && prev.scope.length > 0
-          ? prev.scope
-          : [{ type: "text", text: "" }];
-
-      const lastType = currentScopes[currentScopes.length - 1]?.type || "text";
-      const nextType = lastType === "text" ? "bullet" : "text";
-
-      return {
-        ...prev,
-        scope: [
-          ...currentScopes,
-          nextType === "bullet"
-            ? { type: "bullet", bullets: [createScopeBulletRow()], text: "" }
-            : { type: "text", text: "" }
-        ]
-      };
-    });
-  };
-
-  const handleRemoveScope = (indexToRemove) => {
-    setFormData((prev) => {
-      const currentScopes = Array.isArray(prev.scope) ? prev.scope : [];
-      const updatedScopes = currentScopes.filter((_, index) => index !== indexToRemove);
-
-      return {
-        ...prev,
-        scope: updatedScopes.length > 0 ? updatedScopes : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleRemoveScopeSection = (textIndex) => {
-    setFormData((prev) => {
-      const currentScopes = Array.isArray(prev.scope) ? prev.scope : [];
-
-      const textIndexes = currentScopes
-        .map((item, index) => (item?.type === "text" ? index : null))
-        .filter((index) => index !== null);
-
-      if (textIndexes.length <= 1) {
-        return prev;
-      }
-
-      const updatedScopes = currentScopes.filter((_, index) => {
-        return index !== textIndex && index !== textIndex + 1;
-      });
-
-      return {
-        ...prev,
-        scope: updatedScopes.length > 0 ? updatedScopes : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleAddScopeBullet = (itemIndex, insertAtIndex = null) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const currentBullets = Array.isArray(item.bullets) ? item.bullets : [];
-        const newBullet = createScopeBulletRow();
-
-        if (
-          insertAtIndex === null ||
-          insertAtIndex < 0 ||
-          insertAtIndex > currentBullets.length
-        ) {
-          return {
-            ...item,
-            bullets: [...currentBullets, newBullet]
-          };
-        }
-
-        return {
-          ...item,
-          bullets: [
-            ...currentBullets.slice(0, insertAtIndex + 1),
-            newBullet,
-            ...currentBullets.slice(insertAtIndex + 1)
-          ]
-        };
-      })
-    }));
-  };
-
-  const handleRemoveScopeBullet = (itemIndex, bulletId) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).filter(
-          (bullet) => bullet.id !== bulletId
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const AiRewriteScope = async (index) => {
-    try {
-      const currentScope = formData.scope?.[index];
-      const prompt = currentScope?.text || "";
-
-      if (!prompt.trim()) {
-        toast.warn("Please enter some scope text before using AI rewrite.", {
-          closeButton: true,
-          autoClose: 1000,
-          style: { textAlign: "center" }
-        });
-        return;
-      }
-
-      pushScopeRewriteHistory(index, prompt);
-      setLoadingScope(index);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/procedure`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      const newText = data?.response || "";
-
-      setFormData((fd) => ({
-        ...fd,
-        scope: fd.scope.map((item, i) =>
-          i === index ? { ...item, text: newText } : item
-        )
-      }));
-    } catch (error) {
-      console.error("Error rewriting scope:", error);
-      toast.error("AI rewrite failed.", {
-        closeButton: true,
-        autoClose: 1200,
-        style: { textAlign: "center" }
-      });
-    } finally {
-      setLoadingScope(null);
-    }
-  };
-
   const releaseLock = async () => {
     if (!loadedIDRef.current) return true;
 
@@ -2179,7 +1636,6 @@ const FTSCreatePageTemplate = () => {
     }
   };
 
-  // ── Navigation guard helpers ────────────────────────────────────────────
   const openSaveConfirm = (triggerType, action) => {
     setSaveConfirmTrigger(triggerType);
     pendingActionRef.current = action;
@@ -2196,11 +1652,6 @@ const FTSCreatePageTemplate = () => {
   const handleHomeNav = () => {
     if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
     openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
-  };
-
-  const handleRefreshNav = () => {
-    if (!requiresSavePrompt()) { window.location.reload(); return; }
-    openSaveConfirm("refresh", () => window.location.reload());
   };
 
   const handleBackSaveConfirm = async () => {
@@ -2228,6 +1679,8 @@ const FTSCreatePageTemplate = () => {
     await releaseLock();
 
     setTimeout(() => {
+      loadedIDRef.current = '';
+      setLoadedID('');
       setIsSaveConfirmOpen(false);
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
@@ -2236,6 +1689,8 @@ const FTSCreatePageTemplate = () => {
 
   const handleBackDiscard = async () => {
     await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
     setIsSaveConfirmOpen(false);
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
@@ -2396,7 +1851,7 @@ const FTSCreatePageTemplate = () => {
 
           <div className="input-row">
             <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Template Title <span className="required-field">*</span></h3>
+              <h3 className="font-fam-labels">Draft Name <span className="required-field">*</span></h3>
               <div className="input-group-cpt">
                 <input
                   spellcheck="true"
@@ -2405,111 +1860,175 @@ const FTSCreatePageTemplate = () => {
                   className="font-fam title-input"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Title of your template (e.g. Work Order)"
+                  placeholder="Enter Draft Name (e.g. Changing a Wheel Work Order Template)"
                   readOnly={readOnly}
+                  style={{ fontFamily: "Arial", fontSize: "14px" }}
                 />
                 <span className="type-create-page">Template</span>
               </div>
             </div>
           </div>
 
-          <div className="input-row-risk-create">
-            <TemplateNumberField onChange={handleInputChange} value={formData.templateNumber} />
-            <RevisionNumberField onChange={handleInputChange} value={formData.revisionNumber} />
-          </div>
+          <TemplateTitleField
+            value={formData.templateTitle}
+            activityName={formData.activityName}
+            assetType={formData.assetType}
+            assetModel={formData.assetModel}
+            component={formData.component}
+            frequency={formData.frequency}
+            workOrderType={formData.workOrderType}
+            onChange={handleTemplateTitleChange}
+            readOnly={readOnly}
+            showUI={false}
+          />
 
           <TemplateDescription onChange={handleInputChange} value={formData.taskDescription} />
 
           <TemplateDocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
-          {false && (<AimBulletComponent
+          <WorkOrderTable
+            workOrderType={formData.workOrderType}
+            description={formData.workOrderDescription}
+            onTypeChange={handleWorkOrderTypeChange}
+            onDescriptionChange={handleWorkOrderDescriptionChange}
             readOnly={readOnly}
-            aims={formData.aim}
-            errors={errors.aim || []}
-            loadingIndex={loadingAimIndex}
-            rewriteHistory={rewriteHistory}
-            onChange={handleAimChange}
-            onBulletChange={handleAimBulletChange}
-            onFocus={(index) =>
-              setErrors((prev) => {
-                const nextAimErrors = Array.isArray(prev.aim)
-                  ? [...prev.aim]
-                  : [];
+            error={errors.workOrderType || errors.workOrderDescription}
+          />
 
-                nextAimErrors[index] = false;
+          <div className="input-row-risk-create">
+            <WorkOrderBasesSelection
+              value={formData.workOrderBases}
+              onChange={handleInputChange}
+              onFocus={handleWorkOrderBasesFocus}
+              error={errors.workOrderBases}
+              readOnly={readOnly}
+            />
+            <FrequencyTemplateCreation
+              value={formData.frequency}
+              onChange={handleFrequencyChange}
+              onFocus={handleFrequencyFocus}
+              error={errors.frequency}
+              readOnly={readOnly}
+            />
+          </div>
 
-                return {
-                  ...prev,
-                  aim: nextAimErrors,
-                };
-              })
-            }
-            onHelp={() => { }}
-            onAiRewrite={AiRewriteAim}
-            onUndo={undoAimRewrite}
-            onAddAim={handleAddAim}
-            onRemoveAim={handleRemoveAim}
-            onRemoveAimSection={handleRemoveAimSection}
-            onAddBullet={handleAddAimBullet}
-            onRemoveBullet={handleRemoveAimBullet}
-            collapsible={true}
-            type="standard"
+          <ActivityTaskTable
+            activityVerb={formData.activityVerb}
+            taskName={formData.taskName}
+            onActivityVerbChange={handleActivityVerbChange}
+            onTaskNameChange={handleTaskNameChange}
+            readOnly={readOnly}
+            activityVerbError={errors.activityVerb}
+            taskNameError={errors.taskName}
+          />
+
+          <ActivityNamesField
+            value={formData.activityName}
+            activityVerb={formData.activityVerb}
+            taskName={formData.taskName}
+            onChange={handleActivityNameChange}
+            readOnly={readOnly}
+            showUI={false}
+          />
+
+          {false && (<SubInformationField
+            value={formData.workOrderSubInformation}
+            site={formData.site}
+            mainArea={formData.mainArea}
+            subArea={formData.subArea}
+            department={formData.department}
+            onChange={handleWorkOrderSubInformationChange}
+            readOnly={readOnly}
           />)}
 
-          {false && (<ScopeBulletComponent
+          {false && (<ManagementInformationField
+            value={formData.workOrderRACIInformation}
+            accountableLevel={formData.accountableLevel}
+            personInCharge={formData.personInCharge}
+            minTeamExecutors={formData.minTeamExecutors}
+            onChange={handleWorkOrderRACIInformationChange}
             readOnly={readOnly}
-            scopes={formData.scope}
-            errors={errors.scope || []}
-            loadingIndex={loadingScope}
-            rewriteHistory={rewriteHistory}
-            onChange={handleScopeChange}
-            onBulletChange={handleScopeBulletChange}
-            onFocus={(index) =>
-              setErrors((prev) => {
-                const nextScopeErrors = Array.isArray(prev.scope)
-                  ? [...prev.scope]
-                  : [];
-
-                nextScopeErrors[index] = false;
-
-                return {
-                  ...prev,
-                  scope: nextScopeErrors,
-                };
-              })
-            }
-            onHelp={() => { }}
-            onAiRewrite={AiRewriteScope}
-            onUndo={undoScopeRewrite}
-            onAddScope={handleAddScope}
-            onRemoveScope={handleRemoveScope}
-            onRemoveScopeSection={handleRemoveScopeSection}
-            onAddBullet={handleAddScopeBullet}
-            onRemoveBullet={handleRemoveScopeBullet}
-            collapsible={true}
           />)}
+
+          <AssetInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.assetDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
+
+          <SiteAreaInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.siteAreaDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
+
+          <DepartmentInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.departmentDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
+
+          <ManagementInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.managementDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
+
+          <div className="input-row-risk-create">
+            <TemplateNumberField
+              value={formData.templateNumber}
+              workOrderType={formData.workOrderType}
+              department={formData.department}
+              mainArea={formData.mainArea}
+              onChange={handleTemplateNumberChange}
+              showUI={false}
+            />
+            <RevisionNumberField onChange={handleInputChange} value={formData.revisionNumber} showUI={false} />
+          </div>
 
           {false && (<>
             <TemplateFieldsTable collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} setUsedTemplateFields={setUsedTemplateFields} error={errors.templateFields} userID={userID} setErrors={setErrors} readOnly={readOnly} />
             <TemplateFieldsInfo collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} error={errors.templateFieldDetails} setErrors={setErrors} readOnly={readOnly} />
           </>)}
 
-          <TaskDescriptionInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-          <ResponsibilityInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-          <SafetyInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-          <ResourcesInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-          <CloseOutInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+          {false && (
+            <>
+              <TaskDescriptionInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+              <ResponsibilityInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+              <SafetyInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+              <ResourcesInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+              <CloseOutInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
+            </>
+          )}
+          <SupportingDocumentTableFTS collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
+
+          <WorkOrderActionFields collapsible={true} formData={formData} setFormData={setFormData} error={errors.actionFields} setErrors={setErrors} readOnly={readOnly} />
 
           {false && (<>
             <AbbreviationTable collapsible={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} readOnly={readOnly} />
             <TermTable collapsible={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} readOnly={readOnly} />
-            <StandardsTable collapsible={true} formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} readOnly={readOnly} />
             <ChapterTable collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
             <ReferenceTable collapsible={true} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} readOnly={readOnly} />
-            <SupportingDocumentTable collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
+
           </>)}
 
-          <div className="input-row">
+          {false && (<div className="input-row">
             <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
               <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
               <input
@@ -2528,33 +2047,39 @@ const FTSCreatePageTemplate = () => {
                 readOnly={readOnly}
               />
             </div>
-          </div>
+          </div>)}
 
           {false && (<PicturesTable collapsible={true} readOnly={readOnly} picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />)}
 
           {true && (<div className="input-row-buttons">
-            {/* Generate File Button */}
             {true && (<button
               className="generate-button font-fam"
-              onClick={() => setPreviewPopup(true)}
               title="Preview Template"
+              onClick={() => setTemplatePreviewOpen(true)}
             >
-              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Preview Template'}
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Template Preview'}
             </button>)}
-            {false && (
-              <button
-                className="pdf-button font-fam"
-                style={{ cursor: "default" }}
-                onClick={() => setPreviewPopup(true)}
-                title="Preview Template"
-              >
-                Preview Template
-              </button>
-            )}
+            {true && (<button
+              className="generate-button font-fam"
+              title="PDF Preview Template"
+            //onClick={() => setPreviewPopup(true)}
+            >
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'PDF Template Preview'}
+            </button>)}
           </div>)}
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
         {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
+        {templatePreviewOpen && (
+          <TemplatePreview
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            onClose={() => setTemplatePreviewOpen(false)}
+          />
+        )}
         {previewPopup && (
           <TemplatePreviewPopup
             formData={formData}
@@ -2564,7 +2089,6 @@ const FTSCreatePageTemplate = () => {
         )}
         {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
         {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
-        {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
       </div>
       <ToastContainer />
       {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}

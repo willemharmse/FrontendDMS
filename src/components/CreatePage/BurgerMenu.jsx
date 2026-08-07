@@ -8,7 +8,7 @@ import { isAdmin } from "../../utils/auth";
 
 const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk = false }) => {
     const navigate = useNavigate();
-    const link = risk ? "/FrontendDMS/riskApprover/new" : "/adminApprover/new";
+    const link = risk ? "/FrontendDMS/riskApprover/new" : "/FrontendDMS/adminApprover/new";
     const handleLogout = () => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
@@ -59,7 +59,7 @@ const BurgerMenu = ({ canIn, access, isOpen, setIsOpen, risk = false }) => {
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 
-                        {canIn(access, "DDS", ["systemAdmin"]) && !isAdmin(access) && !risk && (
+                        {(canIn(access, "DDS", ["systemAdmin"]) || canIn(access, "FTS", ["systemAdmin"])) && !isAdmin(access) && !risk && (
                             <li onClick={() => navigate(link)}>Suggestions</li>
                         )}
 

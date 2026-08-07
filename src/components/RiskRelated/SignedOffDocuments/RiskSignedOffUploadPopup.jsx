@@ -291,13 +291,11 @@ const RiskSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type
                                     <div className="upload-file-page-select-container">
                                         <select value={owner} className="upload-file-page-select" onChange={(e) => setOwner(e.target.value)}>
                                             <option>Select Owner</option>
-                                            {users
-                                                .sort((a, b) => a.localeCompare(b)) // Sorts alphabetically
-                                                .map((user, index) => (
-                                                    <option key={index} value={user}>
-                                                        {user}
-                                                    </option>
-                                                ))}
+                                            {usersList.sort((a, b) => a.username.localeCompare(b.username)).map((approver, index) => (
+                                                <option key={index} value={approver._id}>
+                                                    {approver.username}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>

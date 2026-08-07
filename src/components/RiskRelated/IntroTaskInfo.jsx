@@ -159,7 +159,7 @@ const IntroTaskInfo = ({ collapsible = false, formData, setFormData, error, setE
                 const res = await fetch(`${process.env.REACT_APP_URL}/api/riskInfo/getValues`);
                 if (!res.ok) throw new Error('Failed to fetch lookup data');
                 // parse once, pull out both
-                const { areas, risks, controls, owners } = await res.json();
+                const { areas, risks, controls } = await res.json();
                 // build a lookup
                 const lookup = {};
                 areas.forEach(({ mainArea, subAreas }) => {
@@ -170,12 +170,29 @@ const IntroTaskInfo = ({ collapsible = false, formData, setFormData, error, setE
                 setMainAreas(Object.keys(lookup));
                 setRiskSources(risks);
                 setControls(controls);
-                setFunctionalOwners(owners);
             } catch (err) {
                 console.error("Error fetching areas:", err);
             }
         }
         fetchValues();
+    }, []);
+
+    useEffect(() => {
+        // Discipline options now come from the actual departments, not the static values list
+        const fetchDepartments = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/department/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch departments");
+                }
+                const data = await response.json();
+
+                const departmentList = data.departments || [];
+                setFunctionalOwners(departmentList);
+            } catch (error) {
+            }
+        };
+        fetchDepartments();
     }, []);
 
     useEffect(() => {
@@ -434,7 +451,7 @@ const IntroTaskInfo = ({ collapsible = false, formData, setFormData, error, setE
         }));
 
         const matches = functionalOwners
-            .filter(opt => opt.owner.toLowerCase().includes(value.toLowerCase()));
+            .filter(opt => opt.department.toLowerCase().includes(value.toLowerCase()));
         setFilteredOwner(matches);
         setShowOwnerDropdown(true);
 
@@ -1059,14 +1076,16 @@ const IntroTaskInfo = ({ collapsible = false, formData, setFormData, error, setE
                         zIndex: 1000
                     }}
                 >
-                    {filteredOwner.sort().map((term, i) => (
-                        <li
-                            key={i}
-                            onMouseDown={() => selectOwnerSuggestion(term.owner)}
-                        >
-                            {term.owner}
-                        </li>
-                    ))}
+                    {[...filteredOwner]
+                        .sort((a, b) => a.department.localeCompare(b.department, undefined, { sensitivity: "base" }))
+                        .map((term, i) => (
+                            <li
+                                key={term.department ?? i}
+                                onMouseDown={() => selectOwnerSuggestion(term.department)}
+                            >
+                                {term.department}
+                            </li>
+                        ))}
                 </ul>
             )}
 

@@ -504,7 +504,7 @@ const ExecutiveSummary = ({
                                                                                         bulletRefs.current[`${index}-${bulletIndex}`] = el;
                                                                                     }}
                                                                                     spellCheck="true"
-                                                                                    className="aim-textarea-risk-create-ibra font-fam aim-textarea-bullet-single"
+                                                                                    className="aim-textarea-risk-create-textarea-nopads font-fam aim-textarea-bullet-single"
                                                                                     value={bullet?.text || ""}
                                                                                     onChange={(e) => handleBulletChange(index, bullet.id, e.target.value)}
                                                                                     onKeyDown={(e) => handleBulletKeyDown(e, index, bulletIndex)}

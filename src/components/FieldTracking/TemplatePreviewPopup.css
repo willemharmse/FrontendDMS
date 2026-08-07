@@ -151,3 +151,23 @@
     background: #cccccc;
     cursor: not-allowed;
 }
+
+.top-right-button-suggest-work-type {
+    position: absolute;
+    top: 15px;
+    right: 13px;
+    z-index: 1;
+    background: transparent;
+    color: #002060;
+    font-size: 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+}

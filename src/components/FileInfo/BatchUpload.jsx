@@ -84,11 +84,14 @@ const BatchUpload = ({ onClose }) => {
             setLoading(false); // Reset loading state after response
             toast.success("Files Uploaded", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1000,
                 style: {
                     textAlign: 'center'
                 }
-            })
+            });
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             setLoading(false);
             console.log(error)

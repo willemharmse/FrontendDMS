@@ -1,0 +1,284 @@
+/*
+  Styles for WorkOrderActionFields.jsx and ActionFieldControl.jsx.
+  All new classes are prefixed "waf-" (Work order Action Fields) so they
+  can't collide with existing app classes. Import this once, e.g. from
+  FTSCreatePageTemplate.js: `import "./WorkOrderActionFields.css";`
+
+  Colors/spacing are kept generic/neutral - swap the variables below for
+  your existing design tokens if you have them.
+*/
+
+.waf-add-field-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    padding: 12px;
+    margin: 10px 0;
+    background: #f5f5f5;
+    border: 1px solid #e0e2e7;
+    border-radius: 6px;
+    width: calc(100% - 25px);
+}
+
+.waf-add-field-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+}
+
+.waf-add-field-title {
+    flex: 1 1 240px;
+}
+
+.waf-add-field-btn-cell {
+    justify-content: center;
+    min-width: 40px;
+}
+
+.waf-mini-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: black;
+    margin-bottom: 4px;
+}
+
+.waf-type-hint {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.waf-control {
+    font-family: inherit;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 8px;
+    background: #fff;
+    width: calc(100% - 20px);
+}
+
+.waf-input {
+    height: 25px;
+}
+
+.waf-textarea {
+    min-height: 60px;
+    width: calc(100% - 20px);
+    field-sizing: content;
+    resize: vertical;
+}
+
+.waf-select {
+    height: 39px;
+    width: calc(100% - 0px);
+}
+
+.waf-fields-table td {
+    vertical-align: middle;
+}
+
+.waf-preview-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    font-size: 15px;
+}
+
+.waf-preview-toggle:hover {
+    color: #222;
+}
+
+.waf-row-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.waf-preview-row td {
+    background: #f5f5f5;
+    border-top: none;
+}
+
+.waf-preview-panel {
+    padding: 10px 6px;
+}
+
+.waf-preview-label {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+/* --- Button-group field types: Yes/No, Pass/Fail, Buttons --- */
+.waf-button-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.waf-choice-btn {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.waf-choice-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.waf-btn-positive.waf-choice-btn-active {
+    background: #7EAC89;
+    border-color: #7EAC89;
+    color: white;
+}
+
+.waf-btn-negative.waf-choice-btn-active {
+    background: #CB6F6F;
+    border-color: #CB6F6F;
+    color: white;
+}
+
+.waf-btn-neutral.waf-choice-btn-active {
+    background: #002060;
+    border-color: #002060;
+    color: white;
+}
+
+/* --- Media controls: photo, barcode, file --- */
+.waf-media-control {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.waf-capture-btn,
+.waf-clear-btn {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.waf-capture-btn:hover,
+.waf-clear-btn:hover {
+    background: #f0f0f0;
+}
+
+.waf-thumb-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.waf-thumb {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.waf-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.waf-thumb-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.waf-file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.waf-file-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+/* --- Signature pad --- */
+.waf-signature-control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.waf-signature-canvas {
+    border: 1px dashed #bbb;
+    border-radius: 4px;
+    background: #fff;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* --- GPS control --- */
+.waf-gps-control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.waf-gps-readout {
+    font-size: 13px;
+    color: #333;
+}
+
+.waf-gps-timestamp {
+    font-size: 11px;
+    color: #888;
+}
+
+.waf-error-text {
+    font-size: 12px;
+    color: #c5221f;
+}
+
+.add-row-button-actionfield-plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    /* Adjust size */
+    border-radius: 50%;
+    /* Makes it circular */
+    border: none;
+    background-color: transparent;
+    color: gray;
+    /* Adjust color */
+    font-size: 24px;
+    cursor: pointer;
+    margin: auto;
+    transform: translateY(-54%);
+    /* Centers the button */
+}

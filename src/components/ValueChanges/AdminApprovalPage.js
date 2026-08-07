@@ -14,6 +14,7 @@ import ApprovalPopupPPE from "../SuggestionApprovalPopups/ApprovalPopupPPE";
 import ApprovalPopupTool from "../SuggestionApprovalPopups/ApprovalPopupTool";
 import ApprovalPopupMaterial from "../SuggestionApprovalPopups/ApprovalPopupMaterial";
 import ApprovalPopupMachine from "../SuggestionApprovalPopups/ApprovalPopupMachine";
+import ApprovalPopupWorkOrder from "../SuggestionApprovalPopups/ApprovalPopupWorkOrder";
 
 const AdminApprovalPage = () => {
     const [drafts, setDrafts] = useState([]);
@@ -168,6 +169,10 @@ const AdminApprovalPage = () => {
 
             case 'Material':
                 return "Material";
+                break;
+
+            case 'WorkOrder':
+                return "Work Order Type";
                 break;
         }
     };
@@ -516,6 +521,7 @@ const AdminApprovalPage = () => {
             {(showPopup && selectedDraft.type === "Material") && (<ApprovalPopupMaterial approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
             {(showPopup && selectedDraft.type === "Mobile") && (<ApprovalPopupMachine approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
             {(showPopup && selectedDraft.type === "Equipment") && (<ApprovalPopupEquipment approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
+            {(showPopup && selectedDraft.type === "WorkOrder") && (<ApprovalPopupWorkOrder approve={handleApprove} decline={handleDecline} setSuggestion={setSelectedDraft} closeModal={() => setShowPopup(false)} suggestion={selectedDraft} />)}
 
             {excelFilter.open && (
                 <div

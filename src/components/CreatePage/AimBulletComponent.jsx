@@ -229,16 +229,19 @@ const AimBulletComponent = ({
 
                                                                 {!readOnly && (
                                                                     <div className="aim-bullet-actions">
-                                                                        {bullets.length > 1 && (
-                                                                            <button
-                                                                                type="button"
-                                                                                className="aim-bullet-inline-button"
-                                                                                title="Remove Bullet"
-                                                                                onClick={() => onRemoveBullet(index, bullet.id)}
-                                                                            >
-                                                                                <FontAwesomeIcon icon={faTrash} />
-                                                                            </button>
-                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="aim-bullet-inline-button"
+                                                                            title={bullets.length > 1 ? "Remove Bullet" : "At least one bullet is required"}
+                                                                            disabled={bullets.length <= 1}
+                                                                            onClick={() => {
+                                                                                if (bullets.length <= 1) return;
+                                                                                onRemoveBullet(index, bullet.id);
+                                                                            }}
+                                                                            style={bullets.length <= 1 ? { opacity: 0.3, cursor: "not-allowed" } : undefined}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faTrash} />
+                                                                        </button>
                                                                         <button
                                                                             type="button"
                                                                             className="aim-bullet-inline-button"

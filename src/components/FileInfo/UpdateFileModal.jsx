@@ -11,7 +11,8 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
     // State for the form fields
     const [newFile, setNewFile] = useState(null);
     const [status, setStatus] = useState("");
-    const [reviewDate, setReviewDate] = useState("");
+    const [signedOffDate, setSignedOffDate] = useState("");
+    const [hasReview, setHasReview] = useState(true);
     const [files, setFiles] = useState([]); // List of existing files
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState("");
@@ -62,6 +63,9 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                 const matchedFile = data.files?.find(file => file._id === fileID);
                 if (matchedFile) {
                     setChosenFileName(removeFileExtension(matchedFile.fileName));
+                    // If this document's type has no review period, its reviewDate will
+                    // already be null — keep the Signed Off Date field disabled in that case.
+                    setHasReview(Boolean(matchedFile.reviewDate));
                 }
             } catch (err) {
                 setError(err.message);
@@ -72,7 +76,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
 
     // Check if the form is valid
     const isFormValid = () => {
-        return newFile && status && reviewDate;
+        return newFile && status && (!hasReview || signedOffDate);
     };
 
     const handleFileSelect = (selectedFile) => {
@@ -100,7 +104,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
         formData.append("existingFile", fileID);
         formData.append("newFile", newFile);
         formData.append("status", status);
-        formData.append("reviewDate", reviewDate);
+        formData.append("signedOffDate", signedOffDate);
 
         try {
             const response = await fetch(`${process.env.REACT_APP_URL}/api/version/update/${fileID}`, {
@@ -116,7 +120,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
             await response.json();
             setNewFile(null);
             setStatus("");
-            setReviewDate("");
+            setSignedOffDate("");
             setSuccessMsg("");
             setError(null);
 
@@ -147,7 +151,7 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
 
     const closeModalAdd = () => {
         setNewFile("");
-        setReviewDate("");
+        setSignedOffDate("");
         setStatus("");
         closeModal();
     };
@@ -212,18 +216,19 @@ const UpdateFileModal = ({ isModalOpen, closeModal, fileID }) => {
                         </div>
 
                         <div className="update-file-group-side">
-                            <label className="update-file-label">Review Date</label>
+                            <label className="update-file-label">Signed Off Date</label>
                             <div className='update-file-input-file-container' style={{ position: "relative" }}>
                                 <DatePicker
-                                    value={reviewDate || ""}
+                                    value={signedOffDate || ""}
                                     format="YYYY-MM-DD"
                                     onChange={(val) =>
-                                        setReviewDate(val?.format("YYYY-MM-DD"))
+                                        setSignedOffDate(val?.format("YYYY-MM-DD"))
                                     }
                                     rangeHover={false}
                                     highlightToday={false}
                                     editable={false}
-                                    placeholder="YYYY-MM-DD"
+                                    disabled={!hasReview}
+                                    placeholder={hasReview ? "YYYY-MM-DD" : "N/A"}
                                     hideIcon={false}
                                     onOpenPickNewDate={false}
                                     inputClass='update-file-input-file-new'

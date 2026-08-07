@@ -15,7 +15,7 @@ const UploadPopup = ({ onClose }) => {
     const [owner, setOwner] = useState('');
     const [documentType, setDocumentType] = useState('');
     const [departmentHead, setDepartmentHead] = useState('');
-    const [reviewDate, setReviewDate] = useState('');
+    const [signedOffDate, setSignedOffDate] = useState('');
     const [status, setStatus] = useState('');
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
@@ -40,27 +40,47 @@ const UploadPopup = ({ onClose }) => {
     }, []);
 
     useEffect(() => {
-        // Function to fetch users
-        const fetchValues = async () => {
+        const fetchOwnerOptions = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/valuesUpload/`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch users");
+                const [userRes] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_URL}/api/user/`),
+                ]);
+
+                if (!userRes.ok) {
+                    throw new Error("Failed to fetch document owner options");
                 }
-                const data = await response.json();
 
-                setDocTypes(data[0].documentType);
-                const owners = Array.from(new Set([
-                    ...data[0].owner,
-                    ...data[0].departmentHeads
-                ]));
+                const userData = await userRes.json();
 
-                setUsers(owners); // This now contains owners + departmentHeads, with duplicates removed
+                const userNames = (userData.users || []).map((u) => (u.username ?? "").trim());
+
+                const combined = Array.from(new Set([...userNames])).filter(Boolean);
+
+                setUsers(combined);
             } catch (error) {
                 setError(error.message);
             }
         };
-        fetchValues();
+        fetchOwnerOptions();
+    }, []);
+
+    useEffect(() => {
+        // Document types are loaded from their own backend route.
+        // Just swap the URL below once the new route is ready — response is expected as { documentTypes: [...] }
+        const fetchDocumentTypes = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/valuesUpload/documentTypes/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch document types");
+                }
+                const data = await response.json();
+
+                setDocTypes(data.documentTypes || []);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+        fetchDocumentTypes();
     }, []);
 
     useEffect(() => {
@@ -109,6 +129,18 @@ const UploadPopup = ({ onClose }) => {
 
     const departmentHeadName = usersList.find((user) => user._id === departmentHead)?.username || '';
 
+    const selectedDocType = docTypes.find((dt) => dt.type === documentType);
+    // Default to true (enabled) until document types have loaded / a type is selected
+    const hasReview = selectedDocType ? selectedDocType.hasReview !== false : true;
+
+    useEffect(() => {
+        // Clear out any previously selected date once review is disabled for this document type
+        if (!hasReview && signedOffDate) {
+            setSignedOffDate('');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasReview, documentType]);
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -117,7 +149,7 @@ const UploadPopup = ({ onClose }) => {
         if (!documentType) newErrors.documentType = true;
         if (!owner) newErrors.author = true;
         if (!departmentHead) newErrors.departmentHead = true;
-        if (!reviewDate) newErrors.reviewDate = true;
+        if (hasReview && !signedOffDate) newErrors.signedOffDate = true;
         if (!status) newErrors.status = true;
         if (!reviewer) newErrors.reviewer = true;
         if (!approver) newErrors.approver = true;
@@ -130,7 +162,7 @@ const UploadPopup = ({ onClose }) => {
             const newErrors = validateForm();
             setErrors(newErrors);
         }
-    }, [selectedFile, discipline, documentType, owner, departmentHead, reviewDate, status, reviewer, approver])
+    }, [selectedFile, discipline, documentType, owner, departmentHead, signedOffDate, status, reviewer, approver])
 
     const isFormValid = () => {
         const newErrors = validateForm();
@@ -163,7 +195,7 @@ const UploadPopup = ({ onClose }) => {
         formData.append('discipline', discipline);
         formData.append('status', status);
         formData.append('userID', userID);
-        formData.append('reviewDate', reviewDate);
+        formData.append('signedOffDate', signedOffDate);
         formData.append('reviewer', reviewer);
         formData.append('approver', approver);
 
@@ -208,7 +240,7 @@ const UploadPopup = ({ onClose }) => {
             setDocumentType('');
             setDepartmentHead('');
             setStatus('');
-            setReviewDate('');
+            setSignedOffDate('');
             setApprover('');
             setReviewer('');
             setError(null);
@@ -370,31 +402,35 @@ const UploadPopup = ({ onClose }) => {
                                     <div className="upload-file-page-select-container">
                                         <select value={documentType} className="upload-file-page-select" onChange={(e) => setDocumentType(e.target.value)}>
                                             <option>Select Document Type</option>
-                                            {docTypes.sort((a, b) => a.localeCompare(b)).map((type, index) => (
-                                                <option key={index} value={type}>
-                                                    {type}
-                                                </option>
-                                            ))}
+                                            {docTypes
+                                                .slice()
+                                                .sort((a, b) => (a.type || "").localeCompare(b.type || "", undefined, { sensitivity: "base" }))
+                                                .map((type, index) => (
+                                                    <option key={type._id ?? index} value={type.type}>
+                                                        {type.type}
+                                                    </option>
+                                                ))}
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="upload-file-page-form-row">
-                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
-                                    <label>Review Date <span className="required-field">*</span></label>
+                                <div className={`upload-file-page-form-group ${errors.signedOffDate ? "error-upload-required-up" : ""}`}>
+                                    <label>Signed Off Date {hasReview && <span className="required-field">*</span>}</label>
                                     <div style={{ position: "relative", width: "calc(100% - 8.01px)" }}>
                                         <DatePicker
-                                            value={reviewDate || ""}
+                                            value={signedOffDate || ""}
                                             format="YYYY-MM-DD"
                                             onChange={(val) =>
-                                                setReviewDate(val?.format("YYYY-MM-DD"))
+                                                setSignedOffDate(val?.format("YYYY-MM-DD"))
                                             }
                                             rangeHover={false}
                                             highlightToday={false}
                                             editable={false}
+                                            disabled={!hasReview}
                                             inputClass="upload-file-page-date"
-                                            placeholder="YYYY-MM-DD"
+                                            placeholder={hasReview ? "YYYY-MM-DD" : "N/A"}
                                             hideIcon={false}
                                             onOpenPickNewDate={false}
                                             style={{ paddingBottom: "12px", paddingTop: "12px", "--rmdp-primary-color": "#002060" }}
@@ -405,9 +441,9 @@ const UploadPopup = ({ onClose }) => {
                                         />
                                     </div>
                                 </div>
-                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
+                                <div className={`upload-file-page-form-group ${errors.signedOffDate ? "error-upload-required-up" : ""}`}>
                                 </div>
-                                <div className={`upload-file-page-form-group ${errors.reviewDate ? "error-upload-required-up" : ""}`}>
+                                <div className={`upload-file-page-form-group ${errors.signedOffDate ? "error-upload-required-up" : ""}`}>
                                 </div>
                             </div>
 

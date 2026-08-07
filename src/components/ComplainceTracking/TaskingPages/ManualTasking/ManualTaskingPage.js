@@ -14,7 +14,8 @@ import {
     faClockFour,
     faPen,
     faPlusCircle,
-    faCircle
+    faCircle,
+    faInfoCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import { saveAs } from "file-saver";
@@ -40,6 +41,7 @@ import PopupMenuTasks from "./PopupMenuTasks";
 import { getAutoManualNavigationRoute } from "./getAutoManualNavigationRoute";
 import { getAutoAutoNavigationRoute } from "./getAutoAutoNavigationRoute";
 import TaskDueDatePopup from "./TaskDueDatePopup";
+import TaskSourceInfo from "./TaskSourceInfo";
 
 // ─── Route helpers ────────────────────────────────────────────────────────────
 // Returns the correct API base path for any task object based on _taskSource.
@@ -126,7 +128,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     closeOutComments: 300,
     allocationType: 40,
     allocatedBy: 50,
-    category: 50,
+    category: 100,
     discipline: 40,
     area: 30,
     uniqueID: 80,
@@ -276,6 +278,7 @@ const ManualTaskingPage = () => {
     const [closingTaskIds, setClosingTaskIds] = useState(new Set());
     const [reopeningTaskIds, setReopeningTaskIds] = useState(new Set());
     const [categoryTab, setCategoryTab] = useState("My Tasks");
+    const [showCategoryInfo, setShowCategoryInfo] = useState(false);
 
     const [showModifyPopup, setShowModifyPopup] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -852,6 +855,7 @@ const ManualTaskingPage = () => {
         if (colId === "status") return [getStatusDisplay(row.status)];
         if (colId === "closeStatus") return [row.closeStatus ? "Completed" : "Open"];
         if (colId === "allocationType") return [row._isAllocator ? "Tasks Assigned" : "My Tasks"];
+        if (colId === "category") return [getCategoryDisplay(row.category)];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
         if (colId === "userAttachments") return [Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? "Has Attachments" : "No Attachments"];
         // allocatedBy: null becomes "System" for filtering
@@ -1002,6 +1006,21 @@ const ManualTaskingPage = () => {
             document.removeEventListener("touchstart", handleClickOutside);
         };
     }, [showColumnSelector]);
+
+    useEffect(() => {
+        if (!showCategoryInfo) return;
+        const handleClickOutside = (e) => {
+            if (!e.target.closest(".category-info-popup") && !e.target.closest(".category-info-btn")) {
+                setShowCategoryInfo(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [showCategoryInfo]);
 
     // ── Column resize ────────────────────────────────────────────────────────
     const getDisplayColumns = () => showColumns;
@@ -2172,6 +2191,22 @@ const ManualTaskingPage = () => {
                                                 }}
                                             >
                                                 <span>{col.title}</span>
+                                                {col.id === "category" && (
+                                                    <span
+                                                        className="category-info-btn"
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        title="What does Source mean?"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowCategoryInfo(prev => !prev);
+                                                        }}
+                                                        onMouseDown={(e) => e.stopPropagation()}
+                                                        style={{ marginLeft: "6px", cursor: "pointer", color: "white" }}
+                                                    >
+                                                        <FontAwesomeIcon icon={faInfoCircle} />
+                                                    </span>
+                                                )}
                                                 {(isActiveFilter || isActiveSort) && (
                                                     <FontAwesomeIcon icon={faFilter} className="th-filter-icon" style={{ marginLeft: "8px", opacity: 0.8 }} />
                                                 )}
@@ -2392,6 +2427,7 @@ const ManualTaskingPage = () => {
                 />
             )}
 
+            {showCategoryInfo && (<TaskSourceInfo setClose={() => setShowCategoryInfo(false)} />)}
             <ToastContainer />
         </div>
     );
