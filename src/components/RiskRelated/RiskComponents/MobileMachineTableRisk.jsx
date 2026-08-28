@@ -93,6 +93,8 @@ const MobileMachineTableRisk = ({ collapsible = false, formData, setFormData, us
                     : row
             ),
         }));
+
+        closeManagePopup();
     };
 
     const handleUpdateMac = (newMacObj, oldMac, newNormal) => {

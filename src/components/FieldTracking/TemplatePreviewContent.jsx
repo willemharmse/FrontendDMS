@@ -10,6 +10,10 @@ import DepartmentInfoBox from "./DepartmentInfoBox";
 import ManagementInfoBox from "./ManagementInfoBox";
 import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
 import ActionFieldsInfoBox from "./ActionFieldsInfoBox";
+import PPETable from "../CreatePage/PPETable";
+import HandToolTable from "../CreatePage/HandToolsTable";
+import MaterialsTable from "../CreatePage/MaterialsTable";
+import HazardsControlsTableFTS from "./HazardsControlsTableFTS";
 import "./WorkOrderActionFields.css";
 import "./TemplatePreview.css";
 import TemplateTitleField from "./TemplateTitleField";
@@ -50,6 +54,46 @@ const TemplatePreviewContent = ({
 
     const handleWorkOrderRACIInformationChange = (value) => {
         setFormData((prev) => ({ ...prev, workOrderRACIInformation: value }));
+    };
+
+    // PPE / Hand Tools / Materials / Hazards & Controls are shown here as
+    // read-only reference tables (view/download-style, same as
+    // SupportingDocumentTableFTS above) - they're always forced readOnly
+    // regardless of the readOnly prop, since this preview never edits
+    // these lists directly. The setters below exist only because the
+    // table components expect them; they're inert here.
+    const handleAddHazardControlRow = () => {
+        setFormData((prev) => ({
+            ...prev,
+            hazardsControls: [
+                ...(Array.isArray(prev.hazardsControls) ? prev.hazardsControls : []),
+                { hazard: "", unwantedEvent: "", control: "" },
+            ],
+        }));
+    };
+
+    const handleRemoveHazardControlRow = (indexToRemove) => {
+        setFormData((prev) => ({
+            ...prev,
+            hazardsControls: (Array.isArray(prev.hazardsControls) ? prev.hazardsControls : []).filter(
+                (_, index) => index !== indexToRemove
+            ),
+        }));
+    };
+
+    const handleUpdateHazardControlRow = (index, field, value) => {
+        setFormData((prev) => {
+            const updatedRows = [...(Array.isArray(prev.hazardsControls) ? prev.hazardsControls : [])];
+            updatedRows[index] = {
+                ...updatedRows[index],
+                [field]: value,
+            };
+            return { ...prev, hazardsControls: updatedRows };
+        });
+    };
+
+    const handleUpdateHazardControlRows = (newRows) => {
+        setFormData((prev) => ({ ...prev, hazardsControls: newRows }));
     };
 
     return (
@@ -165,6 +209,48 @@ const TemplatePreviewContent = ({
                 formData={formData}
                 setFormData={setFormData}
                 readOnly={true}
+            />
+
+            {/* PPE, Hand Tools, Materials and Hazards & Controls - same
+                view/download-only treatment as Supporting Info above,
+                always forced readOnly regardless of the readOnly prop. */}
+            <PPETable
+                collapsible={true}
+                formData={formData}
+                setFormData={setFormData}
+                usedPPEOptions={(formData.PPEItems || []).map((item) => item.ppe)}
+                setUsedPPEOptions={noop}
+                readOnly={true}
+            />
+
+            <HandToolTable
+                collapsible={true}
+                formData={formData}
+                setFormData={setFormData}
+                usedHandTools={(formData.HandTools || []).map((item) => item.handTool)}
+                setUsedHandTools={noop}
+                readOnly={true}
+            />
+
+            <MaterialsTable
+                collapsible={true}
+                formData={formData}
+                setFormData={setFormData}
+                usedMaterials={(formData.Materials || []).map((item) => item.material)}
+                setUsedMaterials={noop}
+                readOnly={true}
+            />
+
+            <HazardsControlsTableFTS
+                collapsible={true}
+                defaultCollapsed={true}
+                hazardControlRows={formData.hazardsControls || []}
+                addHazardControlRow={handleAddHazardControlRow}
+                removeHazardControlRow={handleRemoveHazardControlRow}
+                updateHazardControlRow={handleUpdateHazardControlRow}
+                updateHazardControlRows={handleUpdateHazardControlRows}
+                readOnly={true}
+                required={false}
             />
 
             {/* 8. Info Gathering (Work Order Action Fields) - shown the

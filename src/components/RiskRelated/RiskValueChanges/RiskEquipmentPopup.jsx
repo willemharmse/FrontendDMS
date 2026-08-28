@@ -82,7 +82,7 @@ const RiskEquipmentPopup = ({ isOpen, onClose, userID, setEqpData, onAdd }) => {
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding equipment:", error);

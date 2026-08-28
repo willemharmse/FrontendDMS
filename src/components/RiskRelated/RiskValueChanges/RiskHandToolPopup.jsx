@@ -82,7 +82,7 @@ const RiskHandToolPopup = ({ isOpen, onClose, userID, setToolsData, onAdd }) => 
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding tool:", error);

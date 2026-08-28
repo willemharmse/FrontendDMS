@@ -851,51 +851,51 @@ const ControlAttributes = () => {
     }, [showColumnSelector]);
 
     const [columnWidths, setColumnWidths] = useState({
-        nr: 60,
+        nr: 20,
         category: 30, // Default width for Category
-        control: 200,
+        control: 80,
         description: 320,
         performance: 260,
-        critical: 50,
-        act: 50,
-        activation: 100,
+        critical: 30,
+        act: 30,
+        activation: 50,
         hierarchy: 70,
         quality: 120,
-        cons: 90,
+        cons: 50,
         updatedAt: 200,
-        action: 80,
+        action: 30,
     });
 
     const [initialColumnWidths] = useState({
-        nr: 60,
+        nr: 20,
         category: 30,
-        control: 200,
+        control: 80,
         description: 320,
         performance: 260,
-        critical: 50,
-        act: 50,
-        activation: 100,
+        critical: 30,
+        act: 30,
+        activation: 50,
         hierarchy: 70,
         quality: 120,
-        cons: 90,
+        cons: 50,
         updatedAt: 200,
-        action: 80,
+        action: 30,
     });
 
     const columnSizeLimits = {
-        nr: { min: 60, max: 60 },
+        nr: { min: 20, max: 60 },
         category: { min: 30, max: 300 }, // Limits for category
-        control: { min: 150, max: 600 },
+        control: { min: 80, max: 600 },
         description: { min: 200, max: 800 },
         performance: { min: 150, max: 600 },
-        critical: { min: 50, max: 200 },
-        act: { min: 50, max: 300 },
-        activation: { min: 100, max: 400 },
+        critical: { min: 30, max: 200 },
+        act: { min: 30, max: 300 },
+        activation: { min: 50, max: 400 },
         hierarchy: { min: 70, max: 400 },
         quality: { min: 100, max: 250 },
-        cons: { min: 90, max: 300 },
+        cons: { min: 50, max: 300 },
         updatedAt: { min: 160, max: 320 },
-        action: { min: 80, max: 80 },
+        action: { min: 30, max: 80 },
     };
 
     const [tableWidth, setTableWidth] = useState(null);
@@ -1468,7 +1468,44 @@ const ControlAttributes = () => {
                         )}
                     </div>
                     <div className="table-scroll-wrapper-attributes-controls" ref={scrollerRef}>
-                        <table className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}>
+                        <table
+                            className={`${isSidebarVisible ? `risk-control-attributes-table` : `risk-control-attributes-table-ws`}`}
+                            style={{
+                                width: (() => {
+                                    const total = getDisplayColumns().reduce(
+                                        (sum, colId) => sum + (typeof columnWidths[colId] === "number" ? columnWidths[colId] : 0),
+                                        0
+                                    );
+                                    return total ? `${total}px` : undefined;
+                                })(),
+                            }}
+                        >
+                            <colgroup>
+                                {[...visibleIdentificationColumns, ...visibleCerColumns].map(colId => (
+                                    <col
+                                        key={colId}
+                                        style={{
+                                            width: columnWidths[colId] ? `${columnWidths[colId]}px` : undefined,
+                                        }}
+                                    />
+                                ))}
+                                {showColumns.includes("updatedAt") && (
+                                    <col
+                                        key="updatedAt"
+                                        style={{
+                                            width: columnWidths.updatedAt ? `${columnWidths.updatedAt}px` : undefined,
+                                        }}
+                                    />
+                                )}
+                                {showColumns.includes("action") && (
+                                    <col
+                                        key="action"
+                                        style={{
+                                            width: columnWidths.action ? `${columnWidths.action}px` : undefined,
+                                        }}
+                                    />
+                                )}
+                            </colgroup>
                             <thead className="risk-control-attributes-head">
                                 <tr>
                                     {visibleIdentificationColumns.length > 0 && (
@@ -1497,8 +1534,6 @@ const ControlAttributes = () => {
                                             style={{
                                                 position: "relative",
                                                 width: columnWidths.updatedAt ? `${columnWidths.updatedAt}px` : undefined,
-                                                minWidth: columnSizeLimits.updatedAt?.min,
-                                                maxWidth: columnSizeLimits.updatedAt?.max,
                                                 cursor: "pointer",
                                                 zIndex: 2,
                                                 textAlign: "center",
@@ -1527,8 +1562,6 @@ const ControlAttributes = () => {
                                                 width: columnWidths.action
                                                     ? `${columnWidths.action}px`
                                                     : undefined,
-                                                minWidth: columnSizeLimits.action?.min,
-                                                maxWidth: columnSizeLimits.action?.max,
                                                 cursor: "default"
                                             }}
                                         >
@@ -1580,8 +1613,6 @@ const ControlAttributes = () => {
                                                 style={{
                                                     position: "relative",
                                                     width: columnWidths[col.id] ? `${columnWidths[col.id]}px` : undefined,
-                                                    minWidth: columnSizeLimits[col.id]?.min,
-                                                    maxWidth: columnSizeLimits[col.id]?.max,
                                                     cursor: col.id === "nr" ? "default" : "pointer"
                                                 }}
                                             >

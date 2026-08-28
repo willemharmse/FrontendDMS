@@ -244,7 +244,7 @@ const RiskAimComponent = ({
                                                                     }}
                                                                     spellCheck="true"
                                                                     name={`aim-${index}-bullet-${bulletIndex}`}
-                                                                    className="aim-textarea-risk-create-ibra font-fam aim-textarea-bullet-single"
+                                                                    className="aim-bullet-textarea-risk-create-ibra font-fam aim-textarea-bullet-single"
                                                                     onChange={(e) => onBulletChange(index, bullet.id, e.target.value)}
                                                                     onKeyDown={(e) => handleBulletKeyDown(e, index, bulletIndex)}
                                                                     onFocus={() => onFocus?.(index)}

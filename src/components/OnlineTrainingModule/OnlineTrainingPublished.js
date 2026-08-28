@@ -723,7 +723,7 @@ const OnlineTrainingPublished = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/tmsPublished2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Published Courses"}</p>
+                        <p className="logo-text-dm-fi">{"Controlled Courses"}</p>
                     </div>
                 </div>
             )}
@@ -765,7 +765,7 @@ const OnlineTrainingPublished = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Published Courses"}</label>
+                        <label className="risk-control-label">{"Controlled Courses"}</label>
 
                         <FontAwesomeIcon
                             icon={faColumns}

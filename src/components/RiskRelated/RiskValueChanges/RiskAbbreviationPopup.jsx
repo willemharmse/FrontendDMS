@@ -84,7 +84,7 @@ const RiskAbbreviationPopup = ({ isOpen, onClose, userID, setAbbrData, onAdd }) 
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding abbreviation:", error);

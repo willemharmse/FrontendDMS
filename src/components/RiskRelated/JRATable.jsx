@@ -608,7 +608,10 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
         const colId = sortConfig?.colId || "nr";
 
         if (colId === "nr") {
-            return current.map((r, i) => ({ ...r, nr: i + 1 }));
+            // Filtering must not reassign row numbers — each main row keeps
+            // the nr it was actually given (see the real renumbering after
+            // add/remove/reorder elsewhere in this file).
+            return current;
         }
 
         const dir = sortConfig?.direction === "desc" ? -1 : 1;
@@ -649,7 +652,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
             }) * dir;
         });
 
-        return current.map((r, i) => ({ ...r, nr: i + 1 }));
+        return current;
     }, [formData.jra, filters, showFlagged, sortConfig]);
 
     const insertBodyRow = (rowId, insertAtIndex) => {
@@ -754,7 +757,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
                         toast.dismiss();
                         toast.error("You must keep at least one row.", {
                             closeButton: true,
-                            autoClose: 800,
+                            autoClose: 1500,
                             style: { textAlign: 'center' }
                         });
                         return item;
@@ -780,7 +783,7 @@ const JRATable = ({ collapsible = false, formData, setFormData, isSidebarVisible
                 toast.dismiss();
                 toast.error("You must keep at least one row.", {
                     closeButton: true,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
                 return prev;

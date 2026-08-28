@@ -873,7 +873,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
         } else {
             toast.warn("You must have at least one hazard", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
             });
         }
     };
@@ -896,7 +896,7 @@ const BLRAPopup = ({ onClose, onSave, data, rowsData, readOnly = false, availabl
         } else {
             toast.warn("You must have at least one control", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
             });
         }
     };

@@ -1176,7 +1176,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
 
                         toast.error("You must keep at least one row.", {
                             closeButton: true,
-                            autoClose: 800,
+                            autoClose: 1500,
                             style: { textAlign: 'center' }
                         });
                         return item;
@@ -1203,7 +1203,7 @@ const JRATable = ({ formData, setFormData, isSidebarVisible }) => {
                 toast.dismiss();
                 toast.error("You must keep at least one row.", {
                     closeButton: true,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
                 return prev;

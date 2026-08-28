@@ -58,6 +58,7 @@ const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readO
                         ...existing,
                         category:
                             (existing?.category || fromPopup?.category || "").toString().trim(),
+                        performance: existing?.performance || fromPopup?.performance || "",
                     };
                 }
 
@@ -66,6 +67,7 @@ const RelevantControlsTable = forwardRef(({ relevantControls, setFormData, readO
                     control: name,
                     description: fromPopup?.description || "",
                     category: (fromPopup?.category ?? "").toString().trim(),
+                    performance: fromPopup?.performance || "",
                 };
             });
 

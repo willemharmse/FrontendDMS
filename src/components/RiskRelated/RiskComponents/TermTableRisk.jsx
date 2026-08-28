@@ -72,6 +72,8 @@ const TermTableRisk = ({ collapsible = false, risk, formData, setFormData, usedT
           : row
       ),
     }));
+
+    closeManagePopup();
   };
 
   const handleUpdateTerm = (newTermObj, oldTerm, oldDef) => {

@@ -97,6 +97,19 @@ const RiskDraftsPage = () => {
         return `${datePart} ${timePart}`;
     };
 
+    const getDraftStatus = (item) => {
+        const userIDs = Array.isArray(item?.userIDs) ? item.userIDs : [];
+        return userIDs.length > 1 ? "In Collaboration" : "In Development";
+    };
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case "In Collaboration": return { color: "black", fontWeight: "normal" };
+            case "In Development": return { color: "black", fontWeight: "normal" };
+            default: return { color: "black", fontWeight: "normal" };
+        }
+    };
+
     const getRawValue = (item, colId) => {
         switch (colId) {
             case "name": return item.formData?.title || "";
@@ -104,6 +117,7 @@ const RiskDraftsPage = () => {
             case "creationDate": return formatDateTime(item.dateCreated);
             case "lastModifiedBy": return item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-");
             case "lastModifiedDate": return item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet";
+            case "status": return getDraftStatus(item);
             default: return "";
         }
     };
@@ -337,7 +351,7 @@ const RiskDraftsPage = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
+                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
@@ -416,11 +430,15 @@ const RiskDraftsPage = () => {
                                 <thead className="gen-head" style={{ fontSize: "14px" }}>
                                     <tr>
                                         <th className="gen-th ibraGenNr" style={{ width: "5%" }}>Nr</th>
-                                        <th className="gen-th ibraGenFN" style={{ width: "30%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("name", e)}>
+                                        <th className="gen-th ibraGenFN" style={{ width: "25%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("name", e)}>
                                             Draft Title
                                             {(sortBy === "name" || activeExcelFilters["name"]) && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
                                         </th>
-                                        <th className="gen-th ibraGenVer" style={{ width: "15%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("createdBy", e)}>
+                                        <th className="gen-th ibraGenDraftStatus" style={{ width: "15%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("status", e)}>
+                                            Status
+                                            {(sortBy === "status" || activeExcelFilters["status"]) && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
+                                        </th>
+                                        <th className="gen-th ibraGenVer" style={{ width: "10%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("createdBy", e)}>
                                             Created By
                                             {(sortBy === "createdBy" || activeExcelFilters["createdBy"]) && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
                                         </th>
@@ -428,7 +446,7 @@ const RiskDraftsPage = () => {
                                             Creation Date
                                             {(sortBy === "creationDate" || activeExcelFilters["creationDate"]) && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
                                         </th>
-                                        <th className="gen-th ibraGenPB" style={{ width: "15%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("lastModifiedBy", e)}>
+                                        <th className="gen-th ibraGenPB" style={{ width: "10%", cursor: "pointer" }} onClick={(e) => openExcelFilterPopup("lastModifiedBy", e)}>
                                             Last Modified By
                                             {(sortBy === "lastModifiedBy" || activeExcelFilters["lastModifiedBy"]) && <FontAwesomeIcon icon={faFilter} className="th-filter-icon" />}
                                         </th>
@@ -453,6 +471,9 @@ const RiskDraftsPage = () => {
                                                         {index + 1}
                                                     </td>
                                                     <td style={{ fontFamily: "Arial" }}>{item.formData.title}</td>
+                                                    <td style={{ textAlign: "center", fontFamily: "Arial", ...getStatusStyle(getDraftStatus(item)) }}>
+                                                        {getDraftStatus(item)}
+                                                    </td>
                                                     <td className="cent-draft-class" style={{ fontFamily: "Arial" }}>
                                                         {item.creator?.username || "Unknown"}
                                                     </td>
@@ -481,7 +502,7 @@ const RiskDraftsPage = () => {
 
                                     {isLoading && (
                                         <tr>
-                                            <td colSpan="7" className="cent">
+                                            <td colSpan="8" className="cent">
                                                 Loading drafts…
                                             </td>
                                         </tr>
@@ -489,7 +510,7 @@ const RiskDraftsPage = () => {
 
                                     {!isLoading && drafts.length === 0 && showNoDrafts && (
                                         <tr>
-                                            <td colSpan="7" className="cent">
+                                            <td colSpan="8" className="cent">
                                                 No Drafts Available
                                             </td>
                                         </tr>

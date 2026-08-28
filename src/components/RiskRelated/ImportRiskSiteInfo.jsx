@@ -95,7 +95,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
         if (!isFormValid()) {
             toast.error("Please select an excel file.", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -140,7 +140,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
             if (response.ok) {
                 toast.success("Values have been successfully imported", {
                     closeButton: false,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: {
                         textAlign: 'center'
                     }
@@ -150,7 +150,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
             } else {
                 toast.error(`Excel document formatting modified. Refer to template or contact administrator.`, {
                     closeButton: false,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: {
                         textAlign: 'center'
                     }
@@ -162,7 +162,7 @@ const ImportRiskSiteInfo = ({ onClose }) => {
             setLoading(false);
             toast.error("Excel document formatting modified. Refer to template or contact administrator.", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }

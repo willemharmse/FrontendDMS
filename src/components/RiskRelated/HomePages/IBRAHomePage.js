@@ -75,12 +75,20 @@ const IBRAHomePage = () => {
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/riskManagementApprovals/ibra")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval IBRAs</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/generatedIBRADocs")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off IBRAs</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off IBRAs</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffIBRA")}>
@@ -88,7 +96,15 @@ const IBRAHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off IBRAs<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled IBRAs<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskManagementRevisions/ibra")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision IBRAs<br /></h3>
                         </>
                     </div>
                 </div>

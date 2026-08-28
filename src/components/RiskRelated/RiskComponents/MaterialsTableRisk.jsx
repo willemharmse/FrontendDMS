@@ -162,6 +162,8 @@ const MaterialsTableRisk = ({ collapsible = false, formData, setFormData, usedMa
                     : row
             ),
         }));
+
+        closeManagePopup();
     };
 
     useEffect(() => {

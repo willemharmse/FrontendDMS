@@ -113,7 +113,7 @@ const SpecialInstructionsTable = ({ collapsible = false, formData, setFormData, 
             toast.clearWaitingQueue();
             toast.error("Cannot remove all special‑instruction rows.", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;

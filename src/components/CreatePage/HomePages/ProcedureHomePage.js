@@ -75,12 +75,20 @@ const ProcedureHomePage = () => {
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentDevelopmentApprovals/procedure")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval Procedures</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/generatedFileInfo")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off Procedures</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off Procedures</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffProcedures")}>
@@ -88,7 +96,15 @@ const ProcedureHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off Procedures<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled Procedures<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/documentDevelopmentRevisions/procedure")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Procedures<br /></h3>
                         </>
                     </div>
                 </div>

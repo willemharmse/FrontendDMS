@@ -49,7 +49,7 @@ const SignedOffBLRA = () => {
                 throw new Error(response.error || 'Failed to upload file');
             }
 
-            toast.success("Document Version Created in Ready For Sign Off", {
+            toast.success("Document Version Created in Pending Sign Off", {
                 closeButton: false,
                 autoClose: 1500,
                 style: {
@@ -286,7 +286,7 @@ const SignedOffBLRA = () => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/blra2.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Signed Off BLRA"}</p>
+                        <img src={`${process.env.PUBLIC_URL}/blra2.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Controlled BLRA"}</p>
                     </div>
                 </div>)
             }
@@ -316,7 +316,7 @@ const SignedOffBLRA = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Signed Off BLRA"}</label>
+                        <label className="risk-control-label">{"Controlled BLRA"}</label>
                         <FontAwesomeIcon icon={faColumns} className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
                         <FontAwesomeIcon
                             icon={faFilter}

@@ -20,6 +20,7 @@ function ForgotPassword() {
     const navigate = useNavigate();
     const [newPasswordInvalid, setNewPasswordInvalid] = useState(false);
     const [confirmPasswordInvalid, setConfirmPasswordInvalid] = useState(false);
+    const [resending, setResending] = useState(false);
 
     const getPasswordErrors = (password) => {
         const errors = [];
@@ -69,6 +70,47 @@ function ForgotPassword() {
         const m = Math.floor(totalSec / 60);
         const s = totalSec % 60;
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    const handleResendOtp = async () => {
+        if (msLeft > 0 || resending) return;
+
+        setResending(true);
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/user/resend-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ username, email }),
+            });
+
+            if (!response.ok) {
+                toast.dismiss();
+                toast.clearWaitingQueue();
+                toast.error('Could not resend OTP, please try again.', {
+                    closeButton: false,
+                    autoClose: 800,
+                    style: { textAlign: 'center' },
+                });
+                return;
+            }
+
+            setOtp('');
+            setDeadlineMs(Date.now() + 120000);
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.success('A new OTP has been sent.', {
+                closeButton: false,
+                autoClose: 800,
+                style: { textAlign: 'center' },
+            });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setResending(false);
+        }
     };
 
     const handleLogin = async (e) => {
@@ -214,7 +256,7 @@ function ForgotPassword() {
     return (
         <div className="forgot-password-container">
             <div className="forgot-password-card">
-                <img src='CH_Logo.svg' className='forgot-password-logo-img' />
+                <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} className='forgot-password-logo-img' />
                 <div className="forgot-password-title">{"Reset Password"}</div>
                 <form onSubmit={handleLogin}>
                     {step === 1 && (
@@ -257,7 +299,26 @@ function ForgotPassword() {
                             >
                                 Insert OTP
                                 <span style={{ fontWeight: 500 }}>
-                                    {deadlineMs ? `(Expires in ${formatMs(msLeft)})` : ''}
+                                    {deadlineMs && msLeft > 0 ? (
+                                        `(Expires in ${formatMs(msLeft)})`
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={handleResendOtp}
+                                            disabled={resending}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                padding: 0,
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                textDecoration: 'underline',
+                                                cursor: resending ? 'default' : 'pointer',
+                                            }}
+                                        >
+                                            {resending ? 'Resending...' : 'Resend OTP'}
+                                        </button>
+                                    )}
                                 </span>
                             </label>
                             <div className="forgot-password-input-container">
@@ -313,7 +374,7 @@ function ForgotPassword() {
                 </form>
 
                 <div className="logo-bottom-container">
-                    <img className="logo-bottom" src="logo.webp" alt="Bottom Logo" />
+                    <img className="logo-bottom" src={`${process.env.PUBLIC_URL}/logo.webp`} alt="Bottom Logo" />
                     <p className="logo-bottom-text">A TAU5 PRODUCT</p>
                 </div>
             </div >

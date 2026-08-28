@@ -645,6 +645,9 @@ const OnlineCourseCreationPage = () => {
     });
     const result = await res.json();
     if (result.id) { setLoadedID(result.id); loadedIDRef.current = result.id; }
+    // Mark this as the latest persisted state so a follow-up
+    // back/home/refresh doesn't re-prompt for nothing.
+    isDirtyRef.current = false;
     return result.id || null;
   }
 
@@ -726,6 +729,10 @@ const OnlineCourseCreationPage = () => {
 
       return false;
     }
+
+    // Mark this as the latest persisted state (covers both manual
+    // saves and auto-saves, since both funnel through updateData).
+    isDirtyRef.current = false;
 
     return true;
   }
@@ -934,10 +941,13 @@ const OnlineCourseCreationPage = () => {
       revokeAllObjectUrls();
       const hydrated = await hydrateDraftMediaPreviews(normalizedForm);
 
+      suppressDirtyRef.current = true;
       setFormData(hydrated);
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+      // This is what's on the server right now, so nothing is "dirty" yet.
+      isDirtyRef.current = false;
 
       setInApproval(Boolean(storedData.statusApproval));
 
@@ -995,6 +1005,22 @@ const OnlineCourseCreationPage = () => {
   }, [formData]);
 
   const formDataRef = useRef(formData);
+  // O(1) dirty flag: true once the user has actually edited formData since
+  // the last successful sync with the server (initial load, manual save,
+  // or auto-save). Checked as a plain ref read at navigation time.
+  const isDirtyRef = useRef(false);
+  // Set right before we overwrite formData ourselves (load) so the
+  // [formData] effect below knows to skip marking it dirty.
+  const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+  useEffect(() => {
+    if (suppressDirtyRef.current) {
+      suppressDirtyRef.current = false;
+      return;
+    }
+    isDirtyRef.current = true;
+  }, [formData]);
+
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
   const userIDsRef = useRef(userIDs);
@@ -1296,7 +1322,7 @@ const OnlineCourseCreationPage = () => {
     setPreview(true);
   }
 
-  const requiresSavePrompt = () => !readOnlyRef.current && !!loadedIDRef.current;
+  const requiresSavePrompt = () => !readOnlyRef.current && !!loadedIDRef.current && isDirtyRef.current;
 
   const openSaveConfirm = (triggerType, action) => {
     setSaveConfirmTrigger(triggerType);
@@ -1304,13 +1330,24 @@ const OnlineCourseCreationPage = () => {
     setIsSaveConfirmOpen(true);
   };
 
+  // Skips the save-confirmation popup entirely and runs the pending
+  // navigation action directly. This is the "no save needed" / silent-no
+  // path. (This page has no server-side draft lock to release, unlike the
+  // other Create pages — this only mirrors handleDiscard's local reset.)
+  const leaveWithoutPrompt = (action) => {
+    loadedIDRef.current = '';
+    setLoadedID('');
+    isDirtyRef.current = false;
+    action();
+  };
+
   const handleBack = () => {
-    if (!requiresSavePrompt()) { navigate("/FrontendDMS/onlineTrainingHome"); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/onlineTrainingHome")); return; }
     openSaveConfirm("back", () => navigate("/FrontendDMS/onlineTrainingHome"));
   };
 
   const handleHomeNav = () => {
-    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
     openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
   };
 
@@ -1379,7 +1416,7 @@ const OnlineCourseCreationPage = () => {
             <button className="but-um" onClick={() => navigate("/FrontendDMS/onlinePublishedCourses")}>
               <div className="button-content">
                 <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                <span className="button-text">Published Courses</span>
+                <span className="button-text">Controlled Courses</span>
               </div>
             </button>
             <div className="horizontal-divider-with-icon">

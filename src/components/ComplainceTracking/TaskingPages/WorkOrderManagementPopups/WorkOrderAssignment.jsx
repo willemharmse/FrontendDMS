@@ -1,10 +1,13 @@
 import React, { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TemplatePreviewContent from "../../../FieldTracking/TemplatePreviewContent";
 import { computeLockedFields, guardLockedFields } from "../../../FieldTracking/lockedFieldsUtils";
+// NOTE: adjust this path if TemplatePreviewPopup lives somewhere else in
+// your tree - it's assumed here to sit alongside WorkOrderAssignment.
+import TemplatePreviewPopupWO from "./TemplatePreviewPopupWO";
 
 const workOrderApiBase = () => `${process.env.REACT_APP_URL}/api/workOrderTasks`;
 
@@ -46,6 +49,7 @@ const WorkOrderAssignment = ({
     onCancel,
 }) => {
     const [submitting, setSubmitting] = useState(false);
+    const [showPdfPreview, setShowPdfPreview] = useState(false);
 
     // Component is freshly mounted every time the popup opens, so useState's
     // lazy initializer (and this ref) only ever capture formData once per
@@ -107,6 +111,15 @@ const WorkOrderAssignment = ({
                     <button
                         type="button"
                         className="generate-button font-fam"
+                        onClick={() => setShowPdfPreview(true)}
+                        disabled={submitting}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                    >
+                        Preview PDF
+                    </button>
+                    <button
+                        type="button"
+                        className="generate-button font-fam"
                         onClick={onCancel}
                         disabled={submitting}
                     >
@@ -123,6 +136,15 @@ const WorkOrderAssignment = ({
                     </button>
                 </div>
             </div>
+
+            {showPdfPreview && (
+                <TemplatePreviewPopupWO
+                    onClose={() => setShowPdfPreview(false)}
+                    formData={assignmentFormData}
+                    previewEndpoint={`${workOrderApiBase()}/preview-pdf`}
+                    titleSuffix="[Approved]"
+                />
+            )}
         </div>
     );
 };

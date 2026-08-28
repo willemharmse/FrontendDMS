@@ -112,12 +112,28 @@ const OnlineTrainingHomePage = () => {
                             <h3 className="document-title-fi-home">Saved Drafts</h3>
                         </>
                     </div>)}
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/onlineTrainingApprovals")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval Courses</h3>
+                        </>
+                    </div>
                     {canIn(access, "TMS", ["systemAdmin"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlinePublishedCourses")}>
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} icon={faFolderOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Published Courses</h3>
+                            <h3 className="document-title-fi-home">Controlled Courses</h3>
+                        </>
+                    </div>)}
+                    {false && (<div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/onlineTrainingRevisions")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Courses<br /></h3>
                         </>
                     </div>)}
                     {false && canIn(access, "TMS", ["systemAdmin", "profileManager"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/onlineProfiles")}>

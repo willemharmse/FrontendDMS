@@ -357,7 +357,7 @@ const StandardsTable = ({ collapsible = false, formData, setFormData, error, tit
             toast.clearWaitingQueue();
             toast.warning("Cannot remove all standard rows.", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;

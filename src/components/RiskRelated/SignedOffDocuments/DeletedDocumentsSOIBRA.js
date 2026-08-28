@@ -349,7 +349,7 @@ const DeletedDocumentsSOIBRA = () => {
                     </div>
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Deleted Signed Off IBRAs"}</p>
+                        <p className="logo-text-dm-fi">{"Deleted Controlled IBRAs"}</p>
                     </div>
                 </div>
             )}
@@ -385,7 +385,7 @@ const DeletedDocumentsSOIBRA = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Deleted Signed Off IBRAs"}</label>
+                        <label className="risk-control-label">{"Deleted Controlled IBRAs"}</label>
                         <FontAwesomeIcon
                             icon={faFilter}
                             className={getFilterBtnClass()} // Calculated class (e.g., ibra4, ibra5, ibra6)

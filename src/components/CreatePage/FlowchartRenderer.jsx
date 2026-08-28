@@ -88,7 +88,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                     saveAs(blob, `${capitalizeWords(title)}_${documentType}_Page_${i + 1}.png`);
 
                     // Small delay to ensure browser doesn't block multiple downloads
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 }
             }
         },
@@ -213,7 +213,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                                 "content": "data(label)",
                                 "text-valign": "center",
                                 "text-halign": "center",
-                                "background-color": "#008000", // Green color
+                                "background-color": "#0015000", // Green color
                                 "color": "#fff", // White text
                                 "border-width": 2,
                                 "border-color": "#8a8a8a", // Dark green border
@@ -529,7 +529,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                                     "content": "data(label)",
                                     "text-valign": "center",
                                     "text-halign": "center",
-                                    "background-color": "#008000",
+                                    "background-color": "#0015000",
                                     "color": "#fff",
                                     "border-width": 2,
                                     "border-color": "#8a8a8a",
@@ -928,7 +928,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
             toast.clearWaitingQueue();
             toast.warn("There should be at least two procedure steps or more.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -939,7 +939,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
             toast.clearWaitingQueue();
             toast.warn("All procedure main steps must have a value.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -984,7 +984,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                 // Show loading toast
                 const toastId = toast.info("Preparing flowchart download...", {
                     closeButton: true,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
 
@@ -993,7 +993,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                     toast.update(toastId, {
                         render: `Generating page ${i + 1} of ${freshPages.length}...`,
                         closeButton: true,
-                        autoClose: 800
+                        autoClose: 1500
                     });
 
                     // Pass fresh data to renderPage
@@ -1026,7 +1026,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                 toast.update(toastId, {
                     render: "Creating zip file...",
                     closeButton: true,
-                    autoClose: 800
+                    autoClose: 1500
                 });
 
                 const content = await zip.generateAsync({ type: "blob" });
@@ -1035,7 +1035,7 @@ const FlowchartRenderer = forwardRef(({ procedureRows, documentType, title }, re
                 // Close toast and show success
                 toast.dismiss(toastId);
                 toast.success("Flowchart downloaded successfully!", {
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
             };

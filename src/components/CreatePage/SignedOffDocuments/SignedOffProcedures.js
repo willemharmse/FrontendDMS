@@ -106,7 +106,7 @@ const SignedOffProcedures = () => {
                 throw new Error(response.error || 'Failed to upload file');
             }
 
-            toast.success("Document Version Created in Ready For Sign Off", {
+            toast.success("Document Version Created in Pending Sign Off", {
                 closeButton: false,
                 autoClose: 1500,
                 style: {
@@ -298,7 +298,7 @@ const SignedOffProcedures = () => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/proceduresDMSInverted.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Signed Off Procedures"}</p>
+                        <img src={`${process.env.PUBLIC_URL}/proceduresDMSInverted.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Controlled Procedures"}</p>
                     </div>
                 </div>)
             }
@@ -328,7 +328,7 @@ const SignedOffProcedures = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Signed Off Procedures"}</label>
+                        <label className="risk-control-label">{"Controlled Procedures"}</label>
                         <FontAwesomeIcon icon={faColumns} className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
                         <FontAwesomeIcon
                             icon={faFilter}

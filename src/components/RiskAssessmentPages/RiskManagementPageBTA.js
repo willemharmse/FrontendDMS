@@ -70,7 +70,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please save a draft before sharing.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -107,7 +107,7 @@ const RiskManagementPageBTA = () => {
                 toast.clearWaitingQueue();
                 toast.success("Draft has been successfully updated", {
                     closeButton: false,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -119,7 +119,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.error("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -190,7 +190,7 @@ const RiskManagementPageBTA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -204,7 +204,7 @@ const RiskManagementPageBTA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -218,7 +218,7 @@ const RiskManagementPageBTA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -237,7 +237,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please load a draft before publishing.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -249,7 +249,7 @@ const RiskManagementPageBTA = () => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -519,7 +519,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.success("Undo successful!", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -529,7 +529,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("No changes to undo.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -552,13 +552,13 @@ const RiskManagementPageBTA = () => {
 
             toast.success("Redo successful!", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         } else {
             toast.warn("Nothing to redo.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         }
@@ -642,7 +642,7 @@ const RiskManagementPageBTA = () => {
             if (!isValid) {
                 toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -759,7 +759,7 @@ const RiskManagementPageBTA = () => {
         ) {
             toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -778,7 +778,7 @@ const RiskManagementPageBTA = () => {
         if (formData.ibra.length === 1) {
             toast.error("You must keep at least one row.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -789,7 +789,7 @@ const RiskManagementPageBTA = () => {
         if (updatedRows.length === formData.ibra.length) {
             toast.error("Row not found.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -859,7 +859,7 @@ const RiskManagementPageBTA = () => {
         if (formData.attendance.length === 1) {
             toast.error(`You must have at least one attendance row.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -915,7 +915,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees names must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -928,7 +928,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees company/site must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -941,7 +941,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees designation must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -993,7 +993,7 @@ const RiskManagementPageBTA = () => {
             toast.clearWaitingQueue();
             toast.warn("All IBRA fields must have a value.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -1051,7 +1051,7 @@ const RiskManagementPageBTA = () => {
 
             toast.success(`Document published`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1141,7 +1141,7 @@ const RiskManagementPageBTA = () => {
                         <FontAwesomeIcon icon={faCaretLeft} />
                     </div>
                     <div className="sidebar-logo-um">
-                        <img src={`${process.env.PUBLIC_URL}/CH_Logo.svg`} alt="Logo" className="logo-img-um" onClick={() => navigate('/FrontendDMS/home')} title="Home" />
+                        <img src="/CH_Logo.svg" alt="Logo" className="logo-img-um" onClick={() => navigate('/home')} title="Home" />
                         <p className="logo-text-um">Risk Management</p>
                     </div>
 
@@ -1162,17 +1162,17 @@ const RiskManagementPageBTA = () => {
                         </button>
 
                         {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
-                            <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
+                            <button className="but-um" onClick={() => navigate('/generatedIBRADocs')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-icon" />
-                                    <span className="button-text">Ready for Approval</span>
+                                    <span className="button-text">Pending Sign Off</span>
                                 </div>
                             </button>
                         )}
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/bta2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <img src={"/bta2.svg"} alt="Control Attributes" className="icon-risk-rm" />
                         <p className="logo-text-dm-fi">{riskType}</p>
                     </div>
                 </div>

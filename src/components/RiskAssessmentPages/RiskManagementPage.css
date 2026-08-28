@@ -327,7 +327,7 @@
     field-sizing: content;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    word-break: break-all;
+    word-break: normal !important;
 }
 
 .aim-textarea-risk-create {
@@ -478,6 +478,19 @@
     white-space: pre-wrap;
 }
 
+.aim-bullet-textarea-risk-create-ibra {
+    position: relative;
+    width: calc(100% - 59px);
+    padding: 10px 10px 10px 10px !important;
+    resize: none;
+    field-sizing: content;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.3s ease-in-out;
+    outline: none;
+    white-space: pre-wrap;
+}
 
 .aim-textarea-risk-create-textarea-nopads {
     position: relative;
@@ -490,7 +503,6 @@
     font-size: 14px;
     transition: border 0.3s ease-in-out;
     outline: none;
-    word-break: break-all;
     white-space: pre-wrap;
 }
 
@@ -614,7 +626,6 @@
     overflow: hidden;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    word-break: break-all;
 }
 
 .aim-textarea-risk-scope-2 {

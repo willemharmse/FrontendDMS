@@ -9,6 +9,7 @@ import ActionFieldFileValue from "./ActionFieldFileValue";
 import CorrectiveActionPreview from "./CorrectiveActionPreview";
 import AdditionalCommentsPreview from "./AdditionalCommentsPreview";
 import ScheduleTaskPopupFTS from "./ScheduleTaskPopupFTS";
+import ResponsibleSignaturePreview from "./ResponsibleSignaturePreview";
 
 // ---------------------------------------------------------------------------
 // ActionFieldsPreviewBox
@@ -155,6 +156,7 @@ const ActionFieldsPreviewBox = ({
     workOrderTitle = "",
     priority = "",
     workOrderAttachments = [],
+    responsibleSignature = null,
     onScheduleTask = () => { },
     onTaskAdded = () => { },
 }) => {
@@ -253,102 +255,127 @@ const ActionFieldsPreviewBox = ({
                 )}
 
                 {(!isCollapsed) && (
-                    actionFields.length > 0 ? (
-                        <table className="table-borders-jra-info" style={{ tableLayout: "fixed", width: "100%" }}>
-                            <colgroup>
-                                <col style={{ width: "20%" }} />
-                                <col />
-                                {showStatusColumn && <col style={{ width: "130px" }} />}
-                                {showScheduleColumn && <col style={{ width: "140px" }} />}
-                            </colgroup>
-                            <tbody>
-                                {actionFields.map((field, index) => {
-                                    const isFileField = field.type === "photo" || field.type === "file";
-                                    const showButton = showScheduleColumn && needsScheduleButton(field);
-                                    return (
-                                        <tr key={field.id}>
-                                            <th scope="row" className="jra-info-table-header" style={{ whiteSpace: "pre-wrap" }}>
-                                                {index + 1}. {field.title}
-                                                {field.required && (
-                                                    <span className="required-field" title="Required"> *</span>
-                                                )}
-                                                {field.hazardClass && (
-                                                    <div
-                                                        className="font-fam"
-                                                        style={{ color: "#888", fontStyle: "italic", fontWeight: "normal", fontSize: "12px" }}
-                                                    >
-                                                        Hazard Class: {field.hazardClass}
-                                                    </div>
-                                                )}
-                                            </th>
-                                            <td>
-                                                {isFileField ? (
-                                                    <ActionFieldFileValue taskId={taskId} field={field} />
-                                                ) : (
-                                                    <ActionFieldControl
-                                                        field={field}
-                                                        value={field.value}
-                                                        onChange={() => { }}
-                                                        readOnly={true}
-                                                    />
-                                                )}
-                                                <CorrectiveActionPreview taskId={taskId} field={field} />
-                                                <AdditionalCommentsPreview field={field} />
-                                            </td>
-                                            {showStatusColumn && (
-                                                <td
-                                                    className={`font-fam ${STATUS_STYLES[getDisplayStatus(field)] || ""}`}
-                                                    style={{
-                                                        textAlign: "center",
-                                                        alignContent: "center",
-                                                        fontWeight: "normal",
-                                                        ...(hasImplementedCorrectiveAction(field)
-                                                            ? { backgroundColor: "#e0e0e0" }
-                                                            : {}),
-                                                    }}
+                    <table className="table-borders-jra-info" style={{ tableLayout: "fixed", width: "100%" }}>
+                        <colgroup>
+                            <col style={{ width: "20%" }} />
+                            <col />
+                            {showStatusColumn && <col style={{ width: "130px" }} />}
+                            {showScheduleColumn && <col style={{ width: "140px" }} />}
+                        </colgroup>
+                        <tbody>
+                            {actionFields.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={2 + (showStatusColumn ? 1 : 0) + (showScheduleColumn ? 1 : 0)}
+                                        className="font-fam"
+                                        style={{ textAlign: "center", padding: "10px", color: "#888" }}
+                                    >
+                                        No action fields have been added yet.
+                                    </td>
+                                </tr>
+                            )}
+                            {actionFields.map((field, index) => {
+                                const isFileField = field.type === "photo" || field.type === "file";
+                                const showButton = showScheduleColumn && needsScheduleButton(field);
+                                return (
+                                    <tr key={field.id}>
+                                        <th scope="row" className="jra-info-table-header" style={{ whiteSpace: "pre-wrap" }}>
+                                            {index + 1}. {field.title}
+                                            {field.required && (
+                                                <span className="required-field" title="Required"> *</span>
+                                            )}
+                                            {field.hazardClass && (
+                                                <div
+                                                    className="font-fam"
+                                                    style={{ color: "#888", fontStyle: "italic", fontWeight: "normal", fontSize: "12px" }}
                                                 >
-                                                    {getDisplayStatus(field)}
-                                                </td>
+                                                    Hazard Class: {field.hazardClass}
+                                                </div>
                                             )}
-                                            {showScheduleColumn && (
-                                                <td style={{ textAlign: "center", alignContent: "center" }}>
-                                                    {showButton && (
-                                                        <button
-                                                            type="button"
-                                                            className="generate-button font-fam"
-                                                            onClick={() => openScheduleTaskPopup(field)}
-                                                            style={{
-                                                                width: "110px",
-                                                                padding: "10px 0",
-                                                                fontSize: "14px",
-                                                                cursor: "pointer",
-                                                                whiteSpace: "nowrap",
-                                                                marginTop: "auto",
-                                                                marginBottom: "auto"
-                                                            }}
-                                                        >
-                                                            Assign Task
-                                                        </button>
-                                                    )}
-                                                    {!showButton && needsScheduling(field) && hasScheduledTask(field) && (
-                                                        <span className="font-fam" style={{ fontSize: "14px", color: "black" }}>
-                                                            Task Assigned
-                                                        </span>
-                                                    )}
-                                                </td>
+                                        </th>
+                                        <td>
+                                            {isFileField ? (
+                                                <ActionFieldFileValue taskId={taskId} field={field} />
+                                            ) : (
+                                                <ActionFieldControl
+                                                    field={field}
+                                                    value={field.value}
+                                                    onChange={() => { }}
+                                                    readOnly={true}
+                                                />
                                             )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="font-fam" style={{ textAlign: "center", padding: "10px", color: "#888" }}>
-                            No action fields have been added yet.
-                        </p>
-                    )
+                                            <CorrectiveActionPreview taskId={taskId} field={field} />
+                                            <AdditionalCommentsPreview field={field} />
+                                        </td>
+                                        {showStatusColumn && (
+                                            <td
+                                                className={`font-fam ${STATUS_STYLES[getDisplayStatus(field)] || ""}`}
+                                                style={{
+                                                    textAlign: "center",
+                                                    alignContent: "center",
+                                                    fontWeight: "normal",
+                                                    ...(hasImplementedCorrectiveAction(field)
+                                                        ? { backgroundColor: "#e0e0e0" }
+                                                        : {}),
+                                                }}
+                                            >
+                                                {getDisplayStatus(field)}
+                                            </td>
+                                        )}
+                                        {showScheduleColumn && (
+                                            <td style={{ textAlign: "center", alignContent: "center" }}>
+                                                {showButton && (
+                                                    <button
+                                                        type="button"
+                                                        className="generate-button font-fam"
+                                                        onClick={() => openScheduleTaskPopup(field)}
+                                                        style={{
+                                                            width: "110px",
+                                                            padding: "10px 0",
+                                                            fontSize: "14px",
+                                                            cursor: "pointer",
+                                                            whiteSpace: "nowrap",
+                                                            marginTop: "auto",
+                                                            marginBottom: "auto"
+                                                        }}
+                                                    >
+                                                        Assign Task
+                                                    </button>
+                                                )}
+                                                {!showButton && needsScheduling(field) && hasScheduledTask(field) && (
+                                                    <span className="font-fam" style={{ fontSize: "14px", color: "black" }}>
+                                                        Task Assigned
+                                                    </span>
+                                                )}
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+
+                            {/* Responsible person's sign-off - always the
+                                final row, regardless of how many action
+                                fields there are (a work order can't be
+                                submitted without one - see PUT
+                                :id/populate). Unlike every row above, this
+                                one carries no number: it isn't an action
+                                field, just a fixed label. The value cell
+                                spans whatever status/schedule columns exist
+                                so the signature content isn't squeezed into
+                                the narrow value column alone. */}
+                            <tr>
+                                <th scope="row" className="jra-info-table-header" style={{ whiteSpace: "pre-wrap" }}>
+                                    Responsible Person Signature
+                                </th>
+                                <td colSpan={1 + (showStatusColumn ? 1 : 0) + (showScheduleColumn ? 1 : 0)}>
+                                    <ResponsibleSignaturePreview signature={responsibleSignature} />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 )}
             </div>
+
             {scheduleTaskPopup.open && (
                 <ScheduleTaskPopupFTS
                     onClose={closeScheduleTaskPopup}

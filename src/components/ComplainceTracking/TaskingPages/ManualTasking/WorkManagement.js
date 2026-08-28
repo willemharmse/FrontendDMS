@@ -15,7 +15,8 @@ import {
     faPen,
     faPlusCircle,
     faCircle,
-    faEye
+    faEye,
+    faFileLines
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import { saveAs } from "file-saver";
@@ -43,6 +44,7 @@ import CloseAllocatedWorkOrder from "../WorkOrderManagementPopups/CloseAllocated
 import ReopenAllocatedWorkOrder from "../WorkOrderManagementPopups/ReopenAllocatedWorkOrder";
 import AcceptWorkOrderPopup from "../WorkOrderManagementPopups/AcceptWorkOrderPopup";
 import DelegateWorkOrderPopup from "../WorkOrderManagementPopups/DelegateWorkOrderPopup";
+import MigrateWorkOrder from "../WorkOrderManagementPopups/MigrateWorkOrder";
 // NOTE: WorkOrderInfoPreview (and the two components it uses,
 // ActionFieldsPreviewBox + ActionFieldFileValue) need to live next to
 // ActionFieldsInfoBox/ActionFieldControl/TemplatePreview, since
@@ -84,6 +86,10 @@ const ALL_COLUMNS = [
     { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true },
     { id: "completionChain", title: "Completion Chain", views: "both", collapsed: false },
     { id: "closeOutComments", title: "Close Out Comments", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "ppe", class: `task-grey2`, title: "PPE", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "handTools", class: `task-grey2`, title: "Hand Tools", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "materials", class: `task-grey2`, title: "Materials", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "hazards", class: `task-grey2`, title: "Hazards", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "action", title: "Action", views: "both", collapsed: false },
 ];
 
@@ -151,6 +157,10 @@ const DEFAULT_COLUMN_WIDTHS = {
     frequency: 70,
     workOrderType: 90,
     workOrderBasis: 100,
+    ppe: 160,
+    handTools: 160,
+    materials: 160,
+    hazards: 140,
     action: 90,
 };
 
@@ -185,6 +195,10 @@ const COLUMN_SIZE_LIMITS = {
     frequency: { min: 50, max: 260 },
     workOrderType: { min: 70, max: 300 },
     workOrderBasis: { min: 70, max: 300 },
+    ppe: { min: 120, max: 420 },
+    handTools: { min: 120, max: 420 },
+    materials: { min: 120, max: 420 },
+    hazards: { min: 100, max: 300 },
 };
 
 const getColumnsForView = (view) => {
@@ -252,6 +266,19 @@ const normalizeTask = (task) => ({
     attachments: Array.isArray(task?.attachments)
         ? task.attachments.map(f => f?.fileName || f?.name || f)
         : [],
+    // ── PPE / Hand Tools / Materials — flattened to plain string lists for
+    // the bullet-list cell renderers. Raw hazardsControls kept for a future
+    // "Download Hazard table" export.
+    ppe: Array.isArray(task?.PPEItems)
+        ? task.PPEItems.map(i => i?.ppe).filter(Boolean)
+        : [],
+    handTools: Array.isArray(task?.HandTools)
+        ? task.HandTools.map(i => i?.tool).filter(Boolean)
+        : [],
+    materials: Array.isArray(task?.Materials)
+        ? task.Materials.map(i => i?.mat).filter(Boolean)
+        : [],
+    _rawHazardsControls: Array.isArray(task?.hazardsControls) ? task.hazardsControls : [],
     // allocatedByName used for display: null allocatedBy → "System"
     allocatedByName: task?.allocatedBy?.username || task?.allocatedBy || "",
     closeOutComments: task?.closeOutComments || "",
@@ -338,6 +365,7 @@ const WorkManagement = () => {
     const [filterMenu, setFilterMenu] = useState({ isOpen: false, anchorRect: null });
     const [acceptTaskPopup, setAcceptTaskPopup] = useState({ open: false, task: null });
     const [delegateTaskPopup, setDelegateTaskPopup] = useState({ open: false, task: null });
+    const [reassignWorkOrderPopup, setReassignWorkOrderPopup] = useState({ open: false, task: null });
     const [previewTaskPopup, setPreviewTaskPopup] = useState({ open: false, task: null });
     const [hoveredTaskId, setHoveredTaskId] = useState(null);
     const [dueDateVal, setDueDateVal] = useState(30);
@@ -580,17 +608,23 @@ const WorkManagement = () => {
         }
     };
 
-    const handleCloseTask = async (taskId, closeOutComments = "") => {
+    const handleCloseTask = async (taskId, closeOutPayload = {}) => {
         if (closingTaskIds.has(taskId)) return;
         setClosingTaskIds(prev => new Set(prev).add(taskId));
         // Find the task to determine its source
         const task = tasks.find(t => t._id === taskId);
+        // closeOutPayload comes straight from CloseAllocatedWorkOrder's onConfirm:
+        // { closeOutComments, accountableSignature: { date, signature } }.
+        // No username is included here - the server always stamps that (and
+        // re-stamps the date) from the authenticated user, never from the
+        // request body, so it can't be spoofed as someone else.
+        const { closeOutComments = "", accountableSignature } = closeOutPayload;
         try {
             const storedToken = localStorage.getItem("token");
             const response = await fetch(`${taskApiBase()}/${taskId}/close`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${storedToken}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ closeOutComments }),
+                body: JSON.stringify({ closeOutComments, accountableSignature }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data?.error || "Failed to close task");
@@ -693,6 +727,30 @@ const WorkManagement = () => {
         }
     };
 
+    const handleDownloadHazardTable = async (task) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/workOrderTasks/${task._id}/hazards-pdf`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (!response.ok) throw new Error("Failed to download hazard table");
+
+            const blob = await response.blob();
+            const fileName = `ComplianceHub_Hazards_${(task.taskTitle || "task")
+                .replace(/[^a-z0-9]/gi, "_")
+                .toLowerCase()}.pdf`;
+
+            saveAs(blob, fileName);
+        } catch (err) {
+            toast.dismiss();
+            toast.clearWaitingQueue();
+            toast.error("Failed to download hazard table. Please try again.", { autoClose: 3000, closeButton: false });
+        }
+    };
+
     const handleDownloadJobCard = async (task) => {
         try {
             const token = localStorage.getItem("token");
@@ -721,6 +779,81 @@ const WorkManagement = () => {
         } catch (err) {
             console.error(err);
             toast.error("Failed to download job card", {
+                autoClose: 3000,
+                closeButton: false,
+            });
+        }
+    };
+
+    // ── Work Order Summary PDF — separate from the job card above; shows
+    // Work Order Management info (Accountable/Responsible Party, Due Date,
+    // Priority) plus Status and Closeout Status. ─────────────────────────────
+    const handleDownloadWorkOrderSummary = async (task) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/workOrderTasks/${task._id}/pdf`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to download work order summary");
+            }
+
+            const blob = await response.blob();
+
+            const fileName = `ComplianceHub_${(task.taskTitle || "work_order")
+                .replace(/[^a-z0-9]/gi, "_")
+                .toLowerCase()}.pdf`;
+
+            saveAs(blob, fileName);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to download work order summary", {
+                autoClose: 3000,
+                closeButton: false,
+            });
+        }
+    };
+
+    // ── Work Order Results PDF — separate from the summary above; used for
+    // the "Work Orders Assigned" (allocator) and "Closed Out Work Orders"
+    // views, where what's needed is what was actually submitted for each
+    // action field, not the blank template. Hits GET /:id/results-pdf. ───────
+    const handleDownloadWorkOrderResults = async (task) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/workOrderTasks/${task._id}/results-pdf`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to download work order results");
+            }
+
+            const blob = await response.blob();
+
+            const fileName = `ComplianceHub_${(task.taskTitle || "work_order")
+                .replace(/[^a-z0-9]/gi, "_")
+                .toLowerCase()}_results.pdf`;
+
+            saveAs(blob, fileName);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to download work order results", {
                 autoClose: 3000,
                 closeButton: false,
             });
@@ -790,6 +923,10 @@ const WorkManagement = () => {
         if (colId === "status") return [getStatusDisplay(row.status)];
         if (colId === "closeStatus") return [row.closeStatus ? "Closed Out" : "Open"];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
+        if (colId === "ppe") return Array.isArray(row.ppe) && row.ppe.length > 0 ? row.ppe : ["-"];
+        if (colId === "handTools") return Array.isArray(row.handTools) && row.handTools.length > 0 ? row.handTools : ["-"];
+        if (colId === "materials") return Array.isArray(row.materials) && row.materials.length > 0 ? row.materials : ["-"];
+        if (colId === "hazards") return [Array.isArray(row._rawHazardsControls) && row._rawHazardsControls.length > 0 ? "Has Hazards" : "N/A"];
         // allocatedBy: null becomes "System" for filtering
         if (colId === "allocatedBy") return [row.allocatedBy || "System"];
         // completionChain: expose each individual date (sent/accepted/executed/closed)
@@ -1141,6 +1278,10 @@ const WorkManagement = () => {
             completionDate: { width: 18, centre: true, headerGroup: "navy" },
             closeStatus: { width: 16, centre: true, headerGroup: "navy" },
             closeOutComments: { width: 35, centre: false, headerGroup: "navy" },
+            ppe: { width: 28, centre: false, headerGroup: "grey2" },
+            handTools: { width: 28, centre: false, headerGroup: "grey2" },
+            materials: { width: 28, centre: false, headerGroup: "grey2" },
+            hazards: { width: 22, centre: false, headerGroup: "grey2" },
         };
 
         const HEADER_BORDER = {
@@ -1278,6 +1419,10 @@ const WorkManagement = () => {
                     if (hdr.id === "nr") val = String(rowIdx + 1);
                     else if (hdr.id === "closeStatus") val = row.closeStatus ? "Closed Out" : "Open";
                     else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
+                    else if (hdr.id === "ppe") val = Array.isArray(row.ppe) && row.ppe.length > 0 ? row.ppe.join("\n") : "-";
+                    else if (hdr.id === "handTools") val = Array.isArray(row.handTools) && row.handTools.length > 0 ? row.handTools.join("\n") : "-";
+                    else if (hdr.id === "materials") val = Array.isArray(row.materials) && row.materials.length > 0 ? row.materials.join("\n") : "-";
+                    else if (hdr.id === "hazards") val = Array.isArray(row._rawHazardsControls) && row._rawHazardsControls.length > 0 ? "Has Hazards" : "N/A";
                     else if (hdr.id === "workOrderBasis") val = getWorkOrderBasisDisplay(row.workOrderBasis);
                     else if (hdr.id === "status") {
                         val = getStatusDisplay(row.status);
@@ -1303,6 +1448,14 @@ const WorkManagement = () => {
                     } else if (hdr.id === "attachments") {
                         const a = row.attachments;
                         value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
+                    } else if (hdr.id === "ppe") {
+                        value = Array.isArray(row.ppe) && row.ppe.length > 0 ? row.ppe.join("\n") : "-";
+                    } else if (hdr.id === "handTools") {
+                        value = Array.isArray(row.handTools) && row.handTools.length > 0 ? row.handTools.join("\n") : "-";
+                    } else if (hdr.id === "materials") {
+                        value = Array.isArray(row.materials) && row.materials.length > 0 ? row.materials.join("\n") : "-";
+                    } else if (hdr.id === "hazards") {
+                        value = Array.isArray(row._rawHazardsControls) && row._rawHazardsControls.length > 0 ? "Has Hazards" : "N/A";
                     } else if (hdr.id === "workOrderBasis") {
                         value = getWorkOrderBasisDisplay(row.workOrderBasis);
                     } else {
@@ -1344,8 +1497,8 @@ const WorkManagement = () => {
         const due = new Date(dueDate);
         due.setHours(0, 0, 0, 0);
         const timeDiff = due - today;
-        if (timeDiff < 0) return "review-past";
-        if (timeDiff <= dueDateVal * 24 * 60 * 60 * 1000) return "review-past";
+        if (timeDiff < 0) return "review-past"; // actually overdue — red
+        if (timeDiff <= dueDateVal * 24 * 60 * 60 * 1000) return "review-soon"; // approaching — yellow
         return "";
     };
 
@@ -1356,10 +1509,20 @@ const WorkManagement = () => {
                 return <td key="nr" className="procCent" style={{ fontSize: "14px" }}>{index + 1}
                     {view === "allocator" ? (
                         <>
-                            {false && (<button type="button" className="rca-action-btn" title="Modify Allocated Work Order"
-                                onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
+                            <button type="button" className="rca-action-btn" title="Reassign Work Order"
+                                onClick={() => {
+                                    if (row.status === "Completed") {
+                                        toast.error("Submitted Tasks Cannot be reassigned", {
+                                            closeButton: false,
+                                            autoClose: 2000,
+                                            style: { textAlign: 'center' }
+                                        });
+                                        return;
+                                    }
+                                    setReassignWorkOrderPopup({ open: true, task: row });
+                                }}>
                                 <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
-                            </button>)}
+                            </button>
                         </>
                     ) : (
                         <>
@@ -1668,6 +1831,10 @@ const WorkManagement = () => {
                                         <FontAwesomeIcon icon={faEye} />
                                     </button>
                                 )}
+                                <button type="button" className="rca-action-btn" title="Download Work Order Summary"
+                                    style={{ marginLeft: "5px" }} onClick={() => handleDownloadWorkOrderResults(row)}>
+                                    <FontAwesomeIcon icon={faFilePdf} />
+                                </button>
                                 <button type="button" className="rca-action-btn" title="Delete Work Order"
                                     style={{ marginLeft: "5px" }} onClick={() => openDeleteTaskPopup(row)}>
                                     <FontAwesomeIcon icon={faTrash} />
@@ -1686,6 +1853,10 @@ const WorkManagement = () => {
                                         <FontAwesomeIcon icon={faFilePdf} />
                                     </button>
                                 )}
+                                <button type="button" className="rca-action-btn" title="Download Work Order Summary"
+                                    style={{ marginLeft: "5px" }} onClick={() => handleDownloadWorkOrderResults(row)}>
+                                    <FontAwesomeIcon icon={faFilePdf} />
+                                </button>
                             </>
                         ) : (
                             <>
@@ -1709,8 +1880,58 @@ const WorkManagement = () => {
                                 >
                                     <FontAwesomeIcon icon={faFilePdf} />
                                 </button>)}
+                                <button type="button" className="rca-action-btn" title="Download Work Order Summary"
+                                    style={{ marginLeft: "5px" }} onClick={() => handleDownloadWorkOrderSummary(row)}>
+                                    <FontAwesomeIcon icon={faFilePdf} />
+                                </button>
                             </>
                         )}
+                    </td>
+                );
+
+            case "ppe":
+                return (
+                    <td key="ppe" style={{ fontSize: "14px", textAlign: "left" }}>
+                        {Array.isArray(row.ppe) && row.ppe.length > 0 ? (
+                            <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                                {row.ppe.map((item, i) => <li key={`ppe-${i}`}>{item}</li>)}
+                            </ul>
+                        ) : <span>-</span>}
+                    </td>
+                );
+
+            case "handTools":
+                return (
+                    <td key="handTools" style={{ fontSize: "14px", textAlign: "left" }}>
+                        {Array.isArray(row.handTools) && row.handTools.length > 0 ? (
+                            <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                                {row.handTools.map((item, i) => <li key={`tool-${i}`}>{item}</li>)}
+                            </ul>
+                        ) : <span>-</span>}
+                    </td>
+                );
+
+            case "materials":
+                return (
+                    <td key="materials" style={{ fontSize: "14px", textAlign: "left" }}>
+                        {Array.isArray(row.materials) && row.materials.length > 0 ? (
+                            <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                                {row.materials.map((item, i) => <li key={`mat-${i}`}>{item}</li>)}
+                            </ul>
+                        ) : <span>-</span>}
+                    </td>
+                );
+
+            case "hazards":
+                return (
+                    <td key="hazards" style={{ fontSize: "14px" }}>
+                        {Array.isArray(row._rawHazardsControls) && row._rawHazardsControls.length > 0 ? (
+                            <button type="button" title="Click to download"
+                                onClick={() => handleDownloadHazardTable(row)}
+                                style={{ padding: 0, border: "none", background: "transparent", color: "#0B5ED7", textDecoration: "underline", cursor: "pointer", fontSize: "14px", textAlign: "left" }}>
+                                Download Hazard table
+                            </button>
+                        ) : <span>N/A</span>}
                     </td>
                 );
 
@@ -2073,7 +2294,7 @@ const WorkManagement = () => {
                 <CloseAllocatedWorkOrder
                     open={closeTaskPopup.open} taskName={closeTaskPopup.taskName}
                     onClose={closeCloseTaskPopup}
-                    onConfirm={(comments) => { handleCloseTask(closeTaskPopup.task._id, comments); closeCloseTaskPopup(); }}
+                    onConfirm={(closeOutPayload) => { handleCloseTask(closeTaskPopup.task._id, closeOutPayload); closeCloseTaskPopup(); }}
                 />
             )}
 
@@ -2133,6 +2354,14 @@ const WorkManagement = () => {
                         handleTaskDelegated(updatedTask);
                         setDelegateTaskPopup({ open: false, task: null });
                     }}
+                />
+            )}
+            {/* Reassign Work Order popup */}
+            {reassignWorkOrderPopup.open && (
+                <MigrateWorkOrder
+                    task={reassignWorkOrderPopup.task}
+                    onClose={() => setReassignWorkOrderPopup({ open: false, task: null })}
+                    onReassigned={fetchTasks}
                 />
             )}
             <ToastContainer />

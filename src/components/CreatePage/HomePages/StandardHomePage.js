@@ -75,12 +75,20 @@ const StandardHomePage = () => {
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/documentDevelopmentApprovals/standard")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval Standards</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/generatedStandardFiles")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off Standards</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off Standards</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffStandards")}>
@@ -88,7 +96,15 @@ const StandardHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off Standards<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled Standards<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/documentDevelopmentRevisions/standard")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Standards<br /></h3>
                         </>
                     </div>
                 </div>

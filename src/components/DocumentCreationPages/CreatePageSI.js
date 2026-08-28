@@ -399,7 +399,7 @@ const CreatePageSI = () => {
     if (!titleSet) {
       toast.warn("Please fill in at least the title field before saving.", {
         closeButton: false,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -415,6 +415,8 @@ const CreatePageSI = () => {
 
   const confirmSaveAs = async (newTitle) => {
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
+
     const newFormData = {
       ...formDataRef.current,
       title: newTitle,
@@ -478,7 +480,7 @@ const CreatePageSI = () => {
       toast.clearWaitingQueue();
       toast.warn("Please save a draft before sharing.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: {
           textAlign: 'center'
         }
@@ -718,7 +720,7 @@ const CreatePageSI = () => {
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
       return;
@@ -767,7 +769,7 @@ const CreatePageSI = () => {
       if (result?.ok) {
         toast.success("Draft has been successfully updated", {
           closeButton: true,
-          autoClose: 800,
+          autoClose: 1500,
           style: { textAlign: 'center' }
         });
       } else {
@@ -797,6 +799,8 @@ const CreatePageSI = () => {
     }
 
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
+
     const newFormData = {
       ...formDataRef.current,
       title: trimmedTitle,
@@ -845,9 +849,25 @@ const CreatePageSI = () => {
 
       const storedData = JSON.parse(storedString);
 
+      const storedOwnerId = Array.isArray(storedData.userIDs)
+        ? storedData.userIDs.find((entry) =>
+          entry &&
+          typeof entry === "object" &&
+          String(entry.role || "").toLowerCase().trim() === "owner"
+        )?.userId || null
+        : null;
+
+      const ownerId =
+        storedOwnerId ||
+        storedData.creator ||
+        storedData.userID ||
+        userIDRef.current;
+
+      draftOwnerIdRef.current = ownerId;
+
       const normalizedSharedUsers = normalizeSharedUsers(
         storedData.userIDs,
-        storedData.creator || userIDRef.current
+        ownerId
       );
 
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -866,9 +886,11 @@ const CreatePageSI = () => {
   };
 
   const saveDataOffline = async (id) => {
+    const ownerId = draftOwnerIdRef.current || userIDRef.current;
+
     const normalizedSharedUsers = normalizeSharedUsers(
       userIDsRef.current,
-      userIDRef.current
+      ownerId
     );
 
     const dataToStore = {
@@ -944,6 +966,10 @@ const CreatePageSI = () => {
         loadedIDRef.current = result.id;
       }
 
+      // Mark this as the latest persisted state so a follow-up
+      // back/home/refresh doesn't re-prompt for nothing.
+      isDirtyRef.current = false;
+
       return { ok: true, id: result.id };
     } catch (error) {
       console.error('Error saving data:', error);
@@ -953,9 +979,11 @@ const CreatePageSI = () => {
   };
 
   const updateData = async (selectedUserIDs) => {
+    const ownerId = draftOwnerIdRef.current || userIDRef.current;
+
     const normalizedSharedUsers = normalizeSharedUsers(
       selectedUserIDs,
-      userIDRef.current
+      ownerId
     );
 
     const dataToStore = {
@@ -983,9 +1011,13 @@ const CreatePageSI = () => {
       }
 
       if (result.formData) {
+        suppressDirtyRef.current = true;
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+      // Mark this as the latest persisted state (covers both manual
+      // saves and auto-saves, since both funnel through updateData).
+      isDirtyRef.current = false;
 
       setOfflineDraft(false);
       localStorage.removeItem("draftData");
@@ -1009,7 +1041,7 @@ const CreatePageSI = () => {
       if (!titleSet) {
         toast.error("Please fill in a title", {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -1029,7 +1061,7 @@ const CreatePageSI = () => {
       toast.clearWaitingQueue();
       toast.warn("Please load a draft before publishing.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1041,7 +1073,7 @@ const CreatePageSI = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1090,6 +1122,8 @@ const CreatePageSI = () => {
         storedData.userID ||
         userIDRef.current;
 
+      draftOwnerIdRef.current = ownerId;
+
       const normalizedSharedUsers = normalizeSharedUsers(
         storedData.userIDs,
         ownerId
@@ -1106,11 +1140,14 @@ const CreatePageSI = () => {
         aim: normalizePurposeBackground(rawForm.aim)
       };
 
+      suppressDirtyRef.current = true;
       setFormData(normalizedForm);
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+      // This is what's on the server right now, so nothing is "dirty" yet.
+      isDirtyRef.current = false;
 
       setReadOnly(readOnly);
       setOwner(isOwner)
@@ -1137,10 +1174,27 @@ const CreatePageSI = () => {
   };
 
   const formDataRef = useRef(formData);
+  // O(1) dirty flag: true once the user has actually edited formData since
+  // the last successful sync with the server (initial load, manual save,
+  // or auto-save). Checked as a plain ref read at navigation time.
+  const isDirtyRef = useRef(false);
+  // Set right before we overwrite formData ourselves (load / after a save)
+  // so the [formData] effect below knows to skip marking it dirty.
+  const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+  useEffect(() => {
+    if (suppressDirtyRef.current) {
+      suppressDirtyRef.current = false;
+      return;
+    }
+    isDirtyRef.current = true;
+  }, [formData]);
+
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
   const userIDsRef = useRef(userIDs);
   const userIDRef = useRef(userID);
+  const draftOwnerIdRef = useRef('');
 
   useEffect(() => {
     userIDRef.current = userID;
@@ -1256,7 +1310,7 @@ const CreatePageSI = () => {
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1266,7 +1320,7 @@ const CreatePageSI = () => {
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1289,13 +1343,13 @@ const CreatePageSI = () => {
 
       toast.success("Redo successful!", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     } else {
       toast.warn("Nothing to redo.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     }
@@ -1385,7 +1439,7 @@ const CreatePageSI = () => {
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -1453,7 +1507,7 @@ const CreatePageSI = () => {
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1531,7 +1585,7 @@ const CreatePageSI = () => {
 
       toast.success(`Document published`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1573,7 +1627,7 @@ const CreatePageSI = () => {
 
       toast.success(`Special Instruction Publishing Approval Started.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1599,7 +1653,7 @@ const CreatePageSI = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1637,7 +1691,7 @@ const CreatePageSI = () => {
 
       toast.success(`Special Instruction Successfully Approved.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1813,20 +1867,31 @@ const CreatePageSI = () => {
     setIsSaveConfirmOpen(true);
   };
 
-  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current && isDirtyRef.current;
+
+  // Skips the save-confirmation popup entirely: releases the lock (so the
+  // document isn't left checked out) and runs the pending navigation
+  // action directly. This is the "no save needed" / silent-no path.
+  const leaveWithoutPrompt = async (action) => {
+    await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
+    isDirtyRef.current = false;
+    action();
+  };
 
   const handleBack = () => {
-    if (!requiresSavePrompt()) { navigate(-1); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate(-1)); return; }
     openSaveConfirm("back", () => navigate(-1));
   };
 
   const handleHomeNav = () => {
-    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
     openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
   };
 
   const handleRefreshNav = () => {
-    if (!requiresSavePrompt()) { window.location.reload(); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => window.location.reload()); return; }
     openSaveConfirm("refresh", () => window.location.reload());
   };
 
@@ -1855,6 +1920,8 @@ const CreatePageSI = () => {
     await releaseLock();
 
     setTimeout(() => {
+      loadedIDRef.current = '';
+      setLoadedID('');
       setIsSaveConfirmOpen(false);
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
@@ -1863,6 +1930,8 @@ const CreatePageSI = () => {
 
   const handleBackDiscard = async () => {
     await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
     setIsSaveConfirmOpen(false);
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
@@ -1875,7 +1944,13 @@ const CreatePageSI = () => {
 
   useTauriCloseGuard(
     requiresSavePrompt,
-    (closeWindow) => openSaveConfirm("close", closeWindow)
+    (closeWindow) => openSaveConfirm("close", closeWindow),
+    {
+      // Even when there's nothing to save, a loaded draft still holds a
+      // server-side lock that must be released before the window closes.
+      shouldCleanup: () => !readOnly && !!loadedIDRef.current,
+      onSilentClose: (closeWindow) => { leaveWithoutPrompt(closeWindow); },
+    }
   );
 
   return (
@@ -1904,7 +1979,7 @@ const CreatePageSI = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedSpecialFiles')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Ready for Sign Off</span>
+                  <span className="button-text">Pending Sign Off</span>
                 </div>
               </button>
             )}
@@ -1912,7 +1987,7 @@ const CreatePageSI = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/signedOffSpecial')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Signed Off</span>
+                  <span className="button-text">Controlled</span>
                 </div>
               </button>
             )}

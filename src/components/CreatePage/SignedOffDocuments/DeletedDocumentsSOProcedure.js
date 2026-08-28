@@ -351,7 +351,7 @@ const DeletedDocumentsSOProcedure = () => {
                     </div>
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/proceduresDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Deleted Signed Off Procedures"}</p>
+                        <p className="logo-text-dm-fi">{"Deleted Controlled Procedures"}</p>
                     </div>
                 </div>
             )}
@@ -387,7 +387,7 @@ const DeletedDocumentsSOProcedure = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Deleted Signed Off Procedures"}</label>
+                        <label className="risk-control-label">{"Deleted Controlled Procedures"}</label>
                         <FontAwesomeIcon
                             icon={faFilter}
                             className={getFilterBtnClass()} // Calculated class (e.g., ibra4, ibra5, ibra6)

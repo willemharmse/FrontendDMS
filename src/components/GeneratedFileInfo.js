@@ -79,7 +79,7 @@ const GeneratedFileInfo = () => {
     const clearSearch = () => setSearchQuery("");
     const formatDate = (dateString) => { const date = new Date(dateString); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
     const getStatusClass = (s) => { switch (s?.toLowerCase()) { case 'published': return 'status-approved'; case 'in review': return 'status-pending'; default: return 'status-default'; } };
-    const getStatus = (s) => (s?.toLowerCase() === 'published' ? 'Ready for Sign Off' : s);
+    const getStatus = (s) => (s?.toLowerCase() === 'published' ? 'Pending Sign Off' : s);
 
     useEffect(() => { const t = localStorage.getItem('token'); if (t) { setToken(t); setUserID(jwtDecode(t).userId); } }, [navigate]);
     useEffect(() => { if (token) fetchFiles(); }, [token]);
@@ -283,7 +283,7 @@ const GeneratedFileInfo = () => {
                 <div className="top-section-um"><div className="burger-menu-icon-um"><FontAwesomeIcon onClick={() => navigate(-1)} icon={faArrowLeft} /></div><div className="um-input-container"><input className="search-input-um" type="text" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoComplete="off" />{searchQuery ? <i><FontAwesomeIcon icon={faX} onClick={clearSearch} className="icon-um-search" /></i> : <i><FontAwesomeIcon icon={faSearch} className="icon-um-search" /></i>}</div><div className={`info-box-fih`}>Number of Documents: {processedFiles.length}</div><div className="spacer"></div><TopBar /></div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Ready for Sign Off Procedures"}</label>
+                        <label className="risk-control-label">{"Pending Sign Off Procedures"}</label>
                         <FontAwesomeIcon icon={faColumns} className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
                         <FontAwesomeIcon
                             icon={faFilter}

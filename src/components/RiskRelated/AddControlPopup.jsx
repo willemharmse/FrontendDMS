@@ -170,7 +170,7 @@ const AddControlPopup = ({ onClose }) => {
 
             const { message } = res.data;
             toast.success(message || 'Control added successfully.', {
-                autoClose: 800,
+                autoClose: 1500,
                 closeButton: false
             });
 
@@ -346,7 +346,6 @@ const AddControlPopup = ({ onClose }) => {
                                     </div>
                                 </div>
                                 <div className="ibra-popup-page-column-half">
-
                                     <div className="ibra-popup-page-additional-row">
                                         <div className="ibra-popup-page-column-half">
                                             <div className="ibra-popup-page-additional-row">

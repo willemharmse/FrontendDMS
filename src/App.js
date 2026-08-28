@@ -230,6 +230,12 @@ import FTSCreatePageTemplatesReview from './components/FieldTracking/FTSCreatePa
 import FTSDeletedTemplateDraftsPage from './components/FieldTracking/FTSDeletedTemplateDraftsPage';
 import StandardFieldsFTS from './components/FieldTracking/StandardFieldsFTS';
 import SuggestedStandardFieldsFTS from './components/FieldTracking/SuggestedStandardFieldsFTS';
+import ApprovalsPage from './components/DocumentCreationPages/ApprovalsPage';
+import ApprovalsRiskPage from './components/RiskRelated/ApprovalsRiskPage';
+import InductionApprovalsPage from './components/VisitorsInduction/InductionCreation/InductionApprovalsPage';
+import OnlineTrainingApprovalsPage from './components/OnlineTrainingModule/OnlineTrainingApprovalsPage';
+import CreateRevisionPage from './components/DocumentCreationPages/CreateRevisionPage';
+import RiskRevisionPage from './components/RiskRelated/RiskRevisionPage';
 
 const AUTO_LOGOUT_TIME = 45 * 60 * 1000;
 const WARNING_TIME = 5 * 60 * 1000;
@@ -512,7 +518,6 @@ function App() {
         <Route path="FrontendDMS/tmsDash" element={<TMSMainDash />} />
         <Route path="FrontendDMS/infoTraining/:id" element={<TrainingInfoPage />} />
         <Route path="FrontendDMS/workManagement" element={<WorkManagement />} />
-
         <Route path="FrontendDMS/ftsHome" element={<FieldTemplateHomePage />} />
         <Route path="FrontendDMS/ftsDevelopHome" element={<FTSCreateHomePage />} />
         <Route path="FrontendDMS/ftsDrafts/:type" element={<FTSTemplatesDraftsPage />} />
@@ -527,6 +532,12 @@ function App() {
         <Route path="FrontendDMS/ftsDeletedTemplateDrafts/:type" element={<FTSDeletedTemplateDraftsPage />} />
         <Route path="FrontendDMS/standardFieldsFTS" element={<StandardFieldsFTS />} />
         <Route path="FrontendDMS/suggestedFields/:id" element={<SuggestedStandardFieldsFTS />} />
+        <Route path="FrontendDMS/documentDevelopmentApprovals/:type" element={<ApprovalsPage />} />
+        <Route path="FrontendDMS/riskManagementApprovals/:type" element={<ApprovalsRiskPage />} />
+        <Route path="FrontendDMS/inductionApprovals" element={<InductionApprovalsPage />} />
+        <Route path="FrontendDMS/onlineTrainingApprovals" element={<OnlineTrainingApprovalsPage />} />
+        <Route path="FrontendDMS/documentDevelopmentRevisions/:type" element={<CreateRevisionPage />} />
+        <Route path="FrontendDMS/riskManagementRevisions/:type" element={<RiskRevisionPage />} />
 
         {/* Mobile Routes */}
         <Route path='FrontendDMS/mobileLogin' element={!isMobile ? <Navigate to="FrontendDMS/" /> : <LoginPageMobile />} />

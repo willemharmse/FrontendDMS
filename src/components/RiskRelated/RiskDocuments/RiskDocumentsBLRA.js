@@ -161,7 +161,7 @@ const RiskDocumentsBLRA = () => {
 
     const getStatus = (status) => {
         if (!status) return "";
-        if (status.toLowerCase() === 'published') return 'Ready for Sign Off';
+        if (status.toLowerCase() === 'published') return 'Pending Sign Off';
         return status
     };
 
@@ -468,7 +468,7 @@ const RiskDocumentsBLRA = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/blra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Ready for Sign Off BLRAs"}</p>
+                        <p className="logo-text-dm-fi">{"Pending Sign Off BLRAs"}</p>
                     </div>
                 </div>
             )}
@@ -487,7 +487,7 @@ const RiskDocumentsBLRA = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Ready for Sign Off BLRAs"}</label>
+                        <label className="risk-control-label">{"Pending Sign Off BLRAs"}</label>
                         <FontAwesomeIcon icon={faColumns} title="Select Columns" className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
 
                         <FontAwesomeIcon

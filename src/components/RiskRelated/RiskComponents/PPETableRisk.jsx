@@ -93,6 +93,8 @@ const PPETableRisk = ({ collapsible = false, formData, setFormData, usedPPEOptio
                     : row
             ),
         }));
+
+        closeManagePopup();
     };
 
 

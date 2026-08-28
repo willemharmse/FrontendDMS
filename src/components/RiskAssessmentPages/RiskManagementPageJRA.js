@@ -216,7 +216,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.error("Please fill in at least the title field before saving.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -265,7 +265,7 @@ const RiskManagementPageJRA = () => {
             if (result?.ok) {
                 toast.success("Draft has been successfully updated", {
                     closeButton: true,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
             } else {
@@ -295,6 +295,8 @@ const RiskManagementPageJRA = () => {
         }
 
         const me = userIDRef.current;
+        draftOwnerIdRef.current = me;
+
         const newFormData = {
             ...formDataRef.current,
             title: trimmedTitle,
@@ -340,7 +342,7 @@ const RiskManagementPageJRA = () => {
         if (!titleSet) {
             toast.warn("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -353,6 +355,8 @@ const RiskManagementPageJRA = () => {
     const confirmSaveAs = async (newTitle) => {
         // apply the new title, clear loadedID, then save
         const me = userIDRef.current;
+        draftOwnerIdRef.current = me;
+
         const newFormData = {
             ...formDataRef.current,
             title: newTitle,
@@ -416,7 +420,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please save a draft before sharing.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -488,6 +492,8 @@ const RiskManagementPageJRA = () => {
     const saveData = async (overrideTitle = null, options = {}) => {
         const { skipFileUpload = false } = options;
 
+        draftOwnerIdRef.current = userIDRef.current;
+
         const normalizedSharedUsers = normalizeSharedUsers(
             userIDsRef.current,
             userIDRef.current
@@ -542,9 +548,13 @@ const RiskManagementPageJRA = () => {
             }
 
             if (result.formData) {
+                suppressDirtyRef.current = true;
                 setFormData(result.formData);
                 formDataRef.current = result.formData;
             }
+            // Mark this as the latest persisted state so a follow-up
+            // back/home/refresh doesn't re-prompt for nothing.
+            isDirtyRef.current = false;
 
             return { ok: true, id: result.id };
         } catch (error) {
@@ -558,7 +568,7 @@ const RiskManagementPageJRA = () => {
 
         const normalizedSharedUsers = normalizeSharedUsers(
             selectedUserIDs,
-            userIDRef.current
+            draftOwnerIdRef.current || userIDRef.current
         );
 
         const dataToStore = {
@@ -594,9 +604,13 @@ const RiskManagementPageJRA = () => {
             }
 
             if (result.formData) {
+                suppressDirtyRef.current = true;
                 setFormData(result.formData);
                 formDataRef.current = result.formData;
             }
+            // Mark this as the latest persisted state (covers both manual
+            // saves and auto-saves, since both funnel through updateData).
+            isDirtyRef.current = false;
 
             console.log(result.message);
             return { ok: true, ...result };
@@ -610,7 +624,7 @@ const RiskManagementPageJRA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -637,7 +651,7 @@ const RiskManagementPageJRA = () => {
             if (!titleSet) {
                 toast.error("Please fill in a title", {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -680,7 +694,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please load a draft before publishing.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -730,6 +744,8 @@ const RiskManagementPageJRA = () => {
                 storedData.userID ||
                 userIDRef.current;
 
+            draftOwnerIdRef.current = ownerId;
+
             const normalizedSharedUsers = normalizeSharedUsers(
                 storedData.userIDs,
                 ownerId
@@ -748,11 +764,18 @@ const RiskManagementPageJRA = () => {
             setInApproval(Boolean(data.statusApproval));
             setInReview(Boolean(data.statusReview));
 
+            // Suspend dirty tracking while the loaded JRA and its child tables
+            // hydrate/normalise their persisted state.
+            beginDirtyHydration();
             setFormData(storedData.formData || {});
-            setFormData(prev => ({ ...prev }));
+            // Do not force a second formData write here. The first setFormData
+            // already re-renders the page; a second write can consume the
+            // dirty-suppression flag and make a freshly loaded draft look edited.
             setTitleSet(true);
             loadedIDRef.current = loadID;
             setLoadedID(loadID);
+            // This is what's on the server right now, so nothing is "dirty" yet.
+            isDirtyRef.current = false;
             setCanRemove(canRemove);
             setReadOnly(readOnly);
             setOwner(isOwner)
@@ -963,6 +986,92 @@ const RiskManagementPageJRA = () => {
     }, [showSiteDropdown]);
 
     const formDataRef = useRef(formData);
+    // True only when persisted JRA content has changed since the last successful
+    // load/save. This is intentionally a ref so navigation/close checks are
+    // immediate and do not depend on a state re-render.
+    const isDirtyRef = useRef(false);
+
+    // One-shot suppression is still useful for a server response that replaces
+    // formData after save/update.
+    const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+    // JRA child tables initialise/normalise several persisted collections after
+    // a draft is loaded (PPE, tools, equipment, materials, etc.). Those updates
+    // are application hydration, not user edits. Keep dirty tracking suspended
+    // until the loaded JRA has been quiet for a short period. Each automatic
+    // persisted-state change during hydration restarts the quiet-period timer.
+    const dirtyHydrationRef = useRef(false);
+    const dirtyHydrationTimerRef = useRef(null);
+
+    const finishDirtyHydrationAfterQuietPeriod = () => {
+        if (dirtyHydrationTimerRef.current) {
+            clearTimeout(dirtyHydrationTimerRef.current);
+        }
+
+        dirtyHydrationTimerRef.current = setTimeout(() => {
+            dirtyHydrationRef.current = false;
+            suppressDirtyRef.current = false;
+            isDirtyRef.current = false;
+            dirtyHydrationTimerRef.current = null;
+        }, 250);
+    };
+
+    const beginDirtyHydration = () => {
+        dirtyHydrationRef.current = true;
+        suppressDirtyRef.current = true;
+        isDirtyRef.current = false;
+        finishDirtyHydrationAfterQuietPeriod();
+    };
+
+    // If the user starts editing while the JRA is still in its hydration window,
+    // immediately end the suppression so their edit is never lost. Native input
+    // and change events cover text fields, selects, dates, checkboxes, etc.
+    const markUserEdit = () => {
+        if (readOnlyRef.current) return;
+
+        if (dirtyHydrationTimerRef.current) {
+            clearTimeout(dirtyHydrationTimerRef.current);
+            dirtyHydrationTimerRef.current = null;
+        }
+
+        dirtyHydrationRef.current = false;
+        suppressDirtyRef.current = false;
+        isDirtyRef.current = true;
+    };
+
+    useEffect(() => {
+        return () => {
+            if (dirtyHydrationTimerRef.current) {
+                clearTimeout(dirtyHydrationTimerRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (dirtyHydrationRef.current) {
+            // Automatic JRA child-component normalisation can arrive in more
+            // than one render. Wait until those persisted updates have settled.
+            finishDirtyHydrationAfterQuietPeriod();
+            return;
+        }
+
+        if (suppressDirtyRef.current) {
+            suppressDirtyRef.current = false;
+            return;
+        }
+
+        isDirtyRef.current = true;
+    }, [
+        formData,
+        usedAbbrCodes,
+        usedTermCodes,
+        usedPPEOptions,
+        usedHandTools,
+        usedEquipment,
+        usedMobileMachine,
+        usedMaterials
+    ]);
+
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
     const usedTermCodesRef = useRef(usedTermCodes);
     const usedPPEOptionsRef = useRef(usedPPEOptions);
@@ -972,6 +1081,7 @@ const RiskManagementPageJRA = () => {
     const usedMaterialsRef = useRef(usedMaterials);
     const userIDsRef = useRef(userIDs);
     const userIDRef = useRef(userID);
+    const draftOwnerIdRef = useRef('');
     const readOnlyRef = useRef(readOnly);
 
     useEffect(() => {
@@ -1124,7 +1234,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.success("Undo successful!", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1134,7 +1244,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("No changes to undo.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1162,13 +1272,13 @@ const RiskManagementPageJRA = () => {
 
             toast.success("Redo successful!", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         } else {
             toast.warn("Nothing to redo.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         }
@@ -1277,7 +1387,7 @@ const RiskManagementPageJRA = () => {
             if (!isValid) {
                 toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -1380,7 +1490,7 @@ const RiskManagementPageJRA = () => {
         ) {
             toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1400,7 +1510,7 @@ const RiskManagementPageJRA = () => {
         if (formData.attendance.length === 1) {
             toast.error(`You must have at least one attendance row.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1456,7 +1566,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees names must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1469,7 +1579,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees company/site must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1482,7 +1592,7 @@ const RiskManagementPageJRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees designation must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1546,7 +1656,7 @@ const RiskManagementPageJRA = () => {
 
             toast.success(`Document published`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1592,7 +1702,7 @@ const RiskManagementPageJRA = () => {
 
             toast.success(`JRA Publishing Approval Started.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1624,7 +1734,7 @@ const RiskManagementPageJRA = () => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1657,7 +1767,7 @@ const RiskManagementPageJRA = () => {
 
             toast.success(`JRA Successfully Approved.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1718,7 +1828,7 @@ const RiskManagementPageJRA = () => {
             console.error("Error removing document from the approval process:", error);
             toast.error("Failed to remove document from the approval process", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -1769,27 +1879,39 @@ const RiskManagementPageJRA = () => {
         setIsSaveConfirmOpen(true);
     };
 
-    const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+    const requiresSavePrompt = () =>
+        !readOnlyRef.current && !!loadedIDRef.current && isDirtyRef.current;
+
+    // Skips the save-confirmation popup entirely: releases the lock (so the
+    // document isn't left checked out) and runs the pending navigation
+    // action directly. This is the "no save needed" / silent-no path.
+    const leaveWithoutPrompt = async (action) => {
+        await releaseLock();
+        loadedIDRef.current = '';
+        setLoadedID('');
+        isDirtyRef.current = false;
+        action();
+    };
 
     const handleBack = () => {
-        if (!requiresSavePrompt()) { navigate(-1); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate(-1)); return; }
         openSaveConfirm("back", () => navigate(-1));
     };
 
     const handleHomeNav = () => {
-        if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
         openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
     };
 
     const handleRefreshNav = () => {
-        if (!requiresSavePrompt()) { window.location.reload(); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => window.location.reload()); return; }
         openSaveConfirm("refresh", () => window.location.reload());
     };
 
     const handleBackSaveConfirm = async () => {
         const result = await updateData(userIDsRef.current);
 
-        if (!result) {
+        if (!result?.ok) {
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.error("Failed to save draft.", {
@@ -1835,11 +1957,21 @@ const RiskManagementPageJRA = () => {
 
     useTauriCloseGuard(
         requiresSavePrompt,
-        (closeWindow) => openSaveConfirm("close", closeWindow)
+        (closeWindow) => openSaveConfirm("close", closeWindow),
+        {
+            // Even when there's nothing to save, a loaded draft still holds a
+            // server-side lock that must be released before the window closes.
+            shouldCleanup: () => !readOnlyRef.current && !!loadedIDRef.current,
+            onSilentClose: (closeWindow) => { leaveWithoutPrompt(closeWindow); },
+        }
     );
 
     return (
-        <div className="risk-create-container">
+        <div
+            className="risk-create-container"
+            onInputCapture={markUserEdit}
+            onChangeCapture={markUserEdit}
+        >
             {isSidebarVisible && (
                 <div className="sidebar-um">
                     <div className="sidebar-toggle-icon" title="Hide Sidebar" onClick={() => setIsSidebarVisible(false)}>
@@ -1865,16 +1997,16 @@ const RiskManagementPageJRA = () => {
                             <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedJRADocs')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                                    <span className="button-text">Ready for Sign Off</span>
+                                    <span className="button-text">Pending Sign Off</span>
                                 </div>
                             </button>
                         )}
 
                         {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
-                            <button className="but-um" onClick={() => navigate('/FrontendDMS/signedOffJRA')}>
+                            <button className="but-um" onClick={() => navigate('/signedOffJRA')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                                    <span className="button-text">Signed Off</span>
+                                    <span className="button-text">Controlled</span>
                                 </div>
                             </button>
                         )}
@@ -1889,7 +2021,7 @@ const RiskManagementPageJRA = () => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/jra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
+                        <img src={"/jra2.svg"} alt="Control Attributes" className="icon-risk-rm" />
                         <p className="logo-text-dm-fi">{riskType}</p>
                     </div>
                 </div>

@@ -199,7 +199,7 @@ const CreatePageStandards = () => {
     if (!titleSet) {
       toast.warn("Please fill in at least the title field before saving.", {
         closeButton: false,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -216,6 +216,8 @@ const CreatePageStandards = () => {
   const confirmSaveAs = async (newTitle) => {
     // apply the new title, clear loadedID, then save
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
+
     const newFormData = {
       ...formDataRef.current,
       title: newTitle,
@@ -279,7 +281,7 @@ const CreatePageStandards = () => {
       toast.clearWaitingQueue();
       toast.warn("Please save a draft before sharing.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: {
           textAlign: 'center'
         }
@@ -300,7 +302,7 @@ const CreatePageStandards = () => {
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
       return;
@@ -349,7 +351,7 @@ const CreatePageStandards = () => {
       if (result?.ok) {
         toast.success("Draft has been successfully updated", {
           closeButton: true,
-          autoClose: 800,
+          autoClose: 1500,
           style: { textAlign: 'center' }
         });
       } else {
@@ -379,6 +381,8 @@ const CreatePageStandards = () => {
     }
 
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
+
     const newFormData = {
       ...formDataRef.current,
       title: trimmedTitle,
@@ -421,9 +425,11 @@ const CreatePageStandards = () => {
   };
 
   const saveDataOffline = async (id) => {
+    const ownerId = draftOwnerIdRef.current || userIDRef.current;
+
     const normalizedSharedUsers = normalizeSharedUsers(
       userIDsRef.current,
-      userIDRef.current
+      ownerId
     );
 
     const dataToStore = {
@@ -555,9 +561,13 @@ const CreatePageStandards = () => {
       }
 
       if (result.formData) {
+        suppressDirtyRef.current = true;
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+      // Mark this as the latest persisted state so a follow-up
+      // back/home/refresh doesn't re-prompt for nothing.
+      isDirtyRef.current = false;
 
       return { ok: true, id: result.id };
     } catch (error) {
@@ -570,9 +580,11 @@ const CreatePageStandards = () => {
   const updateData = async (selectedUserIDs, options = {}) => {
     const { skipFileUpload = false } = options;
 
+    const ownerId = draftOwnerIdRef.current || userIDRef.current;
+
     const normalizedSharedUsers = normalizeSharedUsers(
       selectedUserIDs,
-      userIDRef.current
+      ownerId
     );
 
     const dataToStore = {
@@ -608,9 +620,13 @@ const CreatePageStandards = () => {
       }
 
       if (result.formData) {
+        suppressDirtyRef.current = true;
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+      // Mark this as the latest persisted state (covers both manual
+      // saves and auto-saves, since both funnel through updateData).
+      isDirtyRef.current = false;
 
       setOfflineDraft(false);
       localStorage.removeItem("draftData");
@@ -634,7 +650,7 @@ const CreatePageStandards = () => {
       if (!titleSet) {
         toast.error("Please fill in a title", {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -665,7 +681,7 @@ const CreatePageStandards = () => {
       toast.clearWaitingQueue();
       toast.warn("Please load a draft before publishing.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -677,7 +693,7 @@ const CreatePageStandards = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -725,6 +741,8 @@ const CreatePageStandards = () => {
         storedData.userID ||
         userIDRef.current;
 
+      draftOwnerIdRef.current = ownerId;
+
       const normalizedSharedUsers = normalizeSharedUsers(
         storedData.userIDs,
         ownerId
@@ -748,11 +766,14 @@ const CreatePageStandards = () => {
         scope: normalizeProcedureScope(rawForm.scope)
       };
 
+      suppressDirtyRef.current = true;
       setFormData(normalizedForm);
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+      // This is what's on the server right now, so nothing is "dirty" yet.
+      isDirtyRef.current = false;
       setCanRemove(canRemove);
       setReadOnly(readOnly);
       setOwner(isOwner)
@@ -823,6 +844,22 @@ const CreatePageStandards = () => {
   }, [formData]);
 
   const formDataRef = useRef(formData);
+  // O(1) dirty flag: true once the user has actually edited formData since
+  // the last successful sync with the server (initial load, manual save,
+  // or auto-save). Checked as a plain ref read at navigation time.
+  const isDirtyRef = useRef(false);
+  // Set right before we overwrite formData ourselves (load / after a save)
+  // so the [formData] effect below knows to skip marking it dirty.
+  const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+  useEffect(() => {
+    if (suppressDirtyRef.current) {
+      suppressDirtyRef.current = false;
+      return;
+    }
+    isDirtyRef.current = true;
+  }, [formData]);
+
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
   const usedPPEOptionsRef = useRef(usedPPEOptions);
@@ -832,6 +869,7 @@ const CreatePageStandards = () => {
   const usedMaterialsRef = useRef(usedMaterials);
   const userIDsRef = useRef(userIDs);
   const userIDRef = useRef(userID);
+  const draftOwnerIdRef = useRef('');
   const readOnlyRef = useRef(readOnly);
 
   useEffect(() => {
@@ -1018,7 +1056,7 @@ const CreatePageStandards = () => {
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1028,7 +1066,7 @@ const CreatePageStandards = () => {
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1056,13 +1094,13 @@ const CreatePageStandards = () => {
 
       toast.success("Redo successful!", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     } else {
       toast.warn("Nothing to redo.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     }
@@ -1180,7 +1218,7 @@ const CreatePageStandards = () => {
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -1241,7 +1279,7 @@ const CreatePageStandards = () => {
   const removeProRow = (indexToRemove) => {
     if (formData.procedureRows.length <= 1) {
       toast.warn("At least one procedure step is required.", {
-        autoClose: 800,
+        autoClose: 1500,
         closeButton: true,
         style: { textAlign: "center" },
       });
@@ -1308,7 +1346,7 @@ const CreatePageStandards = () => {
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1430,7 +1468,7 @@ const CreatePageStandards = () => {
 
       toast.success(`Document published`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1475,7 +1513,7 @@ const CreatePageStandards = () => {
 
       toast.success(`Standard Publishing Approval Started.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1507,7 +1545,7 @@ const CreatePageStandards = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1540,7 +1578,7 @@ const CreatePageStandards = () => {
 
       toast.success(`Standard Successfully Approved.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1601,7 +1639,7 @@ const CreatePageStandards = () => {
       console.error("Error removing document from the approval process:", error);
       toast.error("Failed to remove document from the approval process", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: {
           textAlign: 'center'
         }
@@ -2271,20 +2309,31 @@ const CreatePageStandards = () => {
     setIsSaveConfirmOpen(true);
   };
 
-  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current && isDirtyRef.current;
+
+  // Skips the save-confirmation popup entirely: releases the lock (so the
+  // document isn't left checked out) and runs the pending navigation
+  // action directly. This is the "no save needed" / silent-no path.
+  const leaveWithoutPrompt = async (action) => {
+    await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
+    isDirtyRef.current = false;
+    action();
+  };
 
   const handleBack = () => {
-    if (!requiresSavePrompt()) { navigate(-1); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate(-1)); return; }
     openSaveConfirm("back", () => navigate(-1));
   };
 
   const handleHomeNav = () => {
-    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
     openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
   };
 
   const handleRefreshNav = () => {
-    if (!requiresSavePrompt()) { window.location.reload(); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => window.location.reload()); return; }
     openSaveConfirm("refresh", () => window.location.reload());
   };
 
@@ -2337,7 +2386,13 @@ const CreatePageStandards = () => {
 
   useTauriCloseGuard(
     requiresSavePrompt,
-    (closeWindow) => openSaveConfirm("close", closeWindow)
+    (closeWindow) => openSaveConfirm("close", closeWindow),
+    {
+      // Even when there's nothing to save, a loaded draft still holds a
+      // server-side lock that must be released before the window closes.
+      shouldCleanup: () => !readOnly && !!loadedIDRef.current,
+      onSilentClose: (closeWindow) => { leaveWithoutPrompt(closeWindow); },
+    }
   );
 
   return (
@@ -2366,7 +2421,7 @@ const CreatePageStandards = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedStandardFiles')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Ready for Sign Off</span>
+                  <span className="button-text">Pending Sign Off</span>
                 </div>
               </button>
             )}
@@ -2374,7 +2429,7 @@ const CreatePageStandards = () => {
               <button className="but-um" onClick={() => navigate('/FrontendDMS/signedOffStandards')}>
                 <div className="button-content">
                   <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                  <span className="button-text">Signed Off</span>
+                  <span className="button-text">Controlled</span>
                 </div>
               </button>
             )}

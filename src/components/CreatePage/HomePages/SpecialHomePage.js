@@ -80,7 +80,7 @@ const SpecialHomePage = () => {
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off Special Instructions</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off Special Instructions</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffSpecial")}>
@@ -88,7 +88,15 @@ const SpecialHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off Special Instructions<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled Special Instructions<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/documentDevelopmentRevisions/special")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Special Instructions<br /></h3>
                         </>
                     </div>
                 </div>

@@ -88,7 +88,15 @@ const FTSCreateHomePage = () => {
                             <div className="icon-risk">
                                 <img src="/tmsPublished.svg" alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off Templates<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled Templates<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/ftsUnderRevision")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src="/tmsPublished.svg" alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Templates<br /></h3>
                         </>
                     </div>
                 </div>

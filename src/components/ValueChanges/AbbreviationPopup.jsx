@@ -83,7 +83,7 @@ const AbbreviationPopup = ({ isOpen, onClose, userID, setAbbrData, onAdd }) => {
 
             setTimeout(() => {
                 handleClose();
-            }, 3000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding abbreviation:", error);

@@ -60,6 +60,11 @@ import TemplateTitleField from "./TemplateTitleField";
 import WorkOrderActionFields from "./WorkOrderActionFields";
 import "./WorkOrderActionFields.css";
 import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
+import PPETable from "../CreatePage/PPETable";
+import HandToolTable from "../CreatePage/HandToolsTable";
+import MaterialsTable from "../CreatePage/MaterialsTable";
+import HazardsControlsTable from "../CreatePage/HazardsControlsTable";
+import HazardsControlsTableFTS from "./HazardsControlsTableFTS";
 
 const FTSCreatePageTemplatesReview = () => {
   const navigate = useNavigate();
@@ -206,7 +211,7 @@ const FTSCreatePageTemplatesReview = () => {
     if (!titleSet) {
       toast.warn("Please fill in at least the title field before saving.", {
         closeButton: false,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -286,7 +291,7 @@ const FTSCreatePageTemplatesReview = () => {
       toast.clearWaitingQueue();
       toast.warn("Please save a draft before sharing.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: {
           textAlign: 'center'
         }
@@ -301,7 +306,7 @@ const FTSCreatePageTemplatesReview = () => {
       toast.clearWaitingQueue();
       toast.error("Please fill in at least the title field before saving.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
       return;
@@ -350,7 +355,7 @@ const FTSCreatePageTemplatesReview = () => {
       if (result?.ok) {
         toast.success("Draft has been successfully updated", {
           closeButton: true,
-          autoClose: 800,
+          autoClose: 1500,
           style: { textAlign: 'center' }
         });
       } else {
@@ -609,7 +614,7 @@ const FTSCreatePageTemplatesReview = () => {
       if (!titleSet) {
         toast.error("Please fill in a title", {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -640,7 +645,7 @@ const FTSCreatePageTemplatesReview = () => {
       toast.clearWaitingQueue();
       toast.warn("Please load a draft before publishing.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -652,7 +657,7 @@ const FTSCreatePageTemplatesReview = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -715,6 +720,10 @@ const FTSCreatePageTemplatesReview = () => {
       const normalizedForm = {
         ...rawForm,
         actionFields: rawForm.actionFields || [],
+        PPEItems: rawForm.PPEItems || [],
+        HandTools: rawForm.HandTools || [],
+        Materials: rawForm.Materials || [],
+        hazardsControls: rawForm.hazardsControls || [],
       };
 
       setFormData(normalizedForm);
@@ -753,6 +762,13 @@ const FTSCreatePageTemplatesReview = () => {
       references: updatedRefRows,  // Update the procedure rows in state
     });
   };
+
+  // This page is read-only, so these are simple passthrough handlers just to
+  // satisfy HazardsControlsTable's prop contract — no persistence logic needed.
+  const addHazardControlRow = () => { };
+  const removeHazardControlRow = () => { };
+  const updateHazardControlRow = () => { };
+  const updateHazardControlRows = () => { };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -805,7 +821,11 @@ const FTSCreatePageTemplatesReview = () => {
     activityName: "",
     workOrderSubInformation: "",
     workOrderRACIInformation: "",
-    actionFields: []
+    actionFields: [],
+    PPEItems: [],
+    HandTools: [],
+    Materials: [],
+    hazardsControls: []
   });
 
   useEffect(() => {
@@ -1020,7 +1040,7 @@ const FTSCreatePageTemplatesReview = () => {
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1030,7 +1050,7 @@ const FTSCreatePageTemplatesReview = () => {
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1059,13 +1079,13 @@ const FTSCreatePageTemplatesReview = () => {
 
       toast.success("Redo successful!", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     } else {
       toast.warn("Nothing to redo.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     }
@@ -1232,7 +1252,7 @@ const FTSCreatePageTemplatesReview = () => {
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -1293,7 +1313,7 @@ const FTSCreatePageTemplatesReview = () => {
   const removeProRow = (indexToRemove) => {
     if (formData.procedureRows.length <= 1) {
       toast.warn("At least one procedure step is required.", {
-        autoClose: 800,
+        autoClose: 1500,
         closeButton: true,
         style: { textAlign: "center" },
       });
@@ -1360,7 +1380,7 @@ const FTSCreatePageTemplatesReview = () => {
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1482,7 +1502,7 @@ const FTSCreatePageTemplatesReview = () => {
 
       toast.success(`Template published`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1527,7 +1547,7 @@ const FTSCreatePageTemplatesReview = () => {
 
       toast.success(`Tempalte Publishing Approval Started.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1559,7 +1579,7 @@ const FTSCreatePageTemplatesReview = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1592,7 +1612,7 @@ const FTSCreatePageTemplatesReview = () => {
 
       toast.success(`Template Successfully Approved.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1897,7 +1917,23 @@ const FTSCreatePageTemplatesReview = () => {
           </div>
 
           <SupportingDocumentTableFTS collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
+
           <WorkOrderActionFields collapsible={true} formData={formData} setFormData={setFormData} error={errors.actionFields} setErrors={setErrors} readOnly={readOnly} />
+
+          <PPETable collapsible={true} formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} readOnly={readOnly} />
+          <HandToolTable collapsible={true} formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} readOnly={readOnly} />
+          <MaterialsTable collapsible={true} formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} readOnly={readOnly} />
+          <HazardsControlsTableFTS
+            collapsible={true}
+            defaultCollapsed={true}
+            hazardControlRows={formData.hazardsControls || []}
+            addHazardControlRow={addHazardControlRow}
+            removeHazardControlRow={removeHazardControlRow}
+            updateHazardControlRow={updateHazardControlRow}
+            updateHazardControlRows={updateHazardControlRows}
+            readOnly={readOnly}
+            required={false}
+          />
 
           {true && (<div className="input-row-buttons">
             {true && (<button

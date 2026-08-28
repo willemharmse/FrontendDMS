@@ -81,7 +81,7 @@ const RiskMaterialPopup = ({ isOpen, onClose, userID, setMatsData, onAdd }) => {
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding material:", error);

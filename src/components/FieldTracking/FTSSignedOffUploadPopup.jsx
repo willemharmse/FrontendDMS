@@ -108,7 +108,7 @@ const FTSSignedOffUploadPopup = ({ onClose, docID, refresh, closeNavigate, type 
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: false,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }

@@ -78,7 +78,7 @@ const RiskDocumentsJRA = () => {
     const clearSearch = () => setSearchQuery("");
     const formatDate = (dateString) => { if (!dateString) return "N/A"; const date = new Date(dateString); const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const d = String(date.getDate()).padStart(2, '0'); return `${y}-${m}-${d}`; };
     const getStatusClass = (s) => { switch (s?.toLowerCase()) { case 'published': return 'status-approved'; case 'in review': return 'status-pending'; default: return 'status-default'; } };
-    const getStatus = (s) => (s?.toLowerCase() === 'published' ? 'Ready for Sign Off' : s);
+    const getStatus = (s) => (s?.toLowerCase() === 'published' ? 'Pending Sign Off' : s);
 
     useEffect(() => { const t = localStorage.getItem('token'); if (t) { setToken(t); setUserID(jwtDecode(t).userId); } }, [navigate]);
     useEffect(() => { if (token) fetchFiles(); }, [token]);
@@ -283,7 +283,7 @@ const RiskDocumentsJRA = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/jra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Ready for Sign Off JRAs"}</p>
+                        <p className="logo-text-dm-fi">{"Pending Sign Off JRAs"}</p>
                     </div>
                 </div>
             )}
@@ -306,7 +306,7 @@ const RiskDocumentsJRA = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Ready for Sign Off JRAs"}</label>
+                        <label className="risk-control-label">{"Pending Sign Off JRAs"}</label>
 
                         <FontAwesomeIcon
                             icon={faFilter}

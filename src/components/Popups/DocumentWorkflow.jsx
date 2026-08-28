@@ -31,7 +31,7 @@ const DocumentWorkflow = ({ setClose }) => (
                     <div className="docwf-arrow">→</div>
 
                     <div className="docwf-panel docwf-left">
-                        <h3 className="docwf-panel-title">2. Ready for Sign Off</h3>
+                        <h3 className="docwf-panel-title">2. Pending Sign Off</h3>
                         <div className="docwf-left-content">
                             <p style={{ fontSize: "15px", fontFamily: "Arial" }}>
                                 Documents that are in the review process are displayed here. This includes new documents that are getting reviewed for sign off and documents that are in revision.
@@ -51,7 +51,7 @@ const DocumentWorkflow = ({ setClose }) => (
                                 Documents that have a signed off PDF attached are displayed here.
                             </p>
                             <p style={{ fontSize: "15px", fontFamily: "Arial" }}>
-                                <b>NB:</b> Documents that are getting revised are moved to the <b>Ready for Sign Off</b> folder. A signed off version remains available for access in the <strong>Signed Off</strong> folder with the statys updated to <strong>In Revision</strong>.
+                                <b>NB:</b> Documents that are getting revised are moved to the <b>Pending Sign Off</b> folder. A signed off version remains available for access in the <strong>Controlled</strong> folder with the status updated to <strong>In Revision</strong>.
                             </p>
                         </div>
                     </div>
@@ -60,7 +60,7 @@ const DocumentWorkflow = ({ setClose }) => (
                 <div className="matrix-notes-document-workflow">
                     <p>
                         At any point, a document can be <b>generated as a Word file</b>, but
-                        documents not generated from <strong>Ready for Sign Off</strong> should not be used for
+                        documents not generated from <strong>Pending Sign Off</strong> should not be used for
                         sign off. Once a document is generated for sign off, it should be <b>saved as a PDF,
                             signed-off and uploaded to the Document Management System (DMS)</b> to
                         ensure it is officially stored and shared.

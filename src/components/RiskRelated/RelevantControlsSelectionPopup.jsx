@@ -69,6 +69,7 @@ const RelevantControlsSelectionPopup = ({
                     control: c.control,
                     description: c.description || "",
                     category: (c.category ?? "").toString().trim(),
+                    performance: c.performance || "",
                     __pseudo: true
                 });
             }
@@ -84,6 +85,7 @@ const RelevantControlsSelectionPopup = ({
                     control: c.control,
                     description: c.description || "",
                     category: (c.category ?? "").toString().trim(),
+                    performance: c.performance || "",
                     __pseudo: true
                 });
             }
@@ -116,6 +118,7 @@ const RelevantControlsSelectionPopup = ({
         control: name,
         description: "",
         category: "",
+        performance: "",
         __pseudo: true,
     });
 
@@ -152,7 +155,7 @@ const RelevantControlsSelectionPopup = ({
         <div className="popup-overlay-share">
             <div className="popup-content-share">
                 <div className="review-date-header">
-                    <h2 className="review-date-title">Select Applicable Controls</h2>
+                    <h2 className="review-date-title" onClick={() => console.log(mergedControls)}>Select Applicable Controls</h2>
                     <button className="review-date-close" onClick={closePopup} title="Close Popup">×</button>
                 </div>
 

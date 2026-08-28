@@ -115,7 +115,6 @@ const FTSSignedOffTemplates = () => {
     };
 
     const getStatusClass = (file) => {
-        if (isReviewOverdue(file)) return 'status-worst';
         switch (file?.documentStatus?.toLowerCase()) {
             case 'published': return 'status-approved';
             case 'in revision': return 'status-pending';
@@ -123,7 +122,6 @@ const FTSSignedOffTemplates = () => {
         }
     };
     const getStatus = (file) => {
-        if (isReviewOverdue(file)) return 'Review Overdue';
         return file?.documentStatus?.toLowerCase() === 'published' ? 'Approved' : file?.documentStatus;
     };
 
@@ -382,7 +380,7 @@ const FTSSignedOffTemplates = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Approved Templates"}</label>
+                        <label className="risk-control-label">{"Controlled Templates"}</label>
                         <FontAwesomeIcon icon={faColumns} className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
                         <FontAwesomeIcon
                             icon={faFilter}

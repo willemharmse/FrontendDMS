@@ -239,7 +239,7 @@ const RiskManagementPageIBRA = () => {
         if (!titleSet) {
             toast.warn("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -271,7 +271,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.error("Please fill in at least the title field before saving.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -320,7 +320,7 @@ const RiskManagementPageIBRA = () => {
             if (result?.ok) {
                 toast.success("Draft has been successfully updated", {
                     closeButton: true,
-                    autoClose: 800,
+                    autoClose: 1500,
                     style: { textAlign: 'center' }
                 });
             } else {
@@ -350,6 +350,8 @@ const RiskManagementPageIBRA = () => {
         }
 
         const me = userIDRef.current;
+        draftOwnerIdRef.current = me;
+
         const newFormData = {
             ...formDataRef.current,
             title: trimmedTitle,
@@ -402,6 +404,8 @@ const RiskManagementPageIBRA = () => {
     const confirmSaveAs = async (newTitle) => {
         // apply the new title, clear loadedID, then save
         const me = userIDRef.current;
+        draftOwnerIdRef.current = me;
+
         const newFormData = {
             ...formDataRef.current,
             title: newTitle,
@@ -465,7 +469,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please save a draft before sharing.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -525,6 +529,8 @@ const RiskManagementPageIBRA = () => {
     const saveData = async (overrideTitle = null, options = {}) => {
         const { skipFileUpload = false } = options;
 
+        draftOwnerIdRef.current = userIDRef.current;
+
         const normalizedSharedUsers = normalizeSharedUsers(
             userIDsRef.current,
             userIDRef.current
@@ -574,9 +580,13 @@ const RiskManagementPageIBRA = () => {
             }
 
             if (result.formData) {
+                suppressDirtyRef.current = true;
                 setFormData(result.formData);
                 formDataRef.current = result.formData;
             }
+            // Mark this as the latest persisted state so a follow-up
+            // back/home/refresh doesn't re-prompt for nothing.
+            isDirtyRef.current = false;
 
             return { ok: true, id: result.id };
         } catch (error) {
@@ -590,7 +600,7 @@ const RiskManagementPageIBRA = () => {
 
         const normalizedSharedUsers = normalizeSharedUsers(
             selectedUserIDs,
-            userIDRef.current
+            draftOwnerIdRef.current || userIDRef.current
         );
 
         const dataToStore = {
@@ -621,9 +631,13 @@ const RiskManagementPageIBRA = () => {
             }
 
             if (result.formData) {
+                suppressDirtyRef.current = true;
                 setFormData(result.formData);
                 formDataRef.current = result.formData;
             }
+            // Mark this as the latest persisted state (covers both manual
+            // saves and auto-saves, since both funnel through updateData).
+            isDirtyRef.current = false;
 
             console.log(result.message);
             return { ok: true, ...result };
@@ -637,7 +651,7 @@ const RiskManagementPageIBRA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -651,7 +665,7 @@ const RiskManagementPageIBRA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -670,7 +684,7 @@ const RiskManagementPageIBRA = () => {
             if (!titleSet) {
                 toast.error("Please fill in a title", {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -727,7 +741,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("Please load a draft before publishing.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -739,7 +753,7 @@ const RiskManagementPageIBRA = () => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1010,6 +1024,8 @@ const RiskManagementPageIBRA = () => {
                 storedData.userID ||
                 userIDRef.current;
 
+            draftOwnerIdRef.current = ownerId;
+
             const normalizedSharedUsers = normalizeSharedUsers(
                 storedData.userIDs,
                 ownerId
@@ -1023,12 +1039,17 @@ const RiskManagementPageIBRA = () => {
 
             const raw = storedData.formData || {};
             const patched = normalizeIbraFormData(raw);
+            suppressDirtyRef.current = true;
             setFormData(patched);
 
-            setFormData(prev => ({ ...prev }));
+            // Do not force a second formData write here. The first setFormData
+            // already re-renders the page; a second write can consume the
+            // dirty-suppression flag and make a freshly loaded draft look edited.
             setTitleSet(true);
             loadedIDRef.current = loadID;
             setLoadedID(loadID);
+            // This is what's on the server right now, so nothing is "dirty" yet.
+            isDirtyRef.current = false;
             setCanRemove(canRemove);
             setReadOnly(readOnly);
             setOwner(isOwner)
@@ -1541,10 +1562,27 @@ const RiskManagementPageIBRA = () => {
     };
 
     const formDataRef = useRef(formData);
+    // O(1) dirty flag: true once the user has actually edited formData since
+    // the last successful sync with the server (initial load, manual save,
+    // or auto-save). Checked as a plain ref read at navigation time.
+    const isDirtyRef = useRef(false);
+    // Set right before we overwrite formData ourselves (load / after a save)
+    // so the [formData] effect below knows to skip marking it dirty.
+    const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+    useEffect(() => {
+        if (suppressDirtyRef.current) {
+            suppressDirtyRef.current = false;
+            return;
+        }
+        isDirtyRef.current = true;
+    }, [formData]);
+
     const usedAbbrCodesRef = useRef(usedAbbrCodes);
     const usedTermCodesRef = useRef(usedTermCodes);
     const userIDsRef = useRef(userIDs);
     const userIDRef = useRef(userID);
+    const draftOwnerIdRef = useRef('');
     const readOnlyRef = useRef(readOnly);
 
     useEffect(() => {
@@ -1671,7 +1709,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.success("Undo successful!", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1681,7 +1719,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("No changes to undo.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1704,13 +1742,13 @@ const RiskManagementPageIBRA = () => {
 
             toast.success("Redo successful!", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         } else {
             toast.warn("Nothing to redo.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         }
@@ -1820,7 +1858,7 @@ const RiskManagementPageIBRA = () => {
             if (!isValid) {
                 toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -1943,7 +1981,7 @@ const RiskManagementPageIBRA = () => {
         ) {
             toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1962,7 +2000,7 @@ const RiskManagementPageIBRA = () => {
         if (formData.ibra.length === 1) {
             toast.error("You must keep at least one row.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -1973,7 +2011,7 @@ const RiskManagementPageIBRA = () => {
         if (updatedRows.length === formData.ibra.length) {
             toast.error("Row not found.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -2005,7 +2043,7 @@ const RiskManagementPageIBRA = () => {
         if (updatedRows.length === formData.cea.length) {
             toast.error("Row not found.", {
                 position: "top-right",
-                autoClose: 800,
+                autoClose: 1500,
             });
             return;
         }
@@ -2035,7 +2073,7 @@ const RiskManagementPageIBRA = () => {
         if (formData.attendance.length === 1) {
             toast.error(`You must have at least one attendance row.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2170,7 +2208,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees names must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2183,7 +2221,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees company/site must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2196,7 +2234,7 @@ const RiskManagementPageIBRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees designation must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2285,7 +2323,7 @@ const RiskManagementPageIBRA = () => {
 
             toast.success(`Document published`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2331,7 +2369,7 @@ const RiskManagementPageIBRA = () => {
 
             toast.success(`IBRA Publishing Approval Started.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2363,7 +2401,7 @@ const RiskManagementPageIBRA = () => {
         if (Object.keys(newErrors).length > 0) {
             toast.error("Please fill in all required fields marked by a *", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2396,7 +2434,7 @@ const RiskManagementPageIBRA = () => {
 
             toast.success(`IBRA Successfully Approved.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -2457,7 +2495,7 @@ const RiskManagementPageIBRA = () => {
             console.error("Error removing document from the approval process:", error);
             toast.error("Failed to remove document from the approval process", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
@@ -2487,24 +2525,29 @@ const RiskManagementPageIBRA = () => {
     };
 
     const handleControlRename = (oldName, newName) => {
+        const oldTrim = oldName.trim();
+        const newTrim = newName.trim();
+
         // 1. Rename in IBRA rows (usage)
         const updatedIBRA = formData.ibra.map(r => ({
             ...r,
             controls: r.controls.map(c =>
-                c.trim() === oldName.trim() ? newName.trim() : c
+                c.trim() === oldTrim ? newTrim : c
             )
         }));
 
-        // 2. Rename in CEA rows
-        const updatedCEA = formData.cea.map(r => ({
-            ...r,
-            control: r.control.trim() === oldName.trim() ? newName.trim() : r.control
-        }));
+        // 2. Rename in CEA rows — and break the system-control link,
+        //    since a renamed control is no longer the same control.
+        const updatedCEA = formData.cea.map(r =>
+            r.control.trim() === oldTrim
+                ? { ...r, control: newTrim, uniqueId: "" }
+                : r
+        );
 
         // 3. Rename in Relevant Controls list (Source)
         const updatedRelevant = formData.relevantControls.map(r => ({
             ...r,
-            control: r.control.trim() === oldName.trim() ? newName.trim() : r.control
+            control: r.control.trim() === oldTrim ? newTrim : r.control
         }));
 
         setFormData(prev => ({
@@ -2550,6 +2593,7 @@ const RiskManagementPageIBRA = () => {
                 };
             });
 
+            suppressDirtyRef.current = true;
             setFormData(prev => ({
                 ...prev,
                 relevantControls: [...(prev.relevantControls || []), ...newRelevantRows]
@@ -2709,6 +2753,7 @@ const RiskManagementPageIBRA = () => {
                 .filter(Boolean)
                 .map((r, i) => ({ ...r, nr: i + 1 }));
 
+            suppressDirtyRef.current = true;
             setFormData(prev => ({
                 ...prev,
                 cea: mergedInOrder
@@ -2771,6 +2816,7 @@ const RiskManagementPageIBRA = () => {
         });
 
         if (relevantChanged || ceaChanged) {
+            suppressDirtyRef.current = true;
             setFormData(prev => ({
                 ...prev,
                 relevantControls: relevantChanged ? nextRelevantControls : prev.relevantControls,
@@ -3008,6 +3054,7 @@ const RiskManagementPageIBRA = () => {
                 });
 
                 if (silentIdUpdates.size > 0) {
+                    suppressDirtyRef.current = true;
                     setFormData(prev => ({
                         ...prev,
                         cea: (prev.cea || []).map(row =>
@@ -3241,6 +3288,7 @@ const RiskManagementPageIBRA = () => {
 
         if (hasChanges) {
             console.log("Backfilled uniqueIds for legacy CEA rows.");
+            suppressDirtyRef.current = true;
             setFormData(prev => ({ ...prev, cea: updatedCEA }));
         }
     }, [allSystemControls, loadedIDRef.current]);
@@ -3276,6 +3324,7 @@ const RiskManagementPageIBRA = () => {
         });
 
         if (hasChanges) {
+            suppressDirtyRef.current = true;
             setFormData(prev => ({
                 ...prev,
                 relevantControls: nextRelevantControls,
@@ -3898,20 +3947,31 @@ const RiskManagementPageIBRA = () => {
         setIsSaveConfirmOpen(true);
     };
 
-    const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+    const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current && isDirtyRef.current;
+
+    // Skips the save-confirmation popup entirely: releases the lock (so the
+    // document isn't left checked out) and runs the pending navigation
+    // action directly. This is the "no save needed" / silent-no path.
+    const leaveWithoutPrompt = async (action) => {
+        await releaseLock();
+        loadedIDRef.current = '';
+        setLoadedID('');
+        isDirtyRef.current = false;
+        action();
+    };
 
     const handleBack = () => {
-        if (!requiresSavePrompt()) { navigate(-1); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate(-1)); return; }
         openSaveConfirm("back", () => navigate(-1));
     };
 
     const handleHomeNav = () => {
-        if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
         openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
     };
 
     const handleRefreshNav = () => {
-        if (!requiresSavePrompt()) { window.location.reload(); return; }
+        if (!requiresSavePrompt()) { leaveWithoutPrompt(() => window.location.reload()); return; }
         openSaveConfirm("refresh", () => window.location.reload());
     };
 
@@ -3964,7 +4024,13 @@ const RiskManagementPageIBRA = () => {
 
     useTauriCloseGuard(
         requiresSavePrompt,
-        (closeWindow) => openSaveConfirm("close", closeWindow)
+        (closeWindow) => openSaveConfirm("close", closeWindow),
+        {
+            // Even when there's nothing to save, a loaded draft still holds a
+            // server-side lock that must be released before the window closes.
+            shouldCleanup: () => !readOnly && !!loadedIDRef.current,
+            onSilentClose: (closeWindow) => { leaveWithoutPrompt(closeWindow); },
+        }
     );
 
     return (
@@ -3994,7 +4060,7 @@ const RiskManagementPageIBRA = () => {
                             <button className="but-um" onClick={() => navigate('/FrontendDMS/generatedIBRADocs')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                                    <span className="button-text">Ready for Sign Off</span>
+                                    <span className="button-text">Pending Sign Off</span>
                                 </div>
                             </button>
                         )}
@@ -4003,7 +4069,7 @@ const RiskManagementPageIBRA = () => {
                             <button className="but-um" onClick={() => navigate('/FrontendDMS/signedOffIBRA')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
-                                    <span className="button-text">Signed Off</span>
+                                    <span className="button-text">Controlled</span>
                                 </div>
                             </button>
                         )}

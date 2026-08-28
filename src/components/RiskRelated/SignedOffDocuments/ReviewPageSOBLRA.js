@@ -87,7 +87,7 @@ const ReviewPageSOBLRA = () => {
         if (!titleSet) {
             toast.warn("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -168,7 +168,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.error("Please fill in at least the title field before saving.", {
                 closeButton: false,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -233,7 +233,7 @@ const ReviewPageSOBLRA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -247,7 +247,7 @@ const ReviewPageSOBLRA = () => {
         if (formData.title === "") {
             toast.error("Please fill in the title field", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1022,7 +1022,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.success("Undo successful!", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1032,7 +1032,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.warn("No changes to undo.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1055,13 +1055,13 @@ const ReviewPageSOBLRA = () => {
 
             toast.success("Redo successful!", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         } else {
             toast.warn("Nothing to redo.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
         }
@@ -1137,7 +1137,7 @@ const ReviewPageSOBLRA = () => {
             if (!isValid) {
                 toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
                     closeButton: true,
-                    autoClose: 800, // 1.5 seconds
+                    autoClose: 1500, // 1.5 seconds
                     style: {
                         textAlign: 'center'
                     }
@@ -1260,7 +1260,7 @@ const ReviewPageSOBLRA = () => {
         ) {
             toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1279,7 +1279,7 @@ const ReviewPageSOBLRA = () => {
         if (formData.ibra.length === 1) {
             toast.error("You must keep at least one row.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -1290,7 +1290,7 @@ const ReviewPageSOBLRA = () => {
         if (updatedRows.length === formData.ibra.length) {
             toast.error("Row not found.", {
                 closeButton: true,
-                autoClose: 800,
+                autoClose: 1500,
                 style: { textAlign: 'center' }
             });
             return;
@@ -1315,7 +1315,7 @@ const ReviewPageSOBLRA = () => {
         if (formData.cea.length === 1) {
             toast.error("You must keep at least one row.", {
                 position: "top-right",
-                autoClose: 800,
+                autoClose: 1500,
             });
             return;
         }
@@ -1330,7 +1330,7 @@ const ReviewPageSOBLRA = () => {
         if (updatedRows.length === formData.cea.length) {
             toast.error("Row not found.", {
                 position: "top-right",
-                autoClose: 800,
+                autoClose: 1500,
             });
             return;
         }
@@ -1360,7 +1360,7 @@ const ReviewPageSOBLRA = () => {
         if (formData.attendance.length === 1) {
             toast.error(`You must have at least one attendance row.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1398,7 +1398,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees names must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1411,7 +1411,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees company/site must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1424,7 +1424,7 @@ const ReviewPageSOBLRA = () => {
             toast.clearWaitingQueue();
             toast.warn("All attedees designation must have a value.", {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1536,7 +1536,7 @@ const ReviewPageSOBLRA = () => {
 
             toast.success(`BLRA Publishing Approval Started.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1585,7 +1585,7 @@ const ReviewPageSOBLRA = () => {
 
             toast.success(`BLRA Successfully Approved.`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }
@@ -1633,7 +1633,7 @@ const ReviewPageSOBLRA = () => {
 
             toast.success(`Document published`, {
                 closeButton: true,
-                autoClose: 800, // 1.5 seconds
+                autoClose: 1500, // 1.5 seconds
                 style: {
                     textAlign: 'center'
                 }

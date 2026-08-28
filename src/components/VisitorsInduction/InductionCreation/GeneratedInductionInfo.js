@@ -671,7 +671,7 @@ const GeneratedInductionInfo = () => {
 
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/tmsCreateCourse2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Published Visitor Induction"}</p>
+                        <p className="logo-text-dm-fi">{"Controlled Visitor Induction"}</p>
                     </div>
                 </div>
             )}
@@ -711,7 +711,7 @@ const GeneratedInductionInfo = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Published Visitor Induction"}</label>
+                        <label className="risk-control-label">{"Controlled Visitor Induction"}</label>
 
                         <FontAwesomeIcon
                             icon={faColumns}

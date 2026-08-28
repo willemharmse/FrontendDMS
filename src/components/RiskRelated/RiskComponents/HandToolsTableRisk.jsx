@@ -97,6 +97,8 @@ const HandToolsTableRisk = ({ collapsible = false, formData, setFormData, usedHa
                     : row
             ),
         }));
+
+        closeManagePopup();
     };
 
     const handleUpdateTool = (newToolObj, oldTool) => {

@@ -155,6 +155,8 @@ const AbbreviationTableRisk = ({ collapsible = false, risk, formData, setFormDat
           : row
       ),
     }));
+
+    closeManagePopup();
   };
 
   const handleCheckboxChange = (abbr) => {

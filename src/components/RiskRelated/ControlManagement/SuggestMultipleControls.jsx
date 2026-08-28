@@ -102,7 +102,7 @@ const SuggestMultipleControls = ({ isOpen, onClose, controlData, onSuccess, read
     const removeControlRow = (id) => {
         setControlRows(prev => {
             if (prev.length <= 1) {
-                toast.warn("You must have at least one control.", { closeButton: false, autoClose: 900 });
+                toast.warn("You must have at least one control.", { closeButton: false, autoClose: 1500 });
                 return prev;
             }
             return prev.filter(r => r.id !== id);

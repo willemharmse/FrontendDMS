@@ -75,6 +75,8 @@ const EquipmentTableRisk = ({ collapsible = false, formData, setFormData, usedEq
                     : row
             ),
         }));
+
+        closeManagePopup();
     };
 
     const handleUpdateEqp = (newEqpObj, oldEqp) => {

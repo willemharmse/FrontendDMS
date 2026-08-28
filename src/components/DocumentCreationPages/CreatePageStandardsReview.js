@@ -107,7 +107,7 @@ const CreatePageStandardsReview = () => {
     if (!titleSet) {
       toast.warn("Please fill in at least the title field before saving.", {
         closeButton: false,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -625,7 +625,7 @@ const CreatePageStandardsReview = () => {
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -635,7 +635,7 @@ const CreatePageStandardsReview = () => {
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -658,13 +658,13 @@ const CreatePageStandardsReview = () => {
 
       toast.success("Redo successful!", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     } else {
       toast.warn("Nothing to redo.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     }
@@ -772,7 +772,7 @@ const CreatePageStandardsReview = () => {
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 1500, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -851,7 +851,7 @@ const CreatePageStandardsReview = () => {
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -968,7 +968,7 @@ const CreatePageStandardsReview = () => {
 
       toast.success(`Standard Publishing Approval Started.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1024,7 +1024,7 @@ const CreatePageStandardsReview = () => {
 
       toast.success(`Standard Successfully Approved.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1069,7 +1069,7 @@ const CreatePageStandardsReview = () => {
 
       toast.success(`Standard Removed From The Approval Process.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1083,7 +1083,7 @@ const CreatePageStandardsReview = () => {
       console.error("Error removing document from the approval process:", error);
       toast.error("Failed to remove document from the approval process", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: {
           textAlign: 'center'
         }

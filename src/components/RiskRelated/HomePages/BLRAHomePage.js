@@ -75,12 +75,20 @@ const BLRAHomePage = () => {
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/riskManagementApprovals/blra")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval BLRAs</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/generatedBLRADocs")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off BLRAs</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off BLRAs</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffBLRA")}>
@@ -88,7 +96,15 @@ const BLRAHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off BLRAs<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled BLRAs<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskManagementRevisions/blra")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision BLRAs<br /></h3>
                         </>
                     </div>
                 </div>

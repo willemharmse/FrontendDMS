@@ -82,7 +82,7 @@ const RiskPPEPopup = ({ isOpen, onClose, userID, setPPEData, onAdd }) => {
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding ppe:", error);

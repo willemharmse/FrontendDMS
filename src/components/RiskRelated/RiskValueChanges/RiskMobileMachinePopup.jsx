@@ -84,7 +84,7 @@ const RiskMobileMachinePopup = ({ isOpen, onClose, userID, setMacData, onAdd }) 
 
             setTimeout(() => {
                 handleClose();
-            }, 1000);
+            }, 2000);
         } catch (error) {
             setLoading(false);
             console.error("Error adding machine:", error);

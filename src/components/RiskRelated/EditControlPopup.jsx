@@ -187,7 +187,7 @@ const EditControlPopup = ({ onClose, data }) => {
 
             const { message } = res.data;
             toast.success(message || 'Control modified successfully.', {
-                autoClose: 800,
+                autoClose: 1500,
                 closeButton: false
             });
 

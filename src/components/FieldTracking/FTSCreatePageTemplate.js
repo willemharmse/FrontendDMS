@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -60,6 +60,11 @@ import TemplateTitleField from "./TemplateTitleField";
 import WorkOrderActionFields from "./WorkOrderActionFields";
 import "./WorkOrderActionFields.css";
 import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
+import PPETable from "../CreatePage/PPETable";
+import HandToolTable from "../CreatePage/HandToolsTable";
+import MaterialsTable from "../CreatePage/MaterialsTable";
+import HazardsControlsTable from "../CreatePage/HazardsControlsTable";
+import HazardsControlsTableFTS from "./HazardsControlsTableFTS";
 
 // Backend dedup (see fieldTemplateDrafts.mjs) may append a " (n)" counter to
 // formData.title when its auto-generated value collides with another of the
@@ -67,6 +72,52 @@ import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
 // below can compare against the freshly computed templateTitle without
 // mistaking "already has a counter" for "needs to be regenerated".
 const stripTitleCounter = (title) => (title || "").replace(/ \(\d+\)$/, "").trim();
+
+// Merges any number of string arrays into one distinct, A-Z sorted array.
+// Case-insensitive for dedup purposes, but keeps the casing of whichever
+// occurrence was seen first. Used to combine PPE/hand tools/materials from
+// an imported JRA with whatever the user already has selected, and safe to
+// re-run on every import even if the backend already sent back a deduped set.
+const dedupeSortStrings = (...arraysOfStrings) => {
+  const seen = new Map();
+  for (const arr of arraysOfStrings) {
+    if (!Array.isArray(arr)) continue;
+    for (const value of arr) {
+      const clean = String(value || "").trim();
+      if (!clean) continue;
+      const key = clean.toLowerCase();
+      if (!seen.has(key)) seen.set(key, clean);
+    }
+  }
+  return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+};
+
+// Same idea as dedupeSortStrings, but for hazardsControls rows
+// ({ hazard, unwantedEvent, control }). Dedupes on the full triple and sorts
+// A-Z by hazard, then unwantedEvent, then control - mirrors the grouping
+// logic the backend uses (see docCreate.mjs) so re-importing (or importing
+// from several JRAs across several clicks) never produces duplicate rows.
+const dedupeSortHazardsControls = (...arraysOfRows) => {
+  const seen = new Map();
+  for (const arr of arraysOfRows) {
+    if (!Array.isArray(arr)) continue;
+    for (const row of arr) {
+      const hazard = String(row?.hazard || "").trim();
+      const unwantedEvent = String(row?.unwantedEvent || "").trim();
+      const control = String(row?.control || "").trim();
+      if (!hazard || !unwantedEvent) continue;
+      const key = `${hazard}||${unwantedEvent}||${control}`.toLowerCase();
+      if (!seen.has(key)) seen.set(key, { hazard, unwantedEvent, control });
+    }
+  }
+  return [...seen.values()].sort((a, b) => {
+    const byHazard = a.hazard.localeCompare(b.hazard, undefined, { sensitivity: "base" });
+    if (byHazard !== 0) return byHazard;
+    const byUnwantedEvent = a.unwantedEvent.localeCompare(b.unwantedEvent, undefined, { sensitivity: "base" });
+    if (byUnwantedEvent !== 0) return byUnwantedEvent;
+    return a.control.localeCompare(b.control, undefined, { sensitivity: "base" });
+  });
+};
 
 const FTSCreatePageTemplate = () => {
   const navigate = useNavigate();
@@ -226,6 +277,7 @@ const FTSCreatePageTemplate = () => {
   const confirmSaveAs = async (newTitle) => {
     // apply the new title, clear loadedID, then save
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
     const newFormData = {
       ...formDataRef.current,
       title: newTitle,
@@ -383,6 +435,7 @@ const FTSCreatePageTemplate = () => {
     }
 
     const me = userIDRef.current;
+    draftOwnerIdRef.current = me;
     const newFormData = {
       ...formDataRef.current,
       title: trimmedTitle,
@@ -534,9 +587,13 @@ const FTSCreatePageTemplate = () => {
       }
 
       if (result.formData) {
+        suppressDirtyRef.current = true;
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+      // Mark this as the latest persisted state so a follow-up
+      // back/home/refresh doesn't re-prompt for nothing.
+      isDirtyRef.current = false;
 
       return { ok: true, id: result.id };
     } catch (error) {
@@ -550,7 +607,7 @@ const FTSCreatePageTemplate = () => {
 
     const normalizedSharedUsers = normalizeSharedUsers(
       selectedUserIDs,
-      userIDRef.current
+      draftOwnerIdRef.current || userIDRef.current
     );
 
     const dataToStore = {
@@ -587,9 +644,13 @@ const FTSCreatePageTemplate = () => {
       }
 
       if (result.formData) {
+        suppressDirtyRef.current = true;
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+      // Mark this as the latest persisted state (covers both manual
+      // saves and auto-saves, since both funnel through updateData).
+      isDirtyRef.current = false;
 
       setOfflineDraft(false);
       localStorage.removeItem("draftData");
@@ -702,6 +763,8 @@ const FTSCreatePageTemplate = () => {
         storedData.userID ||
         userIDRef.current;
 
+      draftOwnerIdRef.current = ownerId;
+
       const normalizedSharedUsers = normalizeSharedUsers(
         storedData.userIDs,
         ownerId
@@ -723,13 +786,20 @@ const FTSCreatePageTemplate = () => {
       const normalizedForm = {
         ...rawForm,
         actionFields: rawForm.actionFields || [],
+        PPEItems: rawForm.PPEItems || [],
+        HandTools: rawForm.HandTools || [],
+        Materials: rawForm.Materials || [],
+        hazardsControls: rawForm.hazardsControls || [],
       };
 
+      suppressDirtyRef.current = true;
       setFormData(normalizedForm);
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
+      // This is what's on the server right now, so nothing is "dirty" yet.
+      isDirtyRef.current = false;
 
       setReadOnly(readOnly);
       setOwner(isOwner)
@@ -761,6 +831,46 @@ const FTSCreatePageTemplate = () => {
       ...formData,
       references: updatedRefRows,  // Update the procedure rows in state
     });
+  };
+
+  const addHazardControlRow = () => {
+    setFormData((prev) => ({
+      ...prev,
+      hazardsControls: [
+        ...(Array.isArray(prev.hazardsControls) ? prev.hazardsControls : []),
+        { hazard: "", unwantedEvent: "", control: "" }
+      ]
+    }));
+  };
+
+  const removeHazardControlRow = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      hazardsControls: (Array.isArray(prev.hazardsControls) ? prev.hazardsControls : []).filter(
+        (_, index) => index !== indexToRemove
+      )
+    }));
+  };
+
+  const updateHazardControlRow = (index, field, value) => {
+    setFormData((prev) => {
+      const updatedRows = [...(Array.isArray(prev.hazardsControls) ? prev.hazardsControls : [])];
+      updatedRows[index] = {
+        ...updatedRows[index],
+        [field]: value
+      };
+      return {
+        ...prev,
+        hazardsControls: updatedRows
+      };
+    });
+  };
+
+  const updateHazardControlRows = (newRows) => {
+    setFormData((prev) => ({
+      ...prev,
+      hazardsControls: newRows
+    }));
   };
 
   const [formData, setFormData] = useState({
@@ -814,7 +924,11 @@ const FTSCreatePageTemplate = () => {
     activityName: "",
     workOrderSubInformation: "",
     workOrderRACIInformation: "",
-    actionFields: []
+    actionFields: [],
+    PPEItems: [],
+    HandTools: [],
+    Materials: [],
+    hazardsControls: []
   });
 
   useEffect(() => {
@@ -827,6 +941,22 @@ const FTSCreatePageTemplate = () => {
   }, [formData]);
 
   const formDataRef = useRef(formData);
+  // O(1) dirty flag: true once the user has actually edited formData since
+  // the last successful sync with the server (initial load, manual save,
+  // or auto-save). Checked as a plain ref read at navigation time.
+  const isDirtyRef = useRef(false);
+  // Set right before we overwrite formData ourselves (load / after a save)
+  // so the [formData] effect below knows to skip marking it dirty.
+  const suppressDirtyRef = useRef(true); // true so the initial mount doesn't count as a user edit
+
+  useEffect(() => {
+    if (suppressDirtyRef.current) {
+      suppressDirtyRef.current = false;
+      return;
+    }
+    isDirtyRef.current = true;
+  }, [formData]);
+
   const usedTemplateFieldsRef = useRef(usedTemplateFields);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
@@ -837,7 +967,147 @@ const FTSCreatePageTemplate = () => {
   const usedMaterialsRef = useRef(usedMaterials);
   const userIDsRef = useRef(userIDs);
   const userIDRef = useRef(userID);
+  const draftOwnerIdRef = useRef('');
   const readOnlyRef = useRef(readOnly);
+
+  const [jraImporting, setJraImporting] = useState(false);
+
+  const dedupeSortObjectsByKey = (key, ...arrays) => {
+    const seen = new Map();
+
+    for (const arr of arrays) {
+      if (!Array.isArray(arr)) continue;
+
+      for (const item of arr) {
+        if (!item) continue;
+
+        const value = String(item?.[key] || "").trim();
+        if (!value) continue;
+
+        const dedupeKey = value.toLowerCase();
+
+        if (!seen.has(dedupeKey)) {
+          seen.set(dedupeKey, item);
+        }
+      }
+    }
+
+    return [...seen.values()].sort((a, b) =>
+      String(a?.[key] || "").localeCompare(
+        String(b?.[key] || ""),
+        undefined,
+        { sensitivity: "base" }
+      )
+    );
+  };
+
+  // Looks across every action field's related documents for the ones whose
+  // title contains both "JRA" and "PTO" - if there aren't any, falls back to
+  // documents whose title just contains "JRA". Whichever set is found, any
+  // document already recorded in formData.importedJra is filtered out so we
+  // don't re-send JRAs that have already been imported.
+  const jraDocsToImport = useMemo(() => {
+    const allRelatedDocs = (formData.actionFields || []).flatMap(
+      (field) => field.relatedDocuments || []
+    );
+    const jraAndPtoDocs = allRelatedDocs.filter(
+      (doc) => /jra/i.test(doc.name || "") && /pto/i.test(doc.name || "")
+    );
+    const jraOnlyDocs = allRelatedDocs.filter((doc) => /jra/i.test(doc.name || ""));
+    const matchedJraDocs = jraAndPtoDocs.length > 0 ? jraAndPtoDocs : jraOnlyDocs;
+
+    const importedJraIds = formData.importedJra || [];
+    return matchedJraDocs.filter((doc) => !importedJraIds.includes(doc.id));
+  }, [formData.actionFields, formData.importedJra]);
+
+  // Sends the ids of any not-yet-imported JRAs to the backend, then merges
+  // the response back in:
+  //  - the returned document list gets added to formData.importedJra (so we
+  //    stop re-prompting/re-sending for them)
+  //  - the returned usedPPEOptions/usedHandTools/usedMaterials get merged
+  //    (distinct, A-Z) into the page's own used* state
+  //  - the returned hazardsControls get merged (distinct, A-Z) into
+  //    formData.hazardsControls
+  // Route: POST /api/ftsGenerate/import-jra (see fieldTemplateCreation.mjs)
+  const handleImportJra = async () => {
+    if (jraDocsToImport.length === 0) return;
+
+    console.log(jraDocsToImport)
+
+    setJraImporting(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/import-jra`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+          dmsIds: jraDocsToImport.map((doc) => doc.id),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to import JRA");
+
+      const result = await response.json();
+      // { importedDocuments: [{ id, name }, ...], importedData: { usedPPEOptions, usedHandTools, usedMaterials, hazardsControls } }
+      const importedDocuments = result.importedDocuments || [];
+      const importedData = result.importedData || {};
+
+      console.log(importedData)
+
+      setFormData((prev) => {
+        const prevImportedJra = prev.importedJra || [];
+
+        const newlyImportedIds = importedDocuments
+          .map((doc) => doc.id)
+          .filter((id) => !prevImportedJra.includes(id));
+
+        return {
+          ...prev,
+
+          importedJra: [
+            ...prevImportedJra,
+            ...newlyImportedIds
+          ],
+
+          PPEItems: dedupeSortObjectsByKey(
+            "ppe",
+            prev.PPEItems,
+            importedData.PPEItems
+          ),
+
+          HandTools: dedupeSortObjectsByKey(
+            "tool",
+            prev.HandTools,
+            importedData.HandTools
+          ),
+
+          Materials: dedupeSortObjectsByKey(
+            "mat",
+            prev.Materials,
+            importedData.Materials
+          ),
+
+          hazardsControls: dedupeSortHazardsControls(
+            prev.hazardsControls,
+            importedData.hazardsControls
+          ),
+        };
+      });
+
+      setUsedPPEOptions((prev) => dedupeSortStrings(prev, importedData.usedPPEOptions));
+      setUsedHandTools((prev) => dedupeSortStrings(prev, importedData.usedHandTools));
+      setUsedMaterials((prev) => dedupeSortStrings(prev, importedData.usedMaterials));
+
+      toast.success("JRA values imported");
+    } catch (error) {
+      console.error("Error importing JRA:", error);
+      toast.error("Failed to import JRA");
+    } finally {
+      setJraImporting(false);
+    }
+  };
 
   useEffect(() => {
     userIDRef.current = userID;
@@ -1057,7 +1327,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.success("Undo successful!", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1096,7 +1366,7 @@ const FTSCreatePageTemplate = () => {
 
       toast.success("Redo successful!", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 1500,
         style: { textAlign: 'center' }
       });
     } else {
@@ -1500,7 +1770,10 @@ const FTSCreatePageTemplate = () => {
       formData: getSanitizedFormData(formData),
       userID,
       azureFN: "",
-      draftID: loadedIDRef.current
+      draftID: loadedIDRef.current,
+      usedMaterials,
+      usedPPEOptions,
+      usedHandTools
     };
 
     setLoading(true);
@@ -1629,7 +1902,7 @@ const FTSCreatePageTemplate = () => {
 
       toast.success(`Template Successfully Approved.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 1500, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1693,15 +1966,26 @@ const FTSCreatePageTemplate = () => {
     setIsSaveConfirmOpen(true);
   };
 
-  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current && isDirtyRef.current;
+
+  // Skips the save-confirmation popup entirely: releases the lock (so the
+  // document isn't left checked out) and runs the pending navigation
+  // action directly. This is the "no save needed" / silent-no path.
+  const leaveWithoutPrompt = async (action) => {
+    await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
+    isDirtyRef.current = false;
+    action();
+  };
 
   const handleBack = () => {
-    if (!requiresSavePrompt()) { navigate(-1); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate(-1)); return; }
     openSaveConfirm("back", () => navigate(-1));
   };
 
   const handleHomeNav = () => {
-    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    if (!requiresSavePrompt()) { leaveWithoutPrompt(() => navigate("/FrontendDMS/home")); return; }
     openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
   };
 
@@ -1996,7 +2280,61 @@ const FTSCreatePageTemplate = () => {
           </div>
 
           <SupportingDocumentTableFTS collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
+
           <WorkOrderActionFields collapsible={true} formData={formData} setFormData={setFormData} error={errors.actionFields} setErrors={setErrors} readOnly={readOnly} />
+
+          {jraDocsToImport.length > 0 && (
+            <div className="input-row">
+              <div className="input-box-ref">
+                <div
+                  className="input-row-buttons"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    gap: "12px",
+                    marginTop: "0px"
+                  }}
+                >
+                  <span className="font-fam" style={{ marginTop: "15px", marginBottom: "10px", fontWeight: "bold", fontFamily: "Arial" }}>
+                    Values from a selected JRA can be imported into this Field Template. Do you want to import?
+                  </span>
+
+                  <button
+                    type="button"
+                    className="generate-button font-fam"
+                    style={{
+                      width: "15%",
+                      minWidth: "100px",
+                      marginTop: "0px"
+                    }}
+                    title="Import JRA"
+                    disabled={jraImporting}
+                    onClick={handleImportJra}
+                  >
+                    {jraImporting ? "Importing..." : "Import"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <PPETable collapsible={true} formData={formData} setFormData={setFormData} usedPPEOptions={usedPPEOptions} setUsedPPEOptions={setUsedPPEOptions} userID={userID} readOnly={readOnly} />
+          <HandToolTable collapsible={true} formData={formData} setFormData={setFormData} usedHandTools={usedHandTools} setUsedHandTools={setUsedHandTools} userID={userID} readOnly={readOnly} />
+          <MaterialsTable collapsible={true} formData={formData} setFormData={setFormData} usedMaterials={usedMaterials} setUsedMaterials={setUsedMaterials} userID={userID} readOnly={readOnly} />
+          <HazardsControlsTableFTS
+            collapsible={true}
+            defaultCollapsed={true}
+            hazardControlRows={formData.hazardsControls || []}
+            addHazardControlRow={addHazardControlRow}
+            removeHazardControlRow={removeHazardControlRow}
+            updateHazardControlRow={updateHazardControlRow}
+            updateHazardControlRows={updateHazardControlRows}
+            readOnly={readOnly}
+            required={false}
+          />
 
           {true && (<div className="input-row-buttons">
             {true && (<button

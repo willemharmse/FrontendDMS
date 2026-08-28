@@ -12,10 +12,11 @@ import ActionFieldsPreviewBox, { fieldStillNeedsScheduling } from "./ActionField
 // the allocator's Work Order Management table, only once a work order's
 // status is "Completed". Unlike TemplatePreview (which reuses the shared
 // create-page field set from a formData object already held in memory),
-// this popup only ever needs to show the Action Fields the responsible
-// person actually submitted, so rather than reusing TemplatePreviewContent
-// it fetches the task fresh from GET /api/workOrderTasks/:id and renders
-// just ActionFieldsPreviewBox, permanently read-only.
+// this popup only ever needs to show the Action Fields (and the responsible
+// person's sign-off) the responsible person actually submitted, so rather
+// than reusing TemplatePreviewContent it fetches the task fresh from
+// GET /api/workOrderTasks/:id and renders just ActionFieldsPreviewBox,
+// permanently read-only.
 //
 // The popup body scrolls (it shouldn't usually need to - action fields are
 // rarely long enough to overflow - but nothing is clipped if they do).
@@ -137,6 +138,7 @@ const WorkOrderInfoPreview = ({ open, taskId, onClose, onCloseOut }) => {
                             workOrderTitle={task.taskTitle || ""}
                             priority={task.priority || ""}
                             workOrderAttachments={task.attachments || []}
+                            responsibleSignature={task.responsibleSignature || null}
                             onTaskAdded={refreshTask}
                         />
                     )}

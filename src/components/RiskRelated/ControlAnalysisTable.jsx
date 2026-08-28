@@ -571,29 +571,53 @@ const ControlAnalysisTable = ({ collapsible = false, rows, updateRows, ibra, add
         };
 
         currentRows.sort((a, b) => {
-            const normalize = (v) => (v == null ? "" : String(v).trim());
-            const normCat = (v) => normalize(v).toLowerCase();
+            // No column chosen via the Excel-style header popup yet ->
+            // fall back to the original default order (General category
+            // first, then category A-Z, then control name A-Z).
+            if (!sortConfig?.colId) {
+                const normalizeSimple = (v) => (v == null ? "" : String(v).trim());
+                const normCat = (v) => normalizeSimple(v).toLowerCase();
 
-            const aCat = normCat(a.category);
-            const bCat = normCat(b.category);
+                const aCat = normCat(a.category);
+                const bCat = normCat(b.category);
 
-            const aIsGeneral = aCat === "general";
-            const bIsGeneral = bCat === "general";
+                const aIsGeneral = aCat === "general";
+                const bIsGeneral = bCat === "general";
 
-            // 1. General first
-            if (aIsGeneral && !bIsGeneral) return -1;
-            if (!aIsGeneral && bIsGeneral) return 1;
+                if (aIsGeneral && !bIsGeneral) return -1;
+                if (!aIsGeneral && bIsGeneral) return 1;
 
-            // 2. Then category A-Z
-            if (aCat !== bCat) {
-                return aCat.localeCompare(bCat);
+                if (aCat !== bCat) {
+                    return aCat.localeCompare(bCat);
+                }
+
+                const aControl = normalizeSimple(a.control).toLowerCase();
+                const bControl = normalizeSimple(b.control).toLowerCase();
+
+                return aControl.localeCompare(bControl);
             }
 
-            // 3. Then control name A-Z
-            const aControl = normalize(a.control).toLowerCase();
-            const bControl = normalize(b.control).toLowerCase();
+            // A column sort is active - compare that column's values,
+            // trying date, then numeric, then falling back to
+            // case-insensitive string comparison, and apply direction.
+            const aRaw = a?.[colId];
+            const bRaw = b?.[colId];
 
-            return aControl.localeCompare(bControl);
+            const aDate = tryDate(aRaw);
+            const bDate = tryDate(bRaw);
+            if (aDate !== null && bDate !== null) {
+                return (aDate - bDate) * dir;
+            }
+
+            const aNum = tryNumber(aRaw);
+            const bNum = tryNumber(bRaw);
+            if (aNum !== null && bNum !== null) {
+                return (aNum - bNum) * dir;
+            }
+
+            const aStr = normalize(aRaw).toLowerCase();
+            const bStr = normalize(bRaw).toLowerCase();
+            return aStr.localeCompare(bStr) * dir;
         });
 
         // 3. Renumber

@@ -113,12 +113,28 @@ const VisitorInductionMainPage = () => {
                             <h3 className="document-title-fi-home">Saved Drafts</h3>
                         </>
                     </div>)}
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/inductionApprovals")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval Visitor Inductions</h3>
+                        </>
+                    </div>
                     {canIn(access, "TMS", ["systemAdmin"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/generatedInductionInfo")}>
                         <>
                             <div className="icon-dept">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} icon={faFolderOpen} className={"icon-dept"} />
                             </div>
-                            <h3 className="document-title-fi-home">Published Visitor Induction</h3>
+                            <h3 className="document-title-fi-home">Controlled Visitor Inductions</h3>
+                        </>
+                    </div>)}
+                    {false && (<div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/inductionRevisions")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision Visitor Inductions<br /></h3>
                         </>
                     </div>)}
                     {false && canIn(access, "TMS", ["systemAdmin", "profileManager"]) && (<div className={`document-card-fi-home`} onClick={() => navigate("/FrontendDMS/visitorView")}>

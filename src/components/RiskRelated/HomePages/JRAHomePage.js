@@ -75,12 +75,20 @@ const JRAHomePage = () => {
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>
+                    <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/riskManagementApprovals/jra")}>
+                        <>
+                            <div className="icon-dc">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
+                            </div>
+                            <h3 className="document-title-dc-home">Review & Approval JRAs</h3>
+                        </>
+                    </div>
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/generatedJRADocs")}>
                         <>
                             <div className="icon-dc">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off JRAs</h3>
+                            <h3 className="document-title-dc-home">Pending Sign Off JRAs</h3>
                         </>
                     </div>
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/signedOffJRA")}>
@@ -88,7 +96,15 @@ const JRAHomePage = () => {
                             <div className="icon-risk">
                                 <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
-                            <h3 className="document-title-risk-home">Signed Off JRAs<br /></h3>
+                            <h3 className="document-title-risk-home">Controlled JRAs<br /></h3>
+                        </>
+                    </div>
+                    <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/riskManagementRevisions/jra")}>
+                        <>
+                            <div className="icon-risk">
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
+                            </div>
+                            <h3 className="document-title-risk-home">Under Revision JRAs<br /></h3>
                         </>
                     </div>
                 </div>

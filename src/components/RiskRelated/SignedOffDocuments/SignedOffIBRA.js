@@ -48,7 +48,7 @@ const SignedOffIBRA = () => {
                 throw new Error(response.error || 'Failed to upload file');
             }
 
-            toast.success("Document Version Created in Ready For Sign Off", {
+            toast.success("Document Version Created in Pending Sign Off", {
                 closeButton: false,
                 autoClose: 1500,
                 style: {
@@ -285,7 +285,7 @@ const SignedOffIBRA = () => {
                     </div>
 
                     <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Signed Off IBRA"}</p>
+                        <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Controlled IBRA"}</p>
                     </div>
                 </div>)
             }
@@ -315,7 +315,7 @@ const SignedOffIBRA = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Signed Off IBRA"}</label>
+                        <label className="risk-control-label">{"Controlled IBRA"}</label>
                         <FontAwesomeIcon icon={faColumns} className="top-right-button-control-att" onClick={() => setShowColumnSelector(v => !v)} />
                         <FontAwesomeIcon
                             icon={faFilter}

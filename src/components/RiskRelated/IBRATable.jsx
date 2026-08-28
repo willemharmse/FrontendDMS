@@ -68,6 +68,15 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
 
     const BLANK = "(Blanks)";
 
+    // OLD BEHAVIOUR TOGGLE: when true, a filtered hazards/controls cell only
+    // shows the specific item(s) that matched the active filter, hiding the
+    // row's other hazards/controls. Set this back to true to restore that
+    // old behaviour if the team wants to revert.
+    // NEW (current) behaviour: a matching row shows its FULL hazards/controls
+    // list — rows with zero matching items are still excluded entirely via
+    // CELL_ITEM_FILTERS in filteredRows below, only the in-cell stripping is disabled.
+    const SHOW_ONLY_FILTERED_ITEMS_IN_CELL = false;
+
     const getSelectedValuesForColumn = (colId) => {
         const raw = filters[colId];
         const selected = Array.isArray(raw) ? raw : raw?.selected;
@@ -329,8 +338,10 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
         // FIX: If sorting by 'nr' (default), rely on the array order provided by parent.
         // Do NOT use an artificial map.
         if (colId === "nr") {
-            // Re-number visible rows sequentially
-            return current.map((r, i) => ({ ...r, nr: i + 1 }));
+            // Filtering must not reassign row numbers — each row keeps the nr
+            // it was actually given (see the real renumbering after
+            // add/remove/reorder elsewhere in this file).
+            return current;
         }
 
         // Otherwise, apply active sort direction for other columns
@@ -377,7 +388,7 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
             }) * dir;
         });
 
-        return current.map((r, i) => ({ ...r, nr: i + 1 }));
+        return current;
     }, [rows, filters, showFlagged, sortConfig]);
 
     function openFilterPopup(colId, e) {
@@ -2332,6 +2343,7 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                                                                         >
                                                                             {row.hazards
                                                                                 .filter(item => {
+                                                                                    if (!SHOW_ONLY_FILTERED_ITEMS_IN_CELL) return true;
                                                                                     const value = typeof item === "string" ? item : item?.hazard;
                                                                                     return isSelectedOrNoFilter("hazards", value);
                                                                                 })
@@ -2370,6 +2382,7 @@ const IBRATable = ({ collapsible = false, rows, updateRows, addRow, removeRow, g
                                                                         >
                                                                             {row.controls
                                                                                 .filter(item => {
+                                                                                    if (!SHOW_ONLY_FILTERED_ITEMS_IN_CELL) return true;
                                                                                     const value = typeof item === "string" ? item : item?.control;
                                                                                     return isSelectedOrNoFilter("controls", value);
                                                                                 })

@@ -1413,8 +1413,8 @@ const ManualTaskingPage = () => {
         const due = new Date(dueDate);
         due.setHours(0, 0, 0, 0);
         const timeDiff = due - today;
-        if (timeDiff < 0) return "review-past";
-        if (timeDiff <= dueDateVal * 24 * 60 * 60 * 1000) return "review-past";
+        if (timeDiff < 0) return "review-past"; // actually overdue — red
+        if (timeDiff <= dueDateVal * 24 * 60 * 60 * 1000) return "review-soon"; // approaching — yellow
         return "";
     };
 
@@ -2345,6 +2345,7 @@ const ManualTaskingPage = () => {
             {deleteTaskPopup.open && (
                 <DeleteAllocatedTask
                     cancel={!deleteTaskPopup.task?._isPendingRepeating && deleteTaskPopup.task?.acceptanceStatus === "Accepted"}
+                    cancelled={deleteTaskPopup.task?.status === "Cancelled"}
                     isPendingRepeating={deleteTaskPopup.task?._isPendingRepeating}
                     open={deleteTaskPopup.open} task={deleteTaskPopup.task} taskName={deleteTaskPopup.taskName}
                     onClose={closeDeleteTaskPopup} handleDeleteTask={handleDeleteTask}

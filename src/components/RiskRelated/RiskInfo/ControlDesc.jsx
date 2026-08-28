@@ -11,15 +11,15 @@ const ControlDesc = ({ setClose, description, performance }) => {
                 </div>
 
                 <div className="controlDesc-table-group">
-                    <label className="controlDesc-header">Control Description</label>
+                    <label className="controlDesc-header" style={{ fontWeight: "bold" }}>Control Description</label>
                     <span className="controlDesc-text">
-                        {description}
+                        {description || "-"}
                     </span>
                 </div>
                 <div className="controlDesc-table-group">
-                    <label className="controlDesc-header">Control Performance Requirements</label>
+                    <label className="controlDesc-header" style={{ fontWeight: "bold" }}>Performance Requirements & Verification</label>
                     <span className="controlDesc-text">
-                        {performance}
+                        {performance || "-"}
                     </span>
                 </div>
             </div>

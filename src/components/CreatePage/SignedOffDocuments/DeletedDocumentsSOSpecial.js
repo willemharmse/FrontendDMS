@@ -349,7 +349,7 @@ const DeletedDocumentsSOSpecial = () => {
                     </div>
                     <div className="sidebar-logo-dm-fi">
                         <img src={`${process.env.PUBLIC_URL}/specialInstInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"Deleted Signed Off Special Instructions"}</p>
+                        <p className="logo-text-dm-fi">{"Deleted Controlled Special Instructions"}</p>
                     </div>
                 </div>
             )}
@@ -385,7 +385,7 @@ const DeletedDocumentsSOSpecial = () => {
                 </div>
                 <div className="table-flameproof-card">
                     <div className="flameproof-table-header-label-wrapper">
-                        <label className="risk-control-label">{"Deleted Signed Off Special Instructions"}</label>
+                        <label className="risk-control-label">{"Deleted Controlled Special Instructions"}</label>
                         <FontAwesomeIcon
                             icon={faFilter}
                             className={getFilterBtnClass()} // Calculated class (e.g., ibra4, ibra5, ibra6)

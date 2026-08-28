@@ -776,7 +776,6 @@ body {
   font-size: 14px;
   transition: border 0.3s ease-in-out;
   outline: none;
-  word-break: break-all;
 }
 
 .input-box input:focus {
