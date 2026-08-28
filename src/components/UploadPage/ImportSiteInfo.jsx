@@ -68,6 +68,7 @@ const ImportSiteInfo = ({ onClose, onFileSelected }) => {
     };
 
     useEffect(() => {
+        return;
         console.log("📝 getDraftDocuments effect running");
         const getDraftDocuments = async () => {
             try {
@@ -81,7 +82,7 @@ const ImportSiteInfo = ({ onClose, onFileSelected }) => {
 
                 const data = await response.json();
                 console.log(data);
-                setInfo(data.siteInfo[0]);
+                setInfo(data.siteInfo);
             } catch (error) {
                 console.error("Failed to fetch drafts:", error);
             }
@@ -135,7 +136,7 @@ const ImportSiteInfo = ({ onClose, onFileSelected }) => {
 
     return (
         <div className="import-si-popup-overlay">
-            <div className="import-si-popup-content-new">
+            <div className="import-si-popup-content-new" style={{ minHeight: 0 }}>
                 <div className="import-si-file-header">
                     <h2 className="import-si-file-title">Import Site General Information</h2>
                     <button className="import-si-file-close" onClick={onClose} title="Close Popup">×</button>
@@ -146,7 +147,7 @@ const ImportSiteInfo = ({ onClose, onFileSelected }) => {
                     <div className="import-si-file-text-xlsx">{file ? file.name : "No File Selected"}</div>
                     <div className="import-si-file-buttons">
                         <label className="import-si-file-button"
-                            style={{ width: "50%" }}>
+                            style={{ width: "45.249%" }}>
                             {'Select File'}
                             <input
                                 type="file"
@@ -158,45 +159,47 @@ const ImportSiteInfo = ({ onClose, onFileSelected }) => {
                     </div>
                 </div>
 
-                <div className="import-si-info-row">
-                    {false && (<div className="import-si-file-group" style={{ position: "relative" }}>
-                        <button
-                            className="top-right-button-rsi"
-                            title="Download SID"
-                            onClick={() => downloadTemplate()}
-                        >
-                            <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
-                        </button>
-                        <div className="import-si-file-text">Download Site General Information Template</div>
-                        <div className="import-si-label">Version</div>
-                        <div className="import-si-value">V0.25</div>
-                        <div className="import-si-label">Date Uploaded</div>
-                        <div className="import-si-value">2026-01-11</div>
-                    </div>)}
+                {false && (
+                    <div className="import-si-info-row">
+                        {false && (<div className="import-si-file-group" style={{ position: "relative" }}>
+                            <button
+                                className="top-right-button-rsi"
+                                title="Download SID"
+                                onClick={() => downloadTemplate()}
+                            >
+                                <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                            </button>
+                            <div className="import-si-file-text">Download Site General Information Template</div>
+                            <div className="import-si-label">Version</div>
+                            <div className="import-si-value">V0.25</div>
+                            <div className="import-si-label">Date Uploaded</div>
+                            <div className="import-si-value">2026-01-11</div>
+                        </div>)}
 
-                    <div className="import-si-file-group" style={{ position: "relative" }}>
-                        <button
-                            className="top-right-button-rsi"
-                            title="Download SID"
-                            onClick={() => downloadFile()}
-                        >
-                            <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
-                        </button>
-                        <div className="import-si-file-text">Download Current Site General Information</div>
+                        <div className="import-si-file-group" style={{ position: "relative" }}>
+                            <button
+                                className="top-right-button-rsi"
+                                title="Download SID"
+                                onClick={() => downloadFile()}
+                            >
+                                <FontAwesomeIcon icon={faDownload} className="icon-um-search" />
+                            </button>
+                            <div className="import-si-file-text">Download Current Site General Information</div>
 
-                        <div className="import-si-label">Title</div>
-                        <div className="import-si-value">{info?.fileName || "N/A"}</div>
+                            <div className="import-si-label">Title</div>
+                            <div className="import-si-value">{info?.fileName || "N/A"}</div>
 
-                        <div className="import-si-label">Uploaded By</div>
-                        <div className="import-si-value">{info?.uploader?.username || "N/A"}</div>
+                            <div className="import-si-label">Uploaded By</div>
+                            <div className="import-si-value">{info?.uploader?.username || "N/A"}</div>
 
-                        <div className="import-si-label">Date Uploaded</div>
-                        <div className="import-si-value">{info?.uploadDate ? formatDate(info.uploadDate) : "N/A"}</div>
+                            <div className="import-si-label">Date Uploaded</div>
+                            <div className="import-si-value">{info?.uploadDate ? formatDate(info.uploadDate) : "N/A"}</div>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <button
-                    className="import-si-file-button-sub"
+                    className="import-si-file-button-sub-new"
                     onClick={handleClick}
                     disabled={loading}
                     style={{ width: "50%" }}

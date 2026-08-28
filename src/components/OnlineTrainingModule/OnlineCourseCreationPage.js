@@ -5,7 +5,7 @@ import { saveAs } from "file-saver";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import { v4 as uuidv4 } from "uuid";
 import InductionContent from "../VisitorsInduction/InductionCreation/InductionContent";
@@ -26,6 +26,7 @@ import CourseResourceTable from "./CourseResourceTable";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 
 const OnlineCourseCreationPage = () => {
   const id = useParams().id || '';
@@ -60,6 +61,9 @@ const OnlineCourseCreationPage = () => {
   const [owner, setOwner] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
   const [isPublisher, setIsPublisher] = useState(false);
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const readOnlyRef = useRef(false);
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
@@ -149,6 +153,14 @@ const OnlineCourseCreationPage = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const closePreview = () => {
@@ -815,6 +827,52 @@ const OnlineCourseCreationPage = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: loadedIDRef.current
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/remove-from-approval-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Online Training Course Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 1500, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+      setCanRemove(false);
+      loadData(id);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   const loadData = async (loadID) => {
     try {
       setLoadingDraft(true);
@@ -836,6 +894,7 @@ const OnlineCourseCreationPage = () => {
       }
 
       const draftData = storedData.draft || {};
+      const canRemove = storedData.canRemove || false;
 
       console.log("Loaded draft data:", draftData);
 
@@ -855,6 +914,7 @@ const OnlineCourseCreationPage = () => {
       userIDsRef.current = normalizedSharedUsers;
 
       setPublishable(storedData.publishable);
+      setCanRemove(canRemove);
 
       const rawForm = draftData.formData || {};
       const normalizedForm = {
@@ -1269,6 +1329,8 @@ const OnlineCourseCreationPage = () => {
     });
     setTimeout(() => {
       setIsSaveConfirmOpen(false);
+      loadedIDRef.current = '';
+      setLoadedID('');
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
     }, 1500);
@@ -1276,6 +1338,8 @@ const OnlineCourseCreationPage = () => {
 
   const handleDiscard = () => {
     setIsSaveConfirmOpen(false);
+    loadedIDRef.current = '';
+    setLoadedID('');
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
   };
@@ -1393,6 +1457,10 @@ const OnlineCourseCreationPage = () => {
 
                 {inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
                   <FontAwesomeIcon icon={faCheckCircle} className={`${(!loadedID) ? "disabled-share" : ""}`} onClick={handleApproveClick} title="Approve Draft" />
+                </div>)}
+
+                {canRemove && inApproval && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
                 </div>)}
               </>
             )}
@@ -1560,6 +1628,15 @@ const OnlineCourseCreationPage = () => {
           onCancel={handleCancelSave}
           draftTitle={formData.courseTitle}
           triggerType={saveConfirmTrigger}
+        />
+      )}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="online training draft"
+          title={formData.courseTitle}
+          loading={removingApproval}
         />
       )}
     </div>

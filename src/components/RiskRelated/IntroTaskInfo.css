@@ -96,6 +96,23 @@
     field-sizing: content;
 }
 
+.jra-info-popup-page-textarea-new {
+    width: calc(100% - 20px);
+    min-width: calc(100% - 20px);
+    min-height: 19px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-family: Arial;
+    border-radius: 4px;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    resize: vertical;
+    font-family: Arial;
+    field-sizing: content;
+    display: block;
+}
+
 .jra-info-scope-group {
     display: flex;
     justify-content: flex-start;
@@ -239,4 +256,39 @@
 
 .icon-jra-info:hover {
     opacity: 0.7;
+}
+
+.jra-info-add-item-icon {
+    margin-left: 5px;
+    margin-right: 5px;
+    flex-shrink: 0;
+    color: gray;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.jra-info-add-item-icon:hover {
+    color: #7EAC89;
+}
+
+.jra-info-popup-page-select-container-nt {
+    position: relative;
+    width: 100%;
+}
+
+.jra-info-popup-page-select-container-nt::after {
+    content: '';
+    position: absolute;
+    right: 6px;
+    font-family: Arial;
+    top: 51%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #777;
+    pointer-events: none;
 }

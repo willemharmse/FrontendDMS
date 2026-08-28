@@ -8,12 +8,11 @@ import {
     faTrash,
     faArrowUp,
     faArrowDown,
-    faEye,
-    faEyeSlash,
+    faEdit,
 } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-toastify";
-import { FIELD_TYPES, FIELD_TYPE_MAP } from "./WorkOrderActionFieldTypes";
-import ActionFieldControl from "./ActionFieldControl";
+import { FIELD_TYPE_MAP } from "./WorkOrderActionFieldTypes";
+import AddActionFieldPopup from "./AddActionFieldPopup";
+import EditActionFieldPopup from "./EditActionFieldPopup";
 
 // ---------------------------------------------------------------------------
 // WorkOrderActionFields
@@ -31,7 +30,20 @@ import ActionFieldControl from "./ActionFieldControl";
 //     title: string,
 //     type: one of FIELD_TYPES[].value,
 //     required: boolean,
-//     options: string[]   // only meaningful for "dropdown" and "buttons"
+//     options: string[],   // only meaningful for "dropdown" and "buttons"
+//     hazardClass: "Class A" | "Class B" | "Class C" | undefined,
+//     expectedValue: string | null,  // the option the technician is
+//                                     // expected to pick - only meaningful
+//                                     // for "dropdown", "yesno", "passfail",
+//                                     // and "buttons"
+//     expectedMin: number | null,    // only meaningful for "number"
+//     expectedMax: number | null,    // only meaningful for "number"
+//     relatedDocuments: { id, name }[],  // reference documents linked to
+//                                         // this field's expected outcome -
+//                                         // only meaningful for "number",
+//                                         // "dropdown", "yesno", "passfail",
+//                                         // and "buttons". id is the file's
+//                                         // docID, name is its display title.
 //   }
 //
 // This array *is* the field-capture structure of the work order - whatever
@@ -58,63 +70,67 @@ const WorkOrderActionFields = ({
 
     const actionFields = formData.actionFields || [];
 
-    // --- "Add a new field" mini-form state ---
-    const [newTitle, setNewTitle] = useState("");
-    const [newType, setNewType] = useState("text");
-    const [newOptionsText, setNewOptionsText] = useState(
-        (FIELD_TYPE_MAP.text.defaultOptions || []).join(", ")
-    );
-    const [previewOpen, setPreviewOpen] = useState({});
-    const [previewValues, setPreviewValues] = useState({});
+    // --- "Add a new field" popup ---
+    const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
+    // Where the next field from the popup should be inserted:
+    // null = append at the end (bottom "+" button), a number = insert at
+    // that index (row-level "+" button), pushing everything from that row
+    // down by one.
+    const [insertIndex, setInsertIndex] = useState(null);
 
-    const selectedTypeDef = FIELD_TYPE_MAP[newType];
-
-    const handleTypeChange = (value) => {
-        setNewType(value);
-        const typeDef = FIELD_TYPE_MAP[value];
-        setNewOptionsText(typeDef.hasOptions ? (typeDef.defaultOptions || []).join(", ") : "");
-    };
+    // --- "Edit an existing field" popup ---
+    const [isEditFieldOpen, setIsEditFieldOpen] = useState(false);
+    const [editingField, setEditingField] = useState(null);
 
     const clearErrorOnFocus = () => {
         if (error) setErrors(prev => ({ ...prev, actionFields: false }));
     };
 
-    const handleAddField = () => {
-        const title = newTitle.trim();
-        if (!title) {
-            toast.error("Give the field a title before adding it.");
-            return;
-        }
+    const openAddFieldPopup = (index = null) => {
+        if (readOnly) return;
+        clearErrorOnFocus();
+        setInsertIndex(index);
+        setIsAddFieldOpen(true);
+    };
 
-        const typeDef = FIELD_TYPE_MAP[newType];
-        let options = [];
-        if (typeDef.hasOptions) {
-            options = newOptionsText
-                .split(",")
-                .map(o => o.trim())
-                .filter(Boolean);
-
-            if (options.length < 2) {
-                toast.error(`Give "${typeDef.label}" at least two options, separated by commas.`);
-                return;
-            }
-        }
-
+    const handleAddField = ({ title, type, options, expectedValue, expectedMin, expectedMax, relatedDocuments }) => {
         const newField = {
             id: uuidv4(),
             title,
-            type: newType,
+            type,
             required: false,
             options,
+            expectedValue: expectedValue ?? null,
+            expectedMin: expectedMin ?? null,
+            expectedMax: expectedMax ?? null,
+            relatedDocuments: relatedDocuments || [],
         };
 
-        setFormData({ ...formData, actionFields: [...actionFields, newField] });
-        clearErrorOnFocus();
+        if (insertIndex === null) {
+            setFormData({ ...formData, actionFields: [...actionFields, newField] });
+        } else {
+            const next = [...actionFields];
+            next.splice(insertIndex + 1, 0, newField);
+            setFormData({ ...formData, actionFields: next });
+        }
 
-        // Reset the mini-form, ready for the next field.
-        setNewTitle("");
-        setNewType("text");
-        setNewOptionsText((FIELD_TYPE_MAP.text.defaultOptions || []).join(", "));
+        setInsertIndex(null);
+        clearErrorOnFocus();
+    };
+
+    const handleEditField = (field) => {
+        if (readOnly) return;
+        clearErrorOnFocus();
+        setEditingField(field);
+        setIsEditFieldOpen(true);
+    };
+
+    const handleSaveEditedField = (updatedField) => {
+        setFormData({
+            ...formData,
+            actionFields: actionFields.map((f) => (f.id === updatedField.id ? { ...f, ...updatedField } : f)),
+        });
+        clearErrorOnFocus();
     };
 
     const handleRemoveField = (id) => {
@@ -128,20 +144,19 @@ const WorkOrderActionFields = ({
         });
     };
 
+    const handleHazardClassChange = (id, hazardClass) => {
+        setFormData({
+            ...formData,
+            actionFields: actionFields.map(f => f.id === id ? { ...f, hazardClass } : f),
+        });
+    };
+
     const handleMove = (index, direction) => {
         const targetIndex = index + direction;
         if (targetIndex < 0 || targetIndex >= actionFields.length) return;
         const next = [...actionFields];
         [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
         setFormData({ ...formData, actionFields: next });
-    };
-
-    const togglePreview = (id) => {
-        setPreviewOpen(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const setPreviewValue = (id, value) => {
-        setPreviewValues(prev => ({ ...prev, [id]: value }));
     };
 
     return (
@@ -165,131 +180,147 @@ const WorkOrderActionFields = ({
 
                 {!isCollapsed && (
                     <>
-                        {!readOnly && (
-                            <div className="waf-add-field-row">
-                                <div className="waf-add-field-cell waf-add-field-title">
-                                    <label className="waf-mini-label">Field Title</label>
-                                    <input
-                                        type="text"
-                                        className="waf-control waf-input"
-                                        placeholder="e.g. CPS warning test passed?"
-                                        value={newTitle}
-                                        onFocus={clearErrorOnFocus}
-                                        onChange={(e) => setNewTitle(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="waf-add-field-cell">
-                                    <label className="waf-mini-label">Field Type</label>
-                                    <div className="jra-info-popup-page-select-container">
-                                        <select
-                                            className="table-control font-fam remove-default-styling"
-                                            value={newType}
-                                            style={{ height: "39px" }}
-                                            onChange={(e) => handleTypeChange(e.target.value)}
-                                        >
-                                            {FIELD_TYPES.map((t) => (
-                                                <option key={t.value} value={t.value}>{t.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {selectedTypeDef.hasOptions && (
-                                    <div className="waf-add-field-cell waf-add-field-title">
-                                        <label className="waf-mini-label">Options (comma-separated)</label>
-                                        <input
-                                            type="text"
-                                            className="waf-control waf-input"
-                                            placeholder="Option 1, Option 2, Option 3"
-                                            value={newOptionsText}
-                                            onChange={(e) => setNewOptionsText(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="waf-add-field-cell waf-add-field-btn-cell">
-                                    <button type="button" className="add-row-button-actionfield-plus" title="Add Action Field" onClick={handleAddField}>
-                                        <FontAwesomeIcon icon={faPlusCircle} />
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
                         <table className="font-fam table-borders waf-fields-table">
                             <thead className="cp-table-header">
                                 <tr>
-                                    <th style={{ textAlign: "center", width: "10%" }}>Nr</th>
-                                    <th style={{ textAlign: "center", width: "40%" }}>Field Title</th>
-                                    <th style={{ textAlign: "center", width: "40%" }}>Field Type</th>
-                                    {!readOnly && <th style={{ textAlign: "center", width: "10%" }}>Action</th>}
+                                    <th style={{ textAlign: "center", width: "5%" }}>Nr</th>
+                                    <th style={{ textAlign: "center", width: "25%" }}>Field Title</th>
+                                    <th style={{ textAlign: "center", width: "15%" }}>Field Type</th>
+                                    <th style={{ textAlign: "center", width: "20%" }}>Related Documents</th>
+                                    <th style={{ textAlign: "center", width: "15%" }}>Hazard Class</th>
+                                    <th style={{ textAlign: "center", width: "15%" }}>Mandatory Field</th>
+                                    {!readOnly && <th style={{ textAlign: "center", width: "5%" }}>Action</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {actionFields.length === 0 && (
                                     <tr>
-                                        <td colSpan={readOnly ? 3 : 4} className="font-fam" style={{ textAlign: "center", padding: "10px", color: "#888" }}>
+                                        <td colSpan={readOnly ? 6 : 7} className="font-fam" style={{ textAlign: "center", padding: "10px", color: "#888" }}>
                                             No action fields have been added yet.
                                         </td>
                                     </tr>
                                 )}
                                 {actionFields.map((field, index) => {
                                     const typeDef = FIELD_TYPE_MAP[field.type] || {};
-                                    const isPreviewOpen = !!previewOpen[field.id];
                                     return (
-                                        <React.Fragment key={field.id}>
-                                            <tr>
-                                                <td style={{ textAlign: "center", fontSize: "14px" }}>{index + 1}</td>
-                                                <td style={{ fontSize: "14px" }}>
-                                                    {field.title}
-                                                </td>
-                                                <td style={{ fontSize: "14px", textAlign: "center" }}>
-                                                    {typeDef.label}
-                                                </td>
-                                                {!readOnly && (
-                                                    <td className="procCent">
-                                                        <div className="term-action-buttons waf-row-actions">
-                                                            <button
-                                                                type="button"
-                                                                className="waf-preview-toggle"
-                                                                onClick={() => togglePreview(field.id)}
-                                                                title={isPreviewOpen ? "Hide preview" : "Show live preview"}
-                                                            >
-                                                                <FontAwesomeIcon icon={isPreviewOpen ? faEyeSlash : faEye} />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="remove-row-button"
-                                                                title="Remove field"
-                                                                onClick={() => handleRemoveField(field.id)}
-                                                            >
-                                                                <FontAwesomeIcon icon={faTrash} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                        <tr key={field.id}>
+                                            <td style={{ textAlign: "center", fontSize: "14px" }}>{index + 1}</td>
+                                            <td style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>
+                                                {field.title}
+                                                {field.required && (
+                                                    <span className="required-field" title="Required"> *</span>
                                                 )}
-                                            </tr>
-                                            {isPreviewOpen && (
-                                                <tr className="waf-preview-row">
-                                                    <td colSpan={readOnly ? 3 : 4}>
-                                                        <div className="waf-preview-panel">
-                                                            <ActionFieldControl
-                                                                field={field}
-                                                                value={previewValues[field.id]}
-                                                                onChange={(val) => setPreviewValue(field.id, val)}
-                                                            />
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                            </td>
+                                            <td style={{ fontSize: "14px", textAlign: "center" }}>
+                                                {typeDef.label}
+                                            </td>
+                                            <td style={{ fontSize: "14px" }}>
+                                                {field.relatedDocuments && field.relatedDocuments.length > 0 ? (
+                                                    <ul style={{ margin: 0, paddingLeft: "18px", textAlign: "left" }}>
+                                                        {field.relatedDocuments.map((doc, docIndex) => (
+                                                            <li key={doc.id || docIndex}>{doc.name}</li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <span style={{ color: "#888" }}>—</span>
+                                                )}
+                                            </td>
+                                            <td style={{ textAlign: "center" }}>
+                                                <div className="jra-info-popup-page-select-container">
+                                                    <select
+                                                        className="table-control font-fam remove-default-styling"
+                                                        value={field.hazardClass || ""}
+                                                        disabled={readOnly}
+                                                        onChange={(e) => handleHazardClassChange(field.id, e.target.value)}
+                                                        title="Hazard Class"
+                                                    >
+                                                        <option value="">Select Hazard Class</option>
+                                                        <option value="Class A">Class A</option>
+                                                        <option value="Class B">Class B</option>
+                                                        <option value="Class C">Class C</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: "center" }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!field.required}
+                                                    disabled={readOnly}
+                                                    onChange={() => handleToggleRequired(field.id)}
+                                                    title="Require this field before the work order can be closed out"
+                                                    className="checkbox-inp-abbr"
+                                                />
+                                            </td>
+                                            {!readOnly && (
+                                                <td className="procCent">
+                                                    <div className="term-action-buttons waf-row-actions" style={{ flexDirection: "column" }}>
+                                                        <button
+                                                            type="button"
+                                                            className="waf-preview-toggle"
+                                                            onClick={() => handleEditField(field)}
+                                                            title="Edit field"
+                                                            style={{ color: "black", padding: "6px 10px" }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faEdit} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="waf-preview-toggle"
+                                                            onClick={() => openAddFieldPopup(index)}
+                                                            title="Insert field here"
+                                                            style={{ color: "black", padding: "6px 10px" }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faPlusCircle} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="remove-row-button"
+                                                            title="Remove field"
+                                                            onClick={() => handleRemoveField(field.id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             )}
-                                        </React.Fragment>
+                                        </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
+
+                        {!readOnly && (
+                            <button
+                                className="add-row-button-abbrs-plus"
+                                onClick={() => openAddFieldPopup(null)}
+                                title="Add Action Field"
+                                type="button"
+                            >
+                                <FontAwesomeIcon icon={faPlusCircle} />
+                            </button>
+                        )}
                     </>
                 )}
             </div>
+
+            <AddActionFieldPopup
+                isOpen={isAddFieldOpen}
+                onClose={() => {
+                    setIsAddFieldOpen(false);
+                    setInsertIndex(null);
+                }}
+                onAdd={handleAddField}
+            />
+
+            <EditActionFieldPopup
+                isOpen={isEditFieldOpen}
+                field={editingField}
+                onClose={() => {
+                    setIsEditFieldOpen(false);
+                    setEditingField(null);
+                }}
+                onSave={handleSaveEditedField}
+            />
         </div>
     );
 };

@@ -12,8 +12,24 @@ const SiteAreaInfoBox = ({
     error,
     setErrors,
     readOnly = false,
-    noOptions = false
+    noOptions = false,
+    // "create" | "template" | "assignment". On "template" (the Template
+    // Preview view) Site/Main Area/Sub Area stay visible and interactive
+    // (whatever the Work Order Basis is) but never write to formData - only
+    // "create" and "assignment" commit changes. Which of Main/Sub Area is
+    // disabled is unrelated to viewMode - it always follows the Work Order
+    // Basis (asset based -> disabled), the same in all three views - so on
+    // "assignment" a field that isn't disabled behaves exactly like it does
+    // on "create".
+    viewMode = "create",
+    // Names of formData keys that must stay non-interactive regardless of
+    // the Work Order Basis. Used by WorkOrderAssignment to lock fields
+    // that already held a value when the assignment popup was opened.
+    // Empty by default everywhere else, so this has no effect unless a
+    // caller explicitly passes it.
+    lockedFields = []
 }) => {
+    const commitChanges = viewMode !== "template";
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
 
@@ -21,6 +37,7 @@ const SiteAreaInfoBox = ({
     // build its site suggestions.
     const [siteOptions, setSiteOptions] = useState([]);
     const [loadingSites, setLoadingSites] = useState(true);
+    const [editAllowed, setEditAllowed] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -80,6 +97,8 @@ const SiteAreaInfoBox = ({
             setErrors(prev => ({ ...prev, siteAreaDetails: false }));
         }
     };
+
+    const isLocked = (field) => lockedFields.includes(field);
 
     // Same lookup route IBRAPopup uses to build { mainArea: [subAreas] }
     useEffect(() => {
@@ -147,11 +166,14 @@ const SiteAreaInfoBox = ({
     };
 
     const handleSiteChange = (value) => {
+        if (!commitChanges || isLocked("site")) return;
         setFormData(prev => ({ ...prev, site: value }));
     };
 
     const handleMainAreaInput = (value) => {
-        setFormData(prev => ({ ...prev, mainArea: value }));
+        if (commitChanges && !isLocked("mainArea")) {
+            setFormData(prev => ({ ...prev, mainArea: value }));
+        }
         setShowSubAreasDropdown(false);
 
         const matches = noOptions
@@ -163,7 +185,9 @@ const SiteAreaInfoBox = ({
     };
 
     const handleMainAreaFocus = () => {
+        if (editAllowed) return;
         if (readOnly) return;
+        if (isLocked("mainArea")) return;
         clearErrorOnFocus();
         setShowSubAreasDropdown(false);
         setFilteredMainAreas(noOptions ? [] : mainAreas);
@@ -172,12 +196,18 @@ const SiteAreaInfoBox = ({
     };
 
     const selectMainAreaSuggestion = (value) => {
+        if (!commitChanges || isLocked("mainArea")) {
+            setShowMainAreasDropdown(false);
+            return;
+        }
         setFormData(prev => ({ ...prev, mainArea: value }));
         setShowMainAreasDropdown(false);
     };
 
     const handleSubAreaInput = (value) => {
-        setFormData(prev => ({ ...prev, subArea: value }));
+        if (commitChanges && !isLocked("subArea")) {
+            setFormData(prev => ({ ...prev, subArea: value }));
+        }
         setShowMainAreasDropdown(false);
 
         if (noOptions) {
@@ -199,7 +229,9 @@ const SiteAreaInfoBox = ({
     };
 
     const handleSubAreaFocus = () => {
+        if (editAllowed) return;
         if (readOnly) return;
+        if (isLocked("subArea")) return;
         clearErrorOnFocus();
         setShowMainAreasDropdown(false);
 
@@ -221,14 +253,25 @@ const SiteAreaInfoBox = ({
     };
 
     const selectSubAreaSuggestion = (value) => {
+        if (!commitChanges || isLocked("subArea")) {
+            setShowSubAreasDropdown(false);
+            return;
+        }
         setFormData(prev => ({ ...prev, subArea: value }));
         setShowSubAreasDropdown(false);
     };
 
+    useEffect(() => {
+        const isAssetBased =
+            String(formData.workOrderBases || "").toLowerCase() === "assetbased";
+
+        setEditAllowed(isAssetBased);
+    }, [formData.workOrderBases]);
+
     return (
         <div className="input-row">
             <div className={`input-box-ref ${error ? 'error-create' : ''}`}>
-                <h3 className="font-fam-labels">Site and Area Information <span className="required-field">*</span></h3>
+                <h3 className="font-fam-labels">Area Information <span className="required-field">*</span></h3>
 
                 {collapsible && (<button
                     className="top-right-button-ibra"
@@ -259,8 +302,8 @@ const SiteAreaInfoBox = ({
                                             value={formData.site || ""}
                                             onChange={e => handleSiteChange(e.target.value)}
                                             onFocus={clearErrorOnFocus}
-                                            disabled={readOnly || loadingSites}
-                                            style={{ fontSize: "14px" }}
+                                            disabled={readOnly || loadingSites || isLocked("site")}
+                                            style={{ fontSize: "14px", height: "40px", padding: "10px" }}
                                         >
                                             <option value="">
                                                 {loadingSites ? "Loading..." : "Select Site"}
@@ -281,13 +324,17 @@ const SiteAreaInfoBox = ({
                                     <div className="ibra-popup-page-select-container">
                                         <textarea
                                             ref={mainAreasInputRef}
-                                            className="jra-info-popup-page-textarea"
+                                            className="jra-info-popup-page-textarea-new"
                                             value={formData.mainArea || ""}
                                             placeholder="Select Main Area"
                                             onChange={e => handleMainAreaInput(e.target.value)}
                                             onFocus={handleMainAreaFocus}
                                             readOnly={readOnly}
-                                            style={{ resize: "none" }}
+                                            style={{
+                                                resize: "none",
+                                                color: (readOnly || editAllowed || isLocked("mainArea")) ? "gray" : "black",
+                                            }}
+                                            disabled={editAllowed || isLocked("mainArea")}
                                         />
                                     </div>
                                 </td>
@@ -301,13 +348,17 @@ const SiteAreaInfoBox = ({
                                     <div className="ibra-popup-page-select-container">
                                         <textarea
                                             ref={subAreasInputRef}
-                                            className="jra-info-popup-page-textarea"
+                                            className="jra-info-popup-page-textarea-new"
                                             value={formData.subArea || ""}
                                             placeholder="Select Sub Area"
                                             onChange={e => handleSubAreaInput(e.target.value)}
                                             onFocus={handleSubAreaFocus}
                                             readOnly={readOnly}
-                                            style={{ resize: "none" }}
+                                            style={{
+                                                resize: "none",
+                                                color: (readOnly || editAllowed || isLocked("subArea")) ? "gray" : "black",
+                                            }}
+                                            disabled={editAllowed || isLocked("subArea")}
                                         />
                                     </div>
                                 </td>

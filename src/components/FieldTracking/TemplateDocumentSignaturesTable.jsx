@@ -304,7 +304,7 @@ const TemplateDocumentSignaturesTable = ({
   };
 
   return (
-    <div className="input-row" style={{ marginBottom: "10px" }}>
+    <div className="input-row" style={{ marginBottom: "0px" }}>
       <div className={`input-box-2 ${error ? "error-sign" : ""}`}>
         <h3 className="font-fam-labels">
           Template Approvals <span className="required-field">*</span>

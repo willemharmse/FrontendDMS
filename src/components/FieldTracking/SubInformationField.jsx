@@ -53,7 +53,7 @@ const SubInformationField = ({
                     value={value}
                     placeholder="Site / Area / Department of Work Order"
                     readOnly={true}
-                    style={{ minHeight: 0 }}
+                    style={{ minHeight: 0, color: "grey" }}
                 />
             </div>
         </div>

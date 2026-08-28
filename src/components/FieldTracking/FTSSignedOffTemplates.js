@@ -36,17 +36,22 @@ const FTSSignedOffTemplates = () => {
                 throw new Error(response.error || 'Failed to upload file');
             }
 
-            toast.success("Document Version Created in Ready For Sign Off", {
+            toast.success("Document Version Created in the Drafts Folder.", {
                 closeButton: false,
                 autoClose: 1500,
                 style: {
                     textAlign: 'center'
                 }
 
-            })
+            });
+            fetchFiles();
         } catch (error) {
             setLoading(false);
         }
+    }
+
+    const previewDocument = async (fileID) => {
+        navigate(`/FrontendDMS/ftsReviewTemplate/${fileID}/template`)
     }
 
     // --- Unified Sort ---
@@ -215,7 +220,7 @@ const FTSSignedOffTemplates = () => {
                 <div className="popup-anchor">
                     <span>{(f.formData.title)}</span>
 
-                    {(hoveredFileId === f._id) && (<FTSPopupMenuSignedOffFiles file={f} typeDoc={"ibra"} risk={false} isOpen={true} openDownloadModal={downloadFile} setHoveredFileId={setHoveredFileId} id={f._id} review={reviewDocument} />)}
+                    {(hoveredFileId === f._id) && (<FTSPopupMenuSignedOffFiles preview={previewDocument} file={f} typeDoc={"ibra"} risk={false} isOpen={true} openDownloadModal={downloadFile} setHoveredFileId={setHoveredFileId} id={f._id} review={reviewDocument} />)}
                 </div>
             )
         },
@@ -348,10 +353,6 @@ const FTSSignedOffTemplates = () => {
                                 <span className="button-text">Deleted Templates</span>
                             </div>
                         </button>
-                    </div>
-
-                    <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} className="icon-risk-rm" /><p className="logo-text-dm-fi">{"Approved Templates"}</p>
                     </div>
                 </div>)
             }

@@ -1,7 +1,27 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import WorkOrderSuggestion from "./WorkOrderSuggestion";
+
+const getOptionValue = (option) => {
+    if (typeof option === "string" || typeof option === "number") {
+        return String(option).trim();
+    }
+
+    return String(
+        option?.activity ??
+        option?.value ??
+        option?.label ??
+        option?.name ??
+        option?.type ??
+        ""
+    ).trim();
+};
+
+const getOptionLabel = (option, fallback) => {
+    if (typeof option === "string" || typeof option === "number") {
+        return String(option).trim();
+    }
+
+    return String(option?.label ?? option?.activity ?? option?.name ?? fallback).trim();
+};
 
 const ActivityTaskTable = ({
     typeOptions: typeOptionsProp,
@@ -13,17 +33,16 @@ const ActivityTaskTable = ({
     activityVerbError = false,
     taskNameError = false,
     required = true,
-    userID,
 }) => {
+    const hasProvidedOptions = Array.isArray(typeOptionsProp);
     const [fetchedOptions, setFetchedOptions] = useState([]);
-    const [loadingOptions, setLoadingOptions] = useState(!typeOptionsProp);
-    const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+    const [loadingOptions, setLoadingOptions] = useState(!hasProvidedOptions);
 
-    // If the parent doesn't pass typeOptions in directly, fetch them from
-    // the Work Order Types route (type + description for each).
-    // NOTE: this reuses the same backend route as WorkOrderTable for now.
     useEffect(() => {
-        if (typeOptionsProp) return;
+        if (hasProvidedOptions) {
+            setLoadingOptions(false);
+            return undefined;
+        }
 
         let isMounted = true;
 
@@ -31,25 +50,28 @@ const ActivityTaskTable = ({
             try {
                 setLoadingOptions(true);
 
-                const res = await fetch(
+                const response = await fetch(
                     `${process.env.REACT_APP_URL}/api/valuesUpload/activityNames`
                 );
 
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch activities: ${res.status}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch activities: ${response.status}`);
                 }
 
-                const data = await res.json();
+                const data = await response.json();
+                const activityNames = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data?.activityNames)
+                        ? data.activityNames
+                        : Array.isArray(data?.values)
+                            ? data.values
+                            : [];
 
                 if (isMounted) {
-                    setFetchedOptions(
-                        Array.isArray(data.activityNames)
-                            ? data.activityNames
-                            : []
-                    );
+                    setFetchedOptions(activityNames);
                 }
-            } catch (err) {
-                console.error("Error fetching activity names:", err);
+            } catch (error) {
+                console.error("Error fetching activity names:", error);
 
                 if (isMounted) {
                     setFetchedOptions([]);
@@ -66,81 +88,120 @@ const ActivityTaskTable = ({
         return () => {
             isMounted = false;
         };
-    }, [typeOptionsProp]);
+    }, [hasProvidedOptions]);
 
-    // Normalize whatever we have (prop or fetched) into { value, label, description },
-    // and guarantee an "Other" option is always available so users can
-    // always type a custom value.
     const typeOptions = useMemo(() => {
-        const source = typeOptionsProp || fetchedOptions;
+        const source = hasProvidedOptions ? typeOptionsProp : fetchedOptions;
+        const seen = new Set();
 
-        const normalized = source.map((opt) => ({
-            value: opt.activity ?? opt.activity,
-            label: opt.activity ?? opt.activity,
-        }));
+        const normalized = (Array.isArray(source) ? source : [])
+            .map((option) => {
+                const optionValue = getOptionValue(option);
 
-        // If an "Other" entry is present, move it to the end regardless of
-        // where the backend returned it.
-        const withoutOther = normalized.filter(
-            (opt) => String(opt.value).toLowerCase() !== "other"
+                return {
+                    value: optionValue,
+                    label: getOptionLabel(option, optionValue),
+                };
+            })
+            .filter((option) => {
+                const key = option.value.toLocaleLowerCase();
+
+                if (!option.value || seen.has(key)) {
+                    return false;
+                }
+
+                seen.add(key);
+                return true;
+            });
+
+        // Preserve a value that may already exist on an edited record, even if
+        // it is no longer returned by the options endpoint.
+        const currentValue = String(activityVerb ?? "").trim();
+        if (currentValue && !seen.has(currentValue.toLocaleLowerCase())) {
+            normalized.push({ value: currentValue, label: currentValue });
+        }
+
+        const regularOptions = normalized.filter(
+            (option) => option.value.toLocaleLowerCase() !== "other"
         );
-        const other = normalized.filter(
-            (opt) => String(opt.value).toLowerCase() === "other"
-        );
+        const otherOption = normalized.find(
+            (option) => option.value.toLocaleLowerCase() === "other"
+        ) ?? { value: "Other", label: "Other" };
 
-        return [...withoutOther, ...other];
-    }, [typeOptionsProp, fetchedOptions]);
-
-    const handleActivityVerbChange = (value) => {
-        onActivityVerbChange && onActivityVerbChange(value);
-    };
+        return [...regularOptions, otherOption];
+    }, [hasProvidedOptions, typeOptionsProp, fetchedOptions, activityVerb]);
 
     return (
-        <>
-            <div className="input-row-risk-create" style={{ alignItems: "center", marginBottom: "0px" }}>
-                <div className={`input-box-type-risk-create ${activityVerbError ? "error-create" : ""}`} style={{ position: "relative", marginBottom: "0px" }} >
-                    <h3 className="font-fam-labels">
-                        Activity Verb {required && <span className="required-field">*</span>}
-                    </h3>
-                    <div className="jra-info-popup-page-select-container">
+        <div className="input-row">
+            <div
+                className={`input-box-title ${activityVerbError || taskNameError ? "error-create" : ""
+                    }`}
+            >
+                <h3 className="font-fam-labels">
+                    Activity Name
+                    {required && <span className="required-field"> *</span>}
+                </h3>
+
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        gap: "10px",
+                    }}
+                >
+                    <div
+                        className="jra-info-popup-page-select-container"
+                        style={{
+                            flex: "0 0 23.5%",
+                            maxWidth: "23.5%",
+                            boxSizing: "border-box",
+                        }}
+                    >
                         <select
                             className="table-control font-fam remove-default-styling"
                             name="activityVerb"
-                            value={activityVerb}
-                            style={{ fontFamily: "Arial" }}
+                            value={activityVerb || ""}
+                            style={{
+                                fontFamily: "Arial",
+                                width: "100%",
+                                boxSizing: "border-box",
+                                height: "38px",
+                            }}
                             disabled={readOnly || loadingOptions}
-                            onChange={(e) => handleActivityVerbChange(e.target.value)}
+                            onChange={(event) => onActivityVerbChange?.(event.target.value)}
                         >
                             <option value="" disabled>
-                                {loadingOptions ? "Loading..." : "Select Activity Verb"}
+                                {loadingOptions ? "Loading..." : "Select Activity"}
                             </option>
-                            {typeOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                    {opt.label}
+                            {typeOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
                                 </option>
                             ))}
                         </select>
                     </div>
-                </div>
 
-                {/* Block 2: Task Name - independent of the Activity Verb selection */}
-                <div className={`input-box-type-risk-create ${taskNameError ? "error-create" : ""}`} style={{ marginBottom: "0px" }} >
-                    <h3 className="font-fam-labels">
-                        Task Name {required && <span className="required-field">*</span>}
-                    </h3>
                     <textarea
-                        type="text"
                         name="taskName"
                         value={taskName || ""}
                         className="aim-textarea-risk-create-textarea-nopads font-fam aim-textarea-text"
-                        placeholder="Insert task name here"
-                        style={{ fontFamily: "Arial", minHeight: 0, paddingLeft: "10px" }}
-                        onChange={(e) => onTaskNameChange && onTaskNameChange(e.target.value)}
+                        placeholder="Insert task name"
+                        style={{
+                            fontFamily: "Arial",
+                            minHeight: 0,
+                            paddingLeft: "10px",
+                            flex: "0 0 auto",
+                            width: "calc(76.5% - 10px)",
+                            maxWidth: "calc(76.5% - 10px)",
+                            boxSizing: "border-box",
+                        }}
+                        onChange={(event) => onTaskNameChange?.(event.target.value)}
                         readOnly={readOnly}
                     />
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -10,20 +10,26 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import PicturesTable from "../CreatePage/PicturesTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
+import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faCheckCircle, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
+import SharePage from "../CreatePage/SharePage";
 import TopBarDD from "../Notifications/TopBarDD";
 import ChapterTable from "../CreatePage/ChapterTable";
 import StandardsTable from "../CreatePage/StandardsTable";
 import SupportingDocumentTable from "../RiskRelated/SupportingDocumentTable";
 import SaveAsPopup from "../Popups/SaveAsPopup";
+import GenerateDraftPopup from "../Popups/GenerateDraftPopup";
 import DraftPopup from "../Popups/DraftPopup";
+import DocumentWorkflow from "../Popups/DocumentWorkflow";
 import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopup";
 import ApproveApprovalProcessPopup from "../Popups/ApproveApprovalProcessPopup";
+import DuplicateName from "../Popups/DuplicateName";
 import AimBulletComponent from "../CreatePage/AimBulletComponent";
 import ScopeBulletComponent from "../CreatePage/ScopeBulletComponent";
+import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
 import RevisionNumberField from "./RevisionNumberField";
@@ -32,15 +38,45 @@ import TemplateDocumentSignaturesTable from "./TemplateDocumentSignaturesTable";
 import TemplateFieldsTable from "./TemplateFieldsTable";
 import TemplateFieldsInfo from "./TemplateFieldsInfo";
 import TemplateDescription from "./TemplateDescription";
+import TemplatePreviewPopup from "./TemplatePreviewPopup";
+import TemplatePreview from "./TemplatePreview";
+import TaskDescriptionInfoBox from "./TaskDescriptionInfoBox";
+import ResponsibilityInfoBox from "./ResponsibilityInfoBox";
+import ResourcesInfoBox from "./ResourcesInfoBox";
+import CloseOutInfoBox from "./CloseOutInfoBox";
+import SafetyInfoBox from "./SafetyInfoBox";
+import WorkOrderTable from "./WorkOrderTable";
+import ActivityTaskTable from "./ActivityTaskTable";
+import ActivityNamesField from "./ActivityNamesField";
+import WorkOrderBasesSelection from "./WorkOrderBasesSelection";
+import SiteAreaInfoBox from "./SiteAreaInfoBox";
+import FrequencyTemplateCreation from "./FrequencyTemplateCreation";
+import DepartmentInfoBox from "./DepartmentInfoBox";
+import AssetInfoBox from "./AssetInfoBox";
+import ManagementInfoBox from "./ManagementInfoBox";
+import SubInformationField from "./SubInformationField";
+import ManagementInformationField from "./ManagementInformationField";
+import TemplateTitleField from "./TemplateTitleField";
+import WorkOrderActionFields from "./WorkOrderActionFields";
+import "./WorkOrderActionFields.css";
+import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
 
 const FTSCreatePageTemplatesReview = () => {
   const navigate = useNavigate();
   const type = useParams().type;
+  const fileID = useParams().fileId;
+  const access = getCurrentUser();
+  const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [share, setShare] = useState(false);
   const [usedTemplateFields, setUsedTemplateFields] = useState([]);
   const [usedAbbrCodes, setUsedAbbrCodes] = useState([]);
   const [usedTermCodes, setUsedTermCodes] = useState([]);
-  const access = getCurrentUser();
+  const [usedPPEOptions, setUsedPPEOptions] = useState([]);
+  const [usedHandTools, setUsedHandTools] = useState([]);
+  const [usedEquipment, setUsedEquipment] = useState([]);
+  const [usedMobileMachine, setUsedMobileMachines] = useState([]);
+  const [usedMaterials, setUsedMaterials] = useState([]);
   const [loadedID, setLoadedID] = useState('');
   const [isLoadPopupOpen, setLoadPopupOpen] = useState(false);
   const [titleSet, setTitleSet] = useState(false);
@@ -48,36 +84,114 @@ const FTSCreatePageTemplatesReview = () => {
   const [userIDs, setUserIDs] = useState([]);
   const autoSaveInterval = useRef(null);
   const [loading, setLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
-  const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
   const [errors, setErrors] = useState([]);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const loadedIDRef = useRef('');
-  const [change, setChange] = useState("");
-  const [azureFN, setAzureFN] = useState("");
-  const fileID = useParams().fileId;
   const [offlineDraft, setOfflineDraft] = useState(false);
   const [generatePopup, setGeneratePopup] = useState(false);
+  const [previewPopup, setPreviewPopup] = useState(false);
+  const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false);
   const [loadingAim, setLoadingAim] = useState(false);
   const [loadingScope, setLoadingScope] = useState(false);
   const [draftNote, setDraftNote] = useState(null);
-  const [readOnly, setReadOnly] = useState(false);
+  const [showWorkflow, setShowWorkflow] = useState(null);
+  // This page is always read-only — it's a review/view of a generated
+  // document, not an editable draft. We keep the setter around only
+  // because a couple of legacy handlers (that are no longer reachable
+  // from this page's trimmed-down toolbar) still reference it.
+  const [readOnly, setReadOnly] = useState(true);
+  const [lockUser, setLockUser] = useState(null);
+  const scrollBoxRef = useRef(null);
+  const [owner, setOwner] = useState(false);
   const [approval, setApproval] = useState(false);
   const [inApproval, setInApproval] = useState(false);
   const [inReview, setInReview] = useState(false);
   const [approveState, setApproveState] = useState(false);
+  const [isDuplicateName, setIsDuplicateName] = useState(false);
   const [loadingAimIndex, setLoadingAimIndex] = useState(null);
+  const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
+  const [saveConfirmTrigger, setSaveConfirmTrigger] = useState("back");
+  const pendingActionRef = useRef(null);
+  const [isViewer, setIsViewer] = useState(false);
+  const [isPublisher, setIsPublisher] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
+  const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
 
-  const openApproval = () => {
-    setApproval(true);
-  }
+  const SHARE_ROLES = ["collaborator", "viewer", "publisher"];
+  const ALL_ALLOWED_ROLES = ["owner", ...SHARE_ROLES];
+
+  const normalizeSharedUsers = (value, ownerId) => {
+    const rawItems = Array.isArray(value)
+      ? value
+      : value == null
+        ? []
+        : [value];
+
+    const mapped = rawItems
+      .map((item) => {
+        if (typeof item === "string") {
+          return {
+            userId: item,
+            role: item === ownerId ? "owner" : "collaborator"
+          };
+        }
+
+        if (item && typeof item === "object") {
+          const userId =
+            item.userId ||
+            item.userID ||
+            item._id ||
+            item.id ||
+            "";
+
+          if (!userId) return null;
+
+          let role = String(item.role || "").toLowerCase().trim();
+
+          if (!ALL_ALLOWED_ROLES.includes(role)) {
+            role = userId === ownerId ? "owner" : "collaborator";
+          }
+
+          if (userId === ownerId) {
+            role = "owner";
+          }
+
+          return { userId, role };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+
+    const seen = new Set();
+    const deduped = [];
+
+    mapped.forEach((entry) => {
+      if (seen.has(entry.userId)) return;
+      seen.add(entry.userId);
+      deduped.push(entry);
+    });
+
+    if (ownerId && !deduped.some((entry) => entry.userId === ownerId)) {
+      deduped.unshift({ userId: ownerId, role: "owner" });
+    }
+
+    return deduped.map((entry) => ({
+      userId: entry.userId,
+      role: entry.userId === ownerId ? "owner" : entry.role
+    }));
+  };
 
   const closeApprovePopup = () => {
     setApproveState(false);
   }
 
-  const closeApproval = () => {
-    setApproval(false);
+  const openWorkflow = () => {
+    setShowWorkflow(true);
+  }
+
+  const closeWorkflow = () => {
+    setShowWorkflow(false);
   }
 
   const openDraftNote = () => {
@@ -87,11 +201,6 @@ const FTSCreatePageTemplatesReview = () => {
   const closeDraftNote = () => {
     setDraftNote(false);
   }
-
-  const [rewriteHistory, setRewriteHistory] = useState({
-    aim: {},
-    scope: {}
-  });
 
   const openSaveAs = () => {
     if (!titleSet) {
@@ -111,80 +220,204 @@ const FTSCreatePageTemplatesReview = () => {
     setIsSaveAsModalOpen(false);
   };
 
-  const confirmSaveAs = (newTitle) => {
+  const confirmSaveAs = async (newTitle) => {
     // apply the new title, clear loadedID, then save
     const me = userIDRef.current;
     const newFormData = {
-      ...formDataRef.current,        // your current formData
-      title: newTitle,             // override title
+      ...formDataRef.current,
+      title: newTitle,
     };
 
     setFormData(newFormData);
     formDataRef.current = newFormData;
 
-    setUserIDs([me]);
-    userIDsRef.current = [me];
+    const normalizedOwnerOnly = normalizeSharedUsers([], me);
+    setUserIDs(normalizedOwnerOnly);
+    userIDsRef.current = normalizedOwnerOnly;
 
     loadedIDRef.current = '';
     setLoadedID('');
 
-    saveAsData();
+    const result = await saveData(newTitle);
+
+    if (result?.duplicate) {
+      setIsDuplicateName(true);
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("That draft name already exists. Please choose a different name.", {
+        closeButton: true,
+        autoClose: 1500,
+        style: { textAlign: 'center' }
+      });
+      return;
+    }
+
+    if (!result?.ok) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Failed to save draft online. It was saved offline instead.", {
+        closeButton: true,
+        autoClose: 1500,
+        style: { textAlign: 'center' }
+      });
+      return;
+    }
+
+    if (result?.id) {
+      await loadData(result.id);
+    }
 
     toast.dismiss();
     toast.clearWaitingQueue();
-    toast.success("New Draft Successfully Saved", {
+    toast.success("New draft successfully saved.", {
       closeButton: false,
-      autoClose: 1500, // 1.5 seconds
-      style: {
-        textAlign: 'center'
-      }
+      autoClose: 1500,
+      style: { textAlign: 'center' }
     });
 
     setIsSaveAsModalOpen(false);
   };
 
-  // handleSave: this is the ONLY place a save toast should be shown from.
-  // saveData() is called from lots of other places (autosave, save-before-navigate,
-  // etc.) where we intentionally do NOT want a toast, so the success/failure
-  // messaging lives here, not inside saveData.
-  const handleSave = async () => {
-    if (formData.title === "") {
+  const openShare = () => {
+    if (loadedIDRef.current || loadedID) {
+      setShare(true);
+    } else {
       toast.dismiss();
       toast.clearWaitingQueue();
-      toast.error("Please fill in at least the title field before saving.", {
-        closeButton: false,
+      toast.warn("Please save a draft before sharing.", {
+        closeButton: true,
+        autoClose: 800,
         style: {
           textAlign: 'center'
         }
-      })
+      });
+    }
+  };
+  const closeShare = () => { setShare(false); };
+
+  const handleSave = async () => {
+    if (formData.title.trim() === "") {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Please fill in at least the title field before saving.", {
+        closeButton: true,
+        autoClose: 800,
+        style: { textAlign: 'center' }
+      });
       return;
     }
 
     setIsSaving(true);
     try {
-      const result = await saveData(fileID);
+      if (loadedIDRef.current === '') {
+        const result = await saveData();
+
+        if (result?.duplicate) {
+          setIsDuplicateName(true);
+          toast.dismiss();
+          toast.clearWaitingQueue();
+          toast.warn("A draft with this name already exists. Please enter a new draft name.", {
+            closeButton: true,
+            autoClose: 2000,
+            style: { textAlign: 'center' }
+          });
+          return;
+        }
+
+        toast.dismiss();
+        toast.clearWaitingQueue();
+        if (result?.ok) {
+          toast.success("Draft has been successfully saved", {
+            closeButton: true,
+            autoClose: 1500,
+            style: { textAlign: 'center' }
+          });
+        } else {
+          toast.error("Failed to save draft. Please try again.", {
+            closeButton: true,
+            autoClose: 2000,
+            style: { textAlign: 'center' }
+          });
+        }
+
+        return;
+      }
+
+      const result = await updateData(userIDsRef.current);
 
       toast.dismiss();
       toast.clearWaitingQueue();
       if (result?.ok) {
-        toast.success("Draft has been successfully saved", {
-          closeButton: false,
-          autoClose: 1500, // 1.5 seconds
-          style: {
-            textAlign: 'center'
-          }
+        toast.success("Draft has been successfully updated", {
+          closeButton: true,
+          autoClose: 800,
+          style: { textAlign: 'center' }
         });
       } else {
-        toast.error("Failed to save draft. Please try again.", {
-          closeButton: false,
+        toast.error("Failed to update draft. Please try again.", {
+          closeButton: true,
           autoClose: 2000,
-          style: {
-            textAlign: 'center'
-          }
+          style: { textAlign: 'center' }
         });
       }
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const saveDraftName = async (newTitle) => {
+    const trimmedTitle = (newTitle || "").trim();
+
+    if (!trimmedTitle) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("Please enter a draft name.", {
+        closeButton: true,
+        autoClose: 1000,
+        style: { textAlign: 'center' }
+      });
+      return;
+    }
+
+    const me = userIDRef.current;
+    const newFormData = {
+      ...formDataRef.current,
+      title: trimmedTitle,
+    };
+
+    setFormData(newFormData);
+    formDataRef.current = newFormData;
+
+    const normalizedOwnerOnly = normalizeSharedUsers([], me);
+    setUserIDs(normalizedOwnerOnly);
+    userIDsRef.current = normalizedOwnerOnly;
+
+    loadedIDRef.current = '';
+    setLoadedID('');
+
+    const result = await saveData(trimmedTitle);
+
+    if (result?.duplicate) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("That draft name already exists. Please choose a different name.", {
+        closeButton: true,
+        autoClose: 1500,
+        style: { textAlign: 'center' }
+      });
+      return; // keep popup open
+    }
+
+    if (result?.ok) {
+      setIsDuplicateName(false);
+
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Draft has been successfully saved", {
+        closeButton: false,
+        autoClose: 1500,
+        style: { textAlign: 'center' }
+      });
     }
   };
 
@@ -200,7 +433,7 @@ const FTSCreatePageTemplatesReview = () => {
     }));
   };
 
-  const buildReviewFormDataRequest = (dataToStore, options = {}) => {
+  const buildDraftFormDataRequest = (dataToStore, options = {}) => {
     const { skipFileUpload = false } = options;
 
     const multipart = new FormData();
@@ -237,22 +470,35 @@ const FTSCreatePageTemplatesReview = () => {
     return multipart;
   };
 
-  const saveAsData = async (options = {}) => {
+  const saveData = async (overrideTitle = null, options = {}) => {
     const { skipFileUpload = false } = options;
+
+    const normalizedSharedUsers = normalizeSharedUsers(
+      userIDsRef.current,
+      userIDRef.current
+    );
 
     const dataToStore = {
       usedTemplateFields: usedTemplateFieldsRef.current,
       usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
-      formData: formDataRef.current,
-      userIDs: userIDsRef.current,
+      usedPPEOptions: usedPPEOptionsRef.current,
+      usedHandTools: usedHandToolsRef.current,
+      usedEquipment: usedEquipmentRef.current,
+      usedMobileMachine: usedMobileMachineRef.current,
+      usedMaterials: usedMaterialsRef.current,
+      formData: {
+        ...formDataRef.current,
+        ...(overrideTitle ? { title: overrideTitle } : {})
+      },
+      userIDs: normalizedSharedUsers,
       creator: userIDRef.current,
       updater: null,
       dateUpdated: null
     };
 
     try {
-      const body = buildReviewFormDataRequest(dataToStore, { skipFileUpload });
+      const body = buildDraftFormDataRequest(dataToStore, { skipFileUpload });
 
       const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsDrafts/templates/safe`, {
         method: 'POST',
@@ -264,9 +510,20 @@ const FTSCreatePageTemplatesReview = () => {
 
       const result = await response.json();
 
+      if (response.status === 409 && result?.duplicate) {
+        return {
+          ok: false,
+          duplicate: true,
+          message: result.error,
+        };
+      }
+
       if (!response.ok) {
         throw new Error(result?.error || 'Failed to save draft');
       }
+
+      setOfflineDraft(false);
+      localStorage.removeItem("draftData");
 
       if (result.id) {
         setLoadedID(result.id);
@@ -277,25 +534,42 @@ const FTSCreatePageTemplatesReview = () => {
         setFormData(result.formData);
         formDataRef.current = result.formData;
       }
+
+      return { ok: true, id: result.id };
     } catch (error) {
       console.error('Error saving data:', error);
+      return { ok: false, duplicate: false, error };
     }
   };
 
-  const saveData = async (fileID, options = {}) => {
+  const updateData = async (selectedUserIDs, options = {}) => {
     const { skipFileUpload = false } = options;
+
+    const normalizedSharedUsers = normalizeSharedUsers(
+      selectedUserIDs,
+      userIDRef.current
+    );
 
     const dataToStore = {
       usedTemplateFields: usedTemplateFieldsRef.current,
-      usedAbbrCodes: usedAbbrCodesRef.current,
+      usedAbbrCodes: usedAbbrCodesRef.current,       // your current state values
       usedTermCodes: usedTermCodesRef.current,
-      formData: formDataRef.current
+      usedPPEOptions: usedPPEOptionsRef.current,
+      usedHandTools: usedHandToolsRef.current,
+      usedEquipment: usedEquipmentRef.current,
+      usedMobileMachine: usedMobileMachineRef.current,
+      usedMaterials: usedMaterialsRef.current,
+      formData: formDataRef.current,
+      userIDs: normalizedSharedUsers,
+      updater: userIDRef.current,
+      dateUpdated: new Date().toISOString(),
+      userID
     };
 
     try {
-      const body = buildReviewFormDataRequest(dataToStore, { skipFileUpload });
+      const body = buildDraftFormDataRequest(dataToStore, { skipFileUpload });
 
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGeneratedDocs/template/save/${fileID}`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsDrafts/templates/modifySafe/${loadedIDRef.current}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -306,32 +580,83 @@ const FTSCreatePageTemplatesReview = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result?.error || 'Failed to save review file');
+        throw new Error(result?.error || 'Failed to update draft');
       }
 
-      if (result?.draft?.formData) {
-        setFormData(result.draft.formData);
-        formDataRef.current = result.draft.formData;
+      if (result.formData) {
+        setFormData(result.formData);
+        formDataRef.current = result.formData;
       }
 
-      return { ok: true };
+      setOfflineDraft(false);
+      localStorage.removeItem("draftData");
+
+      console.log(result.message);
+      return { ok: true, ...result };
     } catch (error) {
       console.error('Error saving data:', error);
       return { ok: false, error };
     }
   };
 
-  const handleClick = async () => {
+  const handleClick = () => {
+    const newErrors = validateForm();
+
+    if (Object.keys(newErrors).length > 0) {
+      if (titleSet)
+        setGeneratePopup(true);
+
+      if (!titleSet) {
+        toast.error("Please fill in a title", {
+          closeButton: true,
+          autoClose: 800, // 1.5 seconds
+          style: {
+            textAlign: 'center'
+          }
+        });
+      }
+    } else {
+      handleGeneratePDF();  // Call your function when the form is valid
+    }
+  };
+
+  const cancelGenerate = () => {
+
+    const newErrors = validateForm();
+    setErrors(newErrors);
+    setGeneratePopup(false);
+  }
+
+  const closeGenerate = () => {
+    setGeneratePopup(false);
+  }
+
+  const handlePubClick = async () => {
     const newErrors = validateForm();
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
-      toast.error("Please fill in all required fields marked by a *", {
-        closeButton: false,
+    if (loadedID === '') {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.warn("Please load a draft before publishing.", {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
-      })
+      });
+
+      return;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields marked by a *", {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
     } else {
       setIsPublishing(true);
       try {
@@ -342,81 +667,82 @@ const FTSCreatePageTemplatesReview = () => {
     }
   };
 
-  useEffect(() => {
-    if (fileID) {
-      loadData(fileID);
-    }
-  }, []);
-
-  const getNewAzureFileName = async () => {
+  const loadData = async (loadID) => {
     try {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `${process.env.REACT_APP_URL}/api/ftsGeneratedDocs/template/getFile/${fileID}`,
+        `${process.env.REACT_APP_URL}/api/ftsGeneratedDocs/template/getFile/${loadID}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
+            "Authorization": `Bearer ${token}`,
+          },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch file");
-
-      const storedData = await response.json();
-      setAzureFN(storedData.files?.azureFileName || "");
-
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  };
-
-  const loadData = async (fileID) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${process.env.REACT_APP_URL}/api/ftsGeneratedDocs/template/getFile/${fileID}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch file");
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
+
       const storedData = data.files || {};
-      const readOnly = data.readOnly || false;
-      // Update your states as needed:
+
+      const ownerId =
+        storedData.creator ||
+        storedData.userID ||
+        userIDRef.current;
+
+      const normalizedSharedUsers = normalizeSharedUsers(
+        storedData.userIDs,
+        ownerId
+      );
+
       setUsedTemplateFields(storedData.usedTemplateFields || []);
       setUsedAbbrCodes(storedData.usedAbbrCodes || []);
       setUsedTermCodes(storedData.usedTermCodes || []);
-      setUserIDs(storedData.userIDs || []);
-      setInApproval(Boolean(data.statusApproval));
-      setReadOnly(readOnly);
+      setUsedPPEOptions(storedData.usedPPEOptions || []);
+      setUsedHandTools(storedData.usedHandTools || []);
+      setUsedEquipment(storedData.usedEquipment || []);
+      setUsedMobileMachines(storedData.usedMobileMachine || []);
+      setUsedMaterials(storedData.usedMaterials || []);
+      setUserIDs(normalizedSharedUsers);
+      userIDsRef.current = normalizedSharedUsers;
 
       const rawForm = storedData.formData || {};
       const normalizedForm = {
         ...rawForm,
-        aim: normalizeProcedureAim(rawForm.aim),
-        scope: normalizeProcedureScope(rawForm.scope)
+        actionFields: rawForm.actionFields || [],
       };
 
       setFormData(normalizedForm);
       setFormData(prev => ({ ...prev }));
       setTitleSet(true);
-      setAzureFN(storedData.azureFileName || "");
+      loadedIDRef.current = loadID;
+      setLoadedID(loadID);
+
+      // Always read-only here, regardless of what the server reports —
+      // this page is a review/view, editing happens via "Save As".
+      setReadOnly(true);
+      setInApproval(Boolean(data.statusApproval));
       setInReview(Boolean(data.statusReview));
+
+      requestAnimationFrame(() => {
+        scrollBoxRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      });
     } catch (error) {
       console.error('Error loading data:', error);
     }
   };
+
+  const capitalizeWords = (text) =>
+    text
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
   const updateRefRow = (index, field, value) => {
     const updatedRefRows = [...formData.references];
@@ -428,15 +754,9 @@ const FTSCreatePageTemplatesReview = () => {
     });
   };
 
-  const updateRefRows = (newRef) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      references: newRef, // Update procedureRows with new data
-    }));
-  };
-
   const [formData, setFormData] = useState({
     title: "",
+    templateTitle: "",
     documentType: useParams().type,
     aim: [{ type: "text", text: "The aim of the document is " }],
     scope: [{ type: "text", text: "" }],
@@ -464,7 +784,28 @@ const FTSCreatePageTemplatesReview = () => {
     revisionNumber: "",
     templateFieldRows: [],
     templateFieldDetails: [],
-    taskDescription: ""
+    taskDescription: "",
+    workOrderBases: "",
+    workOrderType: "",
+    workOrderDescription: "",
+    site: "",
+    mainArea: "",
+    subArea: "",
+    assetType: "",
+    assetModel: "",
+    component: "",
+    department: "",
+    codedArea: "",
+    accountableLevel: "",
+    personInCharge: "",
+    minTeamExecutors: [],
+    frequency: "",
+    activityVerb: "",
+    taskName: "",
+    activityName: "",
+    workOrderSubInformation: "",
+    workOrderRACIInformation: "",
+    actionFields: []
   });
 
   useEffect(() => {
@@ -480,6 +821,11 @@ const FTSCreatePageTemplatesReview = () => {
   const usedTemplateFieldsRef = useRef(usedTemplateFields);
   const usedAbbrCodesRef = useRef(usedAbbrCodes);
   const usedTermCodesRef = useRef(usedTermCodes);
+  const usedPPEOptionsRef = useRef(usedPPEOptions);
+  const usedHandToolsRef = useRef(usedHandTools);
+  const usedEquipmentRef = useRef(usedEquipment);
+  const usedMobileMachineRef = useRef(usedMobileMachine);
+  const usedMaterialsRef = useRef(usedMaterials);
   const userIDsRef = useRef(userIDs);
   const userIDRef = useRef(userID);
   const readOnlyRef = useRef(readOnly);
@@ -503,6 +849,26 @@ const FTSCreatePageTemplatesReview = () => {
   useEffect(() => {
     usedTermCodesRef.current = usedTermCodes;
   }, [usedTermCodes]);
+
+  useEffect(() => {
+    usedPPEOptionsRef.current = usedPPEOptions;
+  }, [usedPPEOptions]);
+
+  useEffect(() => {
+    usedHandToolsRef.current = usedHandTools;
+  }, [usedHandTools]);
+
+  useEffect(() => {
+    usedMobileMachineRef.current = usedMobileMachine;
+  }, [usedMobileMachine]);
+
+  useEffect(() => {
+    usedMaterialsRef.current = usedMaterials;
+  }, [usedMaterials]);
+
+  useEffect(() => {
+    usedEquipmentRef.current = usedEquipment;
+  }, [usedEquipment]);
 
   useEffect(() => {
     formDataRef.current = formData;
@@ -535,17 +901,33 @@ const FTSCreatePageTemplatesReview = () => {
   }, [formData.title]);
 
   const autoSaveDraft = () => {
-    if (readOnlyRef.current) return;
     if (readOnly) return;
-    saveData(fileID, { skipFileUpload: false });
-    toast.dismiss();
-    toast.clearWaitingQueue();
-    toast.success("Draft has been auto-saved", {
-      closeButton: true,
-      style: {
-        textAlign: 'center'
-      }
-    });
+    if (readOnlyRef.current) return;
+    if (formData.title.trim() === "") return; // Don't save without a valid title
+
+    if (loadedIDRef.current === '') {
+      saveData(null, { skipFileUpload: false });
+      console.log("📝 autoSaveDraft() triggered 1");
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Draft has been auto-saved", {
+        closeButton: true,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } else {
+      updateData(userIDsRef.current, { skipFileUpload: false });
+      console.log("📝 autoSaveDraft() triggered 2");
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.success("Draft has been auto-saved", {
+        closeButton: true,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    }
   };
 
   const addPicRow = () => {
@@ -591,9 +973,14 @@ const FTSCreatePageTemplatesReview = () => {
   const saveToHistory = useCallback(() => {
     const currentState = {
       formData,
-      usedTemplateFields,
       usedAbbrCodes,
+      usedTemplateFields,
       usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
     };
 
     setHistory((prev) => {
@@ -602,13 +989,13 @@ const FTSCreatePageTemplatesReview = () => {
       }
       return [...prev, currentState]; // Save the new state
     });
-  }, [formData, usedAbbrCodes, usedTermCodes, usedTemplateFields]);
+  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials, usedTemplateFields]);
 
   // Detects form changes across all components with debounce
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(saveToHistory, 1000); // Only save after 1s of inactivity
-  }, [formData, usedAbbrCodes, usedTermCodes, usedTemplateFields]);
+  }, [formData, usedAbbrCodes, usedTermCodes, usedPPEOptions, usedHandTools, usedEquipment, usedMobileMachine, usedMaterials, usedTemplateFields]);
 
   const undoLastChange = () => {
     if (history.length > 1) {
@@ -617,9 +1004,14 @@ const FTSCreatePageTemplatesReview = () => {
 
       // Restore the previous state
       setFormData(lastState.formData);
-      setUsedTemplateFields(lastState.usedTemplateFields);
       setUsedAbbrCodes(lastState.usedAbbrCodes);
+      setUsedTemplateFields(lastState.usedTemplateFields || []);
       setUsedTermCodes(lastState.usedTermCodes);
+      setUsedPPEOptions(lastState.usedPPEOptions);
+      setUsedHandTools(lastState.usedHandTools);
+      setUsedEquipment(lastState.usedEquipment);
+      setUsedMobileMachines(lastState.usedMobileMachine);
+      setUsedMaterials(lastState.usedMaterials);
 
       setHistory((prev) => prev.slice(0, -1)); // Remove last history entry
       setRedoHistory((prev) => [...prev, currentState]);
@@ -652,9 +1044,14 @@ const FTSCreatePageTemplatesReview = () => {
 
       // Apply redo state
       setFormData(nextState.formData);
-      setUsedTemplateFields(nextState.usedTemplateFields);
       setUsedAbbrCodes(nextState.usedAbbrCodes);
+      setUsedTemplateFields(nextState.usedTemplateFields || []);
       setUsedTermCodes(nextState.usedTermCodes);
+      setUsedPPEOptions(nextState.usedPPEOptions);
+      setUsedHandTools(nextState.usedHandTools);
+      setUsedEquipment(nextState.usedEquipment);
+      setUsedMobileMachines(nextState.usedMobileMachine);
+      setUsedMaterials(nextState.usedMaterials);
 
       // Push back into history
       setHistory((prev) => [...prev, nextState]);
@@ -674,12 +1071,17 @@ const FTSCreatePageTemplatesReview = () => {
     }
   };
 
+  const updateRefRows = (newRef) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      references: newRef, // Update procedureRows with new data
+    }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.title) newErrors.title = true;
-    if (!formData.reviewDate) newErrors.reviewDate = true;
-    if (formData.templateFieldRows.length === 0) newErrors.templateFields = true;
 
     if (formData.rows.length === 0) {
       newErrors.signs = true;
@@ -694,22 +1096,21 @@ const FTSCreatePageTemplatesReview = () => {
 
   const validateFormRevised = () => {
     const newErrors = errors;
-    if (!formData.reviewDate) { newErrors.reviewDate = true } else {
-      newErrors.reviewDate = false;
-    };
     return newErrors;
   };
 
+  // Authentication check
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       const decodedToken = jwtDecode(storedToken);
 
       setUserID(decodedToken.userId);
-      setUserIDs([decodedToken.userId]);
+      setUserIDs(normalizeSharedUsers([], decodedToken.userId));
     }
   }, [navigate]);
 
+  // Handle input changes for normal fields
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     console.log(formData)
@@ -719,6 +1120,86 @@ const FTSCreatePageTemplatesReview = () => {
     }
   };
 
+  const handleWorkOrderBasesFocus = () => {
+    setErrors((prev) => ({ ...prev, workOrderBases: false }));
+  };
+
+  // Work Order Basis drives whether the Asset Information box is shown at
+  // all (see render below). Switching to Area Based / Department Based (or
+  // back to nothing selected) hides that box, so any assetType/assetModel/
+  // assetNumber values already entered are cleared out here rather than
+  // being left in formData unseen.
+  const handleWorkOrderBasesChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+
+      if (value !== "assetBased") {
+        next.assetType = "";
+        next.assetModel = "";
+        next.assetNumber = "";
+      }
+
+      return next;
+    });
+
+    setErrors((prev) => ({ ...prev, workOrderBases: false }));
+  };
+
+  const handleTemplateNumberChange = (value) => {
+    setFormData((prev) => ({ ...prev, templateNumber: value }));
+  };
+
+  const handleWorkOrderTypeChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderType: value }));
+    setErrors((prev) => ({ ...prev, workOrderType: false }));
+  };
+
+  const handleWorkOrderDescriptionChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderDescription: value }));
+    setErrors((prev) => ({ ...prev, workOrderDescription: false }));
+  };
+
+  const handleFrequencyChange = (e) => {
+    setFormData((prev) => ({ ...prev, frequency: e.target.value }));
+    setErrors((prev) => ({ ...prev, frequency: false }));
+  };
+
+  const handleFrequencyFocus = () => {
+    setErrors((prev) => ({ ...prev, frequency: false }));
+  };
+
+  const handleActivityVerbChange = (value) => {
+    setFormData((prev) => ({ ...prev, activityVerb: value }));
+    setErrors((prev) => ({ ...prev, activityVerb: false }));
+  };
+
+  const handleTaskNameChange = (value) => {
+    setFormData((prev) => ({ ...prev, taskName: value }));
+    setErrors((prev) => ({ ...prev, taskName: false }));
+  };
+
+  const handleActivityNameChange = (value) => {
+    setFormData((prev) => ({ ...prev, activityName: value }));
+  };
+
+  const handleWorkOrderSubInformationChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderSubInformation: value }));
+  };
+
+  const handleWorkOrderRACIInformationChange = (value) => {
+    setFormData((prev) => ({ ...prev, workOrderRACIInformation: value }));
+  };
+
+  // The auto-generation logic for the derived template title now lives
+  // inside TemplateTitleField itself (rendered further down with
+  // showUI={false}) - it just reports the computed value back here.
+  const handleTemplateTitleChange = (value) => {
+    setFormData((prev) => ({ ...prev, templateTitle: value }));
+  };
+
+  // Handle input changes for the table rows
   const handleRowChange = (e, index, field) => {
     const newRows = [...formData.rows];
     const rowToChange = newRows[index];
@@ -785,6 +1266,55 @@ const FTSCreatePageTemplatesReview = () => {
         { auth: "Author", name: "", pos: "", num: 1 }
       ]
     });
+  };
+
+  const addProRow = () => {
+    const lastNr = formData.procedureRows.length > 0 && typeof formData.procedureRows[formData.procedureRows.length - 1].nr === 'number'
+      ? formData.procedureRows[formData.procedureRows.length - 1].nr
+      : 0; // Safely get the last nr value or 0 if no rows exist or nr is not a number
+
+    setFormData({
+      ...formData,
+      procedureRows: [
+        ...formData.procedureRows,
+        {
+          nr: lastNr + 1,
+          mainStep: "",
+          SubStep: "",
+          discipline: "Engineering",       // Default value for discipline
+          accountable: "",      // Default value for accountable
+          responsible: "",
+          prevStep: "-",
+        }
+      ]
+    });
+  };
+
+  const removeProRow = (indexToRemove) => {
+    if (formData.procedureRows.length <= 1) {
+      toast.warn("At least one procedure step is required.", {
+        autoClose: 800,
+        closeButton: true,
+        style: { textAlign: "center" },
+      });
+      return;
+    }
+
+    const newRows = formData.procedureRows
+      .filter((_, index) => index !== indexToRemove)
+      .map((row, idx) => ({ ...row, nr: idx + 1 })); // Renumber after removal
+
+    setFormData({
+      ...formData,
+      procedureRows: newRows,
+    });
+  };
+
+  const updateProcedureRows = (newProcedureRows) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      procedureRows: newProcedureRows, // Update procedureRows with new data
+    }));
   };
 
   const updateSignatureRows = (newSignatureRows) => {
@@ -878,50 +1408,99 @@ const FTSCreatePageTemplatesReview = () => {
   };
 
   const getSanitizedFormData = (sourceFormData) => ({
-    ...sourceFormData,
-    aim: sanitizeAimForStorage(normalizeProcedureAim(sourceFormData.aim)),
-    scope: sanitizeScopeForStorage(normalizeProcedureScope(sourceFormData.scope))
+    ...sourceFormData
   });
 
   // Send data to backend to generate a Word document
   const handleGeneratePDF = async () => {
-    const documentName = (formData.title) + ' ' + formData.documentType;
-
-    const updatedChangeTable = [...formData.changeTable];
-
-    const newChange = {
-      changeVersion: parseInt(formData.changeTable[formData.changeTable.length - 1].changeVersion) + 1,
-      change: change,
-      changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    const dataToStore = {
+      usedAbbrCodes,
+      usedTemplateFields,
+      usedTermCodes,
+      usedPPEOptions,
+      usedHandTools,
+      usedEquipment,
+      usedMobileMachine,
+      usedMaterials,
+      formData: getSanitizedFormData(formData),
+      userID,
+      azureFN: ""
     };
 
-    updatedChangeTable.push(newChange);
+    if (generatePopup) {
+      setGeneratePopup(false);
+    }
+    const documentName = capitalizeWords(formData.title) + ' ' + formData.documentType;
+    setLoading(true);
 
-    setFormData((prevFormData) => {
-      const updatedFormData = {
-        ...prevFormData,
-        changeTable: updatedChangeTable,
-        version: parseInt(prevFormData.version) + 1
-      };
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/generate-template`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
 
-      const dataToStore = {
-        usedTemplateFields,
-        usedAbbrCodes,
-        usedTermCodes,
-        formData: getSanitizedFormData(updatedFormData),
-        userID,
-        azureFN
-      };
+      if (!response.ok) throw new Error("Failed to generate document");
 
-      sendUpdatedFormData(dataToStore, documentName);
+      const blob = await response.blob();
+      saveAs(blob, `${documentName}.pdf`);
+      setLoading(false);
+      openDraftNote();
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
+  };
 
-      return updatedFormData; // Ensure state is updated correctly
-    });
+  const handlePublish = async () => {
+    const dataToStore = {
+      usedAbbrCodes,
+      usedTermCodes,
+      usedTemplateFields,
+      formData: getSanitizedFormData(formData),
+      userID,
+      azureFN: "",
+      draftID: loadedIDRef.current
+    };
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/publish-template`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate document");
+
+      toast.success(`Template published`, {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setLoading(false);
+      setTimeout(() => {
+        navigate('/FrontendDMS/ftsSignedOffTemplates'); // Redirect to the generated file info page
+      }, 1000);
+    } catch (error) {
+      console.error("Error generating document:", error);
+      setLoading(false);
+    }
   };
 
   const handlePublishApprovalFlow = async (approversValue) => {
     const dataToStore = {
-      draftID: fileID,
+      draftID: loadedIDRef.current,
       authorizations: (formDataRef.current?.rows ?? []).map(r => ({
         auth: r.auth,     // "Author" | "Reviewer" | "Approver" etc
         name: r.name,     // username
@@ -931,10 +1510,10 @@ const FTSCreatePageTemplatesReview = () => {
     };
 
     setLoading(true);
-    await saveData(fileID);
+    await updateData(userIDsRef.current);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsApproval/start-approval-template-published`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsApproval/start-approval-template-draft`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -946,7 +1525,7 @@ const FTSCreatePageTemplatesReview = () => {
       if (!response.ok) throw new Error("Failed to generate document");
       const data = await response.json();
 
-      toast.success(`Standard Publishing Approval Started.`, {
+      toast.success(`Tempalte Publishing Approval Started.`, {
         closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
@@ -963,8 +1542,8 @@ const FTSCreatePageTemplatesReview = () => {
         setReadOnly(data.readOnly)
       }
 
-      setInReview(data.reviewState);
       setInApproval(data.approvalStatus);
+      setInReview(data.reviewState);
 
       setLoading(false);
     } catch (error) {
@@ -977,20 +1556,29 @@ const FTSCreatePageTemplatesReview = () => {
     const newErrors = validateForm();
     setErrors(newErrors);
 
-
-    setApproveState(true);
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Please fill in all required fields marked by a *", {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } else {
+      setApproveState(true);
+    }
   };
 
   const approveDraft = async () => {
     const dataToStore = {
-      draftID: fileID
+      draftID: loadedIDRef.current
     };
 
     setLoading(true);
-    await saveData(fileID);
+    await updateData(userIDsRef.current);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsApproval/approve-published-template`, {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsApproval/approve-draft-template`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1002,7 +1590,7 @@ const FTSCreatePageTemplatesReview = () => {
       if (!response.ok) throw new Error("Failed to generate document");
       const data = await response.json();
 
-      toast.success(`Standard Successfully Approved.`, {
+      toast.success(`Template Successfully Approved.`, {
         closeButton: true,
         autoClose: 800, // 1.5 seconds
         style: {
@@ -1020,7 +1608,7 @@ const FTSCreatePageTemplatesReview = () => {
       setApproveState(false);
 
       if (data.fullyApproved) {
-        await handleGeneratePDF()
+        handlePublish()
       }
     } catch (error) {
       console.error("Error generating document:", error);
@@ -1028,706 +1616,100 @@ const FTSCreatePageTemplatesReview = () => {
     }
   };
 
-  const sendUpdatedFormData = async (dataToStore, documentName) => {
-    setLoading(true);
+  useEffect(() => {
+    if (fileID) {
+      loadData(fileID);
+    }
+  }, [fileID])
+
+  const releaseLock = async () => {
+    if (!loadedIDRef.current) return true;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/publish-template`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify(dataToStore), // Now sending the correct dataToStore
-      });
-      if (response.status === 404) throw new Error("Failed to generate document")
-
-      if (!response.ok) throw new Error("Failed to generate document");
-
-      setLoading(false);
-      getNewAzureFileName();
-
-      toast.success("File has been reviewed.", {
-        closeButton: false,
-        style: {
-          textAlign: 'center'
+      const response = await fetch(
+        `${process.env.REACT_APP_URL}/api/ftsDrafts/templates/releaseLock/${loadedIDRef.current}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
         }
-      })
-    } catch (error) {
-      console.error("Error generating document:", error);
-      setLoading(false);
-    }
-  };
+      );
 
-
-  const handleGenerateDocument = async () => {
-    // 1) Build the updated changeTable and version from the latest state
-    const lastCT = formData.changeTable;
-    const lastVersion = parseInt(formData.version, 10);
-    const lastChangeVer = parseInt(lastCT[lastCT.length - 1].changeVersion, 10);
-
-    const newChange = {
-      changeVersion: (lastChangeVer + 1).toString(),
-      change,
-      changeDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    };
-
-    const updatedFormData = {
-      ...formData,
-      version: (lastVersion + 1).toString(),
-      changeTable: [...lastCT, newChange]
-    };
-
-    await handleGenerateStandardDocument(updatedFormData);
-  };
-
-  const handleGenerateStandardDocument = async (generateData) => {
-    const dataToStore = {
-      formData: getSanitizedFormData(generateData),
-    };
-
-    const documentName = (formData.title) + ' ' + formData.documentType;
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsGenerate/generate-template`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify(dataToStore),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate document");
-
-      const blob = await response.blob();
-      saveAs(blob, `${documentName}.docx`);
-      setLoading(false);
-      openDraftNote();
-    } catch (error) {
-      console.error("Error generating document:", error);
-      setLoading(false);
-    }
-  };
-
-
-  const createAimBulletRow = () => ({
-    id: uuidv4(),
-    text: ""
-  });
-
-  const normalizeProcedureAim = (value) => {
-    if (Array.isArray(value) && value.length > 0) {
-      return value.map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            type: "text",
-            text: item?.text || ""
-          };
-        }
-
-        const bullets = Array.isArray(item?.bullets)
-          ? item.bullets.map((b) => ({
-            id: b?.id || uuidv4(),
-            text: b?.text || ""
-          }))
-          : String(item?.text || "")
-            .split(/\r?\n/)
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => ({
-              id: uuidv4(),
-              text: line
-            }));
-
-        return {
-          type: "bullet",
-          bullets: bullets.length > 0 ? bullets : [createAimBulletRow()],
-          text: bullets.map((b) => b.text).join("\n")
-        };
-      });
-    }
-
-    if (typeof value === "string" && value.trim() !== "") {
-      return [{ type: "text", text: value }];
-    }
-
-    return [{ type: "text", text: "" }];
-  };
-
-  const sanitizeAimForValidation = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const pushAimRewriteHistory = (index, oldValue) => {
-    setRewriteHistory((prev) => ({
-      ...prev,
-      aim: {
-        ...prev.aim,
-        [index]: [...(prev.aim[index] || []), oldValue]
-      }
-    }));
-  };
-
-  const undoAimRewrite = (index) => {
-    setRewriteHistory((prev) => {
-      const currentHistory = [...(prev.aim[index] || [])];
-      if (currentHistory.length === 0) return prev;
-
-      const lastValue = currentHistory.pop();
-
-      setFormData((fd) => ({
-        ...fd,
-        aim: fd.aim.map((item, i) =>
-          i === index ? { ...item, text: lastValue } : item
-        )
-      }));
-
-      return {
-        ...prev,
-        aim: {
-          ...prev.aim,
-          [index]: currentHistory
-        }
-      };
-    });
-  };
-
-  const handleAimChange = (index, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) =>
-        i === index ? { ...item, text: value } : item
-      )
-    }));
-  };
-
-  const handleAimBulletChange = (itemIndex, bulletId, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).map((bullet) =>
-          bullet.id === bulletId ? { ...bullet, text: value } : bullet
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const handleAddAim = () => {
-    setFormData((prev) => {
-      const currentAims =
-        Array.isArray(prev.aim) && prev.aim.length > 0
-          ? prev.aim
-          : [{ type: "text", text: "" }];
-
-      const lastType = currentAims[currentAims.length - 1]?.type || "text";
-      const nextType = lastType === "text" ? "bullet" : "text";
-
-      return {
-        ...prev,
-        aim: [
-          ...currentAims,
-          nextType === "bullet"
-            ? { type: "bullet", bullets: [createAimBulletRow()], text: "" }
-            : { type: "text", text: "" }
-        ]
-      };
-    });
-  };
-
-  const handleRemoveAim = (indexToRemove) => {
-    setFormData((prev) => {
-      const currentAims = Array.isArray(prev.aim) ? prev.aim : [];
-      const updatedAims = currentAims.filter((_, index) => index !== indexToRemove);
-
-      return {
-        ...prev,
-        aim: updatedAims.length > 0 ? updatedAims : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleRemoveAimSection = (textIndex) => {
-    setFormData((prev) => {
-      const currentAims = Array.isArray(prev.aim) ? prev.aim : [];
-
-      const textIndexes = currentAims
-        .map((item, index) => (item?.type === "text" ? index : null))
-        .filter((index) => index !== null);
-
-      if (textIndexes.length <= 1) {
-        return prev;
+      if (!response.ok) {
+        throw new Error("Failed to release lock");
       }
 
-      const updatedAims = currentAims.filter((_, index) => {
-        return index !== textIndex && index !== textIndex + 1;
-      });
-
-      return {
-        ...prev,
-        aim: updatedAims.length > 0 ? updatedAims : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleAddAimBullet = (itemIndex, insertAtIndex = null) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const currentBullets = Array.isArray(item.bullets) ? item.bullets : [];
-        const newBullet = createAimBulletRow();
-
-        if (
-          insertAtIndex === null ||
-          insertAtIndex < 0 ||
-          insertAtIndex > currentBullets.length
-        ) {
-          return {
-            ...item,
-            bullets: [...currentBullets, newBullet]
-          };
-        }
-
-        return {
-          ...item,
-          bullets: [
-            ...currentBullets.slice(0, insertAtIndex + 1),
-            newBullet,
-            ...currentBullets.slice(insertAtIndex + 1)
-          ]
-        };
-      })
-    }));
-  };
-
-  const handleRemoveAimBullet = (itemIndex, bulletId) => {
-    setFormData((prev) => ({
-      ...prev,
-      aim: prev.aim.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).filter(
-          (bullet) => bullet.id !== bulletId
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const AiRewriteAim = async (index) => {
-    try {
-      const currentAim = formData.aim?.[index];
-      const prompt = currentAim?.text || "";
-
-      if (!prompt.trim()) {
-        toast.warn("Please enter some aim text before using AI rewrite.", {
-          closeButton: true,
-          autoClose: 1000,
-          style: { textAlign: "center" }
-        });
-        return;
-      }
-
-      pushAimRewriteHistory(index, prompt);
-      setLoadingAimIndex(index);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatAim/procedure`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      const newText = data?.response || "";
-
-      setFormData((fd) => ({
-        ...fd,
-        aim: fd.aim.map((item, i) =>
-          i === index ? { ...item, text: newText } : item
-        )
-      }));
+      return true;
     } catch (error) {
-      console.error("Error rewriting aim:", error);
-      toast.error("AI rewrite failed.", {
+      console.error("Error releasing lock:", error);
+      return false;
+    }
+  };
+
+  const openSaveConfirm = (triggerType, action) => {
+    setSaveConfirmTrigger(triggerType);
+    pendingActionRef.current = action;
+    setIsSaveConfirmOpen(true);
+  };
+
+  const requiresSavePrompt = () => !readOnly && !!loadedIDRef.current;
+
+  const handleBack = () => {
+    if (!requiresSavePrompt()) { navigate(-1); return; }
+    openSaveConfirm("back", () => navigate(-1));
+  };
+
+  const handleHomeNav = () => {
+    if (!requiresSavePrompt()) { navigate("/FrontendDMS/home"); return; }
+    openSaveConfirm("home", () => navigate("/FrontendDMS/home"));
+  };
+
+  const handleBackSaveConfirm = async () => {
+    const result = await updateData(userIDsRef.current);
+
+    if (!result) {
+      toast.dismiss();
+      toast.clearWaitingQueue();
+      toast.error("Failed to save draft.", {
         closeButton: true,
         autoClose: 1200,
         style: { textAlign: "center" }
       });
-    } finally {
-      setLoadingAimIndex(null);
-    }
-  };
-
-  const createScopeBulletRow = () => ({
-    id: uuidv4(),
-    text: ""
-  });
-
-  const normalizeProcedureScope = (value) => {
-    if (Array.isArray(value) && value.length > 0) {
-      return value.map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            type: "text",
-            text: item?.text || ""
-          };
-        }
-
-        const bullets = Array.isArray(item?.bullets)
-          ? item.bullets.map((b) => ({
-            id: b?.id || uuidv4(),
-            text: b?.text || ""
-          }))
-          : String(item?.text || "")
-            .split(/\r?\n/)
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => ({
-              id: uuidv4(),
-              text: line
-            }));
-
-        return {
-          type: "bullet",
-          bullets: bullets.length > 0 ? bullets : [createScopeBulletRow()],
-          text: bullets.map((b) => b.text).join("\n")
-        };
-      });
+      return;
     }
 
-    if (typeof value === "string" && value.trim() !== "") {
-      return [{ type: "text", text: value }];
-    }
-
-    return [{ type: "text", text: "" }];
-  };
-
-  const sanitizeScopeForValidation = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const sanitizeScopeForStorage = (items = []) => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-      .map((item) => {
-        const type = item?.type === "bullet" ? "bullet" : "text";
-
-        if (type === "text") {
-          return {
-            ...item,
-            type: "text",
-            text: typeof item?.text === "string" ? item.text.trim() : ""
-          };
-        }
-
-        const cleanedBullets = (Array.isArray(item?.bullets) ? item.bullets : [])
-          .map((b) => ({
-            id: b?.id || uuidv4(),
-            text: typeof b?.text === "string" ? b.text.trim() : ""
-          }))
-          .filter((b) => b.text !== "");
-
-        return {
-          ...item,
-          type: "bullet",
-          bullets: cleanedBullets,
-          text: cleanedBullets.map((b) => b.text).join("\n")
-        };
-      })
-      .filter((item) => item.text.trim() !== "");
-  };
-
-  const pushScopeRewriteHistory = (index, oldValue) => {
-    setRewriteHistory((prev) => ({
-      ...prev,
-      scope: {
-        ...prev.scope,
-        [index]: [...(prev.scope[index] || []), oldValue]
-      }
-    }));
-  };
-
-  const undoScopeRewrite = (index) => {
-    setRewriteHistory((prev) => {
-      const currentHistory = [...(prev.scope[index] || [])];
-      if (currentHistory.length === 0) return prev;
-
-      const lastValue = currentHistory.pop();
-
-      setFormData((fd) => ({
-        ...fd,
-        scope: fd.scope.map((item, i) =>
-          i === index ? { ...item, text: lastValue } : item
-        )
-      }));
-
-      return {
-        ...prev,
-        scope: {
-          ...prev.scope,
-          [index]: currentHistory
-        }
-      };
+    toast.dismiss();
+    toast.clearWaitingQueue();
+    toast.success("Draft has been saved.", {
+      closeButton: true,
+      autoClose: 1200,
+      style: { textAlign: "center" }
     });
+
+    await releaseLock();
+
+    setTimeout(() => {
+      loadedIDRef.current = '';
+      setLoadedID('');
+      setIsSaveConfirmOpen(false);
+      if (pendingActionRef.current) pendingActionRef.current();
+      pendingActionRef.current = null;
+    }, 1500);
   };
 
-  const handleScopeChange = (index, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) =>
-        i === index ? { ...item, text: value } : item
-      )
-    }));
+  const handleBackDiscard = async () => {
+    await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
+    setIsSaveConfirmOpen(false);
+    if (pendingActionRef.current) pendingActionRef.current();
+    pendingActionRef.current = null;
   };
 
-  const handleScopeBulletChange = (itemIndex, bulletId, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).map((bullet) =>
-          bullet.id === bulletId ? { ...bullet, text: value } : bullet
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const handleAddScope = () => {
-    setFormData((prev) => {
-      const currentScopes =
-        Array.isArray(prev.scope) && prev.scope.length > 0
-          ? prev.scope
-          : [{ type: "text", text: "" }];
-
-      const lastType = currentScopes[currentScopes.length - 1]?.type || "text";
-      const nextType = lastType === "text" ? "bullet" : "text";
-
-      return {
-        ...prev,
-        scope: [
-          ...currentScopes,
-          nextType === "bullet"
-            ? { type: "bullet", bullets: [createScopeBulletRow()], text: "" }
-            : { type: "text", text: "" }
-        ]
-      };
-    });
-  };
-
-  const handleRemoveScope = (indexToRemove) => {
-    setFormData((prev) => {
-      const currentScopes = Array.isArray(prev.scope) ? prev.scope : [];
-      const updatedScopes = currentScopes.filter((_, index) => index !== indexToRemove);
-
-      return {
-        ...prev,
-        scope: updatedScopes.length > 0 ? updatedScopes : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleRemoveScopeSection = (textIndex) => {
-    setFormData((prev) => {
-      const currentScopes = Array.isArray(prev.scope) ? prev.scope : [];
-
-      const textIndexes = currentScopes
-        .map((item, index) => (item?.type === "text" ? index : null))
-        .filter((index) => index !== null);
-
-      if (textIndexes.length <= 1) {
-        return prev;
-      }
-
-      const updatedScopes = currentScopes.filter((_, index) => {
-        return index !== textIndex && index !== textIndex + 1;
-      });
-
-      return {
-        ...prev,
-        scope: updatedScopes.length > 0 ? updatedScopes : [{ type: "text", text: "" }]
-      };
-    });
-  };
-
-  const handleAddScopeBullet = (itemIndex, insertAtIndex = null) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const currentBullets = Array.isArray(item.bullets) ? item.bullets : [];
-        const newBullet = createScopeBulletRow();
-
-        if (
-          insertAtIndex === null ||
-          insertAtIndex < 0 ||
-          insertAtIndex > currentBullets.length
-        ) {
-          return {
-            ...item,
-            bullets: [...currentBullets, newBullet]
-          };
-        }
-
-        return {
-          ...item,
-          bullets: [
-            ...currentBullets.slice(0, insertAtIndex + 1),
-            newBullet,
-            ...currentBullets.slice(insertAtIndex + 1)
-          ]
-        };
-      })
-    }));
-  };
-
-  const handleRemoveScopeBullet = (itemIndex, bulletId) => {
-    setFormData((prev) => ({
-      ...prev,
-      scope: prev.scope.map((item, i) => {
-        if (i !== itemIndex || item?.type !== "bullet") return item;
-
-        const updatedBullets = (item.bullets || []).filter(
-          (bullet) => bullet.id !== bulletId
-        );
-
-        return {
-          ...item,
-          bullets: updatedBullets
-        };
-      })
-    }));
-  };
-
-  const AiRewriteScope = async (index) => {
-    try {
-      const currentScope = formData.scope?.[index];
-      const prompt = currentScope?.text || "";
-
-      if (!prompt.trim()) {
-        toast.warn("Please enter some scope text before using AI rewrite.", {
-          closeButton: true,
-          autoClose: 1000,
-          style: { textAlign: "center" }
-        });
-        return;
-      }
-
-      pushScopeRewriteHistory(index, prompt);
-      setLoadingScope(index);
-
-      const response = await fetch(`${process.env.REACT_APP_URL}/api/openai/chatScope/procedure`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = await response.json();
-      const newText = data?.response || "";
-
-      setFormData((fd) => ({
-        ...fd,
-        scope: fd.scope.map((item, i) =>
-          i === index ? { ...item, text: newText } : item
-        )
-      }));
-    } catch (error) {
-      console.error("Error rewriting scope:", error);
-      toast.error("AI rewrite failed.", {
-        closeButton: true,
-        autoClose: 1200,
-        style: { textAlign: "center" }
-      });
-    } finally {
-      setLoadingScope(null);
-    }
+  const handleCancelSave = async () => {
+    setIsSaveConfirmOpen(false);
+    pendingActionRef.current = null;
   };
 
   return (
@@ -1742,9 +1724,39 @@ const FTSCreatePageTemplatesReview = () => {
             <p className="logo-text-um">Field Template</p>
           </div>
 
-          <div className="sidebar-logo-dm-fi">
-            <img src={`${process.env.PUBLIC_URL}/standardsDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">{"Templates"}</p>
+          <div className="button-container-create">
+            <button className="but-um" onClick={() => navigate('/FrontendDMS/ftsDrafts/template')}>
+              <div className="button-content">
+                <span className="button-logo-custom" aria-hidden="true">
+                  <FontAwesomeIcon icon={faFolderOpenSolid} className="icon-base-draft" />
+                  <FontAwesomeIcon icon={faArrowUp} className="icon-badge-draft" />
+                </span>
+                <span className="button-text">Saved Drafts</span>
+              </div>
+            </button>
+            {canIn(access, "FTS", ["systemAdmin", "contributor"]) && (
+              <button className="but-um" onClick={() => navigate('/FrontendDMS/ftsGeneratedTemplates')}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
+                  <span className="button-text">In Approval</span>
+                </div>
+              </button>
+            )}
+            {canIn(access, "FTS", ["systemAdmin", "contributor"]) && (
+              <button className="but-um" onClick={() => navigate('/FrontendDMS/ftsSignedOffTemplates')}>
+                <div className="button-content">
+                  <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
+                  <span className="button-text">Approved</span>
+                </div>
+              </button>
+            )}
+            <div className="horizontal-divider-with-icon">
+              <hr />
+              <div className="divider-icon">
+                <FontAwesomeIcon icon={faInfo} onClick={openWorkflow} />
+              </div>
+              <hr />
+            </div>
           </div>
         </div>
       )}
@@ -1756,19 +1768,17 @@ const FTSCreatePageTemplatesReview = () => {
           </div>
         </div>
       )}
-
+      {share && <SharePage closePopup={closeShare} userID={userID} userIDs={userIDs} popupVisible={share} saveData={updateData} setUserIDs={setUserIDs} />}
       <div className="main-box-create">
         <div className="top-section-create-page">
           <div className="icons-container-create-page">
             <div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} title="Back" />
+              <FontAwesomeIcon icon={faArrowLeft} onClick={handleBack} title="Back" />
             </div>
 
-            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faFloppyDisk} title="Save" onClick={handleSave} />
-            </div>)}
-
-            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
+            {/* This page is always read-only — Save As is the only action
+                icon shown, so people can branch off a copy to edit. */}
+            <div className="burger-menu-icon-risk-create-page-1">
               <span className="fa-layers fa-fw" style={{ fontSize: "24px" }} onClick={openSaveAs} title="Save As">
                 {/* base floppy-disk, full size */}
                 <FontAwesomeIcon icon={faSave} />
@@ -1779,210 +1789,168 @@ const FTSCreatePageTemplatesReview = () => {
                   color="gray"   /* or whatever contrast you need */
                 />
               </span>
-            </div>)}
-
-            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateLeft} onClick={undoLastChange} title="Undo" />
-            </div>)}
-
-            {!readOnly && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faRotateRight} onClick={redoChange} title="Redo" />
-            </div>)}
-
-            {!readOnly && !inReview && !inApproval && canIn(access, "FTS", ["systemAdmin", "contributor"]) && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon icon={faUpload} className={`${(!loadedID) ? "disabled-share" : ""}`} onClick={handleClick} title="Publish" />
-            </div>)}
-
-            {(inApproval || inReview) && !readOnly && canIn(access, "FTS", ["systemAdmin", "contributor"]) && (<div className="burger-menu-icon-risk-create-page-1">
-              <FontAwesomeIcon style={{ color: "#7EAC89" }} icon={faCheckCircle} className={`${(!loadedID) ? "disabled-share" : ""}`} onClick={handleApproveClick} title="Approve Draft" />
-            </div>)}
+            </div>
           </div>
 
           {/* This div creates the space in the middle */}
           <div className="spacer"></div>
 
           {/* Container for right-aligned icons */}
-          <TopBarDD refreshable={false} canIn={canIn} access={access} menu={"1"} create={true} />
+          <TopBarDD refreshable={true} canIn={canIn} access={access} menu={"1"} create={true} onHome={handleHomeNav} refreshable={false} />
+
         </div>
 
-        {(!readOnly && (inApproval || inReview)) && (<div className="input-row">
-          <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#7EAC89", color: "white", fontWeight: "bold" }}>
-            To approve this document, click on the green circle above.
-          </div>
-        </div>)}
+        <div className={`scrollable-box`} ref={scrollBoxRef}>
+          <TemplateTitleField
+            value={formData.templateTitle}
+            frequency={formData.frequency}
+            workOrderBasis={formData.workOrderBases}
+            assetType={formData.assetType}
+            mainArea={formData.mainArea}
+            department={formData.department}
+            workOrderType={formData.workOrderType}
+            onChange={handleTemplateTitleChange}
+            readOnly={readOnly}
+            showUI={true}
+          />
 
-        <div className={`scrollable-box`}>
-          {(readOnly && (inReview || inApproval)) && (<div className="input-row">
-            <div className={`input-box-aim-cp`} style={{ marginBottom: "10px", background: "#FFFF89", color: "black", fontWeight: "bold" }}>
-              This document is currently in the approval process
-            </div>
-          </div>)}
-
-          <div className="input-row">
-            <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Template Title <span className="required-field">*</span></h3>
-              <div className="input-group-cpt">
-                <input
-                  spellcheck="true"
-                  type="text"
-                  name="title"
-                  className="font-fam title-input"
-                  value={formData.title}
-                  readOnly={readOnly}
-                  onChange={handleInputChange}
-                  placeholder="Title of your document (e.g. Working at Heights)"
-                />
-                <span className="type-create-page">Template</span>
-              </div>
-            </div>
-          </div>
+          <WorkOrderTable
+            workOrderType={formData.workOrderType}
+            description={formData.workOrderDescription}
+            onTypeChange={handleWorkOrderTypeChange}
+            onDescriptionChange={handleWorkOrderDescriptionChange}
+            readOnly={readOnly}
+            error={errors.workOrderType || errors.workOrderDescription}
+            userID={userID}
+          />
 
           <div className="input-row-risk-create">
-            <TemplateNumberField onChange={handleInputChange} value={formData.templateNumber} />
-            <RevisionNumberField onChange={handleInputChange} value={formData.revisionNumber} />
+            <WorkOrderBasesSelection
+              value={formData.workOrderBases}
+              onChange={handleWorkOrderBasesChange}
+              onFocus={handleWorkOrderBasesFocus}
+              error={errors.workOrderBases}
+              readOnly={readOnly}
+            />
+            <FrequencyTemplateCreation
+              value={formData.frequency}
+              onChange={handleFrequencyChange}
+              onFocus={handleFrequencyFocus}
+              error={errors.frequency}
+              readOnly={readOnly}
+            />
           </div>
-
-          <TemplateDescription onChange={handleInputChange} value={formData.taskDescription} />
 
           <TemplateDocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
-          {false && (<AimBulletComponent
-            readOnly={readOnly}
-            aims={formData.aim}
-            errors={errors.aim || []}
-            loadingIndex={loadingAimIndex}
-            rewriteHistory={rewriteHistory}
-            onChange={handleAimChange}
-            onBulletChange={handleAimBulletChange}
-            onFocus={(index) =>
-              setErrors((prev) => {
-                const nextAimErrors = Array.isArray(prev.aim)
-                  ? [...prev.aim]
-                  : [];
-
-                nextAimErrors[index] = false;
-
-                return {
-                  ...prev,
-                  aim: nextAimErrors,
-                };
-              })
-            }
-            onHelp={() => { }}
-            onAiRewrite={AiRewriteAim}
-            onUndo={undoAimRewrite}
-            onAddAim={handleAddAim}
-            onRemoveAim={handleRemoveAim}
-            onRemoveAimSection={handleRemoveAimSection}
-            onAddBullet={handleAddAimBullet}
-            onRemoveBullet={handleRemoveAimBullet}
+          {(formData.workOrderBases === "assetBased" || formData.workOrderBases === "") && (<AssetInfoBox
             collapsible={true}
-            type="standard"
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.assetDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+            workOrderBasis={formData.workOrderBases}
           />)}
 
-          {false && (<ScopeBulletComponent
-            readOnly={readOnly}
-            scopes={formData.scope}
-            errors={errors.scope || []}
-            loadingIndex={loadingScope}
-            rewriteHistory={rewriteHistory}
-            onChange={handleScopeChange}
-            onBulletChange={handleScopeBulletChange}
-            onFocus={(index) =>
-              setErrors((prev) => {
-                const nextScopeErrors = Array.isArray(prev.scope)
-                  ? [...prev.scope]
-                  : [];
-
-                nextScopeErrors[index] = false;
-
-                return {
-                  ...prev,
-                  scope: nextScopeErrors,
-                };
-              })
-            }
-            onHelp={() => { }}
-            onAiRewrite={AiRewriteScope}
-            onUndo={undoScopeRewrite}
-            onAddScope={handleAddScope}
-            onRemoveScope={handleRemoveScope}
-            onRemoveScopeSection={handleRemoveScopeSection}
-            onAddBullet={handleAddScopeBullet}
-            onRemoveBullet={handleRemoveScopeBullet}
+          <SiteAreaInfoBox
             collapsible={true}
-          />)}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.siteAreaDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
 
-          <TemplateFieldsTable collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} setUsedTemplateFields={setUsedTemplateFields} error={errors.templateFields} userID={userID} setErrors={setErrors} readOnly={readOnly} />
-          <TemplateFieldsInfo collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} error={errors.templateFieldDetails} setErrors={setErrors} readOnly={readOnly} />
+          <DepartmentInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.departmentDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
 
-          {false && (<>
-            <AbbreviationTable collapsible={true} readOnly={readOnly} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} />
-            <TermTable collapsible={true} readOnly={readOnly} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} />
-            <StandardsTable collapsible={true} readOnly={readOnly} formData={formData} setFormData={setFormData} error={errors.standard} setErrors={setErrors} />
-            <ChapterTable collapsible={true} readOnly={readOnly} formData={formData} setFormData={setFormData} />
-            <ReferenceTable collapsible={true} readOnly={readOnly} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} />
-            <SupportingDocumentTable collapsible={true} readOnly={readOnly} formData={formData} setFormData={setFormData} />
-          </>)}
+          <ManagementInfoBox
+            collapsible={true}
+            formData={formData}
+            setFormData={setFormData}
+            error={errors.managementDetails}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            noOptions={false}
+          />
 
-          <div className="input-row">
-            <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-              <input
-                type="number"
-                name="reviewDate"
-                className="aim-textarea cent-create font-fam"
-                value={formData.reviewDate}
-                onChange={handleInputChange}
-                readOnly={readOnly}
-                placeholder="Insert the review period in months" // Optional placeholder text
-              />
-            </div>
+          <div className="input-row-risk-create">
+            <TemplateNumberField
+              value={formData.templateNumber}
+              workOrderType={formData.workOrderType}
+              department={formData.department}
+              mainArea={formData.mainArea}
+              onChange={handleTemplateNumberChange}
+              showUI={false}
+            />
+            <RevisionNumberField onChange={handleInputChange} value={formData.revisionNumber} showUI={false} />
           </div>
 
-          {false && (<PicturesTable collapsible={true} readOnly={readOnly} picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />)}
+          <SupportingDocumentTableFTS collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
+          <WorkOrderActionFields collapsible={true} formData={formData} setFormData={setFormData} error={errors.actionFields} setErrors={setErrors} readOnly={readOnly} />
 
-          <div className="input-row">
-            <div className={`input-box-aim-cp ${errors.change ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Document Change Reason <span className="required-field">*</span></h3>
-              <textarea
-                spellcheck="true"
-                name="aim"
-                className="aim-textarea font-fam"
-                value={change}
-                readOnly={readOnly}
-                onChange={(e) => setChange(e.target.value)}
-                rows="4"   // Adjust the number of rows for initial height
-                placeholder="Insert the reason for the document update..." // Optional placeholder text
-              />
-            </div>
-          </div>
-
-          {false && (<div className="input-row-buttons">
-            {/* Generate File Button */}
-            <button
+          {true && (<div className="input-row-buttons">
+            {true && (<button
               className="generate-button font-fam"
-              onClick={handleGenerateDocument}
-              title={validateForm() ? "" : "Fill in all fields marked by a * before generating the file"}
+              title="Preview Template"
+              onClick={() => setTemplatePreviewOpen(true)}
             >
-              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Generate Document'}
-            </button>
-            {false && (
-              <button
-                className="pdf-button font-fam"
-                disabled
-              >
-                Generate PDF
-              </button>
-            )}
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Template Preview'}
+            </button>)}
+            {true && (<button
+              className="generate-button font-fam"
+              title="PDF Preview Template"
+              onClick={() => setPreviewPopup(true)}
+            >
+              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'PDF Template Preview'}
+            </button>)}
           </div>)}
         </div>
         {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
+        {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
+        {templatePreviewOpen && (
+          <TemplatePreview
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            setErrors={setErrors}
+            readOnly={readOnly}
+            onClose={() => setTemplatePreviewOpen(false)}
+          />
+        )}
+        {previewPopup && (
+          <TemplatePreviewPopup
+            formData={formData}
+            onClose={() => setPreviewPopup(false)}
+            previewEndpoint={`${process.env.REACT_APP_URL}/api/ftsGenerate/preview-template`}
+          />
+        )}
         {draftNote && (<DraftPopup closeModal={closeDraftNote} />)}
-        {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
+        {showWorkflow && (<DocumentWorkflow setClose={closeWorkflow} />)}
       </div>
       <ToastContainer />
       {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+      {isDuplicateName && (<DuplicateName current={formDataRef.current.title} saveAs={saveDraftName} />)}
+      {isSaveConfirmOpen && (
+        <SaveConfirmationPopup
+          setIsSaveModalOpen={setIsSaveConfirmOpen}
+          onConfirmSave={handleBackSaveConfirm}
+          onDiscard={handleBackDiscard}
+          onCancel={handleCancelSave}
+          draftTitle={formData.title}
+          triggerType={saveConfirmTrigger}
+        />
+      )}
       {isSaving && (
         <SavingInProgress />
       )}

@@ -44,7 +44,7 @@ const SGIVersionHistory = () => {
     const columns = [
         { id: "nr", title: "Nr" },
         { id: "fileName", title: "File Name" },
-        { id: "version", title: "Version" },
+        //{ id: "version", title: "Version" },
         { id: "uploadDate", title: "Date Uploaded" },
         { id: "reason", title: "Reason For Change" },
         { id: "action", title: "Action" }
@@ -264,7 +264,14 @@ const SGIVersionHistory = () => {
             }
 
             const data = await response.json();
-            setActivity(data);
+
+            const sortedByNewest = [...data].sort((a, b) => {
+                const aTime = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
+                const bTime = b.uploadDate ? new Date(b.uploadDate).getTime() : 0;
+                return bTime - aTime;
+            });
+
+            setActivity(sortedByNewest);
         } catch (error) {
             setError(error.message);
         } finally {
@@ -285,23 +292,25 @@ const SGIVersionHistory = () => {
             return true;
         });
 
-        const colId = sortConfig?.colId ?? "fileName";
-        const dir = sortConfig?.direction === "desc" ? -1 : 1;
+        if (sortConfig?.colId) {
+            const colId = sortConfig.colId;
+            const dir = sortConfig.direction === "desc" ? -1 : 1;
 
-        current.sort((a, b) => {
-            const av = normalizeValue(getCellValue(a, colId));
-            const bv = normalizeValue(getCellValue(b, colId));
+            current.sort((a, b) => {
+                const av = normalizeValue(getCellValue(a, colId));
+                const bv = normalizeValue(getCellValue(b, colId));
 
-            const aBlank = av === BLANK;
-            const bBlank = bv === BLANK;
-            if (aBlank && !bBlank) return 1;
-            if (!aBlank && bBlank) return -1;
+                const aBlank = av === BLANK;
+                const bBlank = bv === BLANK;
+                if (aBlank && !bBlank) return 1;
+                if (!aBlank && bBlank) return -1;
 
-            return String(av).localeCompare(String(bv), undefined, {
-                sensitivity: "base",
-                numeric: true,
-            }) * dir;
-        });
+                return String(av).localeCompare(String(bv), undefined, {
+                    sensitivity: "base",
+                    numeric: true,
+                }) * dir;
+            });
+        }
 
         return current;
     }, [activity, filters, sortConfig]);
@@ -396,7 +405,7 @@ const SGIVersionHistory = () => {
                                         <tr style={{ fontSize: "14px" }} key={act._id} className="file-info-row-height version-history-file-info-tr">
                                             <td style={{ textAlign: "center" }}>{index + 1}</td>
                                             <td style={{ textAlign: "left" }}>{removeFileExtension(act.fileName)}</td>
-                                            <td style={{ textAlign: "center" }}>{act.version ? `V ${act.version}` : ""}</td>
+                                            {false && (<td style={{ textAlign: "center" }}>{act.version ? `V ${act.version}` : ""}</td>)}
                                             <td style={{ textAlign: "center" }}>{formatDate(act.uploadDate)}</td>
                                             <td style={{ textAlign: "left", whiteSpace: "pre-wrap" }}>{act.reason || ""}</td>
                                             <td style={{ textAlign: "center" }}>

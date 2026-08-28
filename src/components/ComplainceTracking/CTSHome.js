@@ -81,7 +81,7 @@ const CTSHome = () => {
                     <div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/workManagement")}>
                         <>
                             <div className="icon-dc">
-                                <FontAwesomeIcon icon={faCircle} style={{ color: "#002060" }} src={"/standardsDMS.svg"} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/WOM2.svg`} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Work Order Management</h3>
                         </>

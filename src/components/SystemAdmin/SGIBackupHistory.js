@@ -140,7 +140,14 @@ const SGIBackupHistory = () => {
             }
 
             const data = await response.json();
-            setActivity(data);
+
+            const sortedByNewest = [...data].sort((a, b) => {
+                const aTime = a.createdAtBackup ? new Date(a.createdAtBackup).getTime() : 0;
+                const bTime = b.createdAtBackup ? new Date(b.createdAtBackup).getTime() : 0;
+                return bTime - aTime;
+            });
+
+            setActivity(sortedByNewest);
         } catch (error) {
             setError(error.message);
         } finally {
@@ -282,23 +289,25 @@ const SGIBackupHistory = () => {
             return true;
         });
 
-        const colId = sortConfig?.colId ?? "fileName";
-        const dir = sortConfig?.direction === "desc" ? -1 : 1;
+        if (sortConfig?.colId) {
+            const colId = sortConfig.colId;
+            const dir = sortConfig.direction === "desc" ? -1 : 1;
 
-        current.sort((a, b) => {
-            const av = normalizeValue(getCellValue(a, colId));
-            const bv = normalizeValue(getCellValue(b, colId));
+            current.sort((a, b) => {
+                const av = normalizeValue(getCellValue(a, colId));
+                const bv = normalizeValue(getCellValue(b, colId));
 
-            const aBlank = av === BLANK;
-            const bBlank = bv === BLANK;
-            if (aBlank && !bBlank) return 1;
-            if (!aBlank && bBlank) return -1;
+                const aBlank = av === BLANK;
+                const bBlank = bv === BLANK;
+                if (aBlank && !bBlank) return 1;
+                if (!aBlank && bBlank) return -1;
 
-            return String(av).localeCompare(String(bv), undefined, {
-                sensitivity: "base",
-                numeric: true,
-            }) * dir;
-        });
+                return String(av).localeCompare(String(bv), undefined, {
+                    sensitivity: "base",
+                    numeric: true,
+                }) * dir;
+            });
+        }
 
         return current;
     }, [activity, filters, sortConfig]);

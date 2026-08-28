@@ -87,7 +87,7 @@ const HomePage = () => {
       title: "Compliance Tracking", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/ctsHome", category: "CMS"
     },
     {
-      title: "Field Templates", src: "CM.png", icon: faFileAlt, path: "/FrontendDMS/ftsHome", category: "FTS"
+      title: "Field Templates", src: "FTSImg.png", icon: faFileAlt, path: "/FrontendDMS/ftsHome", category: "FTS"
     }
   ];
 
@@ -182,7 +182,8 @@ const HomePage = () => {
                 ${item.src === "DM.png" ? "card-icon-dm" : ""}
                 ${item.src === "RM.png" ? "card-icon-rm" : ""}
                 ${item.src === "DC.png" ? "card-icon-dc" : ""}
-                ${item.src === "CM.png" ? "card-icon-cm" : ""}`}
+                ${item.src === "CM.png" ? "card-icon-cm" : ""}
+                ${item.src === "FTSImg.png" ? "card-icon-fts" : ""}`}
                       />
                     </div>
                     <h3>

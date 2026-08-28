@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faCalendarDays, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faCalendarDays, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -39,6 +39,7 @@ import RiskAimComponent from "../RiskRelated/RiskAimComponent";
 import RiskScopeIE from "../RiskRelated/RiskScopeIE";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 
 const RiskReviewPageIBRA = () => {
     const navigate = useNavigate();
@@ -83,6 +84,9 @@ const RiskReviewPageIBRA = () => {
     const relevantControlsRef = useRef(null);
     const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
     const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
+    const [removeApprovalState, setRemoveApprovalState] = useState(false);
+    const [removingApproval, setRemovingApproval] = useState(false);
+    const [canRemove, setCanRemove] = useState(false);
 
     const openApproval = () => {
         setApproval(true);
@@ -90,6 +94,14 @@ const RiskReviewPageIBRA = () => {
 
     const closeApprovePopup = () => {
         setApproveState(false);
+    }
+
+    const openRemoveApproval = () => {
+        setRemoveApprovalState(true);
+    }
+
+    const closeRemoveApproval = () => {
+        setRemoveApprovalState(false);
     }
 
     const closeApproval = () => {
@@ -733,6 +745,7 @@ const RiskReviewPageIBRA = () => {
             const data = await response.json();
             const storedData = data.files || {};
             const readOnly = data.readOnly || false;
+            const canRemove = data.canRemove || false;
 
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
             setUsedTermCodes(storedData.usedTermCodes || []);
@@ -748,6 +761,7 @@ const RiskReviewPageIBRA = () => {
             setFormData(prev => ({ ...prev }));
             setTitleSet(true);
             setAzureFN(storedData.azureFileName || "");
+            setCanRemove(canRemove);
 
         } catch (error) {
             console.error("Error loading data:", error);
@@ -1996,6 +2010,51 @@ const RiskReviewPageIBRA = () => {
         }
     };
 
+    const removeFromApprovalProcess = async () => {
+        const dataToStore = {
+            draftID: fileID
+        };
+
+        setRemovingApproval(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskApprovals/remove-from-approval-ibra-published`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+            toast.success(`IBRA Removed From The Approval Process.`, {
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+
+            setInApproval(false);
+            setInReview(false);
+            setReadOnly(false);
+            setRemoveApprovalState(false);
+        } catch (error) {
+            console.error("Error removing document from the approval process:", error);
+            toast.error("Failed to remove document from the approval process", {
+                closeButton: true,
+                autoClose: 800,
+                style: {
+                    textAlign: 'center'
+                }
+            });
+        } finally {
+            setRemovingApproval(false);
+        }
+    };
+
     const sendUpdatedFormData = async (formDataToStore, documentName) => {
         setLoading(true);
 
@@ -2927,6 +2986,10 @@ const RiskReviewPageIBRA = () => {
                                 <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                             </div>
                         )}
+
+                        {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+                        </div>)}
                     </div>
 
                     {/* This div creates the space in the middle */}
@@ -3183,6 +3246,15 @@ const RiskReviewPageIBRA = () => {
             )}
             {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
             {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+            {removeApprovalState && (
+                <RemoveFromApprovalPopup
+                    closeModal={closeRemoveApproval}
+                    removeApproval={removeFromApprovalProcess}
+                    docType="IBRA"
+                    title={formData.title}
+                    loading={removingApproval}
+                />
+            )}
             {isSaving && (
                 <SavingInProgress />
             )}

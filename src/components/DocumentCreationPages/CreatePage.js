@@ -19,7 +19,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faCheckCircle, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faL, faMagicWandSparkles, faInfo, faFileImport, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faCheckCircle, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faL, faMagicWandSparkles, faInfo, faFileImport, faDownload, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
@@ -32,6 +32,7 @@ import DocumentWorkflow from "../Popups/DocumentWorkflow";
 import { getCurrentUser, can, canIn, isAdmin } from "../../utils/auth";
 import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopup";
 import ApproveApprovalProcessPopup from "../Popups/ApproveApprovalProcessPopup";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 import DuplicateName from "../Popups/DuplicateName";
 import ImportJRAPopup from "../CreatePage/ImportJRAPopup";
 import { v4 as uuidv4 } from "uuid";
@@ -95,6 +96,9 @@ const CreatePage = () => {
   const [isPublisher, setIsPublisher] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
   const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const openImportJRA = () => setIsImportJRAPopupOpen(true);
   const closeImportJRA = () => setIsImportJRAPopupOpen(false);
@@ -473,6 +477,14 @@ const CreatePage = () => {
 
   const closeApprovePopup = () => {
     setApproveState(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const closeApproval = () => {
@@ -1084,6 +1096,7 @@ const CreatePage = () => {
       const isOwner = data.isOwner || false;
       const isViewer = data.isViewer || false;
       const isPublisher = data.isPublisher || false;
+      const canRemove = data.canRemove || false;
 
       const ownerId =
         storedData.creator ||
@@ -1128,6 +1141,7 @@ const CreatePage = () => {
       setIsPublisher(isPublisher);
       setInApproval(Boolean(data.statusApproval));
       setInReview(Boolean(data.statusReview));
+      setCanRemove(canRemove);
 
       requestAnimationFrame(() => {
         scrollBoxRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -2032,6 +2046,53 @@ const CreatePage = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: loadedIDRef.current
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/documentApprovals/remove-from-approval-proc-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Procedure Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 1500, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setInReview(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+      setCanRemove(false);
+      loadData(draftId);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   useEffect(() => {
     if (draftId === "new") {
       return;
@@ -2736,6 +2797,8 @@ const CreatePage = () => {
     await releaseLock();
 
     setTimeout(() => {
+      loadedIDRef.current = '';
+      setLoadedID('');
       setIsSaveConfirmOpen(false);
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
@@ -2744,6 +2807,8 @@ const CreatePage = () => {
 
   const handleBackDiscard = async () => {
     await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
     setIsSaveConfirmOpen(false);
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
@@ -2884,6 +2949,10 @@ const CreatePage = () => {
                 <FontAwesomeIcon icon={faCircleExclamation} title="Load Offline Draft" />
               </div>
             )}
+
+            {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+            </div>)}
           </div>
 
           {/* This div creates the space in the middle */}
@@ -3079,6 +3148,15 @@ const CreatePage = () => {
       </div>
       <ToastContainer />
       {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="procedure draft"
+          title={formData.title}
+          loading={removingApproval}
+        />
+      )}
       {isImportJRAPopupOpen && (
         <ImportJRAPopup
           isOpen={isImportJRAPopupOpen}

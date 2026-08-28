@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faDownload, faFolderOpen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faDownload, faFolderOpen, faTrash, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSpinner, faX, faSearch, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faColumns, faFilter } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import TopBar from "../Notifications/TopBar";
 import DeletePopup from "../FileInfo/DeletePopup";
+import RemoveApprovalPopup from "./RemoveApprovalPopup";
 import { ToastContainer } from "react-toastify";
 import FTSSignedOffUploadPopup from "./FTSSignedOffUploadPopup";
 
@@ -22,6 +23,11 @@ const FTSTemplateDocuments = () => {
     const [selectedFileName, setSelectedFileName] = useState();
     const [uploadID, setUploadID] = useState("");
     const [uploadProcedurePDF, setUploadProcedurePDF] = useState(false);
+
+    const [fileToRemoveApproval, setFileToRemoveApproval] = useState("");
+    const [isRemoveApprovalModalOpen, setIsRemoveApprovalModalOpen] = useState(false);
+    const [selectedRemoveFileName, setSelectedRemoveFileName] = useState();
+    const [removeApprovalLoading, setRemoveApprovalLoading] = useState(false);
 
     const openPDFUpload = (rawId) => {
         console.log("Raw ID received:", rawId);
@@ -150,6 +156,46 @@ const FTSTemplateDocuments = () => {
             console.error('Error deleting file:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openRemoveApprovalModal = (id, fileName) => {
+        setFileToRemoveApproval(id);
+        setSelectedRemoveFileName(fileName);
+        setIsRemoveApprovalModalOpen(true);
+    };
+
+    const closeRemoveApprovalModal = () => {
+        setIsRemoveApprovalModalOpen(false);
+        setFileToRemoveApproval("");
+        setSelectedRemoveFileName("");
+    };
+
+    const removeApprovalProcess = async () => {
+        if (!fileToRemoveApproval) return;
+        try {
+            setRemoveApprovalLoading(true);
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/ftsApproval/remove-from-approval-process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ draftID: fileToRemoveApproval }),
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || 'Failed to remove the template from the approval process');
+            }
+
+            closeRemoveApprovalModal();
+            fetchFiles();
+        } catch (error) {
+            console.error('Error removing template from approval process:', error);
+            alert(error.message || 'Error removing the template from the approval process. Please try again.');
+        } finally {
+            setRemoveApprovalLoading(false);
         }
     };
 
@@ -453,30 +499,27 @@ const FTSTemplateDocuments = () => {
             tdClass: "cent-values-gen gen-point",
             td: (file) => formatDate(file.dateUpdated)
         },
-        /*
         {
             id: "action",
             title: "Action",
             thClass: "gen-th ibraGenType",
             tdClass: "cent-values-gen gen-point",
-            td: (f) => (
-                <div className="action-buttons-fi">
-                    <button
-                        className="download-button-fi col-but-res"
-                        onClick={() => downloadFile(f._id, f.fileName)}
-                    >
-                        <FontAwesomeIcon icon={faDownload} title="Preview" />
-                    </button>
-                    <button
-                        className="delete-button-fi col-but"
-                        onClick={() => fileDelete(f._id, f.formData.title)}
-                    >
-                        <FontAwesomeIcon icon={faTrash} title="Delete" />
-                    </button>
-                </div>
-            ),
+            td: (f) => {
+                const isPublisher = f.publisher && String(f.publisher) === String(userID);
+                return (
+                    <div className="action-buttons-fi">
+                        <button
+                            className="delete-button-fi col-but"
+                            onClick={() => openRemoveApprovalModal(f._id, f.formData.title)}
+                            disabled={!isPublisher}
+                            title={isPublisher ? "Remove from approval process" : "Only the publisher can remove this template from the approval process"}
+                        >
+                            <FontAwesomeIcon icon={faTrash} title="Remove from approval process" />
+                        </button>
+                    </div>
+                );
+            },
         }
-        */
     ];
 
     const [showColumns, setShowColumns] = useState(allColumns.map(c => c.id));
@@ -638,11 +681,6 @@ const FTSTemplateDocuments = () => {
                             </div>
                         </button>
                     </div>)}
-
-                    <div className="sidebar-logo-dm-fi">
-                        <img src={`${process.env.PUBLIC_URL}/ibra2.svg`} alt="Control Attributes" className="icon-risk-rm" />
-                        <p className="logo-text-dm-fi">{"In Approval Templates"}</p>
-                    </div>
                 </div>
             )}
 
@@ -1002,6 +1040,14 @@ const FTSTemplateDocuments = () => {
 
             {uploadProcedurePDF && (<FTSSignedOffUploadPopup docID={uploadID} onClose={closePDFUpload} refresh={fetchFiles} closeNavigate={closePDFNavigate} type={"ibra"} />)}
             {isModalOpen && (<DeletePopup closeModal={closeModal} deleteFile={deleteFile} isTrashView={false} loading={loading} selectedFileName={selectedFileName} />)}
+            {isRemoveApprovalModalOpen && (
+                <RemoveApprovalPopup
+                    closeModal={closeRemoveApprovalModal}
+                    removeApproval={removeApprovalProcess}
+                    selectedFileName={selectedRemoveFileName}
+                    loading={removeApprovalLoading}
+                />
+            )}
             <ToastContainer />
         </div >
     );

@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretRight, faCaretLeft, faInfo, faCalendarDays, faDownload, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faMagicWandSparkles, faSave, faPen, faArrowLeft, faArrowUp, faCaretRight, faCaretLeft, faInfo, faCalendarDays, faDownload, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -44,6 +44,7 @@ import DuplicateName from "../Popups/DuplicateName";
 import RiskAimComponent from "../RiskRelated/RiskAimComponent";
 import RiskScopeIE from "../RiskRelated/RiskScopeIE";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
 import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
@@ -113,6 +114,9 @@ const RiskManagementPageBLRA = () => {
     const [isPublisher, setIsPublisher] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
     const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
+    const [removeApprovalState, setRemoveApprovalState] = useState(false);
+    const [removingApproval, setRemovingApproval] = useState(false);
+    const [canRemove, setCanRemove] = useState(false);
 
     const SHARE_ROLES = ["collaborator", "viewer", "publisher"];
     const ALL_ALLOWED_ROLES = ["owner", ...SHARE_ROLES];
@@ -185,6 +189,14 @@ const RiskManagementPageBLRA = () => {
 
     const closeApprovePopup = () => {
         setApproveState(false);
+    }
+
+    const openRemoveApproval = () => {
+        setRemoveApprovalState(true);
+    }
+
+    const closeRemoveApproval = () => {
+        setRemoveApprovalState(false);
     }
 
     const closeApproval = () => {
@@ -991,6 +1003,7 @@ const RiskManagementPageBLRA = () => {
             const isOwner = data.isOwner || false;
             const isViewer = data.isViewer || false;
             const isPublisher = data.isPublisher || false;
+            const canRemove = data.canRemove || false;
 
             const ownerId =
                 storedData.creator ||
@@ -1016,7 +1029,7 @@ const RiskManagementPageBLRA = () => {
             setTitleSet(true);
             loadedIDRef.current = loadID;
             setLoadedID(loadID);
-
+            setCanRemove(canRemove);
             setReadOnly(readOnly);
             setOwner(isOwner)
             setIsViewer(isViewer);
@@ -2412,6 +2425,53 @@ const RiskManagementPageBLRA = () => {
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
+        }
+    };
+
+    const removeFromApprovalProcess = async () => {
+        const dataToStore = {
+            draftID: loadedIDRef.current
+        };
+
+        setRemovingApproval(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskApprovals/remove-from-approval-blra-draft`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+            toast.success(`BLRA Removed From The Approval Process.`, {
+                closeButton: true,
+                autoClose: 1500, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+
+            setInApproval(false);
+            setInReview(false);
+            setReadOnly(false);
+            setRemoveApprovalState(false);
+            setCanRemove(false);
+            loadData(riskId);
+        } catch (error) {
+            console.error("Error removing document from the approval process:", error);
+            toast.error("Failed to remove document from the approval process", {
+                closeButton: true,
+                autoClose: 800,
+                style: {
+                    textAlign: 'center'
+                }
+            });
+        } finally {
+            setRemovingApproval(false);
         }
     };
 
@@ -3885,6 +3945,8 @@ const RiskManagementPageBLRA = () => {
         await releaseLock();
 
         setTimeout(() => {
+            loadedIDRef.current = '';
+            setLoadedID('');
             setIsSaveConfirmOpen(false);
             if (pendingActionRef.current) pendingActionRef.current();
             pendingActionRef.current = null;
@@ -3893,6 +3955,8 @@ const RiskManagementPageBLRA = () => {
 
     const handleBackDiscard = async () => {
         await releaseLock();
+        loadedIDRef.current = '';
+        setLoadedID('');
         setIsSaveConfirmOpen(false);
         if (pendingActionRef.current) pendingActionRef.current();
         pendingActionRef.current = null;
@@ -3941,7 +4005,7 @@ const RiskManagementPageBLRA = () => {
                         )}
 
                         {canIn(access, "RMS", ["systemAdmin", "contributor"]) && (
-                            <button className="but-um" onClick={() => navigate('/FrontendDMS/signedOffBLRA')}>
+                            <button className="but-um" onClick={() => navigate('/signedOffBLRA')}>
                                 <div className="button-content">
                                     <FontAwesomeIcon icon={faFolderOpen} className="button-logo-custom" />
                                     <span className="button-text">Signed Off</span>
@@ -4041,6 +4105,10 @@ const RiskManagementPageBLRA = () => {
                                     userSelect: "none"
                                 }}
                             />
+                        </div>)}
+
+                        {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
                         </div>)}
                     </div>
 
@@ -4301,6 +4369,15 @@ const RiskManagementPageBLRA = () => {
                     close={closeUpdatedControlsPopup}
                     importControls={importUpdatedControlsFromDraftLoad}
                     loading={loading}
+                />
+            )}
+            {removeApprovalState && (
+                <RemoveFromApprovalPopup
+                    closeModal={closeRemoveApproval}
+                    removeApproval={removeFromApprovalProcess}
+                    docType="BLRA draft"
+                    title={formData.title}
+                    loading={removingApproval}
                 />
             )}
             {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}

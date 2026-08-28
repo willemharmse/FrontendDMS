@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from "uuid";
 import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopup";
 import OnlineTrainingSummary from "./OnlineTrainingSummary";
@@ -22,6 +22,7 @@ import OTCourseAssessment from "./OTCourseAssessment";
 import CourseResourceTable from "./CourseResourceTable";
 import PublishedOnlineTrainingPreviewPage from "./PublishedOnlineTrainingPreviewPage"
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 
 const OnlineTrainingReviewPage = () => {
   const navigate = useNavigate();
@@ -51,6 +52,9 @@ const OnlineTrainingReviewPage = () => {
   const [retakeConfirmation, setRetakeConfirmation] = useState(false);
   const [inApproval, setInApproval] = useState(false);
   const [publishType, setPublishType] = useState(false);
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const readOnlyRef = useRef(false);
 
@@ -73,6 +77,14 @@ const OnlineTrainingReviewPage = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const openRetakeConfirm = () => {
@@ -711,6 +723,50 @@ const OnlineTrainingReviewPage = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: fileID
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/onlineTrainingCourses/remove-from-approval-publishedDoc`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Online Training Course Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   const loadData = async (loadID) => {
     try {
       setShowPublishLoader(true);
@@ -740,6 +796,7 @@ const OnlineTrainingReviewPage = () => {
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
       setInApproval(Boolean(storedData.statusApproval));
+      const canRemove = storedData.canRemove || false;
 
       if (storedData.statusApproval && storedData.readOnly) {
         enableReadOnlyImmediately();
@@ -748,6 +805,7 @@ const OnlineTrainingReviewPage = () => {
       }
 
       setShowPublishLoader(false);
+      setCanRemove(canRemove);
     } catch (error) {
       console.error('Error loading data:', error);
       setShowPublishLoader(false);
@@ -1137,6 +1195,10 @@ const OnlineTrainingReviewPage = () => {
                 {inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
                   <FontAwesomeIcon icon={faCheckCircle} onClick={handleApproveClick} className={`${(!loadedID) ? "disabled-share" : ""}`} title="Approve Draft" />
                 </div>)}
+
+                {canRemove && inApproval && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+                </div>)}
               </>
             )}
           </div>
@@ -1282,6 +1344,15 @@ const OnlineTrainingReviewPage = () => {
       {preview && (<PublishedOnlineTrainingPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
       {confrimation && (<RepublishTraining closeModal={closeConfirmation} normalPublish={normalPublish} retakeInduction={retakeInduction} />)}
       {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="online training course"
+          title={formData.courseTitle}
+          loading={removingApproval}
+        />
+      )}
       {retakeConfirmation && (<RepublishTrainingConfirmation closeModal={cancelRetakeConfirmation} normalPublish={cancelRetakeConfirmation} retakeInduction={confirmRetakeConfirmation} />)}
       <ToastContainer />
       {isSaving && (

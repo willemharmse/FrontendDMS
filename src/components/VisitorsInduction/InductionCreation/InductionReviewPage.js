@@ -6,7 +6,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "../../Notifications/TopBarDD";
 import { v4 as uuidv4 } from "uuid";
 import { canIn, getCurrentUser } from "../../../utils/auth";
@@ -21,6 +21,7 @@ import RepublishInduction from "./RepublishInduction";
 import ApproversPopup from "./ApproversPopup";
 import RepublishInductionConfirmation from "./RepublishInductionConfirmation";
 import SavingInProgress from "../../DocumentCreationPages/SavingInProgress";
+import RemoveFromApprovalPopup from "../../Popups/RemoveFromApprovalPopup";
 
 const InductionReviewPage = () => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const InductionReviewPage = () => {
   const [retakeConfirmation, setRetakeConfirmation] = useState(false);
   const [inApproval, setInApproval] = useState(false);
   const [publishType, setPublishType] = useState(false);
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const readOnlyRef = useRef(false);
 
@@ -72,6 +76,14 @@ const InductionReviewPage = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const openRetakeConfirm = () => {
@@ -589,6 +601,50 @@ const InductionReviewPage = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: fileID
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/remove-from-approval-publishedDoc`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Visitor Induction Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 800, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   const loadData = async (loadID) => {
     try {
       setShowPublishLoader(true);
@@ -618,6 +674,7 @@ const InductionReviewPage = () => {
       setLoadedID(loadID);
 
       setInApproval(Boolean(storedData.statusApproval));
+      const canRemove = storedData.canRemove || false;
 
       if (storedData.statusApproval && storedData.readOnly) {
         enableReadOnlyImmediately();
@@ -626,6 +683,7 @@ const InductionReviewPage = () => {
       }
 
       setShowPublishLoader(false);
+      setCanRemove(canRemove);
     } catch (error) {
       console.error('Error loading data:', error);
       setShowPublishLoader(false);
@@ -1014,6 +1072,10 @@ const InductionReviewPage = () => {
                 {inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
                   <FontAwesomeIcon icon={faCheckCircle} onClick={handleApproveClick} className={`${(!loadedID) ? "disabled-share" : ""}`} title="Approve Draft" />
                 </div>)}
+
+                {canRemove && inApproval && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+                </div>)}
               </>
             )}
           </div>
@@ -1158,6 +1220,15 @@ const InductionReviewPage = () => {
       {preview && (<PublishedInductionPreviewPage draftID={loadedIDRef.current} closeModal={closePreview} />)}
       {confrimation && (<RepublishInduction closeModal={closeConfirmation} normalPublish={normalPublish} retakeInduction={retakeInduction} />)}
       {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="visitor induction"
+          title={formData.courseTitle}
+          loading={removingApproval}
+        />
+      )}
       {retakeConfirmation && (<RepublishInductionConfirmation closeModal={cancelRetakeConfirmation} normalPublish={cancelRetakeConfirmation} retakeInduction={confirmRetakeConfirmation} />)}
       <ToastContainer />
       {isSaving && (

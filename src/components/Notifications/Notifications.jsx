@@ -290,6 +290,9 @@ const Notifications = ({ setClose, getCount }) => {
                         targetPath = `/FrontendDMS/suggestedTaskTemplates/${note.actionId}`;
 
                     }
+                    if (note.action === "workOrder") {
+                        targetPath = `/FrontendDMS/workManagement`
+                    }
                     else {
                         targetPath = `/FrontendDMS/manualTaskingPage`
                     }

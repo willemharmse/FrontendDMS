@@ -13,7 +13,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "../CreatePage/LoadDraftPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faChevronLeft, faChevronRight, faFileCirclePlus, faArrowLeft, faSort, faCircleUser, faBell, faShareNodes, faUpload, faRotateRight, faCircleExclamation, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faMagicWandSparkles, faInfo, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import BurgerMenu from "../CreatePage/BurgerMenu";
 import SharePage from "../CreatePage/SharePage";
@@ -32,6 +32,7 @@ import DuplicateName from "../Popups/DuplicateName";
 import AimBulletComponent from "../CreatePage/AimBulletComponent";
 import ScopeBulletComponent from "../CreatePage/ScopeBulletComponent";
 import SaveConfirmationPopup from "../CreatePage/SaveConfirmationPopup";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 import SavingInProgress from "./SavingInProgress";
 import PublishingInProgress from "./PublishingInProgress";
 import { useTauriCloseGuard } from "../../utils/useTauriCloseGuard";
@@ -84,6 +85,9 @@ const CreatePageStandards = () => {
   const [isPublisher, setIsPublisher] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
   const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const SHARE_ROLES = ["collaborator", "viewer", "publisher"];
   const ALL_ALLOWED_ROLES = ["owner", ...SHARE_ROLES];
@@ -160,6 +164,14 @@ const CreatePageStandards = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const openWorkflow = () => {
@@ -706,6 +718,7 @@ const CreatePageStandards = () => {
       const isOwner = data.isOwner || false;
       const isViewer = data.isViewer || false;
       const isPublisher = data.isPublisher || false;
+      const canRemove = data.canRemove || false;
 
       const ownerId =
         storedData.creator ||
@@ -740,7 +753,7 @@ const CreatePageStandards = () => {
       setTitleSet(true);
       loadedIDRef.current = loadID;
       setLoadedID(loadID);
-
+      setCanRemove(canRemove);
       setReadOnly(readOnly);
       setOwner(isOwner)
       setIsViewer(isViewer);
@@ -1551,6 +1564,53 @@ const CreatePageStandards = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: loadedIDRef.current
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/documentApprovals/remove-from-approval-stand-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Standard Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 1500, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setInReview(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+      setCanRemove(false);
+      loadData(draftId);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   useEffect(() => {
     if (draftId === "new") {
       return;
@@ -2253,6 +2313,8 @@ const CreatePageStandards = () => {
     await releaseLock();
 
     setTimeout(() => {
+      loadedIDRef.current = '';
+      setLoadedID('');
       setIsSaveConfirmOpen(false);
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
@@ -2261,6 +2323,8 @@ const CreatePageStandards = () => {
 
   const handleBackDiscard = async () => {
     await releaseLock();
+    loadedIDRef.current = '';
+    setLoadedID('');
     setIsSaveConfirmOpen(false);
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
@@ -2389,6 +2453,10 @@ const CreatePageStandards = () => {
 
             {(inApproval || inReview) && !readOnly && canIn(access, "DDS", ["systemAdmin", "contributor"]) && (<div className="burger-menu-icon-risk-create-page-1">
               <FontAwesomeIcon style={{ color: "#7EAC89" }} icon={faCheckCircle} className={`${(!loadedID) ? "disabled-share" : ""}`} onClick={handleApproveClick} title="Approve Draft" />
+            </div>)}
+
+            {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+              <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
             </div>)}
           </div>
 
@@ -2569,6 +2637,15 @@ const CreatePageStandards = () => {
       </div>
       <ToastContainer />
       {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="standard draft"
+          title={formData.title}
+          loading={removingApproval}
+        />
+      )}
       {isDuplicateName && (<DuplicateName current={formDataRef.current.title} saveAs={saveDraftName} />)}
       {isSaveConfirmOpen && (
         <SaveConfirmationPopup

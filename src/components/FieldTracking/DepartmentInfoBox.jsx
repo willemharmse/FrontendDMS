@@ -15,8 +15,20 @@ const DepartmentInfoBox = ({
     error,
     setErrors,
     readOnly = false,
-    noOptions = false
+    noOptions = false,
+    // "create" | "template" | "assignment". On "template" (the Template
+    // Preview view) the Department / Department Code selects stay visible
+    // and interactive, but selecting a value must not write to formData -
+    // only "create" and "assignment" commit changes.
+    viewMode = "create",
+    // Names of formData keys that must stay non-interactive regardless of
+    // viewMode. Used by WorkOrderAssignment to lock fields that already
+    // held a value when the assignment popup was opened. Empty by default
+    // everywhere else, so this has no effect unless a caller explicitly
+    // passes it.
+    lockedFields = []
 }) => {
+    const commitChanges = viewMode !== "template";
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
     const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -115,11 +127,15 @@ const DepartmentInfoBox = ({
         }
     };
 
+    const isLocked = (field) => lockedFields.includes(field);
+
     const handleDepartmentChange = (value) => {
+        if (!commitChanges || isLocked("department")) return;
         setFormData(prev => ({ ...prev, department: value }));
     };
 
     const handleCodedAreaChange = (value) => {
+        if (!commitChanges || isLocked("codedArea")) return;
         setFormData(prev => ({ ...prev, codedArea: value }));
     };
 
@@ -157,8 +173,8 @@ const DepartmentInfoBox = ({
                                             value={formData.department || ""}
                                             onChange={e => handleDepartmentChange(e.target.value)}
                                             onFocus={clearErrorOnFocus}
-                                            disabled={readOnly || loadingDepartments}
-                                            style={{ fontSize: "14px" }}
+                                            disabled={readOnly || loadingDepartments || isLocked("department")}
+                                            style={{ fontSize: "14px", height: "40px", padding: "10px" }}
                                         >
                                             <option value="">
                                                 {loadingDepartments ? "Loading..." : "Select Department"}
@@ -172,7 +188,7 @@ const DepartmentInfoBox = ({
                             </tr>
                             <tr>
                                 <th scope="row" className="jra-info-table-header">
-                                    Coded Area
+                                    Department Code
                                     <span className="required-field" title="Required"> *</span>
                                 </th>
                                 <td>
@@ -182,11 +198,11 @@ const DepartmentInfoBox = ({
                                             value={formData.codedArea || ""}
                                             onChange={e => handleCodedAreaChange(e.target.value)}
                                             onFocus={clearErrorOnFocus}
-                                            disabled={readOnly || loadingCodedAreas}
-                                            style={{ fontSize: "14px" }}
+                                            disabled={readOnly || loadingCodedAreas || isLocked("codedArea")}
+                                            style={{ fontSize: "14px", height: "40px", padding: "10px" }}
                                         >
                                             <option value="">
-                                                {loadingCodedAreas ? "Loading..." : "Select Coded Area"}
+                                                {loadingCodedAreas ? "Loading..." : "Select Department Code"}
                                             </option>
                                             {!noOptions && codedAreaOptions.map(opt => (
                                                 <option key={opt} value={opt}>{opt}</option>

@@ -54,7 +54,7 @@ const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
     { id: "allocationType", title: "Task Category", views: "closedOut", collapsed: false },
     { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "allocatedBy", title: "Originator", views: "both", collapsed: false, collapsedFor: "viewer" },
+    { id: "allocatedBy", title: "Originator", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
     { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
@@ -72,7 +72,7 @@ const ALL_COLUMNS = [
     { id: "userComments", class: `task-grey1`, title: "Responsible Person Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "userAttachments", class: `task-grey1`, title: "Responsible Person Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "completionDate", title: "Completion Date", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: false, collapsedFor: "allocator" },
     { id: "closeOutComments", title: "Close Out Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "action", title: "Action", views: "both", collapsed: false },
 ];
@@ -234,6 +234,11 @@ const normalizeTask = (task) => ({
     acceptanceStatus: task?.acceptanceStatus || "",
     isTagged: task?.filledManual === false,
     uniqueID: task?.uniqueID || "",
+    // True for follow-up tasks created from a Work Order action field's
+    // "Schedule Task" popup (see POST /:id/action-fields/:fieldId/schedule-task
+    // on the work order route) — drives the "WO - " allocator prefix and the
+    // bold/normal title split below.
+    isWorkOrder: task?.isWorkOrderTask || false,
 });
 
 const ManualTaskingPage = () => {
@@ -503,14 +508,6 @@ const ManualTaskingPage = () => {
     };
 
     const openDeleteTaskPopup = (task) => {
-        if (!task?._isPendingRepeating && task?.status === "Cancelled") {
-            toast.warn("Cancelled tasks cannot be deleted.", {
-                autoClose: 3000,
-                closeButton: false,
-            });
-            return;
-        }
-
         setDeleteTaskPopup({
             open: true,
             task,
@@ -853,7 +850,7 @@ const ManualTaskingPage = () => {
     const getFilterValuesForCell = (row, colId, index) => {
         if (colId === "nr") return [String(index + 1)];
         if (colId === "status") return [getStatusDisplay(row.status)];
-        if (colId === "closeStatus") return [row.closeStatus ? "Completed" : "Open"];
+        if (colId === "closeStatus") return [row.closeStatus ? "Closed Out" : "Open"];
         if (colId === "allocationType") return [row._isAllocator ? "Tasks Assigned" : "My Tasks"];
         if (colId === "category") return [getCategoryDisplay(row.category)];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
@@ -950,14 +947,14 @@ const ManualTaskingPage = () => {
             } else {
                 const vA =
                     colId === "closeStatus"
-                        ? a.closeStatus ? "Completed" : "Open"
+                        ? a.closeStatus ? "Closed Out" : "Open"
                         : colId === "allocationType"
                             ? (a._isAllocator ? "Tasks Assigned" : "My Tasks")
                             : normalize(a?.[colId]);
 
                 const vB =
                     colId === "closeStatus"
-                        ? b.closeStatus ? "Completed" : "Open"
+                        ? b.closeStatus ? "Closed Out" : "Open"
                         : colId === "allocationType"
                             ? (b._isAllocator ? "Tasks Assigned" : "My Tasks")
                             : normalize(b?.[colId]);
@@ -1344,7 +1341,7 @@ const ManualTaskingPage = () => {
                 exportHeaders.forEach((hdr) => {
                     let val = "";
                     if (hdr.id === "nr") val = String(rowIdx + 1);
-                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Completed" : "Open";
+                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Closed Out" : "Open";
                     else if (hdr.id === "allocationType") val = row._isAllocator ? "Tasks Assigned" : "My Tasks";
                     else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
                     else if (hdr.id === "userAttachments") val = Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? row.userAttachments.join("\n") : "No files";
@@ -1368,7 +1365,7 @@ const ManualTaskingPage = () => {
                     if (hdr.id === "nr") {
                         value = rowIdx + 1;
                     } else if (hdr.id === "closeStatus") {
-                        value = row.closeStatus ? "Completed" : "Open";
+                        value = row.closeStatus ? "Closed Out" : "Open";
                     } else if (hdr.id === "allocationType") {
                         value = row._isAllocator ? "Tasks Assigned" : "My Tasks";
                     } else if (hdr.id === "attachments") {
@@ -1510,12 +1507,14 @@ const ManualTaskingPage = () => {
                                 {(() => {
                                     const title = row.taskTitle || "-";
 
-                                    if (row.isSubTask) {
+                                    if (row.isSubTask || row.isWorkOrder) {
                                         const colonIndex = title.indexOf(":");
 
                                         if (colonIndex !== -1) {
-                                            // DB keeps the colon (e.g. "Subtask of AM-MT-0008: ...") —
-                                            // only the display strips it and adds a blank line.
+                                            // DB keeps the colon (e.g. "Subtask of AM-MT-0008: ..." or
+                                            // a work-order-originated title like "Conveyor Guard: Ensure
+                                            // that ... issue is resolved") — only the display strips it
+                                            // and adds a blank line.
                                             const boldPart = title.slice(0, colonIndex);
                                             const restPart = title.slice(colonIndex + 1).trimStart();
 
@@ -1560,7 +1559,7 @@ const ManualTaskingPage = () => {
                                 {row.allocatedBy}
                             </span>
                         ) : (
-                            row.allocatedBy
+                            row.isWorkOrder ? `${row.allocatedBy}` : row.allocatedBy
                         )}
                     </td>
                 );
@@ -1603,25 +1602,16 @@ const ManualTaskingPage = () => {
                         ? "Pending"
                         : row.acceptanceStatus;
 
-                const statusColor =
-                    displayStatus === "Accepted"
-                        ? { backgroundColor: "#7EA87C", color: "white" }
-                        : displayStatus === "Delegated"
-                            ? { backgroundColor: "#fff3cd", color: "black" }
-                            : { backgroundColor: "#f0f0f0", color: "#555" };
+                const isAccepted = displayStatus === "Accepted";
 
                 return (
-                    <td key="acceptanceStatus" className="procCent" style={{ fontSize: "14px" }}>
-                        <span style={{
-                            display: "inline-block",
-                            padding: "2px 10px",
-                            borderRadius: "12px",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            ...statusColor,
-                        }}>
-                            {displayStatus || "-"}
-                        </span>
+                    <td key="acceptanceStatus" className="procCent" style={{
+                        fontSize: "14px",
+                        backgroundColor: isAccepted ? "#7EAC87" : "white",
+                        color: isAccepted ? "#fff" : "black",
+                        borderLeft: "1px solid white", borderRight: "1px solid white"
+                    }}>
+                        {displayStatus || "-"}
                     </td>
                 );
             }
@@ -1667,7 +1657,7 @@ const ManualTaskingPage = () => {
                                 width: "100%",
                                 border: "none",
                                 background: "transparent",
-                                fontSize: "13px",
+                                fontSize: "14px",
                                 fontWeight: "500",
                                 color: getStatusTextColor(row.status),
                                 cursor: (row.closeStatus || row.status === "Cancelled" || (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted"))
@@ -1678,6 +1668,7 @@ const ManualTaskingPage = () => {
                                 textAlign: "center",
                             }}
                             onChange={(e) => handleStatusChange(row._id, e.target.value)}
+                            className="taskStatusSelect_a8f3c1"
                         >
                             <option value="" style={{ color: "black" }}>Not Started</option>
                             {STATUS_OPTIONS.filter(opt => opt.value !== "Cancelled").map(opt => (
@@ -1755,20 +1746,10 @@ const ManualTaskingPage = () => {
                 // ── Closed-out view — show reopen control or read-only badge ─────────────
                 if (view === "closedOut") {
                     if (!canReopen) {
-                        // Responsible-only user: read-only closed badge
+                        // Responsible-only user: read-only closed cell
                         return (
-                            <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
-                                <span style={{
-                                    display: "inline-block",
-                                    padding: "2px 10px",
-                                    borderRadius: "12px",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    backgroundColor: "#7EAC87",
-                                    color: "#fff",
-                                }}>
-                                    Completed
-                                </span>
+                            <td key="closeStatus" className="procCent" style={{ fontSize: "14px", backgroundColor: "#7EAC87", color: "#fff", borderLeft: "1px solid white", borderRight: "1px solid white" }}>
+                                Closed Out
                             </td>
                         );
                     }
@@ -1799,21 +1780,16 @@ const ManualTaskingPage = () => {
                     );
                 }
 
-                // ── Viewer (responsible person) on a MANUAL task → read-only badge ──
+                // ── Viewer (responsible person) on a MANUAL task → read-only cell ──
                 if (view === "viewer") {
                     return (
-                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
-                            <span style={{
-                                display: "inline-block",
-                                padding: "2px 10px",
-                                borderRadius: "12px",
-                                fontSize: "12px",
-                                fontWeight: "600",
-                                backgroundColor: isAlreadyClosed ? "#7EAC87" : "#f0f0f0",
-                                color: isAlreadyClosed ? "#fff" : "#555",
-                            }}>
-                                {isAlreadyClosed ? "Completed" : "Open"}
-                            </span>
+                        <td key="closeStatus" className="procCent" style={{
+                            fontSize: "14px",
+                            backgroundColor: isAlreadyClosed ? "#7EAC87" : "white",
+                            color: isAlreadyClosed ? "#fff" : "black",
+                            borderLeft: "1px solid white", borderRight: "1px solid white"
+                        }}>
+                            {isAlreadyClosed ? "Closed Out" : "Open"}
                         </td>
                     );
                 }
@@ -2057,8 +2033,14 @@ const ManualTaskingPage = () => {
 
                 {/* Table area */}
                 <div className="table-container-risk-control-attributes">
-                    <div className="risk-control-label-wrapper-new">
-                        <div className="control-attributes-pill-bar">
+                    <div
+                        className="risk-control-label-wrapper-new"
+                        style={{ paddingBottom: "36px", marginBottom: "10px" }}
+                    >
+                        <div
+                            className="control-attributes-pill-bar"
+                            style={{ top: "auto", bottom: "0", transform: "none" }}
+                        >
                             {["My Tasks", "Tasks Assigned", "Closed Out Tasks"].map((pill) => (
                                 <div
                                     key={pill}

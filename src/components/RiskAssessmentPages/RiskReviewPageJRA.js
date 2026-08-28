@@ -10,7 +10,7 @@ import ReferenceTable from "../CreatePage/ReferenceTable";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faCalendarDays, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faQuestionCircle, faShareNodes, faUpload, faRotateRight, faChevronLeft, faChevronRight, faInfoCircle, faTeeth, faTriangleCircleSquare, faTriangleExclamation, faUserTie, faHardHat, faMagicWandSparkles, faCircle, faPen, faSave, faArrowLeft, faArrowUp, faCaretLeft, faCaretRight, faCalendarDays, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons"
 import TopBarDD from "../Notifications/TopBarDD";
 import AttendanceTable from "../RiskRelated/AttendanceTable";
@@ -39,6 +39,7 @@ import ApproversPopup from "../VisitorsInduction/InductionCreation/ApproversPopu
 import ApproveApprovalProcessPopup from "../Popups/ApproveApprovalProcessPopup";
 import SavingInProgress from "../DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "../DocumentCreationPages/PublishingInProgress";
+import RemoveFromApprovalPopup from "../Popups/RemoveFromApprovalPopup";
 
 const RiskReviewPageJRA = () => {
     const navigate = useNavigate();
@@ -80,6 +81,9 @@ const RiskReviewPageJRA = () => {
     const [approveState, setApproveState] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // spinner state for the top "Save" icon
     const [isPublishing, setIsPublishing] = useState(false); // spinner state for the top "Publish" icon
+    const [removeApprovalState, setRemoveApprovalState] = useState(false);
+    const [removingApproval, setRemovingApproval] = useState(false);
+    const [canRemove, setCanRemove] = useState(false);
 
     const openApproval = () => {
         setApproval(true);
@@ -87,6 +91,14 @@ const RiskReviewPageJRA = () => {
 
     const closeApprovePopup = () => {
         setApproveState(false);
+    }
+
+    const openRemoveApproval = () => {
+        setRemoveApprovalState(true);
+    }
+
+    const closeRemoveApproval = () => {
+        setRemoveApprovalState(false);
     }
 
     const closeApproval = () => {
@@ -468,6 +480,7 @@ const RiskReviewPageJRA = () => {
             const data = await response.json();
             const storedData = data.files;
             const readOnly = data.readOnly || false;
+            const canRemove = data.canRemove || false;
 
             setReadOnly(readOnly);
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -483,6 +496,7 @@ const RiskReviewPageJRA = () => {
             setAzureFN(storedData.azureFileName || "");
             setInApproval(Boolean(data.statusApproval));
             setInReview(Boolean(data.statusReview));
+            setCanRemove(canRemove);
         } catch (error) {
             console.error('Error loading data:', error);
         }
@@ -1203,6 +1217,51 @@ const RiskReviewPageJRA = () => {
         }
     };
 
+    const removeFromApprovalProcess = async () => {
+        const dataToStore = {
+            draftID: fileID
+        };
+
+        setRemovingApproval(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/riskApprovals/remove-from-approval-jra-published`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+            toast.success(`JRA Removed From The Approval Process.`, {
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+
+            setInApproval(false);
+            setInReview(false);
+            setReadOnly(false);
+            setRemoveApprovalState(false);
+        } catch (error) {
+            console.error("Error removing document from the approval process:", error);
+            toast.error("Failed to remove document from the approval process", {
+                closeButton: true,
+                autoClose: 800,
+                style: {
+                    textAlign: 'center'
+                }
+            });
+        } finally {
+            setRemovingApproval(false);
+        }
+    };
+
     const sendUpdatedFormData = async (formDataToStore, documentName) => {
         setLoading(true);
 
@@ -1392,6 +1451,10 @@ const RiskReviewPageJRA = () => {
                                 <FontAwesomeIcon icon={faUpload} onClick={handleClick3} className={`${!loadedID ? "disabled-share" : ""}`} title="Publish" />
                             </div>
                         )}
+
+                        {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+                        </div>)}
                     </div>
 
                     <div className="spacer"></div>
@@ -1559,6 +1622,15 @@ const RiskReviewPageJRA = () => {
 
             {approval && (<ApproversPopup closeModal={closeApproval} handleSubmit={handlePublishApprovalFlow} />)}
             {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
+            {removeApprovalState && (
+                <RemoveFromApprovalPopup
+                    closeModal={closeRemoveApproval}
+                    removeApproval={removeFromApprovalProcess}
+                    docType="JRA"
+                    title={formData.title}
+                    loading={removingApproval}
+                />
+            )}
             {isSaving && (
                 <SavingInProgress />
             )}

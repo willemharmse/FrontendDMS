@@ -21,7 +21,7 @@ const ManagementInformationField = ({
 
         const combined =
             `Accountable: ${(accountableLevel || "").trim()}, ` +
-            `Person in Charge: ${(personInCharge || "").trim()}, ` +
+            `Responsible: ${(personInCharge || "").trim()}, ` +
             `Team: ${team}`;
 
         if (combined !== value) {
@@ -43,7 +43,7 @@ const ManagementInformationField = ({
                     value={value}
                     placeholder="Accountable / Person in Charge / Team of Work Order"
                     readOnly={true}
-                    style={{ minHeight: 0 }}
+                    style={{ minHeight: 0, color: "grey" }}
                 />
             </div>
         </div>

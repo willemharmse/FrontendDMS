@@ -45,6 +45,7 @@ const TemplateNumberField = ({
                     className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
                     placeholder="Template Number of Work Order"
                     readOnly={true}
+                    style={{ color: "grey" }}
                 />
             </div>)}
         </>

@@ -65,31 +65,31 @@ const FieldTemplateHomePage = () => {
                     <div className={`document-card-fi-home-all`} onClick={() => navigate("/FrontendDMS/ftsCreateTemplate/template/new")}>
                         <>
                             <div className="all-icon-fi-home">
-                                <FontAwesomeIcon icon={faCircle} className={"all-icon-fi-home"} style={{ color: "white" }} />
+                                <img src={`${process.env.PUBLIC_URL}/ftsDevelop1.svg`} className="icon-risk-all" style={{ color: "white" }} />
                             </div>
                             <h3 className="document-title-dc-home">Develop Template</h3>
                         </>
                     </div>
-                    {false && (<div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/ftsDrafts/template")}>
+                    {true && (<div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/ftsDrafts/template")}>
                         <>
                             <div className="icon-dc">
-                                <img src={"/tmsSavedDrafts.svg"} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsSavedDrafts.svg`} className={"icon-dc"} />
                             </div>
                             <h3 className="document-title-dc-home">Saved Drafts</h3>
                         </>
                     </div>)}
-                    {false && (<div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/ftsGeneratedTemplates")}>
+                    {true && (<div className={`document-card-dc-home`} onClick={() => navigate("/FrontendDMS/ftsGeneratedTemplates")}>
                         <>
                             <div className="icon-dc">
-                                <img src={"/tmsPublished.svg"} className={"icon-dc"} />
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} className={"icon-dc"} />
                             </div>
-                            <h3 className="document-title-dc-home">Ready For Sign Off Templates</h3>
+                            <h3 className="document-title-dc-home">In Approval Templates</h3>
                         </>
                     </div>)}
                     <div className={`document-card-risk-home`} onClick={() => navigate("/FrontendDMS/ftsSignedOffTemplates")}>
                         <>
                             <div className="icon-risk">
-                                <img src="/tmsPublished.svg" alt="Control Attributes" className="icon-risk" />
+                                <img src={`${process.env.PUBLIC_URL}/tmsPublished.svg`} alt="Control Attributes" className="icon-risk" />
                             </div>
                             <h3 className="document-title-risk-home">Approved Templates<br /></h3>
                         </>

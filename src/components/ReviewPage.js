@@ -20,7 +20,7 @@ import 'react-toastify/dist/ReactToastify.css';  // Import CSS for styling
 import LoadDraftPopup from "./CreatePage/LoadDraftPopup";
 import SaveAsPopup from "./Popups/SaveAsPopup";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faCheckCircle, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight, faSave, faPen, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faCheckCircle, faRotateLeft, faArrowLeft, faBell, faCircleUser, faChevronLeft, faChevronRight, faCaretLeft, faCaretRight, faRotateRight, faSave, faPen, faUpload, faBan } from '@fortawesome/free-solid-svg-icons';
 import TopBarDD from "./Notifications/TopBarDD";
 import SupportingDocumentTable from "./RiskRelated/SupportingDocumentTable";
 import DraftPopup from "./Popups/DraftPopup";
@@ -33,6 +33,7 @@ import ScopeBulletComponent from "./CreatePage/ScopeBulletComponent";
 import HazardsControlsTable from "./CreatePage/HazardsControlsTable";
 import SavingInProgress from "./DocumentCreationPages/SavingInProgress";
 import PublishingInProgress from "./DocumentCreationPages/PublishingInProgress";
+import RemoveFromApprovalPopup from "./Popups/RemoveFromApprovalPopup";
 
 const ReviewPage = () => {
     const navigate = useNavigate();
@@ -72,6 +73,9 @@ const ReviewPage = () => {
     const [approveState, setApproveState] = useState(false);
     const [loadingAimIndex, setLoadingAimIndex] = useState(null);
     const [loadingScope, setLoadingScope] = useState(false);
+    const [removeApprovalState, setRemoveApprovalState] = useState(false);
+    const [removingApproval, setRemovingApproval] = useState(false);
+    const [canRemove, setCanRemove] = useState(false);
 
     const openApproval = () => {
         setApproval(true);
@@ -79,6 +83,14 @@ const ReviewPage = () => {
 
     const closeApprovePopup = () => {
         setApproveState(false);
+    }
+
+    const openRemoveApproval = () => {
+        setRemoveApprovalState(true);
+    }
+
+    const closeRemoveApproval = () => {
+        setRemoveApprovalState(false);
     }
 
     const closeApproval = () => {
@@ -561,6 +573,7 @@ const ReviewPage = () => {
             const data = await response.json();
             const storedData = data.files || {};
             const readOnly = data.readOnly || false;
+            const canRemove = data.canRemove || false;
 
             // Update your states as needed:
             setUsedAbbrCodes(storedData.usedAbbrCodes || []);
@@ -574,6 +587,7 @@ const ReviewPage = () => {
             setInReview(Boolean(data.statusReview));
 
             setReadOnly(readOnly);
+            setCanRemove(canRemove);
             const rawForm = storedData.formData || {};
             const normalizedForm = {
                 ...rawForm,
@@ -1224,6 +1238,51 @@ const ReviewPage = () => {
         } catch (error) {
             console.error("Error generating document:", error);
             setLoading(false);
+        }
+    };
+
+    const removeFromApprovalProcess = async () => {
+        const dataToStore = {
+            draftID: fileID
+        };
+
+        setRemovingApproval(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_URL}/api/documentApprovals/remove-from-approval-proc-published`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(dataToStore),
+            });
+
+            if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+            toast.success(`Procedure Removed From The Approval Process.`, {
+                closeButton: true,
+                autoClose: 800, // 1.5 seconds
+                style: {
+                    textAlign: 'center'
+                }
+            });
+
+            setInApproval(false);
+            setInReview(false);
+            setReadOnly(false);
+            setRemoveApprovalState(false);
+        } catch (error) {
+            console.error("Error removing document from the approval process:", error);
+            toast.error("Failed to remove document from the approval process", {
+                closeButton: true,
+                autoClose: 800,
+                style: {
+                    textAlign: 'center'
+                }
+            });
+        } finally {
+            setRemovingApproval(false);
         }
     };
 
@@ -2003,6 +2062,10 @@ const ReviewPage = () => {
                         {(inApproval || inReview) && !readOnly && canIn(access, "DDS", ["systemAdmin", "contributor"]) && (<div className="burger-menu-icon-risk-create-page-1">
                             <FontAwesomeIcon style={{ color: "#7EAC89" }} icon={faCheckCircle} className={`${(!loadedID) ? "disabled-share" : ""}`} onClick={handleApproveClick} title="Approve Draft" />
                         </div>)}
+
+                        {canRemove && (inApproval || inReview) && (<div className="burger-menu-icon-risk-create-page-1">
+                            <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
+                        </div>)}
                     </div>
                     {/* This div creates the space in the middle */}
                     <div className="spacer"></div>
@@ -2189,6 +2252,15 @@ const ReviewPage = () => {
             {approveState && (<ApproveApprovalProcessPopup approveDraft={approveDraft} closeModal={closeApprovePopup} loading={loading} />)}
             {isSaving && (
                 <SavingInProgress />
+            )}
+            {removeApprovalState && (
+                <RemoveFromApprovalPopup
+                    closeModal={closeRemoveApproval}
+                    removeApproval={removeFromApprovalProcess}
+                    docType="procedure"
+                    title={formData.title}
+                    loading={removingApproval}
+                />
             )}
             {isPublishing && (
                 <PublishingInProgress />

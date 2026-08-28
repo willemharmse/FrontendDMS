@@ -556,8 +556,11 @@ const AddSubTaskPopup = ({ onClose, onTaskAdded, parentTask }) => {
                                                     <option value="Evaluate">Evaluate</option>
                                                     <option value="Inspect">Inspect</option>
                                                     <option value="Investigate">Investigate</option>
+                                                    <option value="Maintain">Maintain</option>
                                                     <option value="Monitor">Monitor</option>
+                                                    <option value="Repair">Repair</option>
                                                     <option value="Review">Review</option>
+                                                    <option value="Test">Test</option>
                                                 </select>
                                             </div>
                                         </div>

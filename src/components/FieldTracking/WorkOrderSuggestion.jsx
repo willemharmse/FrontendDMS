@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEyeSlash, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const WorkOrderSuggestion = ({ isOpen, onClose, userID }) => {
+const WorkOrderSuggestion = ({ isOpen, onClose, userID, onSuggested }) => {
     const [type, setType] = useState("");
     const [desciption, setDesciption] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
@@ -70,6 +70,8 @@ const WorkOrderSuggestion = ({ isOpen, onClose, userID }) => {
             setLoading(false);
             setMessage({ text: "Work Order Type added successfully!", type: "success" });;
 
+            onSuggested && onSuggested({ type, description: desciption });
+
             setTimeout(() => {
                 handleClose();
             }, 3000);
@@ -90,7 +92,7 @@ const WorkOrderSuggestion = ({ isOpen, onClose, userID }) => {
 
     const approverOptions = usersList.filter(u => {
         const id = String(u?.id ?? u?._id ?? u ?? "");
-        return id && id !== String(userID);
+        return id;
     });
 
     if (!isOpen) return null;

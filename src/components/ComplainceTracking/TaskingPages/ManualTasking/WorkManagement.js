@@ -14,7 +14,8 @@ import {
     faClockFour,
     faPen,
     faPlusCircle,
-    faCircle
+    faCircle,
+    faEye
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from 'jwt-decode';
 import { saveAs } from "file-saver";
@@ -34,39 +35,54 @@ import DelegateTaskPopup from "./DelegateTaskPopup";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import PopupMenu from "../../../FileInfo/PopupMenu";
 import PopupMenuTasks from "./PopupMenuTasks";
-import { getAutoManualNavigationRoute } from "./getAutoManualNavigationRoute";
-import { getAutoAutoNavigationRoute } from "./getAutoAutoNavigationRoute";
 import TaskDueDatePopup from "./TaskDueDatePopup";
+import AddWorkOrderInstance from "./AddWorkOrderInstance";
+import WorkOrderDueDate from "../WorkOrderManagementPopups/WorkOrderDueDate";
+import DeleteAllocatedWorkOrder from "../WorkOrderManagementPopups/DeleteAllocatedWorkOrder";
+import CloseAllocatedWorkOrder from "../WorkOrderManagementPopups/CloseAllocatedWorkOrder";
+import ReopenAllocatedWorkOrder from "../WorkOrderManagementPopups/ReopenAllocatedWorkOrder";
+import AcceptWorkOrderPopup from "../WorkOrderManagementPopups/AcceptWorkOrderPopup";
+import DelegateWorkOrderPopup from "../WorkOrderManagementPopups/DelegateWorkOrderPopup";
+// NOTE: WorkOrderInfoPreview (and the two components it uses,
+// ActionFieldsPreviewBox + ActionFieldFileValue) need to live next to
+// ActionFieldsInfoBox/ActionFieldControl/TemplatePreview, since
+// ActionFieldsPreviewBox imports "./ActionFieldControl" directly. Adjust
+// this path to wherever that folder actually is relative to this file.
+import WorkOrderInfoPreview from "../WorkOrderManagementPopups/WorkOrderInfoPreview";
 
 // ─── Route helpers ────────────────────────────────────────────────────────────
-// Returns the correct API base path for any task object based on _taskSource.
-const taskApiBase = (task) =>
-    task?._taskSource === "autoAuto"
-        ? `${process.env.REACT_APP_URL}/api/auto-auto-tasks`
-        : `${process.env.REACT_APP_URL}/api/complainceTasks`;
+// Work order tasks all live on a single route now — no more auto-auto/auto-manual sources.
+const taskApiBase = () => `${process.env.REACT_APP_URL}/api/workOrderTasks`;
 
 const ALL_COLUMNS = [
     { id: "nr", title: "Nr", views: "both", collapsed: false },
     { id: "uniqueID", title: "Unique Identifier", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "allocatedBy", title: "Originator", views: "both", collapsed: false, collapsedFor: "viewer" },
-    { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "area", title: "Area", views: "both", collapsed: true, collapsedFor: "allocator" },
-    { id: "discipline", title: "Discipline", views: "both", collapsed: true, collapsedFor: "allocator" },
-    { id: "taskType", title: "Type", views: "both", collapsed: false },
-    { id: "category", title: "Source", views: "both", collapsed: true, collapsedFor: "both", hidden: true },
-    { id: "taskTitle", title: "Title", views: "both", collapsed: false },
-    { id: "taskDescription", title: "Description", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "allocatedBy", title: "Originator", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "allocatedDate", title: "Date Created", views: "both", collapsed: true, collapsedFor: "both", hidden: true },
+    { id: "site", title: "Site", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "mainArea", title: "Main Area", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "subArea", title: "Sub Area", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "department", title: "Department", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "departmentCode", title: "Department Code", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "accountableParty", title: "Accountable Party", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "responsibleParty", title: "Responsible Party", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "assetType", title: "Asset Type", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "assetModel", title: "Asset Model", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "assetNumber", title: "Asset Number", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "frequency", title: "Frequency", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "workOrderType", title: "Work Order Type", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "workOrderBasis", title: "Work Order Basis", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "taskTitle", title: "Work Order Title", views: "both", collapsed: false },
     { id: "priority", title: "Priority", views: "both", collapsed: false },
     { id: "comments", class: `task-grey2`, title: "Originator Comments", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "attachments", class: `task-grey2`, title: "Originator Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
+    { id: "attachments", class: `task-grey2`, title: "Supporting Information", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "responsible", class: `task-grey2`, title: "Responsible Person", views: "both", collapsed: true, collapsedFor: "viewer" },
     { id: "dueDate", class: `task-grey2`, title: "Due Date", views: "both", collapsed: false },
     { id: "acceptanceStatus", class: `task-grey1`, title: "Acceptance Status", views: "both", collapsed: true, collapsedFor: "viewer" },
-    { id: "status", class: `task-grey1`, title: "Status", views: "both", collapsed: false },
-    { id: "userComments", class: `task-grey1`, title: "Responsible Person Comments", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "userAttachments", class: `task-grey1`, title: "Responsible Person Supporting Info", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "completionDate", title: "Completion Date", views: "both", collapsed: true, collapsedFor: "both" },
-    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true, collapsedFor: "allocator" },
+    { id: "status", class: `task-grey1`, title: "Completion Status", views: "both", collapsed: false },
+    { id: "completionDate", title: "Completion Date", views: "both", collapsed: true, collapsedFor: "both", hidden: true },
+    { id: "closeStatus", title: "Closeout Status", views: "both", collapsed: true },
+    { id: "completionChain", title: "Completion Chain", views: "both", collapsed: false },
     { id: "closeOutComments", title: "Close Out Comments", views: "both", collapsed: true, collapsedFor: "both" },
     { id: "action", title: "Action", views: "both", collapsed: false },
 ];
@@ -82,57 +98,65 @@ const PRIORITY_OPTIONS = [
 
 const getStatusDisplay = (status) => {
     if (status === "Completed") return "Submitted";
-    return status || "-";
+    if (status === "75% Completed") return "In Progress";
+    return status || "Not Started";
 };
 
-const getCategoryDisplay = (category) => {
-    if (category === "Auto-Auto") return "System Generated"; // ← replace empty string with the new display value
-    if (category === "Auto-Manual") return "User Triggered"; // ← replace empty string with the new display value
-    if (category === "Manual") return "User Created"; // ← replace empty string with the new display value
-    return category || "-";
+const WORK_ORDER_BASIS_LABELS = {
+    assetBased: "Asset Based",
+    departmentBased: "Department Based",
+    siteBased: "Area Based",
+};
+
+const getWorkOrderBasisDisplay = (workOrderBasis) => {
+    return WORK_ORDER_BASIS_LABELS[workOrderBasis] || workOrderBasis || "-";
 };
 
 const STATUS_OPTIONS = [
     { value: "25% Completed", label: "25% Completed", color: "#FFC000" },
     { value: "50% Completed", label: "50% Completed", color: "#FFFF00" },
-    { value: "75% Completed", label: "75% Completed", color: "#FFFFCC" },
+    { value: "75% Completed", label: "In Progress", color: "#FFFFCC" },
     { value: "Completed", label: "Submitted", color: "#7EAC87" },
-    //{ value: "Completed", label: "Completed", color: "#7EAC87" },
     { value: "Cancelled", label: "Cancelled", color: "#CB6F6F" },
+    { value: "Failed/Incomplete", label: "Failed/ Incomplete", color: "#CB6F6F" },
 ];
 
 const DEFAULT_COLUMN_WIDTHS = {
     nr: 50,
-    taskType: 30,
-    taskTitle: 70,
-    taskDescription: 350,
+    taskTitle: 100,
     priority: 30,
     responsible: 50,
     acceptanceStatus: 40,
     allocatedDate: 130,
     dueDate: 40,
     completionDate: 140,
+    completionChain: 80,
     status: 45,
     attachments: 220,
     comments: 200,
-    userAttachments: 220,
-    userComments: 120,
     closeStatus: 30,
     closeOutComments: 300,
     allocatedBy: 50,
-    category: 50,
-    discipline: 40,
-    area: 30,
     uniqueID: 80,
+    site: 60,
+    mainArea: 70,
+    subArea: 70,
+    department: 80,
+    departmentCode: 70,
+    accountableParty: 120,
+    responsibleParty: 120,
+    assetType: 80,
+    assetModel: 90,
+    assetNumber: 90,
+    frequency: 70,
+    workOrderType: 90,
+    workOrderBasis: 100,
     action: 90,
 };
 
 const COLUMN_SIZE_LIMITS = {
     nr: { min: 50, max: 50 },
-    category: { min: 50, max: 260 },
-    taskType: { min: 30, max: 260 },
     taskTitle: { min: 70, max: 600 },
-    taskDescription: { min: 110, max: 800 },
     priority: { min: 30, max: 200 },
     responsible: { min: 50, max: 400 },
     acceptanceStatus: { min: 40, max: 300 },
@@ -140,17 +164,27 @@ const COLUMN_SIZE_LIMITS = {
     allocatedBy: { min: 50, max: 300 },
     dueDate: { min: 40, max: 260 },
     completionDate: { min: 100, max: 260 },
+    completionChain: { min: 80, max: 420 },
     status: { min: 45, max: 260 },
     attachments: { min: 180, max: 420 },
     comments: { min: 150, max: 700 },
-    userAttachments: { min: 180, max: 420 },
-    userComments: { min: 120, max: 700 },
     closeStatus: { min: 30, max: 260 },
     closeOutComments: { min: 200, max: 700 },
     action: { min: 90, max: 90 },
-    discipline: { min: 40, max: 300 },
-    area: { min: 30, max: 300 },
     uniqueID: { min: 30, max: 300 },
+    site: { min: 50, max: 300 },
+    mainArea: { min: 50, max: 300 },
+    subArea: { min: 50, max: 300 },
+    department: { min: 60, max: 300 },
+    departmentCode: { min: 50, max: 260 },
+    accountableParty: { min: 80, max: 400 },
+    responsibleParty: { min: 80, max: 400 },
+    assetType: { min: 60, max: 300 },
+    assetModel: { min: 60, max: 300 },
+    assetNumber: { min: 60, max: 300 },
+    frequency: { min: 50, max: 260 },
+    workOrderType: { min: 70, max: 300 },
+    workOrderBasis: { min: 70, max: 300 },
 };
 
 const getColumnsForView = (view) => {
@@ -168,13 +202,23 @@ const getDefaultShowColumns = (view) => {
         .map(col => col.id);
 };
 
-const getStatusColor = (status) => {
+const COMPLETED_NOT_CLOSED_COLOR = "#7EAC87"; // light yellow
+const COMPLETED_CLOSED_COLOR = "#7EAC87"; // green
+
+const getStatusColor = (status, closeStatus) => {
+    if (status === "Completed") {
+        return closeStatus ? COMPLETED_CLOSED_COLOR : COMPLETED_NOT_CLOSED_COLOR;
+    }
     const match = STATUS_OPTIONS.find(o => o.value === status);
     return match ? match.color : "transparent";
 };
 
-const getStatusTextColor = (status) =>
-    status === "Completed" || status === "Cancelled" ? "#FFFFFF" : "#000000";
+const getStatusTextColor = (status, closeStatus) => {
+    if (status === "Completed") {
+        return closeStatus ? "#FFFFFF" : "#FFFFFF";
+    }
+    return (status === "Cancelled" || status === "Failed/Incomplete") ? "#FFFFFF" : "#000000";
+};
 
 const getPriorityStyle = (priority) => {
     const match = PRIORITY_OPTIONS.find(o => o.value === priority);
@@ -187,8 +231,6 @@ const normalizeTask = (task) => ({
     ...task,
     _rawResponsible: task?.responsible || "",
     _rawAllocatedBy: task?.allocatedBy || "",
-    // ── _taskSource is preserved from the server tag ──────────────────────────
-    _taskSource: task?._taskSource || "manual",
     // ── _isPendingRepeating: true when this row is a future repeating template ─
     _isPendingRepeating: task?._isPendingRepeating || false,
     responsible: task?.responsible?.username || task?.responsible || "",
@@ -204,26 +246,35 @@ const normalizeTask = (task) => ({
         return gmt2.toISOString().slice(0, 10);
     })() : "",
     completionDate: task?.completionDate ? String(task.completionDate).slice(0, 10) : "",
+    acceptanceDate: task?.acceptanceDate ? String(task.acceptanceDate).slice(0, 10) : "",
+    closeOutDate: task?.closeOutDate ? String(task.closeOutDate).slice(0, 10) : "",
     _rawAttachments: Array.isArray(task?.attachments) ? task.attachments : [],
-    _rawUserAttachments: Array.isArray(task?.userAttachments) ? task.userAttachments : [],
     attachments: Array.isArray(task?.attachments)
         ? task.attachments.map(f => f?.fileName || f?.name || f)
         : [],
-    userAttachments: Array.isArray(task?.userAttachments)
-        ? task.userAttachments.map(f => f?.fileName || f?.name || f)
-        : [],
     // allocatedByName used for display: null allocatedBy → "System"
     allocatedByName: task?.allocatedBy?.username || task?.allocatedBy || "",
-    userComments: task?.userComments || "",
     closeOutComments: task?.closeOutComments || "",
-    taskType: task?.taskType || "",
     taskTitle: task?.taskTitle || "",
     priority: task?.priority || "",
-    category: task?.category || "",
-    discipline: task?.discipline || "",
-    area: task?.area || "",
+    site: task?.site || "",
+    mainArea: task?.mainArea || "",
+    subArea: task?.subArea || "",
+    department: task?.department || "",
+    departmentCode: task?.departmentCode || "",
+    accountableParty: task?.accountableParty || "",
+    responsibleParty: task?.responsibleParty || "",
+    assetType: task?.assetType || "",
+    assetModel: task?.assetModel || "",
+    assetNumber: task?.assetNumber || "",
+    frequency: task?.frequency || "",
+    workOrderType: task?.workOrderType || "",
+    workOrderBasis: task?.workOrderBasis || "",
     acceptanceStatus: task?.acceptanceStatus || "",
-    isTagged: task?.filledManual === false,
+    // No more manual/auto-filled distinction now that filledManual is gone -
+    // always false so downstream row styling/action gating treats every row
+    // the same way a manually-filled one used to be treated.
+    isTagged: false,
     uniqueID: task?.uniqueID || "",
 });
 
@@ -287,6 +338,7 @@ const WorkManagement = () => {
     const [filterMenu, setFilterMenu] = useState({ isOpen: false, anchorRect: null });
     const [acceptTaskPopup, setAcceptTaskPopup] = useState({ open: false, task: null });
     const [delegateTaskPopup, setDelegateTaskPopup] = useState({ open: false, task: null });
+    const [previewTaskPopup, setPreviewTaskPopup] = useState({ open: false, task: null });
     const [hoveredTaskId, setHoveredTaskId] = useState(null);
     const [dueDateVal, setDueDateVal] = useState(30);
     const [isTaskDueDatePopupOpen, setIsTaskDueDatePopupOpen] = useState(false);
@@ -317,11 +369,11 @@ const WorkManagement = () => {
     }, [navigate]);
 
     useEffect(() => {
-        const saved = localStorage.getItem("highlightTaskDueDates");
+        const saved = localStorage.getItem("highlightWorkOrderDueDates");
         if (saved && !isNaN(saved) && Number(saved) > 0) {
             setDueDateVal(Number(saved));
         } else {
-            localStorage.setItem("highlightTaskDueDates", "30");
+            localStorage.setItem("highlightWorkOrderDueDates", "30");
             setDueDateVal(30);
         }
     }, []);
@@ -340,7 +392,7 @@ const WorkManagement = () => {
         try {
             if (view === "allocator") {
                 // /all/open — allocated tasks excluding closed-out ones
-                const response = await fetch(`${process.env.REACT_APP_URL}/api/complainceTasks/all/open`, {
+                const response = await fetch(`${process.env.REACT_APP_URL}/api/workOrderTasks/all/open`, {
                     headers: { Authorization: `Bearer ${storedToken}` },
                 });
 
@@ -352,8 +404,8 @@ const WorkManagement = () => {
                 const normalised = raw.map(normalizeTask);
 
                 normalised.sort((a, b) =>
-                    (a.taskDescription || "").localeCompare(
-                        b.taskDescription || "",
+                    (a.taskTitle || "").localeCompare(
+                        b.taskTitle || "",
                         undefined,
                         { sensitivity: "base" }
                     )
@@ -362,7 +414,7 @@ const WorkManagement = () => {
                 setTasks(normalised);
             } else if (view === "closedOut") {
                 // /closed — tasks (responsible or allocator) that are closed out
-                const response = await axios.get(`${process.env.REACT_APP_URL}/api/complainceTasks/closed`, {
+                const response = await axios.get(`${process.env.REACT_APP_URL}/api/workOrderTasks/closed`, {
                     headers: { Authorization: `Bearer ${storedToken}` },
                 });
 
@@ -375,8 +427,8 @@ const WorkManagement = () => {
 
                 normalised.sort((a, b) =>
                     (a.dueDate || "").localeCompare(b.dueDate || "") ||
-                    (a.taskDescription || "").localeCompare(
-                        b.taskDescription || "",
+                    (a.taskTitle || "").localeCompare(
+                        b.taskTitle || "",
                         undefined,
                         { sensitivity: "base" }
                     )
@@ -385,19 +437,19 @@ const WorkManagement = () => {
                 setTasks(normalised);
             } else {
                 // ── viewer: /my/open excludes closed-out tasks ──
-                const response = await axios.get(`${process.env.REACT_APP_URL}/api/complainceTasks/my/open`, {
+                const response = await axios.get(`${process.env.REACT_APP_URL}/api/workOrderTasks/my/open`, {
                     headers: { Authorization: `Bearer ${storedToken}` },
                 });
 
                 const raw = response.data?.tasks ?? [];
 
-                // normalizeTask preserves _taskSource set by the server
+                // normalizeTask fills in display-friendly fields for each row
                 const normalised = raw.map(normalizeTask);
 
                 normalised.sort((a, b) =>
                     (a.dueDate || "").localeCompare(b.dueDate || "") ||
-                    (a.taskDescription || "").localeCompare(
-                        b.taskDescription || "",
+                    (a.taskTitle || "").localeCompare(
+                        b.taskTitle || "",
                         undefined,
                         { sensitivity: "base" }
                     )
@@ -418,16 +470,8 @@ const WorkManagement = () => {
 
     // ── Allocator actions ────────────────────────────────────────────────────
     const handleOpenModifyAllocatedTaskPopup = (task) => {
-        if (task?._isPendingRepeating) {
-            toast.info("This repeating task has not started yet and cannot be modified.", {
-                autoClose: 3000,
-                closeButton: false,
-            });
-            return;
-        }
-
         if (task?.status === "Cancelled") {
-            toast.warn("Cancelled tasks cannot be modified.", {
+            toast.warn("Cancelled work orders cannot be modified.", {
                 autoClose: 3000,
                 closeButton: false,
             });
@@ -437,7 +481,7 @@ const WorkManagement = () => {
         if (task?.closeStatus) {
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.info("You cannot edit this task because it is closed out.", { autoClose: 3000, closeButton: false });
+            toast.info("You cannot edit this work order because it is closed out.", { autoClose: 3000, closeButton: false });
             return;
         }
         setSelectedAllocatedTask({
@@ -445,7 +489,6 @@ const WorkManagement = () => {
             responsible: task?._rawResponsible || task?.responsible || "",
             allocatedBy: task?._rawAllocatedBy || task?.allocatedBy || "",
             attachments: task?._rawAttachments || task?.attachments || [],
-            userAttachments: task?._rawUserAttachments || task?.userAttachments || [],
         });
         setShowModifyAllocatedTaskPopup(true);
     };
@@ -461,7 +504,7 @@ const WorkManagement = () => {
         const task = tasks.find(t => t._id === taskId);
         try {
             const response = await fetch(
-                `${taskApiBase(task)}/${taskId}/accept`,
+                `${taskApiBase()}/${taskId}/accept`,
                 {
                     method: "PUT",
                     headers: { Authorization: `Bearer ${storedToken}` },
@@ -470,7 +513,7 @@ const WorkManagement = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data?.error || "Failed to accept task");
             fetchTasks();
-            toast.success("Task accepted successfully.", { autoClose: 2000, closeButton: false });
+            toast.success("Work Order accepted successfully.", { autoClose: 2000, closeButton: false });
         } catch (error) {
             toast.error(error.message || "Failed to accept task.", { autoClose: 3000, closeButton: false });
         }
@@ -482,14 +525,6 @@ const WorkManagement = () => {
     };
 
     const openDeleteTaskPopup = (task) => {
-        if (!task?._isPendingRepeating && task?.status === "Cancelled") {
-            toast.warn("Cancelled tasks cannot be deleted.", {
-                autoClose: 3000,
-                closeButton: false,
-            });
-            return;
-        }
-
         setDeleteTaskPopup({
             open: true,
             task,
@@ -502,6 +537,17 @@ const WorkManagement = () => {
     const closeCloseTaskPopup = () => setCloseTaskPopup({ open: false, task: null, taskName: "" });
     const openReopenTaskPopup = (task) => setReopenTaskPopup({ open: true, task, taskName: task?.taskTitle || "" });
     const closeReopenTaskPopup = () => setReopenTaskPopup({ open: false, task: null, taskName: "" });
+    const openPreviewTaskPopup = (task) => setPreviewTaskPopup({ open: true, task });
+    const closePreviewTaskPopup = () => setPreviewTaskPopup({ open: false, task: null });
+    // "Close Out Task" inside the preview popup doesn't close anything
+    // itself - it just closes the preview and hands off to the same
+    // CloseAllocatedWorkOrder confirmation popup the closeStatus checkbox
+    // already uses elsewhere in this table.
+    const handlePreviewCloseOut = () => {
+        const task = previewTaskPopup.task;
+        closePreviewTaskPopup();
+        if (task) openCloseTaskPopup(task);
+    };
 
     const handleDeleteTask = async () => {
         const storedToken = localStorage.getItem("token");
@@ -510,31 +556,19 @@ const WorkManagement = () => {
         if (!storedToken || !taskId) return;
         try {
             let response;
-            if (task?._isPendingRepeating) {
-                // Delete the repeating task template directly (no ManualTask exists yet)
-                response = await fetch(
-                    `${process.env.REACT_APP_URL}/api/repeatTasks/${taskId}`,
-                    {
-                        method: "DELETE",
-                        headers: { Authorization: `Bearer ${storedToken}` },
-                    }
-                );
-            } else {
-                response = await fetch(`${taskApiBase(task)}/${taskId}`, {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${storedToken}` },
-                });
-            }
+            response = await fetch(`${taskApiBase()}/${taskId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${storedToken}` },
+            });
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data?.error || "Failed to delete task");
             toast.dismiss();
             toast.clearWaitingQueue();
             toast.success(
-                task?._isPendingRepeating
-                    ? "Repeating task deleted successfully."
-                    : data?.cancelled
-                        ? "Accepted task cancelled successfully."
-                        : "Task deleted successfully",
+                data?.cancelled
+                    ? "Accepted work order cancelled successfully."
+                    : "Work Order deleted successfully",
                 { autoClose: 3000, closeButton: false }
             );
             closeDeleteTaskPopup();
@@ -542,7 +576,7 @@ const WorkManagement = () => {
         } catch (error) {
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.error("Failed to delete task", { autoClose: 3000, closeButton: false });
+            toast.error("Failed to delete work order", { autoClose: 3000, closeButton: false });
         }
     };
 
@@ -553,7 +587,7 @@ const WorkManagement = () => {
         const task = tasks.find(t => t._id === taskId);
         try {
             const storedToken = localStorage.getItem("token");
-            const response = await fetch(`${taskApiBase(task)}/${taskId}/close`, {
+            const response = await fetch(`${taskApiBase()}/${taskId}/close`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${storedToken}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ closeOutComments }),
@@ -570,7 +604,7 @@ const WorkManagement = () => {
             ));
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.success("Task closed out successfully.", { autoClose: 2000, closeButton: false });
+            toast.success("Work order closed out successfully.", { autoClose: 2000, closeButton: false });
         } catch (error) {
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -586,7 +620,7 @@ const WorkManagement = () => {
         const task = tasks.find(t => t._id === taskId);
         try {
             const storedToken = localStorage.getItem("token");
-            const response = await fetch(`${taskApiBase(task)}/${taskId}/reopen`, {
+            const response = await fetch(`${taskApiBase()}/${taskId}/reopen`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${storedToken}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ reopenReason: message }),
@@ -597,7 +631,7 @@ const WorkManagement = () => {
             fetchTasks();
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.success("Task reopened successfully.", { autoClose: 2000, closeButton: false });
+            toast.success("Work order reopened successfully.", { autoClose: 2000, closeButton: false });
         } catch (error) {
             toast.dismiss();
             toast.clearWaitingQueue();
@@ -610,7 +644,7 @@ const WorkManagement = () => {
     // ── Viewer actions ───────────────────────────────────────────────────────
     const handleOpenModifyPopup = (task) => {
         if (task?.status === "Cancelled") {
-            toast.warn("Cancelled tasks cannot be modified.", {
+            toast.warn("Cancelled work orders cannot be modified.", {
                 autoClose: 3000,
                 closeButton: false,
             });
@@ -620,14 +654,14 @@ const WorkManagement = () => {
         if (task.closeStatus) {
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.info("This task has been closed out and can no longer be modified.", { autoClose: 3000, closeButton: false });
+            toast.info("This work order has been closed out and can no longer be modified.", { autoClose: 3000, closeButton: false });
             return;
         }
-        // Auto-auto tasks are always pre-accepted; manual tasks need explicit acceptance
+        // Tasks need explicit acceptance before the responsible person can act on them
         if (task.acceptanceStatus !== "Accepted") {
             toast.dismiss();
             toast.clearWaitingQueue();
-            toast.warn("You can only modify tasks that you have accepted.", { autoClose: 3000, closeButton: false });
+            toast.warn("You can only modify work orders that you have accepted.", { autoClose: 3000, closeButton: false });
             return;
         }
         setSelectedTask(task);
@@ -638,50 +672,6 @@ const WorkManagement = () => {
         fetchTasks();
     };
 
-    const handleStatusChange = async (taskId, newStatus) => {
-        const previousTask = tasks.find(t => t._id === taskId);
-        const storedToken = localStorage.getItem("token");
-
-        if (!storedToken || !taskId) return;
-
-        setTasks(prev =>
-            prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t)
-        );
-
-        try {
-            const response = await axios.put(
-                `${taskApiBase(previousTask)}/${taskId}/status`,
-                { status: newStatus },
-                { headers: { Authorization: `Bearer ${storedToken}` } }
-            );
-
-            if (response.data?.task) {
-                setTasks(prev =>
-                    prev.map(t =>
-                        t._id === taskId ? normalizeTask({ ...response.data.task, _taskSource: previousTask?._taskSource }) : t
-                    )
-                );
-            }
-
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.success("Task status updated.", {
-                autoClose: 2000,
-                closeButton: false,
-            });
-        } catch (error) {
-            setTasks(prev =>
-                prev.map(t => t._id === taskId ? previousTask : t)
-            );
-
-            toast.dismiss();
-            toast.clearWaitingQueue();
-            toast.error(
-                error.response?.data?.error || "Failed to update task status.",
-                { autoClose: 3000, closeButton: false }
-            );
-        }
-    };
 
     // ── Download ─────────────────────────────────────────────────────────────
     const handleDownloadAttachment = async (task, attachmentId, fileName, attachmentType = "attachments") => {
@@ -690,7 +680,7 @@ const WorkManagement = () => {
         if (!storedToken || !taskId || !attachmentId) return;
         try {
             const response = await fetch(
-                `${taskApiBase(task)}/${taskId}/${attachmentType}/${attachmentId}/download`,
+                `${taskApiBase()}/${taskId}/${attachmentType}/${attachmentId}/download`,
                 { headers: { Authorization: `Bearer ${storedToken}` } }
             );
             if (!response.ok) throw new Error("Failed to download attachment");
@@ -704,16 +694,11 @@ const WorkManagement = () => {
     };
 
     const handleDownloadJobCard = async (task) => {
-        // Auto-auto tasks don't have a job-card route
-        if (task?._taskSource === "autoAuto") {
-            toast.info("Job cards are not available for auto-generated tasks.", { autoClose: 3000, closeButton: false });
-            return;
-        }
         try {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                `${process.env.REACT_APP_URL}/api/complainceTasks/${task._id}/job-card/pdf`,
+                `${process.env.REACT_APP_URL}/api/workOrderTasks/${task._id}/job-card/pdf`,
                 {
                     method: "GET",
                     headers: {
@@ -803,11 +788,19 @@ const WorkManagement = () => {
     const getFilterValuesForCell = (row, colId, index) => {
         if (colId === "nr") return [String(index + 1)];
         if (colId === "status") return [getStatusDisplay(row.status)];
-        if (colId === "closeStatus") return [row.closeStatus ? "Completed" : "Open"];
+        if (colId === "closeStatus") return [row.closeStatus ? "Closed Out" : "Open"];
         if (colId === "attachments") return [Array.isArray(row.attachments) && row.attachments.length > 0 ? "Has Attachments" : "No Attachments"];
-        if (colId === "userAttachments") return [Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? "Has Attachments" : "No Attachments"];
         // allocatedBy: null becomes "System" for filtering
         if (colId === "allocatedBy") return [row.allocatedBy || "System"];
+        // completionChain: expose each individual date (sent/accepted/executed/closed)
+        // as its own filterable value so the Excel-style filter popup can find and
+        // select on any date within the chain, not just the combined cell text.
+        if (colId === "completionChain") {
+            const dates = [row.allocatedDate, row.acceptanceDate, row.completionDate, row.closeOutDate]
+                .filter(v => v && String(v).trim() !== "")
+                .map(v => String(v).trim());
+            return dates.length > 0 ? Array.from(new Set(dates)) : ["-"];
+        }
         const val = row[colId];
         return [val ? String(val).trim() : "-"];
     };
@@ -816,7 +809,7 @@ const WorkManagement = () => {
         let filtered = [...tasks];
         if (searchQuery) {
             const lq = searchQuery.toLowerCase();
-            filtered = filtered.filter(c => (c.taskDescription || "").toLowerCase().includes(lq));
+            filtered = filtered.filter(c => (c.taskTitle || "").toLowerCase().includes(lq));
         }
         for (const [fColId, sel] of Object.entries(activeExcelFilters)) {
             if (fColId === colId || !Array.isArray(sel)) continue;
@@ -850,7 +843,7 @@ const WorkManagement = () => {
         let current = tasks.filter(t => t._rawAllocatedBy != null && t._rawAllocatedBy !== "");
         if (searchQuery) {
             const lq = searchQuery.toLowerCase();
-            current = current.filter(c => (c.taskDescription || "").toLowerCase().includes(lq));
+            current = current.filter(c => (c.taskTitle || "").toLowerCase().includes(lq));
         }
         current = current.filter((row, idx) => {
             for (const [colId, sel] of Object.entries(activeExcelFilters)) {
@@ -884,7 +877,7 @@ const WorkManagement = () => {
                 if (dA === null && dB !== null) return 1;
                 if (dA !== null && dB === null) return -1;
                 if (dA !== null && dB !== null && dA !== dB) return dA - dB;
-                return compareText(normalize(a?.taskDescription), normalize(b?.taskDescription));
+                return compareText(normalize(a?.taskTitle), normalize(b?.taskTitle));
             }
 
             const { colId, direction } = sortConfig;
@@ -895,15 +888,20 @@ const WorkManagement = () => {
                 if (vA === null && vB !== null) return 1;
                 if (vA !== null && vB === null) return -1;
                 if (vA !== null && vB !== null && vA !== vB) return (vA - vB) * dir;
+            } else if (colId === "completionChain") {
+                const vA = parseDateValue(a?.allocatedDate), vB = parseDateValue(b?.allocatedDate);
+                if (vA === null && vB !== null) return 1;
+                if (vA !== null && vB === null) return -1;
+                if (vA !== null && vB !== null && vA !== vB) return (vA - vB) * dir;
             } else {
                 const vA =
                     colId === "closeStatus"
-                        ? a.closeStatus ? "Completed" : "Open"
+                        ? a.closeStatus ? "Closed Out" : "Open"
                         : normalize(a?.[colId]);
 
                 const vB =
                     colId === "closeStatus"
-                        ? b.closeStatus ? "Completed" : "Open"
+                        ? b.closeStatus ? "Closed Out" : "Open"
                         : normalize(b?.[colId]);
 
                 if (vA === "(Blanks)" && vB !== "(Blanks)") return 1;
@@ -918,7 +916,7 @@ const WorkManagement = () => {
             if (dA !== null && dB === null) return -1;
             if (dA !== null && dB !== null && dA !== dB) return dA - dB;
 
-            return compareText(normalize(a?.taskDescription), normalize(b?.taskDescription));
+            return compareText(normalize(a?.taskTitle), normalize(b?.taskTitle));
         });
 
         return current;
@@ -1116,12 +1114,21 @@ const WorkManagement = () => {
     const handleExportExcel = async () => {
         const COL_META = {
             nr: { width: 6, centre: true, headerGroup: "navy" },
-            area: { width: 18, centre: true, headerGroup: "navy" },
-            discipline: { width: 18, centre: true, headerGroup: "navy" },
-            taskType: { width: 16, centre: true, headerGroup: "navy" },
-            category: { width: 16, centre: true, headerGroup: "navy" },
+            uniqueID: { width: 16, centre: true, headerGroup: "navy" },
+            site: { width: 16, centre: true, headerGroup: "navy" },
+            mainArea: { width: 18, centre: true, headerGroup: "navy" },
+            subArea: { width: 18, centre: true, headerGroup: "navy" },
+            department: { width: 20, centre: true, headerGroup: "navy" },
+            departmentCode: { width: 16, centre: true, headerGroup: "navy" },
+            accountableParty: { width: 22, centre: false, headerGroup: "navy" },
+            responsibleParty: { width: 22, centre: false, headerGroup: "navy" },
+            assetType: { width: 18, centre: true, headerGroup: "navy" },
+            assetModel: { width: 18, centre: true, headerGroup: "navy" },
+            assetNumber: { width: 18, centre: true, headerGroup: "navy" },
+            frequency: { width: 16, centre: true, headerGroup: "navy" },
+            workOrderType: { width: 18, centre: true, headerGroup: "navy" },
+            workOrderBasis: { width: 18, centre: true, headerGroup: "navy" },
             taskTitle: { width: 28, centre: false, headerGroup: "navy" },
-            taskDescription: { width: 40, centre: false, headerGroup: "navy" },
             priority: { width: 14, centre: true, headerGroup: "navy" },
             allocatedBy: { width: 20, centre: true, headerGroup: "grey2" },
             allocatedDate: { width: 18, centre: true, headerGroup: "grey2" },
@@ -1131,8 +1138,6 @@ const WorkManagement = () => {
             dueDate: { width: 14, centre: true, headerGroup: "grey2" },
             acceptanceStatus: { width: 20, centre: true, headerGroup: "grey1" },
             status: { width: 22, centre: true, headerGroup: "grey1" },
-            userComments: { width: 35, centre: false, headerGroup: "grey1" },
-            userAttachments: { width: 30, centre: false, headerGroup: "grey1" },
             completionDate: { width: 18, centre: true, headerGroup: "navy" },
             closeStatus: { width: 16, centre: true, headerGroup: "navy" },
             closeOutComments: { width: 35, centre: false, headerGroup: "navy" },
@@ -1271,9 +1276,9 @@ const WorkManagement = () => {
                 exportHeaders.forEach((hdr) => {
                     let val = "";
                     if (hdr.id === "nr") val = String(rowIdx + 1);
-                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Completed" : "Open";
+                    else if (hdr.id === "closeStatus") val = row.closeStatus ? "Closed Out" : "Open";
                     else if (hdr.id === "attachments") val = Array.isArray(row.attachments) && row.attachments.length > 0 ? row.attachments.join("\n") : "No files";
-                    else if (hdr.id === "userAttachments") val = Array.isArray(row.userAttachments) && row.userAttachments.length > 0 ? row.userAttachments.join("\n") : "No files";
+                    else if (hdr.id === "workOrderBasis") val = getWorkOrderBasisDisplay(row.workOrderBasis);
                     else if (hdr.id === "status") {
                         val = getStatusDisplay(row.status);
                     }
@@ -1294,13 +1299,12 @@ const WorkManagement = () => {
                     if (hdr.id === "nr") {
                         value = rowIdx + 1;
                     } else if (hdr.id === "closeStatus") {
-                        value = row.closeStatus ? "Completed" : "Open";
+                        value = row.closeStatus ? "Closed Out" : "Open";
                     } else if (hdr.id === "attachments") {
                         const a = row.attachments;
                         value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
-                    } else if (hdr.id === "userAttachments") {
-                        const a = row.userAttachments;
-                        value = Array.isArray(a) && a.length > 0 ? a.join("\n") : "No files";
+                    } else if (hdr.id === "workOrderBasis") {
+                        value = getWorkOrderBasisDisplay(row.workOrderBasis);
                     } else {
                         const v = row[hdr.id];
                         value = (v === null || v === undefined || v === "") ? "-" : v;
@@ -1347,56 +1351,41 @@ const WorkManagement = () => {
 
     // ── Cell renderer ────────────────────────────────────────────────────────
     const renderCell = (col, row, index) => {
-        const isAutoAuto = row._taskSource === "autoAuto";
-        const isAutoManual = row._taskSource === "autoManual";
-
         switch (col.id) {
             case "nr":
                 return <td key="nr" className="procCent" style={{ fontSize: "14px" }}>{index + 1}
                     {view === "allocator" ? (
                         <>
-                            {/* Pending repeating tasks: show a clock badge, no edit */}
-                            {row._isPendingRepeating ? (
-                                <FontAwesomeIcon
-                                    icon={faClock}
-                                    title={`Scheduled repeating task — starts ${row.dueDate || ""}`}
-                                    style={{ fontSize: "13px", marginLeft: "5px", color: "#888", opacity: 0.7 }}
-                                />
-                            ) : (
-                                /* Auto-auto tasks in allocator view: no edit button (system-managed) */
-                                (!isAutoAuto || !isAutoManual) && (
-                                    <button type="button" className="rca-action-btn" title="Modify Allocated Task"
-                                        onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
-                                        <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
-                                    </button>
-                                )
-                            )}
+                            {false && (<button type="button" className="rca-action-btn" title="Modify Allocated Work Order"
+                                onClick={() => handleOpenModifyAllocatedTaskPopup(row)}>
+                                <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
+                            </button>)}
                         </>
                     ) : (
                         <>
-                            <button
+                            {false && (<button
                                 type="button"
                                 className="rca-action-btn"
                                 title={
-                                    // Auto-auto tasks are always accepted; manual need explicit accept
-                                    (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted"
-                                        ? "You must accept this task before editing"
-                                        : "Modify Task Progress"
+                                    row.acceptanceStatus !== "Accepted"
+                                        ? "You must accept this work order before editing"
+                                        : "Modify Work Order Progress"
                                 }
                                 style={{
-                                    opacity: (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted" ? 0.4 : 1,
-                                    cursor: (!isAutoAuto || !isAutoManual) && row.acceptanceStatus !== "Accepted" ? "not-allowed" : "pointer",
+                                    opacity: row.acceptanceStatus !== "Accepted" ? 0.4 : 1,
+                                    cursor: row.acceptanceStatus !== "Accepted" ? "not-allowed" : "pointer",
                                 }}
                                 onClick={() => {
-                                    if (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted") {
+                                    if (row.acceptanceStatus !== "Accepted") {
                                         toast.warn("You must accept this task before editing.", { autoClose: 3000, closeButton: false });
                                         return;
                                     }
-                                    handleOpenModifyPopup({ ...row, attachments: row._rawAttachments, userAttachments: row._rawUserAttachments });
+                                    handleOpenModifyPopup({ ...row, attachments: row._rawAttachments });
                                 }}
                             >
                                 <FontAwesomeIcon icon={faEdit} style={{ fontSize: "14px", marginLeft: "5px" }} />
                             </button>
+                            )}
                         </>
                     )}
                 </td>;
@@ -1404,8 +1393,44 @@ const WorkManagement = () => {
             case "uniqueID":
                 return <td key="uniqueID" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.uniqueID || "-"}</td>;
 
-            case "taskType":
-                return <td key="taskType" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.taskType || "-"}</td>;
+            case "site":
+                return <td key="site" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.site || "-"}</td>;
+
+            case "mainArea":
+                return <td key="mainArea" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.mainArea || "-"}</td>;
+
+            case "subArea":
+                return <td key="subArea" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.subArea || "-"}</td>;
+
+            case "department":
+                return <td key="department" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.department || "-"}</td>;
+
+            case "departmentCode":
+                return <td key="departmentCode" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.departmentCode || "-"}</td>;
+
+            case "accountableParty":
+                return <td key="accountableParty" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.accountableParty || "-"}</td>;
+
+            case "responsibleParty":
+                return <td key="responsibleParty" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.responsibleParty || "-"}</td>;
+
+            case "assetType":
+                return <td key="assetType" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.assetType || "-"}</td>;
+
+            case "assetModel":
+                return <td key="assetModel" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.assetModel || "-"}</td>;
+
+            case "assetNumber":
+                return <td key="assetNumber" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.assetNumber || "-"}</td>;
+
+            case "frequency":
+                return <td key="frequency" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.frequency || "-"}</td>;
+
+            case "workOrderType":
+                return <td key="workOrderType" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.workOrderType || "-"}</td>;
+
+            case "workOrderBasis":
+                return <td key="workOrderBasis" className="backGrey procCent" style={{ fontSize: "14px" }}>{getWorkOrderBasisDisplay(row.workOrderBasis)}</td>;
 
             case "taskTitle":
                 return (
@@ -1415,32 +1440,11 @@ const WorkManagement = () => {
                         className="gen-point title-task-clickable"
                         onClick={(e) => {
                             e.stopPropagation();
-
-                            if (row?._taskSource === "autoManual") {
-                                handleAutoManualNavigation(row);
-                                return;
-                            }
-
-                            if (row?._taskSource === "autoAuto") {
-                                handleAutoAutoNavigation(row);
-                                return;
-                            }
-
                             setHoveredTaskId(hoveredTaskId === row._id ? null : row._id);
                         }}
                     >
                         <div className="popup-anchor">
                             <span>{row.taskTitle || "-"}</span>
-
-                            {(hoveredTaskId === row._id) && (
-                                <PopupMenuTasks
-                                    hoveredId={hoveredTaskId}
-                                    setHoveredId={setHoveredTaskId}
-                                    isOpen={true}
-                                    file={row}
-                                    allowed={!isAutoAuto && !isAutoManual}
-                                />
-                            )}
                         </div>
                     </td>
                 );
@@ -1449,27 +1453,9 @@ const WorkManagement = () => {
                 // null allocatedBy means system-generated → display "System"
                 return (
                     <td key="allocatedBy" className="backGrey procCent" style={{ fontSize: "14px" }}>
-                        {(isAutoAuto || isAutoManual) ? (
-                            <span style={{ color: "#888", fontStyle: "italic" }}>
-                                {row.allocatedBy}
-                            </span>
-                        ) : (
-                            row.allocatedBy
-                        )}
+                        {row.allocatedBy}
                     </td>
                 );
-
-            case "taskDescription":
-                return <td key="taskDescription" style={{ fontSize: "14px" }}>{row.taskDescription || "-"}</td>;
-
-            case "category":
-                return <td key="category" className="backGrey procCent" style={{ fontSize: "14px" }}>{getCategoryDisplay(row.category)}</td>;
-
-            case "discipline":
-                return <td key="discipline" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.discipline || "-"}</td>;
-
-            case "area":
-                return <td key="area" className="backGrey procCent" style={{ fontSize: "14px" }}>{row.area || "-"}</td>;
 
             case "priority":
                 return (
@@ -1497,25 +1483,16 @@ const WorkManagement = () => {
                         ? "Pending"
                         : row.acceptanceStatus;
 
-                const statusColor =
-                    displayStatus === "Accepted"
-                        ? { backgroundColor: "#7EA87C", color: "white" }
-                        : displayStatus === "Delegated"
-                            ? { backgroundColor: "#fff3cd", color: "black" }
-                            : { backgroundColor: "#f0f0f0", color: "#555" };
+                const isAccepted = displayStatus === "Accepted";
 
                 return (
-                    <td key="acceptanceStatus" className="procCent" style={{ fontSize: "14px" }}>
-                        <span style={{
-                            display: "inline-block",
-                            padding: "2px 10px",
-                            borderRadius: "12px",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            ...statusColor,
-                        }}>
-                            {displayStatus || "-"}
-                        </span>
+                    <td key="acceptanceStatus" className="procCent" style={{
+                        fontSize: "14px",
+                        backgroundColor: isAccepted ? "#7EAC87" : "white",
+                        color: isAccepted ? "#fff" : "black",
+                        borderLeft: "1px solid white", borderRight: "1px solid white"
+                    }}>
+                        {displayStatus || "-"}
                     </td>
                 );
             }
@@ -1529,55 +1506,32 @@ const WorkManagement = () => {
             case "completionDate":
                 return <td key="completionDate" className="procCent" style={{ fontSize: "14px" }}>{row.completionDate || "-"}</td>;
 
-            case "status":
-                // Allocator view — read-only coloured cell
-                if (view === "allocator") {
-                    return (
-                        <td key="status" className="procCent" style={{ fontSize: "14px", backgroundColor: getStatusColor(row.status), color: getStatusTextColor(row.status), fontWeight: "500" }}>
-                            {getStatusDisplay(row.status)}
-                        </td>
-                    );
-                }
-                // Viewer (responsible person) view — editable dropdown
+            case "completionChain": {
+                const chainRows = [
+                    { label: "Sent", value: row.allocatedDate },
+                    { label: "Accepted", value: row.acceptanceDate },
+                    { label: "Executed", value: row.completionDate },
+                    { label: "Closed Out", value: row.closeOutDate },
+                ];
                 return (
-                    <td key="status" className="procCent" style={{ fontSize: "14px", backgroundColor: getStatusColor(row.status), padding: "4px 6px" }}>
-                        <select
-                            value={row.status || ""}
-                            disabled={
-                                !!row.closeStatus ||
-                                row.status === "Cancelled" ||
-                                // Manual tasks: must be accepted first. Auto-auto: always editable (pre-accepted)
-                                (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted") ||
-                                isAutoAuto || isAutoManual
-                            }
-                            title={
-                                row.status === "Cancelled"
-                                    ? "Cancelled tasks cannot be updated"
-                                    : row.closeStatus
-                                        ? "Task is closed out"
-                                        : "Update task status"
-                            }
-                            style={{
-                                width: "100%",
-                                border: "none",
-                                background: "transparent",
-                                fontSize: "13px",
-                                fontWeight: "500",
-                                color: getStatusTextColor(row.status),
-                                cursor: (row.closeStatus || row.status === "Cancelled" || (!isAutoAuto && !isAutoManual && row.acceptanceStatus !== "Accepted"))
-                                    ? "not-allowed"
-                                    : "pointer",
-                                outline: "none",
-                                appearance: "auto",
-                                textAlign: "center",
-                            }}
-                            onChange={(e) => handleStatusChange(row._id, e.target.value)}
-                        >
-                            <option value="" style={{ color: "black" }}>Not Started</option>
-                            {STATUS_OPTIONS.filter(opt => opt.value !== "Cancelled").map(opt => (
-                                <option key={opt.value} value={opt.value} style={{ color: "black" }}>{opt.label}</option>
-                            ))}
-                        </select>
+                    <td key="completionChain" style={{ fontSize: "14px", textAlign: "left" }}>
+                        {chainRows.map((r, i) => (
+                            <div key={r.label} style={{ marginBottom: i < chainRows.length - 1 ? "2px" : 0 }}>
+                                <span style={{ fontWeight: "700" }}>{r.label}: </span>
+                                <span style={{ fontWeight: "400" }}>{r.value || "N/A"}</span>
+                            </div>
+                        ))}
+                    </td>
+                );
+            }
+
+            case "status":
+                // Read-only coloured cell for both views - the responsible
+                // person no longer edits status directly here; it's driven
+                // by their progress on the Populate Work Order screen.
+                return (
+                    <td key="status" className="procCent taskStatusSelect_a8f3c1" style={{ fontSize: "14px", backgroundColor: getStatusColor(row.status, row.closeStatus), color: getStatusTextColor(row.status, row.closeStatus), fontWeight: "500" }}>
+                        {getStatusDisplay(row.status)}
                     </td>
                 );
 
@@ -1607,32 +1561,6 @@ const WorkManagement = () => {
             case "comments":
                 return <td key="comments" style={{ fontSize: "14px" }}>{row.comments || "-"}</td>;
 
-            case "userAttachments":
-                return (
-                    <td key="userAttachments" style={{ fontSize: "14px" }}>
-                        {Array.isArray(row._rawUserAttachments) && row._rawUserAttachments.length > 0 ? (
-                            row._rawUserAttachments.map((file, fi) => {
-                                const fileName = file?.fileName || file?.name || row.userAttachments?.[fi] || "Attachment";
-                                const attachmentId = file?._id;
-                                return (
-                                    <div key={`uatt-${fi}`}>
-                                        <button type="button" title="Click to download"
-                                            onClick={() => handleDownloadAttachment(row, attachmentId, fileName, "user-attachments")}
-                                            disabled={!attachmentId}
-                                            style={{ padding: 0, border: "none", background: "transparent", color: "#0B5ED7", textDecoration: "underline", cursor: attachmentId ? "pointer" : "not-allowed", fontSize: "14px", textAlign: "left" }}>
-                                            {fileName}
-                                        </button>
-                                        {fi < row._rawUserAttachments.length - 1 && <hr style={{ margin: "4px 0", border: "none", borderTop: "1px solid #e0e0e0" }} />}
-                                    </div>
-                                );
-                            })
-                        ) : <span>No files</span>}
-                    </td>
-                );
-
-            case "userComments":
-                return <td key="userComments" style={{ fontSize: "14px" }}>{row.userComments || "-"}</td>;
-
             case "closeStatus": {
                 const isAlreadyClosed = !!row.closeStatus;
                 const isCompleted = row.status === "Completed";
@@ -1649,30 +1577,20 @@ const WorkManagement = () => {
                 // ── Closed-out view — show reopen control or read-only badge ─────────────
                 if (view === "closedOut") {
                     if (!canReopen) {
-                        // Responsible-only user: read-only closed badge
+                        // Responsible-only user: read-only closed cell
                         return (
-                            <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
-                                <span style={{
-                                    display: "inline-block",
-                                    padding: "2px 10px",
-                                    borderRadius: "12px",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    backgroundColor: "#7EAC87",
-                                    color: "#fff",
-                                }}>
-                                    Completed
-                                </span>
+                            <td key="closeStatus" className="procCent" style={{ fontSize: "14px", backgroundColor: "#7EAC87", color: "#fff", borderLeft: "1px solid white", borderRight: "1px solid white" }}>
+                                Closed Out
                             </td>
                         );
                     }
                     // Allocator (or both): interactive reopen checkbox
                     return (
-                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
+                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px", borderLeft: "1px solid white", borderRight: "1px solid white" }}>
                             <input type="checkbox" className="checkbox-inp-abbr"
                                 checked={true}
                                 disabled={isReopening}
-                                title="Click to reopen this task"
+                                title="Click to reopen this work order"
                                 style={{ cursor: isReopening ? "not-allowed" : "pointer", opacity: isReopening ? 0.4 : 1 }}
                                 onChange={() => { openReopenTaskPopup(row); }}
                             />
@@ -1680,52 +1598,16 @@ const WorkManagement = () => {
                     );
                 }
 
-                // ── Viewer (responsible person) on a MANUAL task → read-only badge ──
+                // ── Viewer (responsible person) — read-only cell ──
                 if (view === "viewer") {
                     return (
-                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
-                            <span style={{
-                                display: "inline-block",
-                                padding: "2px 10px",
-                                borderRadius: "12px",
-                                fontSize: "12px",
-                                fontWeight: "600",
-                                backgroundColor: isAlreadyClosed ? "#7EAC87" : "#f0f0f0",
-                                color: isAlreadyClosed ? "#fff" : "#555",
-                            }}>
-                                {isAlreadyClosed ? "Completed" : "Open"}
-                            </span>
-                        </td>
-                    );
-                }
-
-                // ── Viewer on an AUTO-AUTO task → interactive checkbox (responsible can close) ──
-                if (view === "viewer" && isAutoAuto) {
-                    const checkboxDisabled = isCancelled || (!isCompleted && !isAlreadyClosed) || isClosing || isReopening;
-                    return (
-                        <td key="closeStatus" className="procCent" style={{ fontSize: "14px" }}>
-                            <input type="checkbox" className="checkbox-inp-abbr"
-                                checked={isAlreadyClosed}
-                                disabled={checkboxDisabled && !isAlreadyClosed}
-                                title={
-                                    isCancelled
-                                        ? "Cancelled tasks cannot be closed out"
-                                        : isAlreadyClosed
-                                            ? "Click to reopen this task"
-                                            : !isCompleted
-                                                ? "Task must be 'Completed' before closeout"
-                                                : "Close out this task"
-                                }
-                                style={{ cursor: (checkboxDisabled && !isAlreadyClosed) ? "not-allowed" : "pointer", opacity: (checkboxDisabled && !isAlreadyClosed) ? 0.4 : 1 }}
-                                onChange={() => {
-                                    if (isCancelled) {
-                                        toast.warn("Cancelled tasks cannot be closed out.", { autoClose: 3000, closeButton: false });
-                                        return;
-                                    }
-                                    if (isAlreadyClosed) { openReopenTaskPopup(row); }
-                                    else { if (!isCompleted || isClosing || isReopening) return; openCloseTaskPopup(row); }
-                                }}
-                            />
+                        <td key="closeStatus" className="procCent" style={{
+                            fontSize: "14px",
+                            backgroundColor: isAlreadyClosed ? "#7EAC87" : "white",
+                            color: isAlreadyClosed ? "white" : "black",
+                            borderLeft: "1px solid white", borderRight: "1px solid white"
+                        }}>
+                            {isAlreadyClosed ? "Closed Out" : "Open"}
                         </td>
                     );
                 }
@@ -1740,17 +1622,17 @@ const WorkManagement = () => {
                             disabled={checkboxDisabled && !isAlreadyClosed}
                             title={
                                 isCancelled
-                                    ? "Cancelled tasks cannot be closed out"
+                                    ? "Cancelled work orders cannot be closed out"
                                     : isAlreadyClosed
-                                        ? "Click to reopen this task"
+                                        ? "Click to reopen this work order"
                                         : !isCompleted
-                                            ? "Task must be 'Completed' before closeout"
-                                            : "Close out this task"
+                                            ? "Work Order must be 'Completed' before closeout"
+                                            : "Close out this work order"
                             }
                             style={{ cursor: (checkboxDisabled && !isAlreadyClosed) ? "not-allowed" : "pointer", opacity: (checkboxDisabled && !isAlreadyClosed) ? 0.4 : 1 }}
                             onChange={() => {
                                 if (isCancelled) {
-                                    toast.warn("Cancelled tasks cannot be closed out.", { autoClose: 3000, closeButton: false });
+                                    toast.warn("Cancelled work order cannot be closed out.", { autoClose: 3000, closeButton: false });
                                     return;
                                 }
                                 if (isAlreadyClosed) { openReopenTaskPopup(row); }
@@ -1769,8 +1651,7 @@ const WorkManagement = () => {
                     <td key="action" className="risk-control-attributes-action-cell">
                         {view === "allocator" ? (
                             <>
-                                {/* Job card only for manual tasks */}
-                                {(!isAutoAuto && !isAutoManual && !row.isTagged) && (
+                                {false && !row.isTagged && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1781,15 +1662,20 @@ const WorkManagement = () => {
                                         <FontAwesomeIcon icon={faFilePdf} />
                                     </button>
                                 )}
-                                <button type="button" className="rca-action-btn" title="Delete Task"
+                                {row.status === "Completed" && (
+                                    <button type="button" className="rca-action-btn" title="View Work Order Information"
+                                        style={{ marginLeft: "5px" }} onClick={() => openPreviewTaskPopup(row)}>
+                                        <FontAwesomeIcon icon={faEye} />
+                                    </button>
+                                )}
+                                <button type="button" className="rca-action-btn" title="Delete Work Order"
                                     style={{ marginLeft: "5px" }} onClick={() => openDeleteTaskPopup(row)}>
                                     <FontAwesomeIcon icon={faTrash} />
                                 </button>
                             </>
                         ) : view === "closedOut" ? (
                             <>
-                                {/* In closed-out view: job card for manual allocators/both; nothing for responsible-only */}
-                                {(!isAutoAuto && !isAutoManual && !row.isTagged && row._isAllocator) && (
+                                {false && !row.isTagged && row._isAllocator && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
@@ -1803,31 +1689,26 @@ const WorkManagement = () => {
                             </>
                         ) : (
                             <>
-                                {/* Accept/delegate only for manual tasks that haven't been accepted */}
-                                {(!isAutoAuto && !isAutoManual) && row.acceptanceStatus !== "Accepted" && (
+                                {row.acceptanceStatus !== "Accepted" && (
                                     <button
                                         type="button"
                                         className="rca-action-btn"
-                                        title="Accept or Delegate Task"
+                                        title="Accept or Delegate Work Order"
                                         style={{ color: "gray" }}
                                         onClick={() => setAcceptTaskPopup({ open: true, task: row })}
                                     >
                                         <FontAwesomeIcon icon={faCircleCheck} />
                                     </button>
                                 )}
-                                {/* Job card only for manual tasks */}
-                                {(!isAutoAuto && !isAutoManual) && (
-                                    <button
-                                        type="button"
-                                        className="rca-action-btn"
-                                        title="Download Job Card"
-                                        style={{ marginLeft: "5px" }}
-                                        onClick={() => handleDownloadJobCard(row)}
-                                    >
-                                        <FontAwesomeIcon icon={faFilePdf} />
-                                    </button>
-                                )}
-                                {/* History hidden for auto-auto tasks */}
+                                {false && (<button
+                                    type="button"
+                                    className="rca-action-btn"
+                                    title="Download Job Card"
+                                    style={{ marginLeft: "5px" }}
+                                    onClick={() => handleDownloadJobCard(row)}
+                                >
+                                    <FontAwesomeIcon icon={faFilePdf} />
+                                </button>)}
                             </>
                         )}
                     </td>
@@ -1840,22 +1721,6 @@ const WorkManagement = () => {
 
     // ── Render ───────────────────────────────────────────────────────────────
     const pageLabel = view === "allocator" ? "Work Order Management" : view === "closedOut" ? "Closed Out Work Orders" : "Update My Work Order";
-
-    const handleAutoManualNavigation = (row) => {
-        const route = getAutoManualNavigationRoute(row);
-
-        if (route) {
-            navigate(route);
-        }
-    };
-
-    const handleAutoAutoNavigation = (row) => {
-        const route = getAutoAutoNavigationRoute(row);
-
-        if (route) {
-            navigate(route);
-        }
-    };
 
     return (
         <div className="risk-control-attributes-container" style={{ userSelect: "none" }}>
@@ -1870,7 +1735,7 @@ const WorkManagement = () => {
                         <p className="logo-text-um">Compliance Tracking</p>
                     </div>
                     <div className="sidebar-logo-dm-fi">
-                        <img src="/taskManagement2.svg" alt="Control Attributes" className="icon-risk-rm" />
+                        <img src={`${process.env.PUBLIC_URL}/WOM1.svg`} alt="Control Attributes" className="icon-risk-rm" />
                         <p className="logo-text-dm-fi">{"Work Order Management"}</p>
                     </div>
                 </div>
@@ -1892,24 +1757,8 @@ const WorkManagement = () => {
 
                     {view === "allocator" && canIn(access, "CTS", ["systemAdmin", "contributor"]) && (
                         <div className="burger-menu-icon-um">
-                            <FontAwesomeIcon icon={faCirclePlus} title="Allocate Task" onClick={() => setShowAddTaskPopup(true)} />
+                            <FontAwesomeIcon icon={faCirclePlus} title="Allocate Work Order" onClick={() => setShowAddTaskPopup(true)} />
                         </div>
-                    )}
-
-                    {view === "allocator" && canIn(access, "CTS", ["systemAdmin", "contributor"]) && (
-                        <span className="fa-layers fa-fw" style={{ fontSize: "28px", color: "grey", cursor: "pointer", marginRight: "5px" }} onClick={() => setShowAddRepeatingTaskPopup(true)} title="Schedule Repeating Task">
-                            <FontAwesomeIcon icon={faClock} />
-                            <FontAwesomeIcon
-                                icon={faCircle}
-                                transform="shrink-6 down-5 right-7"
-                                color="white"   /* or whatever contrast you need */
-                            />
-                            <FontAwesomeIcon
-                                icon={faPlusCircle}
-                                transform="shrink-7 down-5 right-7"
-                                color="gray"   /* or whatever contrast you need */
-                            />
-                        </span>
                     )}
 
                     <div className="um-input-container">
@@ -1931,8 +1780,14 @@ const WorkManagement = () => {
 
                 {/* Table area */}
                 <div className="table-container-risk-control-attributes">
-                    <div className="risk-control-label-wrapper-new">
-                        <div className="control-attributes-pill-bar">
+                    <div
+                        className="risk-control-label-wrapper-new"
+                        style={{ paddingBottom: "36px", marginBottom: "10px" }}
+                    >
+                        <div
+                            className="control-attributes-pill-bar"
+                            style={{ top: "auto", bottom: "0", transform: "none" }}
+                        >
                             {["My Work Orders", "Work Orders Assigned", "Closed Out Work Orders"].map((pill) => (
                                 <div
                                     key={pill}
@@ -1978,17 +1833,17 @@ const WorkManagement = () => {
                             />
                         )}
 
-                        <FontAwesomeIcon
+                        {false && (<FontAwesomeIcon
                             icon={faDownload}
                             title="Export to Excel"
                             className={showResetButton ? `top-right-button-control-att-4-new` : "top-right-button-control-att-3-new"}
                             style={{ cursor: "pointer", color: "gray" }}
                             onClick={handleExportExcel}
-                        />
+                        />)}
 
                         <button
-                            className={showResetButton ? `top-right-button-control-att-5-new` : "top-right-button-control-att-4-new"}
-                            title="Highlight Task Due Dates"
+                            className={showResetButton ? `top-right-button-control-att-4-new` : "top-right-button-control-att-3-new"}
+                            title="Highlight Work Order Due Dates"
                             onClick={() => setIsTaskDueDatePopupOpen(true)}
                             style={{ cursor: "pointer", color: "gray", userSelect: "none", background: "none", border: "none", fontSize: "25px" }}
                         >
@@ -2100,7 +1955,7 @@ const WorkManagement = () => {
                                 ) : processedTasks.length === 0 ? (
                                     <tr>
                                         <td colSpan={showColumns.length} style={{ textAlign: "center", padding: "20px", fontSize: "14px", color: "#666" }}>
-                                            No tasks available
+                                            No work orders available
                                         </td>
                                     </tr>
                                 ) : (
@@ -2187,36 +2042,52 @@ const WorkManagement = () => {
             )}
 
             {/* Allocator popups */}
-            {showAddTaskPopup && <AddTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddTaskPopup(false)} />}
+            {showAddTaskPopup &&
+                <AddWorkOrderInstance
+                    onClose={() => setShowAddTaskPopup(false)}
+                    onWorkOrderAdded={fetchTasks}
+                />
+            }
             {isTaskDueDatePopupOpen && (
-                <TaskDueDatePopup
+                <WorkOrderDueDate
                     isOpen={isTaskDueDatePopupOpen}
                     onClose={() => setIsTaskDueDatePopupOpen(false)}
                     onUpdate={setDueDateVal}
                     currVal={dueDateVal}
                 />
             )}
-            {showAddRepeatingTaskPopup && <AddRepeatingTaskPopup onTaskAdded={fetchTasks} onClose={() => setShowAddRepeatingTaskPopup(false)} />}
 
             {deleteTaskPopup.open && (
-                <DeleteAllocatedTask
-                    cancel={!deleteTaskPopup.task?._isPendingRepeating && deleteTaskPopup.task?.acceptanceStatus === "Accepted"}
-                    isPendingRepeating={deleteTaskPopup.task?._isPendingRepeating}
-                    open={deleteTaskPopup.open} task={deleteTaskPopup.task} taskName={deleteTaskPopup.taskName}
-                    onClose={closeDeleteTaskPopup} handleDeleteTask={handleDeleteTask}
+                <DeleteAllocatedWorkOrder
+                    cancel={deleteTaskPopup.task?.acceptanceStatus === "Accepted"}
+                    cancelled={deleteTaskPopup.task?.status === "Cancelled"}
+                    open={deleteTaskPopup.open}
+                    task={deleteTaskPopup.task}
+                    taskName={deleteTaskPopup.taskName}
+                    onClose={closeDeleteTaskPopup}
+                    handleDeleteTask={handleDeleteTask}
                 />
             )}
 
             {closeTaskPopup.open && (
-                <CloseAllocatedTask
+                <CloseAllocatedWorkOrder
                     open={closeTaskPopup.open} taskName={closeTaskPopup.taskName}
                     onClose={closeCloseTaskPopup}
                     onConfirm={(comments) => { handleCloseTask(closeTaskPopup.task._id, comments); closeCloseTaskPopup(); }}
                 />
             )}
 
+            {previewTaskPopup.open && (
+                <WorkOrderInfoPreview
+                    open={previewTaskPopup.open}
+                    taskId={previewTaskPopup.task?._id}
+                    onClose={closePreviewTaskPopup}
+                    onCloseOut={handlePreviewCloseOut}
+                />
+            )}
+
             {reopenTaskPopup.open && (
-                <ReopenAllocatedTask
+                <ReopenAllocatedWorkOrder
                     open={reopenTaskPopup.open} taskName={reopenTaskPopup.taskName}
                     onClose={closeReopenTaskPopup}
                     onConfirm={(message) => { handleReopenTask(reopenTaskPopup.task._id, message); closeReopenTaskPopup(); }}
@@ -2227,14 +2098,14 @@ const WorkManagement = () => {
                 <ModifyAllocatedTaskPopup task={selectedAllocatedTask} onClose={handleCloseModifyAllocatedTaskPopup} onTaskUpdated={fetchTasks} />
             )}
 
-            {/* Viewer popup — passes _taskSource through so ModifyMyTask can route correctly */}
+            {/* Viewer popup for updating a task's own progress */}
             {showModifyPopup && (
                 <ModifyMyTask onClose={handleCloseModifyPopup} data={selectedTask} onSaved={handleTaskSaved} />
             )}
 
-            {/* Accept Task popup — manual tasks only */}
+            {/* Accept Task popup */}
             {acceptTaskPopup.open && (
-                <AcceptTaskPopup
+                <AcceptWorkOrderPopup
                     open={acceptTaskPopup.open}
                     taskName={acceptTaskPopup.task?.taskTitle || ""}
                     onClose={() => setAcceptTaskPopup({ open: false, task: null })}
@@ -2251,9 +2122,9 @@ const WorkManagement = () => {
                 />
             )}
 
-            {/* Delegate Task popup — manual tasks only */}
+            {/* Delegate Task popup */}
             {delegateTaskPopup.open && (
-                <DelegateTaskPopup
+                <DelegateWorkOrderPopup
                     open={delegateTaskPopup.open}
                     taskName={delegateTaskPopup.task?.taskTitle || ""}
                     taskId={delegateTaskPopup.task?._id}
@@ -2264,7 +2135,6 @@ const WorkManagement = () => {
                     }}
                 />
             )}
-
             <ToastContainer />
         </div>
     );

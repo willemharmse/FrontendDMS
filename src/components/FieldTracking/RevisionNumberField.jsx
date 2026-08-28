@@ -16,12 +16,13 @@ const RevisionNumberField = ({
                 </h3>
                 <input
                     type="text"
-                    name="revisionNumber"
+                    name="version"
                     value={value || ""}
                     className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                    placeholder="Enter Revision Number"
+                    placeholder="Enter Version Number"
                     onChange={onChange}
                     readOnly={readOnly}
+                    style={{ color: "grey" }}
                 />
             </div>)}
         </>

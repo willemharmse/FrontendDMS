@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import "./SaveAsPopup.css"; // Import a separate CSS file for styling
 import { toast } from "react-toastify";
 
-const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard = false, special = false }) => {
+const SaveAsPopup = ({ readonlyTitle = false, onClose, saveAs, current, type, userID, create, standard = false, special = false }) => {
     const [title, setTitle] = useState(current);
     const [drafts, setDrafts] = useState([]);
 
     // 1) Fetch whenever the inputs that drive your route change
     useEffect(() => {
+        if (readonlyTitle) return;
         let isMounted = true;
         async function loadDrafts() {
             let route;
@@ -48,6 +49,11 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard 
     };
 
     const handleSave = () => {
+        if (readonlyTitle) {
+            saveAs(title);
+            onClose();
+            return;
+        }
 
         // 2) Compute existing titles right here
         const existingTitles = drafts.map(d => d.formData?.title ?? "");
@@ -82,7 +88,7 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard 
                 <div className="saveAs-date-group">
                     <label className="saveAs-date-label" htmlFor="email">New Draft Title</label>
                     <span className="saveAs-date-label-tc">
-                        Insert the title that should be used for the new draft that will be saved.
+                        {readonlyTitle ? "The following title will be used for the saved template." : "Insert the title that should be used for the new draft that will be saved."}
                     </span>
                     <textarea
                         type="text"
@@ -90,6 +96,7 @@ const SaveAsPopup = ({ onClose, saveAs, current, type, userID, create, standard 
                         onChange={handleTitleChange}
                         placeholder={`Insert the new title`}
                         className="saveAs-popup-input"
+                        readOnly={readonlyTitle}
                     />
                 </div>
 

@@ -89,6 +89,7 @@
 .card-icon-dc,
 .card-icon-rm,
 .card-icon-cm,
+.card-icon-fts,
 .card-icon-flames {
   transform: translateY(-13px);
   /* Moves the logo up */
@@ -146,6 +147,15 @@
 .card-icon-dm {
   width: 100px;
   height: 100px;
+  margin-top: 30px;
+  font-size: 10rem;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.card-icon-fts {
+  width: 70px;
+  height: 110px;
   margin-top: 30px;
   font-size: 10rem;
   color: white;
@@ -619,6 +629,7 @@
   .card-icon-dc,
   .card-icon-rm,
   .card-icon-cm,
+  .card-icon-fts,
   .card-icon-hat {
     width: 64px;
     height: 80px;
@@ -640,6 +651,11 @@
 
   .card-icon-dm {
     width: 82px;
+    height: 82px;
+  }
+
+  .card-icon-fts {
+    width: 48px;
     height: 82px;
   }
 
@@ -1111,6 +1127,12 @@
     margin-top: 24px;
   }
 
+  .card-icon-fts {
+    width: 50px;
+    height: 85px;
+    margin-top: 24px;
+  }
+
   .card-icon-rm,
   .card-icon-cm {
     width: 60px;
@@ -1216,6 +1238,12 @@
     margin-top: 19px;
   }
 
+  .card-icon-fts {
+    width: 45px;
+    height: 76px;
+    margin-top: 19px;
+  }
+
   .card-icon-rm,
   .card-icon-cm {
     width: 52px;
@@ -1317,6 +1345,12 @@
   .card-icon-dc,
   .card-icon-dm {
     width: 60px;
+    height: 68px;
+    margin-top: 15px;
+  }
+
+  .card-icon-fts {
+    width: 40px;
     height: 68px;
     margin-top: 15px;
   }

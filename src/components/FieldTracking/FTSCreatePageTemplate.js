@@ -61,6 +61,13 @@ import WorkOrderActionFields from "./WorkOrderActionFields";
 import "./WorkOrderActionFields.css";
 import SupportingDocumentTableFTS from "./SupportingDocumentTableFTS";
 
+// Backend dedup (see fieldTemplateDrafts.mjs) may append a " (n)" counter to
+// formData.title when its auto-generated value collides with another of the
+// user's drafts. Strips that counter back off so the auto-title-sync effect
+// below can compare against the freshly computed templateTitle without
+// mistaking "already has a counter" for "needs to be regenerated".
+const stripTitleCounter = (title) => (title || "").replace(/ \(\d+\)$/, "").trim();
+
 const FTSCreatePageTemplate = () => {
   const navigate = useNavigate();
   const type = useParams().type;
@@ -200,9 +207,9 @@ const FTSCreatePageTemplate = () => {
 
   const openSaveAs = () => {
     if (!titleSet) {
-      toast.warn("Please fill in at least the title field before saving.", {
+      toast.warn("Please fill in Frequency, the Work Order Basis field, and Work Order Type before saving.", {
         closeButton: false,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -242,7 +249,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("That draft name already exists. Please choose a different name.", {
         closeButton: true,
-        autoClose: 1500,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
       return;
@@ -253,7 +260,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.error("Failed to save draft online. It was saved offline instead.", {
         closeButton: true,
-        autoClose: 1500,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
       return;
@@ -267,7 +274,7 @@ const FTSCreatePageTemplate = () => {
     toast.clearWaitingQueue();
     toast.success("New draft successfully saved.", {
       closeButton: false,
-      autoClose: 1500,
+      autoClose: 2000,
       style: { textAlign: 'center' }
     });
 
@@ -282,7 +289,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("Please save a draft before sharing.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 2000,
         style: {
           textAlign: 'center'
         }
@@ -295,9 +302,9 @@ const FTSCreatePageTemplate = () => {
     if (formData.title.trim() === "") {
       toast.dismiss();
       toast.clearWaitingQueue();
-      toast.error("Please fill in at least the title field before saving.", {
+      toast.error("Please fill in Frequency, the Work Order Basis field, and Work Order Type before saving.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
       return;
@@ -325,7 +332,7 @@ const FTSCreatePageTemplate = () => {
         if (result?.ok) {
           toast.success("Draft has been successfully saved", {
             closeButton: true,
-            autoClose: 1500,
+            autoClose: 2000,
             style: { textAlign: 'center' }
           });
         } else {
@@ -346,7 +353,7 @@ const FTSCreatePageTemplate = () => {
       if (result?.ok) {
         toast.success("Draft has been successfully updated", {
           closeButton: true,
-          autoClose: 800,
+          autoClose: 2000,
           style: { textAlign: 'center' }
         });
       } else {
@@ -369,7 +376,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("Please enter a draft name.", {
         closeButton: true,
-        autoClose: 1000,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
       return;
@@ -398,7 +405,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("That draft name already exists. Please choose a different name.", {
         closeButton: true,
-        autoClose: 1500,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
       return; // keep popup open
@@ -411,7 +418,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.success("Draft has been successfully saved", {
         closeButton: false,
-        autoClose: 1500,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
     }
@@ -603,9 +610,9 @@ const FTSCreatePageTemplate = () => {
         setGeneratePopup(true);
 
       if (!titleSet) {
-        toast.error("Please fill in a title", {
+        toast.error("Please fill in a task name", {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 2000, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -636,7 +643,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("Please load a draft before publishing.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -648,7 +655,7 @@ const FTSCreatePageTemplate = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -880,6 +887,34 @@ const FTSCreatePageTemplate = () => {
     readOnlyRef.current = readOnly;
   }, [readOnly]);
 
+  // The "title" field (used for save/auto-save/validation, and as the draft
+  // name) now needs to mirror the auto-generated template title exactly, so
+  // keep formData.title in sync with formData.templateTitle - once
+  // TemplateTitleField has computed a title (Frequency, the WO Basis-driven
+  // field, and Work Order Type are all filled in), that becomes the title.
+  //
+  // The backend may have appended a " (n)" counter to formData.title to
+  // keep it unique among the user's drafts (see fieldTemplateDrafts.mjs).
+  // Comparing against the *stripped* title here means reopening a draft (or
+  // any re-render where the underlying fields haven't actually changed)
+  // won't wipe that counter back out - formData.title is only overwritten
+  // when the computed templateTitle genuinely differs from its current
+  // base, i.e. when the user actually changed one of the fields that feeds
+  // it, at which point the old counter is stale anyway and gets re-decided
+  // on the next save.
+  useEffect(() => {
+    const templateTitleValue = formData.templateTitle || "";
+    const currentTitleBase = stripTitleCounter(formData.title);
+
+    if (templateTitleValue !== currentTitleBase) {
+      setFormData((prev) => ({ ...prev, title: templateTitleValue }));
+    }
+
+    if (templateTitleValue.trim() !== "") {
+      setTitleSet(true);
+    }
+  }, [formData.templateTitle]);
+
   useEffect(() => {
     if (offlineDraft) return;
     if (readOnlyRef.current) return;
@@ -1032,7 +1067,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.warn("No changes to undo.", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1067,7 +1102,7 @@ const FTSCreatePageTemplate = () => {
     } else {
       toast.warn("Nothing to redo.", {
         closeButton: true,
-        autoClose: 800,
+        autoClose: 2000,
         style: { textAlign: 'center' }
       });
     }
@@ -1084,7 +1119,6 @@ const FTSCreatePageTemplate = () => {
     const newErrors = {};
 
     if (!formData.title) newErrors.title = true;
-    if (!formData.reviewDate) newErrors.reviewDate = true;
 
     if (formData.rows.length === 0) {
       newErrors.signs = true;
@@ -1099,12 +1133,6 @@ const FTSCreatePageTemplate = () => {
 
   const validateFormRevised = () => {
     const newErrors = errors;
-    if (!formData.reviewDate) { newErrors.reviewDate = true } else {
-      newErrors.reviewDate = false;
-    };
-    if (!formData.actionFields || formData.actionFields.length === 0) { newErrors.actionFields = true } else {
-      newErrors.actionFields = false;
-    };
     return newErrors;
   };
 
@@ -1130,6 +1158,29 @@ const FTSCreatePageTemplate = () => {
   };
 
   const handleWorkOrderBasesFocus = () => {
+    setErrors((prev) => ({ ...prev, workOrderBases: false }));
+  };
+
+  // Work Order Basis drives whether the Asset Information box is shown at
+  // all (see render below). Switching to Area Based / Department Based (or
+  // back to nothing selected) hides that box, so any assetType/assetModel/
+  // assetNumber values already entered are cleared out here rather than
+  // being left in formData unseen.
+  const handleWorkOrderBasesChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+
+      if (value !== "assetBased") {
+        next.assetType = "";
+        next.assetModel = "";
+        next.assetNumber = "";
+      }
+
+      return next;
+    });
+
     setErrors((prev) => ({ ...prev, workOrderBases: false }));
   };
 
@@ -1218,7 +1269,7 @@ const FTSCreatePageTemplate = () => {
       if (!isValid) {
         toast.error(`You must have at least one ${requiredRoles.find(role => formData.rows.filter((row) => row.auth === role).length === 0)}.`, {
           closeButton: true,
-          autoClose: 800, // 1.5 seconds
+          autoClose: 2000, // 1.5 seconds
           style: {
             textAlign: 'center'
           }
@@ -1279,7 +1330,7 @@ const FTSCreatePageTemplate = () => {
   const removeProRow = (indexToRemove) => {
     if (formData.procedureRows.length <= 1) {
       toast.warn("At least one procedure step is required.", {
-        autoClose: 800,
+        autoClose: 2000,
         closeButton: true,
         style: { textAlign: "center" },
       });
@@ -1346,7 +1397,7 @@ const FTSCreatePageTemplate = () => {
     ) {
       toast.error(`You must keep at least one ${rowToRemove.auth}.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1468,7 +1519,7 @@ const FTSCreatePageTemplate = () => {
 
       toast.success(`Template published`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1513,7 +1564,7 @@ const FTSCreatePageTemplate = () => {
 
       toast.success(`Tempalte Publishing Approval Started.`, {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1545,7 +1596,7 @@ const FTSCreatePageTemplate = () => {
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill in all required fields marked by a *", {
         closeButton: true,
-        autoClose: 800, // 1.5 seconds
+        autoClose: 2000, // 1.5 seconds
         style: {
           textAlign: 'center'
         }
@@ -1662,7 +1713,7 @@ const FTSCreatePageTemplate = () => {
       toast.clearWaitingQueue();
       toast.error("Failed to save draft.", {
         closeButton: true,
-        autoClose: 1200,
+        autoClose: 2000,
         style: { textAlign: "center" }
       });
       return;
@@ -1672,7 +1723,7 @@ const FTSCreatePageTemplate = () => {
     toast.clearWaitingQueue();
     toast.success("Draft has been saved.", {
       closeButton: true,
-      autoClose: 1200,
+      autoClose: 2000,
       style: { textAlign: "center" }
     });
 
@@ -1746,11 +1797,6 @@ const FTSCreatePageTemplate = () => {
               </div>
               <hr />
             </div>
-          </div>
-
-          <div className="sidebar-logo-dm-fi">
-            <img src={`${process.env.PUBLIC_URL}/standardsDMSInverted.svg`} alt="Control Attributes" className="icon-risk-rm" />
-            <p className="logo-text-dm-fi">Templates</p>
           </div>
         </div>
       )}
@@ -1849,42 +1895,18 @@ const FTSCreatePageTemplate = () => {
             </div>
           </div>)}
 
-          <div className="input-row">
-            <div className={`input-box-title ${errors.title ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Draft Name <span className="required-field">*</span></h3>
-              <div className="input-group-cpt">
-                <input
-                  spellcheck="true"
-                  type="text"
-                  name="title"
-                  className="font-fam title-input"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Enter Draft Name (e.g. Changing a Wheel Work Order Template)"
-                  readOnly={readOnly}
-                  style={{ fontFamily: "Arial", fontSize: "14px" }}
-                />
-                <span className="type-create-page">Template</span>
-              </div>
-            </div>
-          </div>
-
           <TemplateTitleField
             value={formData.templateTitle}
-            activityName={formData.activityName}
-            assetType={formData.assetType}
-            assetModel={formData.assetModel}
-            component={formData.component}
             frequency={formData.frequency}
+            workOrderBasis={formData.workOrderBases}
+            assetType={formData.assetType}
+            mainArea={formData.mainArea}
+            department={formData.department}
             workOrderType={formData.workOrderType}
             onChange={handleTemplateTitleChange}
             readOnly={readOnly}
-            showUI={false}
+            showUI={true}
           />
-
-          <TemplateDescription onChange={handleInputChange} value={formData.taskDescription} />
-
-          <TemplateDocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
           <WorkOrderTable
             workOrderType={formData.workOrderType}
@@ -1893,12 +1915,13 @@ const FTSCreatePageTemplate = () => {
             onDescriptionChange={handleWorkOrderDescriptionChange}
             readOnly={readOnly}
             error={errors.workOrderType || errors.workOrderDescription}
+            userID={userID}
           />
 
           <div className="input-row-risk-create">
             <WorkOrderBasesSelection
               value={formData.workOrderBases}
-              onChange={handleInputChange}
+              onChange={handleWorkOrderBasesChange}
               onFocus={handleWorkOrderBasesFocus}
               error={errors.workOrderBases}
               readOnly={readOnly}
@@ -1912,45 +1935,9 @@ const FTSCreatePageTemplate = () => {
             />
           </div>
 
-          <ActivityTaskTable
-            activityVerb={formData.activityVerb}
-            taskName={formData.taskName}
-            onActivityVerbChange={handleActivityVerbChange}
-            onTaskNameChange={handleTaskNameChange}
-            readOnly={readOnly}
-            activityVerbError={errors.activityVerb}
-            taskNameError={errors.taskName}
-          />
+          <TemplateDocumentSignaturesTable rows={formData.rows} handleRowChange={handleRowChange} addRow={addRow} removeRow={removeRow} error={errors.signs} updateRows={updateSignatureRows} setErrors={setErrors} readOnly={readOnly} />
 
-          <ActivityNamesField
-            value={formData.activityName}
-            activityVerb={formData.activityVerb}
-            taskName={formData.taskName}
-            onChange={handleActivityNameChange}
-            readOnly={readOnly}
-            showUI={false}
-          />
-
-          {false && (<SubInformationField
-            value={formData.workOrderSubInformation}
-            site={formData.site}
-            mainArea={formData.mainArea}
-            subArea={formData.subArea}
-            department={formData.department}
-            onChange={handleWorkOrderSubInformationChange}
-            readOnly={readOnly}
-          />)}
-
-          {false && (<ManagementInformationField
-            value={formData.workOrderRACIInformation}
-            accountableLevel={formData.accountableLevel}
-            personInCharge={formData.personInCharge}
-            minTeamExecutors={formData.minTeamExecutors}
-            onChange={handleWorkOrderRACIInformationChange}
-            readOnly={readOnly}
-          />)}
-
-          <AssetInfoBox
+          {(formData.workOrderBases === "assetBased" || formData.workOrderBases === "") && (<AssetInfoBox
             collapsible={true}
             formData={formData}
             setFormData={setFormData}
@@ -1958,7 +1945,9 @@ const FTSCreatePageTemplate = () => {
             setErrors={setErrors}
             readOnly={readOnly}
             noOptions={false}
-          />
+            workOrderBasis={formData.workOrderBases}
+            viewMode="create"
+          />)}
 
           <SiteAreaInfoBox
             collapsible={true}
@@ -1968,6 +1957,7 @@ const FTSCreatePageTemplate = () => {
             setErrors={setErrors}
             readOnly={readOnly}
             noOptions={false}
+            viewMode="create"
           />
 
           <DepartmentInfoBox
@@ -1978,6 +1968,7 @@ const FTSCreatePageTemplate = () => {
             setErrors={setErrors}
             readOnly={readOnly}
             noOptions={false}
+            viewMode="create"
           />
 
           <ManagementInfoBox
@@ -1988,6 +1979,8 @@ const FTSCreatePageTemplate = () => {
             setErrors={setErrors}
             readOnly={readOnly}
             noOptions={false}
+            isAssignmentView={false}
+            viewMode="create"
           />
 
           <div className="input-row-risk-create">
@@ -2002,54 +1995,8 @@ const FTSCreatePageTemplate = () => {
             <RevisionNumberField onChange={handleInputChange} value={formData.revisionNumber} showUI={false} />
           </div>
 
-          {false && (<>
-            <TemplateFieldsTable collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} setUsedTemplateFields={setUsedTemplateFields} error={errors.templateFields} userID={userID} setErrors={setErrors} readOnly={readOnly} />
-            <TemplateFieldsInfo collapsible={true} formData={formData} setFormData={setFormData} usedTemplateFields={usedTemplateFields} error={errors.templateFieldDetails} setErrors={setErrors} readOnly={readOnly} />
-          </>)}
-
-          {false && (
-            <>
-              <TaskDescriptionInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-              <ResponsibilityInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-              <SafetyInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-              <ResourcesInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-              <CloseOutInfoBox collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} setUsedTemplateFields={setUsedTemplateFields} usedTemplateFields={usedTemplateFields} />
-            </>
-          )}
           <SupportingDocumentTableFTS collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
-
           <WorkOrderActionFields collapsible={true} formData={formData} setFormData={setFormData} error={errors.actionFields} setErrors={setErrors} readOnly={readOnly} />
-
-          {false && (<>
-            <AbbreviationTable collapsible={true} formData={formData} setFormData={setFormData} usedAbbrCodes={usedAbbrCodes} setUsedAbbrCodes={setUsedAbbrCodes} error={errors.abbrs} userID={userID} setErrors={setErrors} readOnly={readOnly} />
-            <TermTable collapsible={true} formData={formData} setFormData={setFormData} usedTermCodes={usedTermCodes} setUsedTermCodes={setUsedTermCodes} error={errors.terms} userID={userID} setErrors={setErrors} readOnly={readOnly} />
-            <ChapterTable collapsible={true} formData={formData} setFormData={setFormData} readOnly={readOnly} />
-            <ReferenceTable collapsible={true} referenceRows={formData.references} addRefRow={addRefRow} removeRefRow={removeRefRow} updateRefRow={updateRefRow} updateRefRows={updateRefRows} setErrors={setErrors} error={errors.reference} required={true} readOnly={readOnly} />
-
-          </>)}
-
-          {false && (<div className="input-row">
-            <div className={`input-box-3 ${errors.reviewDate ? "error-create" : ""}`}>
-              <h3 className="font-fam-labels">Review Period (Months) <span className="required-field">*</span></h3>
-              <input
-                type="number"
-                name="reviewDate"
-                className="aim-textarea cent-create font-fam"
-                value={formData.reviewDate}
-                onChange={handleInputChange}
-                onFocus={() => {
-                  setErrors(prev => ({
-                    ...prev,
-                    reviewDate: false
-                  }))
-                }}
-                placeholder="Insert the review period in months"
-                readOnly={readOnly}
-              />
-            </div>
-          </div>)}
-
-          {false && (<PicturesTable collapsible={true} readOnly={readOnly} picturesRows={formData.pictures} addPicRow={addPicRow} updatePicRow={updatePicRow} removePicRow={removePicRow} />)}
 
           {true && (<div className="input-row-buttons">
             {true && (<button
@@ -2059,16 +2006,16 @@ const FTSCreatePageTemplate = () => {
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Template Preview'}
             </button>)}
-            {true && (<button
+            {false && (<button
               className="generate-button font-fam"
               title="PDF Preview Template"
-            //onClick={() => setPreviewPopup(true)}
+              onClick={() => setPreviewPopup(true)}
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'PDF Template Preview'}
             </button>)}
           </div>)}
         </div>
-        {isSaveAsModalOpen && (<SaveAsPopup saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} standard={true} />)}
+        {isSaveAsModalOpen && (<SaveAsPopup readonlyTitle={true} saveAs={confirmSaveAs} onClose={closeSaveAs} current={formData.title} type={type} userID={userID} create={false} />)}
         {generatePopup && (<GenerateDraftPopup deleteDraft={handleGeneratePDF} closeModal={closeGenerate} cancel={cancelGenerate} />)}
         {templatePreviewOpen && (
           <TemplatePreview

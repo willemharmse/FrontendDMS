@@ -1,47 +1,56 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
+
+const cleanText = (input) => String(input ?? "").trim();
 
 const ActivityNamesField = ({
-    value,
+    value = "",
     activityVerb = "",
     taskName = "",
     onChange,
     readOnly = false,
     error = false,
     required = true,
-    showUI = false
+    showUI = false,
 }) => {
-    // Whenever the Activity Verb or Task Name changes, recompute the
-    // combined Activity Name and push it up to the parent's formData.
-    // This field is view-only, so the user never edits it directly -
-    // it's purely derived from the two source fields.
-    useEffect(() => {
-        const combined = [activityVerb, taskName]
-            .map((part) => (part || "").trim())
+    // Activity Name is derived from the selected activity verb and task name.
+    const combinedActivityName = useMemo(() => {
+        return [activityVerb, taskName]
+            .map(cleanText)
             .filter(Boolean)
             .join(" ");
-
-        if (combined !== value) {
-            onChange && onChange(combined);
-        }
     }, [activityVerb, taskName]);
 
+    // Keep the value stored by the parent in sync with the derived value.
+    // Including `value` means this also repairs the field if the parent clears
+    // or replaces activityName without changing activityVerb/taskName.
+    useEffect(() => {
+        if (combinedActivityName !== cleanText(value)) {
+            onChange?.(combinedActivityName);
+        }
+    }, [combinedActivityName, value, onChange]);
+
+    if (!showUI) {
+        return null;
+    }
+
     return (
-        <>
-            {showUI && (<div className="input-row">
-                <div className={`input-box-title`}>
-                    <h3 className="font-fam-labels">Activity Name</h3>
-                    <input
-                        spellCheck="true"
-                        type="text"
-                        name="activityName"
-                        className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
-                        value={value}
-                        placeholder="Activity Name of Work Order"
-                        readOnly={true}
-                    />
-                </div>
-            </div>)}
-        </>
+        <div className="input-row">
+            <div className={`input-box-title ${error ? "error-create" : ""}`}>
+                <h3 className="font-fam-labels">
+                    Activity Name
+                    {required && <span className="required-field"> *</span>}
+                </h3>
+                <input
+                    spellCheck="true"
+                    type="text"
+                    name="activityName"
+                    className="jra-info-popup-page-input-table jra-info-popup-page-row-input"
+                    value={combinedActivityName}
+                    placeholder="Activity Name of Work Order"
+                    readOnly
+                />
+            </div>
+        </div>
     );
 };
 

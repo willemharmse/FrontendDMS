@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FTSPopupMenuSignedOffFiles = ({ isOpen, setHoveredFileId, openDownloadModal, file, type, risk = false, typeDoc = "", id = null, openProcedurePopup, review }) => {
+const FTSPopupMenuSignedOffFiles = ({ isOpen, setHoveredFileId, openDownloadModal, file, type, risk = false, typeDoc = "", id = null, openProcedurePopup, review, preview }) => {
     const navigate = useNavigate();
 
     const getVerRoute = () => {
@@ -18,10 +18,10 @@ const FTSPopupMenuSignedOffFiles = ({ isOpen, setHoveredFileId, openDownloadModa
                     onMouseEnter={() => setHoveredFileId(file._id)}
                     onMouseLeave={() => setHoveredFileId(null)}
                 >
-                    {false && (<ul>
-                        <li onClick={() => openDownloadModal(file.dmsId._id, file.dmsId.fileName)}>Download</li>
-                    </ul>)}
-                    {false && file.documentStatus.toLowerCase() !== "in revision" && (
+                    <ul>
+                        <li onClick={() => preview(file._id)}>Preview</li>
+                    </ul>
+                    {file.documentStatus.toLowerCase() !== "in revision" && (
                         <ul>
                             <li onClick={() => review(file._id)}>Review</li>
                         </ul>

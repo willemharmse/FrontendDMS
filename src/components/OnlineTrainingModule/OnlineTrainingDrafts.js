@@ -423,22 +423,22 @@ const OnlineTrainingDrafts = () => {
                                     {!isLoading && drafts.length > 0 && filteredDrafts.length > 0 && (
                                         displayDrafts
                                             .map((item, index) => (
-                                                <tr key={item._id} style={{ backgroundColor: item.approvalState ? "#7EAC89" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/FrontendDMS/onlineCreateCourse/${item._id}`)}>
-                                                    <td style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial", textAlign: "center" }}>
+                                                <tr key={item._id} style={{ backgroundColor: item.approvalState ? "transparent" : "transparent", fontSize: "15px" }} className="load-draft-td" onClick={() => navigate(`/FrontendDMS/onlineCreateCourse/${item._id}`)}>
+                                                    <td style={{ color: item.approvalState ? "black" : "black", fontFamily: "Arial", textAlign: "center" }}>
                                                         {index + 1}
                                                     </td>
-                                                    <td style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>{`${item.formData.courseTitle}`}</td>
-                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>
+                                                    <td style={{ color: item.approvalState ? "black" : "black", fontFamily: "Arial" }}>{`${item.formData.courseTitle}`}</td>
+                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "black" : "black", fontFamily: "Arial" }}>
                                                         {item.creator?.username || "Unknown"}
                                                     </td>
-                                                    <td style={{ color: item.approvalState ? "white" : "black", textAlign: "center", fontFamily: "Arial" }}>
+                                                    <td style={{ color: item.approvalState ? "black" : "black", textAlign: "center", fontFamily: "Arial" }}>
                                                         {formatDateTime(item.dateCreated)}
                                                     </td>
 
-                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "white" : "black", fontFamily: "Arial" }}>
+                                                    <td className="cent-draft-class" style={{ color: item.approvalState ? "black" : "black", fontFamily: "Arial" }}>
                                                         {item.lockActive ? item.lockOwner?.username : (item.updater?.username || "-")}
                                                     </td>
-                                                    <td style={{ color: item.approvalState ? "white" : "black", textAlign: "center", fontFamily: "Arial" }}>
+                                                    <td style={{ color: item.approvalState ? "black" : "black", textAlign: "center", fontFamily: "Arial" }}>
                                                         {item.lockActive ? "Active" : item.dateUpdated ? formatDateTime(item.dateUpdated) : "Not Updated Yet"}
                                                     </td>
                                                     <td className="load-draft-delete" >
@@ -447,7 +447,7 @@ const OnlineTrainingDrafts = () => {
                                                             style={{ width: "100%" }}
                                                             onClick={(e) => { e.stopPropagation(); confirmDelete(item._id, item.formData.courseTitle, item?.creator?._id) }}
                                                         >
-                                                            <FontAwesomeIcon icon={faTrash} title="Remove Draft" style={{ color: item.approvalState ? "white" : "black" }} />
+                                                            <FontAwesomeIcon icon={faTrash} title="Remove Draft" style={{ color: item.approvalState ? "black" : "black" }} />
                                                         </button>
                                                     </td>
                                                 </tr>

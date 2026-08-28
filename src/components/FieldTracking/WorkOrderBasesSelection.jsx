@@ -11,7 +11,7 @@ const WorkOrderBasesSelection = ({
     return (
         <div className={`input-box-type-risk-create ${error ? "error-create" : ""}`}>
             <h3 className="font-fam-labels">
-                Work Order Bases {required && <span className="required-field">*</span>}
+                Work Order Basis {required && <span className="required-field">*</span>}
             </h3>
 
             <div className="jra-info-popup-page-select-container">
@@ -20,28 +20,23 @@ const WorkOrderBasesSelection = ({
                     type="text"
                     name="workOrderBases"
                     value={value || ""}
-                    placeholder="Select Work Order Bases"
+                    placeholder="Select Work Order Basis"
                     onChange={onChange}
                     onFocus={onFocus}
                     readOnly={readOnly}
+                    disabled={readOnly}
                 >
                     <option value="" >
-                        {"Select Work Order Bases"}
+                        {"Select Work Order Basis"}
                     </option>
                     <option value="siteArea" >
-                        {"Site/ Area Based"}
+                        {"Area Based"}
                     </option>
                     <option value="assetBased" >
                         {"Asset Based"}
                     </option>
                     <option value="department" >
                         {"Department Based"}
-                    </option>
-                    <option value="management" >
-                        {"Management Level Based"}
-                    </option>
-                    <option value="other" >
-                        {"Other/ General Task Based"}
                     </option>
                 </select>
             </div>

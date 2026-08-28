@@ -514,6 +514,7 @@
     width: calc(100% - 20px);
     padding: 10px 10px 10px 10px;
     padding-top: 5px;
+    padding-bottom: 5px;
     resize: none;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -522,7 +523,7 @@
     outline: none;
     word-break: break-all;
     white-space: pre-wrap;
-    height: 83px;
+    min-height: 20px;
 }
 
 .aim-textarea-stack-item {

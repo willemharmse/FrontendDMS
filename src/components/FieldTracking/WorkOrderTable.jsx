@@ -19,6 +19,13 @@ const WorkOrderTable = ({
     const [fetchedOptions, setFetchedOptions] = useState([]);
     const [loadingOptions, setLoadingOptions] = useState(!typeOptionsProp);
     const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+    // Work order types that have been suggested (either just now, via the
+    // popup, or previously - loaded in from a draft) but aren't yet part of
+    // the official list returned by the backend. Rendered with a trailing
+    // "*" so it's clear they're pending, and automatically dropped once the
+    // matching official option shows up (e.g. after an admin approves it
+    // and we refetch).
+    const [suggestedTypes, setSuggestedTypes] = useState([]);
 
     // If the parent doesn't pass typeOptions in directly, fetch them from
     // the Work Order Types route (type + description for each).
@@ -62,10 +69,9 @@ const WorkOrderTable = ({
         }
     };
 
-    // Normalize whatever we have (prop or fetched) into { value, label, description },
-    // and guarantee an "Other" option is always available so users can
-    // always type a custom description.
-    const typeOptions = useMemo(() => {
+    // Normalize whatever we have (prop or fetched) into { value, label, description}.
+    // These are the "official" options - i.e. actually present in the system.
+    const officialOptions = useMemo(() => {
         const source = typeOptionsProp || fetchedOptions;
 
         const normalized = source.map((opt) => ({
@@ -75,48 +81,111 @@ const WorkOrderTable = ({
         }));
 
         // Pull "Other" out of wherever it landed (start, middle, end - doesn't
-        // matter where the backend returned it) and always place it last.
-        const withoutOther = normalized.filter(
+        // matter where the backend returned it), it gets placed last separately.
+        return normalized.filter(
             (opt) => String(opt.value).toLowerCase() !== OTHER_VALUE.toLowerCase()
         );
-
-        return [
-            ...withoutOther,
-            { value: OTHER_VALUE, label: OTHER_VALUE, description: "" },
-        ];
     }, [typeOptionsProp, fetchedOptions]);
 
-    const isOtherSelected = String(workOrderType).toLowerCase() === OTHER_VALUE.toLowerCase();
+    const isOfficialValue = (value) =>
+        officialOptions.some(
+            (opt) => String(opt.value).toLowerCase() === String(value).toLowerCase()
+        );
 
-    const descriptionIsReadOnly = readOnly || (workOrderType !== "" && !isOtherSelected);
+    // Seed a "suggested" (unofficial) option whenever the current value isn't
+    // part of the official list yet - this covers a draft being loaded with a
+    // workOrderType that was only ever suggested, never approved. Skipped
+    // while options are still loading so we don't briefly flag an official
+    // type as suggested before the real list arrives.
+    useEffect(() => {
+        if (loadingOptions) return;
+
+        const value = workOrderType;
+        if (!value || String(value).toLowerCase() === OTHER_VALUE.toLowerCase()) return;
+        if (isOfficialValue(value)) return;
+
+        setSuggestedTypes((prev) => {
+            const exists = prev.some(
+                (opt) => String(opt.value).toLowerCase() === String(value).toLowerCase()
+            );
+
+            if (exists) {
+                // Keep the description synced in case it arrived after mount
+                // (e.g. the draft finished loading a moment later).
+                return prev.map((opt) =>
+                    String(opt.value).toLowerCase() === String(value).toLowerCase()
+                        ? { ...opt, description: description || opt.description }
+                        : opt
+                );
+            }
+
+            return [...prev, { value, label: value, description: description || "" }];
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [workOrderType, description, loadingOptions, officialOptions]);
+
+    // Drop any local suggestion that has since become official (e.g. once an
+    // admin approves it and we refetch the real list) so the "*" disappears.
+    useEffect(() => {
+        setSuggestedTypes((prev) => prev.filter((s) => !isOfficialValue(s.value)));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [officialOptions]);
+
+    // Merge official + suggested options. The "Other" option has been
+    // removed - the type is always picked from the list, so the
+    // description is always derived rather than typed by hand.
+    const typeOptions = useMemo(() => {
+        const unofficialSuggestions = suggestedTypes
+            .filter((s) => !isOfficialValue(s.value))
+            .map((s) => ({ ...s, label: `${s.label} *` }));
+
+        return [...officialOptions, ...unofficialSuggestions];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [officialOptions, suggestedTypes]);
 
     const handleTypeChange = (value) => {
         onTypeChange && onTypeChange(value);
 
-        const selectedIsOther = String(value).toLowerCase() === OTHER_VALUE.toLowerCase();
+        const match = typeOptions.find((opt) => opt.value === value);
+        onDescriptionChange && onDescriptionChange(match ? match.description : "");
+    };
 
-        if (selectedIsOther) {
-            // Clear the description so the user can type their own.
-            onDescriptionChange && onDescriptionChange("");
-        } else {
-            const match = typeOptions.find((opt) => opt.value === value);
-            onDescriptionChange && onDescriptionChange(match ? match.description : "");
-        }
+    // Called by WorkOrderSuggestion right after a new type is successfully
+    // submitted: select it immediately and register it as a suggested
+    // (unofficial) option so it shows up in the dropdown marked with a "*".
+    const handleSuggested = ({ type, description: suggestedDescription }) => {
+        if (!type) return;
+
+        setSuggestedTypes((prev) => {
+            const filtered = prev.filter(
+                (opt) => String(opt.value).toLowerCase() !== String(type).toLowerCase()
+            );
+            return [
+                ...filtered,
+                { value: type, label: type, description: suggestedDescription || "" },
+            ];
+        });
+
+        onTypeChange && onTypeChange(type);
+        onDescriptionChange && onDescriptionChange(suggestedDescription || "");
     };
 
     return (
         <>
-            <div className="input-row-risk-create" style={{ alignItems: "center" }}>
-                <div className={`input-box-type-risk-create ${typeError ? "error-create" : ""}`} >
+            <div className="input-row-risk-create" style={{ alignItems: "stretch" }}>
+                <div
+                    className={`input-box-type-risk-create ${typeError ? "error-create" : ""}`}
+                    style={{ display: "flex", flexDirection: "column" }}
+                >
                     <h3 className="font-fam-labels">
                         Work Order Type {required && <span className="required-field">*</span>}
                     </h3>
-                    <div className="jra-info-popup-page-select-container">
+                    <div className="jra-info-popup-page-select-container" style={{ flex: 1 }}>
                         <select
                             className="table-control font-fam remove-default-styling"
                             name="workOrderType"
                             value={workOrderType}
-                            style={{ fontFamily: "Arial" }}
+                            style={{ fontFamily: "Arial", height: "100%" }}
                             disabled={readOnly || loadingOptions}
                             onChange={(e) => handleTypeChange(e.target.value)}
                         >
@@ -130,7 +199,7 @@ const WorkOrderTable = ({
                             ))}
                         </select>
                     </div>
-                    {!readOnly && (
+                    {false && !readOnly && (
                         <button
                             type="button"
                             className="abbr--butt-cent-1"
@@ -141,31 +210,37 @@ const WorkOrderTable = ({
                     )}
                 </div>
 
-                {/* Block 2: Description */}
-                <div className={`input-box-type-risk-create ${descriptionError ? "error-create" : ""}`} >
+                {/* Block 2: Description - derived from the selected type, display only */}
+                <div
+                    className={`input-box-type-risk-create ${descriptionError ? "error-create" : ""}`}
+                    style={{ display: "flex", flexDirection: "column", backgroundColor: "#e6e6e6" }}
+                >
                     <h3 className="font-fam-labels">
-                        Work Order Description {required && <span className="required-field">*</span>}
+                        Work Order Type Description
                     </h3>
-                    <textarea
-                        type="text"
-                        name="description"
-                        value={description || ""}
-                        className="aim-textarea-risk-create-textarea-nopads-workOrder font-fam aim-textarea-text"
-                        placeholder="Insert description here..."
-                        style={{ fontFamily: "Arial", minHeight: 0, paddingLeft: "10px" }}
-                        onChange={(e) => onDescriptionChange && onDescriptionChange(e.target.value)}
-                        readOnly={descriptionIsReadOnly}
-                    />
+                    <div
+                        style={{
+                            fontFamily: "Arial",
+                            whiteSpace: "pre-wrap",
+                            fontSize: "16px",
+                            flex: 1,
+                            overflowY: "auto",
+                            boxSizing: "border-box"
+                        }}
+                    >
+                        {description || ""}
+                    </div>
                 </div>
             </div>
-            <WorkOrderSuggestion
+            {false && (<WorkOrderSuggestion
                 isOpen={isSuggestionOpen}
                 onClose={() => {
                     setIsSuggestionOpen(false);
                     refetchTypeOptions();
                 }}
+                onSuggested={handleSuggested}
                 userID={userID}
-            />
+            />)}
         </>
     );
 };

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faPeopleGroup, faX, faSort, faCircleUser, faBell, faArrowLeft, faSearch, faFolderOpen, faFileCirclePlus, faFolder, faCloudUploadAlt, faUsersCog, faSitemap, faCaretLeft, faCaretRight, faPersonChalkboard, faDownload, faTrash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import TopBar from "../Notifications/TopBar";
 import { saveAs } from "file-saver";
 import ImportSiteInfo from "../UploadPage/ImportSiteInfo";
@@ -23,6 +23,7 @@ const SGIAdminPage = () => {
     const [selectedImportFile, setSelectedImportFile] = useState(null);
     const [changeReasonOpen, setChangeReasonOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [clearLoading, setClearLoading] = useState(false);
     const navigate = useNavigate();
 
     const exportSID = async () => {
@@ -61,6 +62,50 @@ const SGIAdminPage = () => {
             toast.success("Site General Information successfully exported.", { autoClose: "2000", closeButton: false })
         } catch (error) {
             console.error("Error generating document:", error);
+        }
+    };
+
+    const clearSiteInfo = async () => {
+        const confirmed = window.confirm(
+            "This will permanently clear ALL Site General Information data (Abbreviations, PPE, Equipment, Sites, and every other section). This cannot be undone. Are you sure you want to continue?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setClearLoading(true);
+
+            const response = await fetch(
+                `${process.env.REACT_APP_URL}/api/siteInfo/clear-site-info`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+
+            let result = null;
+            try {
+                result = await response.json();
+            } catch {
+                result = null;
+            }
+
+            if (!response.ok) {
+                throw new Error(result?.message || result?.error || "Failed to clear Site General Information.");
+            }
+
+            toast.success("Site General Information has been cleared.", { autoClose: 2000, closeButton: false });
+        } catch (error) {
+            console.error("Error clearing Site General Information:", error);
+            toast.error(
+                error.message || "Error clearing Site General Information. Please try again.",
+                { closeButton: false, autoClose: 1200, style: { textAlign: "center" } }
+            );
+        } finally {
+            setClearLoading(false);
         }
     };
 
@@ -261,6 +306,21 @@ const SGIAdminPage = () => {
                                     <img src={`${process.env.PUBLIC_URL}/importSIDAdminHome2.svg`} className={"icon-dept"} />
                                 </div>
                                 <h3 className="document-title-fi-home">View Site General Information Version History</h3>
+                            </>
+                        </div>
+                    )}
+
+                    {false && (can(access, "RMS", "systemAdmin") || isAdmin(access) || can(access, "DDS", "systemAdmin")) && (
+                        <div className={`document-card-fi-home`} onClick={clearLoading ? undefined : clearSiteInfo}>
+                            <>
+                                <div className="icon-dept">
+                                    {clearLoading ? (
+                                        <FontAwesomeIcon icon={faSpinner} spin className="icon-dept" />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faTrash} className="icon-dept" />
+                                    )}
+                                </div>
+                                <h3 className="document-title-fi-home">Clear Site General Information</h3>
                             </>
                         </div>
                     )}

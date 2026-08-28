@@ -28,7 +28,20 @@ const ActionFieldsInfoBox = ({
     formData,
     setFormData,
     readOnly = false,
+    // "create" | "template" | "assignment". This box is only ever rendered
+    // via TemplatePreviewContent (preview + allocator) - on "template" the
+    // controls stay interactive but the values typed/selected must not be
+    // written to formData.actionFieldValues; only "assignment" (and
+    // "create", if this box is ever used there) commits.
+    viewMode = "assignment",
+    // Names of individual action fields that must stay non-interactive,
+    // identified as "actionFieldValues.<field.id>". Used by
+    // WorkOrderAssignment to lock fields that already had an answer when
+    // the assignment popup was opened. Empty by default everywhere else,
+    // so this has no effect unless a caller explicitly passes it.
+    lockedFields = []
 }) => {
+    const commitChanges = viewMode !== "template";
     const [collapsed, setCollapsed] = useState(false);
     const isCollapsed = collapsible ? collapsed : false;
     const toggleCollapse = () => setCollapsed(!collapsed);
@@ -36,7 +49,10 @@ const ActionFieldsInfoBox = ({
     const actionFields = formData.actionFields || [];
     const actionFieldValues = formData.actionFieldValues || {};
 
+    const isLocked = (fieldId) => lockedFields.includes(`actionFieldValues.${fieldId}`);
+
     const setPreviewValue = (id, value) => {
+        if (!commitChanges || isLocked(id)) return;
         setFormData((prev) => ({
             ...prev,
             actionFieldValues: {
@@ -71,12 +87,20 @@ const ActionFieldsInfoBox = ({
                                 <col />
                             </colgroup>
                             <tbody>
-                                {actionFields.map((field) => (
+                                {actionFields.map((field, index) => (
                                     <tr key={field.id}>
-                                        <th scope="row" className="jra-info-table-header">
-                                            {field.title}
+                                        <th scope="row" className="jra-info-table-header" style={{ whiteSpace: "pre-wrap" }}>
+                                            {index + 1}. {field.title}
                                             {field.required && (
                                                 <span className="required-field" title="Required"> *</span>
+                                            )}
+                                            {field.hazardClass && (
+                                                <div
+                                                    className="font-fam"
+                                                    style={{ color: "#888", fontStyle: "italic", fontWeight: "normal", fontSize: "12px" }}
+                                                >
+                                                    Hazard Class: {field.hazardClass}
+                                                </div>
                                             )}
                                         </th>
                                         <td>
@@ -84,7 +108,7 @@ const ActionFieldsInfoBox = ({
                                                 field={field}
                                                 value={actionFieldValues[field.id]}
                                                 onChange={(val) => setPreviewValue(field.id, val)}
-                                                readOnly={readOnly}
+                                                readOnly={true}
                                             />
                                         </td>
                                     </tr>

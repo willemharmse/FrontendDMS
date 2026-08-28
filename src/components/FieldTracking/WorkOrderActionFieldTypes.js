@@ -31,6 +31,13 @@ import {
 //                    Pass/Fail) and can't be edited
 //   defaultOptions - starting options pre-filled for convenience when
 //                    hasOptions is true (creator can still edit/replace them)
+//   hasExpectedValue - true if the creator must pick, from the field's own
+//                    option list (fixedOptions or the custom options they
+//                    entered), which value counts as the "expected"/correct
+//                    one. Stored on the field as `expectedValue`.
+//   hasExpectedRange - true if the creator must supply a min/max expected
+//                    value instead of a single expected value (Number only).
+//                    Stored on the field as `expectedMin` / `expectedMax`.
 // ---------------------------------------------------------------------------
 export const FIELD_TYPES = [
     {
@@ -46,6 +53,7 @@ export const FIELD_TYPES = [
         icon: faHashtag,
         example: "Readings, measurements, temperatures, pressures, vibration levels",
         hasOptions: false,
+        hasExpectedRange: true,
     },
     {
         value: "dropdown",
@@ -54,6 +62,7 @@ export const FIELD_TYPES = [
         example: "Normal / Elevated / Abnormal",
         hasOptions: true,
         defaultOptions: ["Normal", "Elevated", "Abnormal"],
+        hasExpectedValue: true,
     },
     {
         value: "yesno",
@@ -62,6 +71,7 @@ export const FIELD_TYPES = [
         example: "Isolation completed? Guard installed? Test passed?",
         hasOptions: false,
         fixedOptions: ["Yes", "No"],
+        hasExpectedValue: true,
     },
     {
         value: "passfail",
@@ -70,6 +80,7 @@ export const FIELD_TYPES = [
         example: "CPS warning test passed? Slowdown test passed? Stop test passed?",
         hasOptions: false,
         fixedOptions: ["Pass", "Fail"],
+        hasExpectedValue: true,
     },
     {
         value: "buttons",
@@ -78,6 +89,7 @@ export const FIELD_TYPES = [
         example: "Compliant / Non-Compliant / Not Applicable",
         hasOptions: true,
         defaultOptions: ["Compliant", "Non-Compliant", "Not Applicable"],
+        hasExpectedValue: true,
     },
     {
         value: "datetime",
@@ -131,5 +143,8 @@ export const createEmptyActionField = (overrides = {}) => ({
     type: "text",
     required: false,
     options: [],
+    expectedValue: null,
+    expectedMin: null,
+    expectedMax: null,
     ...overrides,
 });

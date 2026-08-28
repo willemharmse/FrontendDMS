@@ -73,8 +73,8 @@ const ActionFieldControl = ({ field, value, onChange, readOnly = false }) => {
                     {options.map((opt) => {
                         const isActive = value === opt;
                         const toneClass =
-                            opt === "Yes" || opt === "Pass" || opt === "Compliant" ? "waf-btn-positive" :
-                                opt === "No" || opt === "Fail" || opt === "Non-Compliant" ? "waf-btn-negative" :
+                            opt === "Pass" ? "waf-btn-positive" :
+                                opt === "Fail" ? "waf-btn-negative" :
                                     "waf-btn-neutral";
                         return (
                             <button

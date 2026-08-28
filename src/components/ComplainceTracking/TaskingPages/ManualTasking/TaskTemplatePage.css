@@ -83,3 +83,7 @@
 .backGrey {
     background-color: #F6F6F6;
 }
+
+.taskStatusSelect_a8f3c1:disabled {
+    opacity: 1 !important;
+}

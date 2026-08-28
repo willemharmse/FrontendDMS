@@ -7,7 +7,7 @@ import AbbreviationTable from "../../CreatePage/AbbreviationTable";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faFloppyDisk, faSpinner, faRotateLeft, faFolderOpen, faArrowLeft, faShareNodes, faUpload, faRotateRight, faPen, faSave, faArrowUp, faCaretLeft, faCaretRight, faInfo, faL, faMagicWandSparkles, faEye, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen as faFolderOpenSolid } from "@fortawesome/free-regular-svg-icons";
 import TopBarDD from "../../Notifications/TopBarDD";
 import SaveAsPopup from "../../Popups/SaveAsPopup";
@@ -30,6 +30,7 @@ import ApproversPopup from "./ApproversPopup";
 import SaveConfirmationPopup from "../../CreatePage/SaveConfirmationPopup";
 import SavingInProgress from "../../DocumentCreationPages/SavingInProgress";
 import { useTauriCloseGuard } from "../../../utils/useTauriCloseGuard";
+import RemoveFromApprovalPopup from "../../Popups/RemoveFromApprovalPopup";
 
 const InductionCreationPage = () => {
   const id = useParams().id || '';
@@ -64,6 +65,9 @@ const InductionCreationPage = () => {
   const [owner, setOwner] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
   const [isPublisher, setIsPublisher] = useState(false);
+  const [removeApprovalState, setRemoveApprovalState] = useState(false);
+  const [removingApproval, setRemovingApproval] = useState(false);
+  const [canRemove, setCanRemove] = useState(false);
 
   const readOnlyRef = useRef(false);
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
@@ -154,6 +158,14 @@ const InductionCreationPage = () => {
 
   const closeApproval = () => {
     setApproval(false);
+  }
+
+  const openRemoveApproval = () => {
+    setRemoveApprovalState(true);
+  }
+
+  const closeRemoveApproval = () => {
+    setRemoveApprovalState(false);
   }
 
   const closePreview = () => {
@@ -735,6 +747,52 @@ const InductionCreationPage = () => {
     }
   };
 
+  const removeFromApprovalProcess = async () => {
+    const dataToStore = {
+      draftID: loadedIDRef.current
+    };
+
+    setRemovingApproval(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL}/api/visitorDrafts/remove-from-approval-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(dataToStore),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove document from the approval process");
+
+      toast.success(`Visitor Induction Removed From The Approval Process.`, {
+        closeButton: true,
+        autoClose: 1500, // 1.5 seconds
+        style: {
+          textAlign: 'center'
+        }
+      });
+
+      setInApproval(false);
+      setReadOnly(false);
+      setRemoveApprovalState(false);
+      setCanRemove(false);
+      loadData(id);
+    } catch (error) {
+      console.error("Error removing document from the approval process:", error);
+      toast.error("Failed to remove document from the approval process", {
+        closeButton: true,
+        autoClose: 800,
+        style: {
+          textAlign: 'center'
+        }
+      });
+    } finally {
+      setRemovingApproval(false);
+    }
+  };
+
   const loadData = async (loadID) => {
     try {
       setLoadingDraft(true);
@@ -758,6 +816,7 @@ const InductionCreationPage = () => {
       }
 
       const draftData = storedData.draft || {};
+      const canRemove = storedData.canRemove || false;
 
       const ownerId =
         draftData.creator ||
@@ -774,6 +833,7 @@ const InductionCreationPage = () => {
       setUserIDs(normalizedSharedUsers);
       userIDsRef.current = normalizedSharedUsers;
       setPublishable(storedData.publishable);
+      setCanRemove(canRemove);
 
       const rawForm = draftData.formData || {};
       const normalizedForm = {
@@ -1307,6 +1367,8 @@ const InductionCreationPage = () => {
     });
     setTimeout(() => {
       setIsSaveConfirmOpen(false);
+      loadedIDRef.current = '';
+      setLoadedID('');
       if (pendingActionRef.current) pendingActionRef.current();
       pendingActionRef.current = null;
     }, 1500);
@@ -1314,6 +1376,8 @@ const InductionCreationPage = () => {
 
   const handleDiscard = () => {
     setIsSaveConfirmOpen(false);
+    loadedIDRef.current = '';
+    setLoadedID('');
     if (pendingActionRef.current) pendingActionRef.current();
     pendingActionRef.current = null;
   };
@@ -1432,6 +1496,10 @@ const InductionCreationPage = () => {
 
                 {inApproval && canIn(access, "TMS", ["systemAdmin"]) && (<div className="burger-menu-icon-risk-create-page-1">
                   <FontAwesomeIcon icon={faCheckCircle} onClick={handleApproveClick} className={`${(!loadedID) ? "disabled-share" : ""}`} title="Approve Draft" />
+                </div>)}
+
+                {canRemove && inApproval && (<div className="burger-menu-icon-risk-create-page-1">
+                  <FontAwesomeIcon icon={faBan} onClick={openRemoveApproval} title="Remove From Approval Process" style={{ color: "#CB6F6F" }} />
                 </div>)}
               </>
             )}
@@ -1599,6 +1667,15 @@ const InductionCreationPage = () => {
           onCancel={handleCancelSave}
           draftTitle={formData.courseTitle}
           triggerType={saveConfirmTrigger}
+        />
+      )}
+      {removeApprovalState && (
+        <RemoveFromApprovalPopup
+          closeModal={closeRemoveApproval}
+          removeApproval={removeFromApprovalProcess}
+          docType="visitor induction draft"
+          title={formData.courseTitle}
+          loading={removingApproval}
         />
       )}
     </div>
